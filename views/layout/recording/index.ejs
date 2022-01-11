@@ -1,0 +1,86 @@
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <form class="col-10" id="form_search_recording">
+          <div class="row">
+            <div class="col-2">
+              <div class="form-group">
+                <label>Ngày gọi từ
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group date" id="startTime" data-target-input="nearest">
+                  <input type="text" class="form-control datetimepicker-input" name="startTime"
+                    data-target="#startTime" autocomplete="off"/>
+                  <div class="input-group-append" data-target="#startTime" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label>
+                  Đến
+                  <span class="text-danger">*</span>
+                </label>
+                <div class="input-group date" id="endTime" data-target-input="nearest">
+                  <input type="text" class="form-control datetimepicker-input" name="endTime" data-target="#endTime" autocomplete="off"/>
+                  <div class="input-group-append" data-target="#endTime" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label>Số gọi đi</label>
+                <input type="text" class="form-control" name="caller"
+                  data-target="#reservationdate" />
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label>Số gọi đến</label>
+                <input type="text" class="form-control" name="called"
+                  data-target="#reservationdate" />
+              </div>
+            </div>
+            <div class="col-2">
+              <div class="form-group">
+                <label>Extension</label>
+                <input type="text" class="form-control" name="extension"
+                  data-target="#reservationdate" />
+              </div>
+            </div>
+            <div class="col-2">
+              <button type="button" class="form-control btn btn-primary btn-circle btn-md" id="search">
+                <i class="fas fa-search p-0"></i>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="card-body">
+        <table id="example2" class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th class="text-center">Extension</th>
+              <th class="text-center">Số gọi đi</th>
+              <th class="text-center">Số gọi đến</th>
+              <th class="text-center">Ngày giờ gọi</th>
+              <th class="text-center">Thời lượng</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <div class="spinner-border text-primary" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer d-flex">
+      </div>
+    </div>
+  </div>
+</div>

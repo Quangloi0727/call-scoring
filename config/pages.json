@@ -1,0 +1,42 @@
+[
+  {
+    "pageName": "MetechVN",
+    "pageID": "104276424659968",
+    "chatEntryPointId": "1001",
+    "access_token": "EAANxW0OZALTQBADiITnZBfq5MMZA0HLWAh2VpN6djeDpnieoYKAjFtaZBnlTjzLYnfr3uDzXZCRM4pYpi5i8run9JngI4VKVoBkEZBNx3j2MVSJ9pDikY9l2uMOMAevMU6KvopfqJtP0s3mFAqaRYssnZBWLeoHelBiv0KtShQidevOWsYEYjp1",
+    "welcome": "Xin chào {customerName}, {pageName} rất hân hạnh được phục vụ quý khách",
+    "goodbye": "{pageName} xin cảm ơn và mong rằng sẽ được hỗ trợ quý khách vào các lần tiếp theo"
+  },
+  {
+    "pageName": "FB Dịch vụ chat",
+    "pageID": "116817090182126",
+    "chatEntryPointId": "1001",
+    "access_token": "EAAEsrSQABPsBAG4wW4vnzHhxJDpLIU5clarFniQKZCCwoowtf5GvmqWVPJEWdxqmua2jRGYXbZCwYAaDjcqlkBvvqWIZAIKFdRKl9HgP6q2OnJQmi4pDkEauDqbrQ5s7q8VThpsz0G0gbvKdwe8vGruB3nrjATKcOyN0a6w7BoEljFwIVkJTRDERZCKBrIYZD",
+    "welcome": "Xin chào {customerName}, {pageName} rất hân hạnh được phục vụ quý khách",
+    "goodbye": "{pageName} xin cảm ơn và mong rằng sẽ được hỗ trợ quý khách vào các lần tiếp theo"
+  },
+  {
+    "pageName": "ZALO_ME_TECH",
+    "pageID": "2827205965709312495",
+    "chatEntryPointId": "1001",
+    "access_token": "gVpVN3Q6OcAkyjjPD8zjPAZmrbCmasmE-xUoI0cr2YBWpl8Q5SGfOyhFdXycy2bpmCZ-IHpIIHM1t8TCGzHPTgMqlZzGa7rNgkkXArZe6csXbknKRhvR8uYRvq9laoSkygV5JHYJUoZzlS1L5hXuRuhOaJONyarFxksES77gHH2FxvDLMDie6RR3vbrywYCgdid4Hals3pA-rjL8KieT38xVzZDLm39faUE9FNAOHL2vlP0kThnGH-_SZH0sl4KezS6XR3RWQa_fcxDqCeO56-wYlLasWXydSN6jJOyEDvzYQW",
+    "welcome": "Xin chào {customerName}, {pageName} rất hân hạnh được phục vụ quý khách",
+    "goodbye": "{pageName} xin cảm ơn và mong rằng sẽ được hỗ trợ quý khách vào các lần tiếp theo"
+  },
+  {
+    "pageName": "ZALO_ME_TECH test",
+    "pageID": "3985639050696210118",
+    "chatEntryPointId": "1003",
+    "access_token": "bmZkIPtRzG-M3UrAajBs3P44wacRpF1Z_MUp9_pLpcMlUfj9sAY4OuGTu4_EfFzDi2wbIlYvnc3wDRGY-vxF6PayZGxveFONkXQ8Bloxw3oUPR8EtiMiBOPlvod0fFyGa1Ud5EoxsYUIFBaUpEh73f1scmlgtVaxW66z5uNeeWRaT_uuuCVa2wj9-H2gvRqNmKp92RxZZWlhRDiAY_oP9VeknoMP_w8Hz7Mz1O3PzpMAThmGrQdNI8zzesVUolXRf1-yHyIgtagu4wDDwvRq0RD7dKVRwVG5LpBcBNMMmF05",
+    "welcome": "Xin chào {customerName}, {pageName} rất hân hạnh được phục vụ quý khách",
+    "goodbye": "{pageName} xin cảm ơn và mong rằng sẽ được hỗ trợ quý khách vào các lần tiếp theo"
+  },
+  {
+    "pageName": "PHỐ NGON 37",
+    "pageID": "372093749513275",
+    "chatEntryPointId": "1003",
+    "access_token": "EAAJV6MbwYuABAFaLgVQTygei2ZCjS0ZCeCV24G7ipkWM4XL8PlxZCPwApLvnaWlf8c0gzd6k6AErl1kQ2lwhzkjlIVC9VO6abaoxg4nbm5x8aYsansL7AaZBNfCfLTRa1sHZBZBmcvEiv4msGJrJWTZBYxq2O9oRJM1RAZCHGXqTkxmlY9nCP0PZB1pGRemEtBoUZD",
+    "welcome": "Xin chào {customerName}, {pageName} rất hân hạnh được phục vụ quý khách",
+    "goodbye": "{pageName} xin cảm ơn và mong rằng sẽ được hỗ trợ quý khách vào các lần tiếp theo"
+  }
+]

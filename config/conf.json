@@ -1,0 +1,48 @@
+{
+  "cisco": {
+    "user": "sa",
+    "password": "Bhs24hs@123",
+    "server": "srv-ahd-a.bhs.local",
+    "database": "ins1_awdb",
+    "auth": {
+      "uid": "api",
+      "pwd": "APIer@123",
+      "secret": "eyJhbGciOi",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1aWQiOiJhcGkiLCJwd2QiOiJBUEllckAxMjMifQ.zbcraPNh7IvmAFX0D2dBjVfRB_vRzkAJA6P3BU3dh2E"
+    }
+  },
+  "chatEntryPoinID": {
+    "1001": "crmdemo1",
+    "1002": "name",
+    "1003": "gggdev",
+    "1004": "gggproduction",
+    "1005": "dev02",
+    "1006": "UAT"
+  },
+  "entryPoint": {
+    "1001": {
+      "name": "crmdemo1",
+      "note": "aaa"
+    },
+    "1002": {
+      "name": "name",
+      "note": "bbb"
+    },
+    "1003": {
+      "name": "gggdev",
+      "note": "ggg.agent07 - 10 / Abc@4321 là agent mobile --> ko cần login jabber"
+    },
+    "1004": {
+      "name": "gggproduction",
+      "note": "ddd"
+    },
+    "1005": {
+      "name": "dev02",
+      "note": "ggg.agent07 - 10 / Abc@4321 là agent mobile --> ko cần login jabber"
+    },
+    "1006": {
+      "name": "UAT",
+      "note": "ggg.agent17 - 20 / Abc@4321 là agent mobile --> ko cần login jabber"
+    }
+  }
+}
