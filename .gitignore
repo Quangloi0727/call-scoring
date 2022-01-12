@@ -45,4 +45,6 @@ client/
 !.vscode/extensions.json
 *.code-workspace
 
+/public/export
+
 # /projects/*/logs/*.log

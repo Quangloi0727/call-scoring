@@ -1,19 +1,19 @@
-const typeorm = require('typeorm');
+const { createConnection } = require('typeorm');
 const CallDetailRecordingSchema = require('../entities/CallDetailRecordSchema');
 const UserSchema = require('../entities/UserSchema');
-const UserModel = require('../models/userModel');
 
 require('localenv');
 
 module.exports = async function () {
   try {
-    const connection = await typeorm.createConnection({
+    const connection = await createConnection({
       type: 'mssql',
       host: process.env.MSSQL_HOST,
       port: Number(process.env.MSSQL_PORT),
       username: process.env.MSSQL_USER,
       password: process.env.MSSQL_PASS,
       database: process.env.MSSQL_DATABASE,
+      synchronize: false,
       entities: [
         CallDetailRecordingSchema,
         UserSchema
@@ -22,23 +22,7 @@ module.exports = async function () {
 
     console.log('connect to MSSQL success!');
 
-    // const userRepository = connection.getRepository(UserSchema);
-
-    // const user = await userRepository.find();
-
-    // if (!user) {
-    //   const user = new UserModel(
-    //     "admin",
-    //     "admin",
-    //     "admin",
-    //     0,
-    //     "123",
-    //     1
-    //   );
-
-      
-    // }
-
+    return initialData(connection);
   } catch (error) {
     console.log(`------- error ------- connect to MSSQL fail!`);
     console.log(error);
@@ -46,12 +30,32 @@ module.exports = async function () {
   }
 }
 
+/**
+ * Kiểm tra Admin có tồi tại hay không. Nếu không có, sẽ tạo mới!
+ */
 async function initialData(connection) {
   try {
+    const userRepository = connection.getRepository(UserSchema);
 
+    const user = await userRepository.findOne({ username: 'admin' });
+
+    if (!user) {
+      connection.createQueryBuilder()
+        .insert()
+        .into(UserSchema)
+        .values({
+          firstName: 'admin',
+          lastname: 'admin',
+          username: 'admin',
+          extension: 0,
+          password: '123',
+          role: 1
+        })
+        .execute();
+    } else {
+      console.log('admin ton tai!');
+    }
   } catch (error) {
-    console.log(`------- error ------- initialData`);
-    console.log(error);
-    console.log(`------- error ------- initialData`);
+    throw new Error(error);
   }
 }

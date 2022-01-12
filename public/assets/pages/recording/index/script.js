@@ -1,10 +1,26 @@
 $(function () {
   const $btnSearch = $('#search');
+  const $btnExportExcel = $('#export_excel')
   const $frmSearch = $('#form_search_recording');
   const $tblSearch = $('#tableBody');
   const $ctnPaging = $('#paging_table');
 
   $btnSearch.on('click', function (e) {
+    let page = 1;
+
+    return findData(page);
+  });
+
+  $btnExportExcel.on('click', function () {
+    return findData(null, true);
+  });
+
+  $(document).on('click', '.zpaging', function () {
+    let page = $(this).attr('data-link');
+    return findData(page);
+  });
+
+  function findData(page, exportExcel) {
     let inputValue = $frmSearch.serializeArray();
     let queryData = {};
 
@@ -14,20 +30,25 @@ $(function () {
       }
     });
 
-    console.log('aaaa: ', inputValue);
-    console.log('bbbb: ', queryData);
-    console.log('cccc: ', $.param(queryData));
+    if (page) {
+      queryData.page = page
+    }
 
-    return findData(queryData);
-  });
+    if (exportExcel) {
+      queryData.exportExcel = 1;
+    }
 
-  function findData(data, page) {
     $.ajax({
       type: 'GET',
-      url: '/recording/list?' + $.param(data),
+      url: '/recording/list?' + $.param(queryData),
       cache: 'false',
       success: function (result) {
         console.log('result: ', result);
+
+        if (exportExcel) {
+          if(!result || !result.linkFile || result.linkFile == '') return;
+          return downloadFromUrl(result.linkFile);
+        }
 
         createTable(result.data);
         return createPaging(result.paging);
@@ -81,7 +102,7 @@ $(function () {
       if (page == paging.current) {
         pageNum += `
           <li class="paginate_button page-item active">
-            <a role="button" class="page-link zpaging">${page}</a>
+            <a role="button" class="page-link">${page}</a>
           </li>
         `;
       } else {
@@ -110,7 +131,7 @@ $(function () {
           <span class="TXT_TOTAL">Total</span>:
           <span class="bold c-red" id="ticket-total">${paging.totalResult}</span>
         </b>
-        <ul class="pagination">
+        <ul class="pagination mt-2">
           ${firstPage}
           ${prePage}
           ${pageNum}
@@ -123,9 +144,16 @@ $(function () {
     return $ctnPaging.html(pagingHtml);
   };
 
+  function downloadFromUrl(url) {
+    var link = document.createElement("a");
+    link.download = '';
+    link.href = url;
+    link.click();
+  }
+
   //Date picker
-  $('#startTime').datetimepicker({ format: 'L' });
-  $('#endTime').datetimepicker({ format: 'L' });
+  $('#startTime').datetimepicker({ format: 'DD/MM/YYYY' });
+  $('#endTime').datetimepicker({ format: 'DD/MM/YYYY' });
 
   //Date and time picker
   $('#startTime').datetimepicker({ icons: { time: 'far fa-clock' } });

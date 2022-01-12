@@ -1,6 +1,12 @@
 #search {
   margin-top: 30px;
 }
+
+#export_excel {
+  margin-top: 30px;
+  width: 100px !important;
+}
+
 .btn-circle {
   width: 30px;
   height: 30px;

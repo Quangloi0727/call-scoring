@@ -1,7 +1,7 @@
 const passport = require('passport');
 
 exports.getIndex = (req, res, next) => {
-  return res.redirect('/manage-pages');
+  return res.redirect('/recording');
 }
 
 exports.getLogin = async (req, res, next) => {

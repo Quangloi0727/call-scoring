@@ -1,7 +1,7 @@
 const ObjectID = require('mongodb').ObjectID;
 
 const {
-    DB_HOST, PORT,
+    PORT,
     IP_PUBLIC
 } = process.env;
 
@@ -16,7 +16,7 @@ exports.checkKeyValueExists = async (collection, keys, dataValue, id) => {
     const query = { $or: queryCheck, is_deleted: { $ne: true } };
 
     // for update
-    if(id) query._id = { $ne: ObjectID(id)};
+    if (id) query._id = { $ne: ObjectID(id) };
 
     let docCheck = await collection.findOne(query);
     if (docCheck) {
@@ -82,9 +82,9 @@ exports.replaceSignOfVietnameseString = (str) => {
     str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, "Y");
     str = str.replace(/Đ/g, "D");
     return str.toLowerCase();
-  };
+};
 
 exports.baseHttpIP = (ip = IP_PUBLIC, port = PORT) => {
-    
+
     return `http://${ip}:${port}`;
-  };
+};
