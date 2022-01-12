@@ -123,7 +123,7 @@ function createExcelFile(
         });
       },
     ], function (err, result) {
-      return callback(err, result.replace(_rootPath, ''));
+      return callback(err, result.replace(path.join(_rootPath, 'public'), ''));
     });
   } catch (error) {
     return callback(error);

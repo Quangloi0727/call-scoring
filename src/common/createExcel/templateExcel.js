@@ -6,8 +6,8 @@ function templateExcel(
   titleTable,
   sheet,
   {
-    companyName = 'BELLSYSTEM24 - HOA SAO',
-    projectName = 'TELEHUB T1',
+    companyName = 'METECH - SAO THỦY',
+    projectName = 'CRM',
     isShowDate = true,
   },
   callback

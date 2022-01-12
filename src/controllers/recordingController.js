@@ -133,7 +133,7 @@ function createExcelFile(startDate, endDate, data) {
         endTime: endTime,
         titleTable: titlePage,
         excelHeader: dataHeader,
-        configHeader: titleExcel,
+        titlesHeader: titleExcel,
         data: data,
         opts: {
           valueWidthColumn: [25, 25, 30, 25, 35, 35],

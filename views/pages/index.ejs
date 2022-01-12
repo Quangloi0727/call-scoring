@@ -31,7 +31,9 @@
   <link rel="stylesheet" href="/plugins/toastr/toastr.min.css">
   <!-- SweetAlert2 -->
   <link rel="stylesheet" href="/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
-
+  <!-- Style global -->
+  <link rel="stylesheet" href="/dist/css/style.css">
+  <!-- Style current page -->
   <link href="/assets/pages/<%- page %>/style.css" class="dynamic" rel="stylesheet">
 
 </head>
@@ -68,6 +70,14 @@
         <div class="container-fluid">
 
           <%- include('../layout/' + page) %>
+
+          <div class="page-loader">
+            <div class="preloader pls-blue">
+              <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+              </div>
+            </div>
+          </div>
 
         </div>
       </section>

@@ -1,0 +1,30 @@
+.page-loader {
+  background: rgba(90, 90, 90, 0.2);
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 3000;
+}
+
+.page-loader .preloader {
+  width: 50px;
+  position: absolute;
+  left: 50%;
+  margin-left: -25px;
+  top: 50%;
+  margin-top: -55px;
+}
+
+.page-loader .preloader p {
+  white-space: nowrap;
+  position: relative;
+  left: -9px;
+  top: 22px;
+  color: #ccc;
+}
+
+.page-loader {
+  display: none;
+}

@@ -38,12 +38,15 @@ $(function () {
       queryData.exportExcel = 1;
     }
 
+    $('.page-loader').show();
+
     $.ajax({
       type: 'GET',
       url: '/recording/list?' + $.param(queryData),
       cache: 'false',
       success: function (result) {
         console.log('result: ', result);
+        $('.page-loader').hide();
 
         if (exportExcel) {
           if(!result || !result.linkFile || result.linkFile == '') return;
@@ -54,6 +57,7 @@ $(function () {
         return createPaging(result.paging);
       },
       error: function (error) {
+        $('.page-loader').hide();
         toastr.error(error.responseJSON.message);
       },
     });

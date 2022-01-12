@@ -1,9 +1,9 @@
 // require
 require('localenv');
-const AppError = require('./server/utils/appError');
+const AppError = require('./src/utils/appError');
 const path = require('path');
-const CRUDFlle = require('./server/utils/crud.file');
-const mssqlConnection = require('./server/libs/mssql');
+const CRUDFlle = require('./src/utils/crud.file');
+const mssqlConnection = require('./src/libs/mssql');
 
 let pathFileConfig = path.normalize(path.join(__dirname, 'config', 'conf.json'));
 
@@ -13,7 +13,7 @@ const { PORT } = process.env;
 global._rootPath = path.dirname(require.main.filename);
 global._CRUDFile = new CRUDFlle(pathFileConfig);
 global._config = _CRUDFile.readFileSync();
-global._logger = require("./server/libs/log")(path.basename(__filename));
+global._logger = require("./src/libs/log")(path.basename(__filename));
 global._unit_inc = 1;
 
 process.on('uncaughtException', err => {
@@ -24,7 +24,7 @@ process.on('uncaughtException', err => {
 
 mssqlConnection();
 
-const server = require('./server/libs/express')();
+const server = require('./src/libs/express')();
 
 server.listen(PORT, () => {
   _logger.log('info', `Application is running on port ${PORT}`);
