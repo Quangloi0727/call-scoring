@@ -1,5 +1,6 @@
 
 const { getRepository, getConnection } = require('typeorm');
+const pagination = require('pagination');
 const CallDetailRecording = require('../entities/CallDetailRecordSchema');
 const pagesModel = require('../models/pagesModel');
 const {
@@ -28,17 +29,24 @@ exports.index = async (req, res, next) => {
 
 exports.getRecording = async (req, res, next) => {
   try {
+    const {page} = req.query;
+    const limit = 25;
+    const pageNumber = page ? Number(page) : 1;
+    const offset = pageNumber > 1 ? pageNumber * limit : 0;
     const recordingRepository = getRepository(CallDetailRecording);
 
-    const [data, count] = await Promise.all([
-      recordingRepository.createQueryBuilder('call_detail_records').offset(0).limit(10).getMany(),
-      recordingRepository.createQueryBuilder('call_detail_records').getCount()
-    ]);
+    const recordResuld = await recordingRepository.findAndCount({skip: offset,take: limit});
+
+    let paginator = new pagination.SearchPaginator({
+      current: pageNumber,
+      rowsPerPage: limit,
+      totalResult: recordResuld && recordResuld[1] ? recordResuld[1] : 0,
+    });
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: data,
-      total: count
+      data: recordResuld && recordResuld[0] && recordResuld.length > 0 ? recordResuld[0] : [],
+      paging: paginator.getPaginationData()
     });
   } catch (error) {
     console.log(`------- error ------- getRecording`);

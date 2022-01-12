@@ -10,8 +10,8 @@
                   <span class="text-danger">*</span>
                 </label>
                 <div class="input-group date" id="startTime" data-target-input="nearest">
-                  <input type="text" class="form-control datetimepicker-input" name="startTime"
-                    data-target="#startTime" autocomplete="off"/>
+                  <input type="text" class="form-control datetimepicker-input" name="startTime" data-target="#startTime"
+                    autocomplete="off" />
                   <div class="input-group-append" data-target="#startTime" data-toggle="datetimepicker">
                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                   </div>
@@ -25,7 +25,8 @@
                   <span class="text-danger">*</span>
                 </label>
                 <div class="input-group date" id="endTime" data-target-input="nearest">
-                  <input type="text" class="form-control datetimepicker-input" name="endTime" data-target="#endTime" autocomplete="off"/>
+                  <input type="text" class="form-control datetimepicker-input" name="endTime" data-target="#endTime"
+                    autocomplete="off" />
                   <div class="input-group-append" data-target="#endTime" data-toggle="datetimepicker">
                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                   </div>
@@ -35,22 +36,19 @@
             <div class="col-2">
               <div class="form-group">
                 <label>Số gọi đi</label>
-                <input type="text" class="form-control" name="caller"
-                  data-target="#reservationdate" />
+                <input type="text" class="form-control" name="caller" data-target="#reservationdate" />
               </div>
             </div>
             <div class="col-2">
               <div class="form-group">
                 <label>Số gọi đến</label>
-                <input type="text" class="form-control" name="called"
-                  data-target="#reservationdate" />
+                <input type="text" class="form-control" name="called" data-target="#reservationdate" />
               </div>
             </div>
             <div class="col-2">
               <div class="form-group">
                 <label>Extension</label>
-                <input type="text" class="form-control" name="extension"
-                  data-target="#reservationdate" />
+                <input type="text" class="form-control" name="extension" data-target="#reservationdate" />
               </div>
             </div>
             <div class="col-2">
@@ -73,13 +71,15 @@
             </tr>
           </thead>
           <tbody id="tableBody">
-            <div class="spinner-border text-primary" role="status">
+            <!-- <div class="spinner-border text-primary" role="status">
               <span class="sr-only">Loading...</span>
-            </div>
+            </div> -->
           </tbody>
         </table>
       </div>
-      <div class="card-footer d-flex">
+      <div class="card-footer text-center">
+        <div class="col-12 d-flex justify-content-center" id="paging_table">
+        </div>
       </div>
     </div>
   </div>
