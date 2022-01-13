@@ -43,3 +43,7 @@
   line-height: 1.33;
   border-radius: 35px;
 }
+
+.col-recording {
+  width: 350px !important;
+}

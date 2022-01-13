@@ -67,13 +67,25 @@ $(function () {
     let html = '';
 
     data.forEach((item) => {
+      let audioHtml = '';
+
+      if(item.recordingFileName && item.recordingFileName !== '') {
+        audioHtml = `
+          <audio controls preload="none">
+            <source  src="${item.recordingFileName}" type="audio/wav">
+            Your user agent does not support the HTML5 Audio element.'
+          </audio>
+        `;
+      }
+
       html += `
         <tr>
-          <td class="text-center">${item.caller}</td>
+          <td class="text-center" style="display: none;">${item.caller}</td>
           <td class="text-center">${item.caller}</td>
           <td class="text-center">${item.called}</td>
           <td class="text-center">${item.origTime}</td>
           <td class="text-center">${item.duration}</td>
+          <td class="text-center">${audioHtml}</td>
         </tr>
       `;
     });
