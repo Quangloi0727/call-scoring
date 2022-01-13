@@ -13,11 +13,10 @@ module.exports = async function () {
       username: process.env.MSSQL_USER,
       password: process.env.MSSQL_PASS,
       database: process.env.MSSQL_DATABASE,
-      synchronize: false,
       entities: [
         CallDetailRecordingSchema,
         UserSchema
-      ]
+      ],
     });
 
     console.log('connect to MSSQL success!');
