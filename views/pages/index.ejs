@@ -43,54 +43,56 @@
 
     <!-- Header (Begin) -->
     <%- include('../partials/header') %>
-    <!-- Header (End) -->
+      <!-- Header (End) -->
 
-    <!-- Sidebar (Begin) -->
-    <%- include('../partials/sidebar') %>
-    <!-- Sidebar (End) -->
+      <!-- Sidebar (Begin) -->
+      <%- include('../partials/sidebar') %>
+        <!-- Sidebar (End) -->
 
 
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
 
-      <!-- Content Header (Begin) -->
-      <div class="content-header">
-        <div class="container-fluid">
-          <div class="row mb-2">
-            <div class="col-sm-6">
-              <h1 class="m-0"><%= titlePage %></h1>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Content Header (End) -->
-
-      <!-- Main content (Begin) -->
-      <section class="content">
-        <div class="container-fluid">
-
-          <%- include('../layout/' + page) %>
-
-          <div class="page-loader">
-            <div class="preloader pls-blue">
-              <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Loading...</span>
+          <!-- Content Header (Begin) -->
+          <div class="content-header">
+            <div class="container-fluid">
+              <div class="row mb-2">
+                <div class="col-sm-6">
+                  <h1 class="m-0">
+                    <%= titlePage %>
+                  </h1>
+                </div>
               </div>
             </div>
           </div>
+          <!-- Content Header (End) -->
+
+          <!-- Main content (Begin) -->
+          <section class="content">
+            <div class="container-fluid">
+
+              <%- include('../layout/' + page) %>
+
+                <div class="page-loader">
+                  <div class="preloader pls-blue">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </div>
+                </div>
+
+            </div>
+          </section>
+          <!-- Main content (End) -->
 
         </div>
-      </section>
-      <!-- Main content (End) -->
+        <!-- /.content-wrapper -->
 
-    </div>
-    <!-- /.content-wrapper -->
-
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here -->
-    </aside>
-    <!-- /.control-sidebar -->
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+          <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
   </div>
   <!-- ./wrapper -->
 
@@ -129,8 +131,10 @@
   <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
   <script src="/dist/js/pages/dashboard.js"></script>
   <!-- jquery-validation -->
-  <script src="/plugins/jquery-validation/jquery.validate.min.js"></script>
-  <script src="/plugins/jquery-validation/additional-methods.min.js"></script>
+  <!-- <script src="/public/plugins/jquery-validation/jquery.validate.min.js"></script>
+  <script src="/public/plugins/jquery-validation/additional-methods.min.js"></script> -->
+  <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/jquery.validate.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/jquery.validation/1.16.0/additional-methods.min.js"></script>
   <!-- Toastr -->
   <script src="/plugins/toastr/toastr.min.js"></script>
   <!-- SweetAlert2 -->

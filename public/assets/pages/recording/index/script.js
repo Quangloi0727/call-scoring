@@ -12,6 +12,7 @@ $(function () {
   });
 
   $btnExportExcel.on('click', function () {
+    console.log("aaaaaaaaaa");
     return findData(null, true);
   });
 
@@ -49,7 +50,7 @@ $(function () {
         $('.page-loader').hide();
 
         if (exportExcel) {
-          if(!result || !result.linkFile || result.linkFile == '') return;
+          if (!result || !result.linkFile || result.linkFile == '') return;
           return downloadFromUrl(result.linkFile);
         }
 
