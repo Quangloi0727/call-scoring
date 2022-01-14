@@ -52,8 +52,11 @@ exports.getRecording = async (req, res, next) => {
       const dataResult = await recordingRepository.find({
         where: {
           origTime: Between(Number(startTimeMilisecond), Number(endTimeMilisecond)),
-          ...query
+          ...query,
         },
+        order: {
+          origTime: 'DESC'
+        }
       });
 
       const dataHandleResult = handleData(dataResult);
@@ -68,8 +71,11 @@ exports.getRecording = async (req, res, next) => {
         origTime: Between(Number(startTimeMilisecond), Number(endTimeMilisecond)),
         ...query
       },
+      order: {
+        origTime: 'DESC'
+      },
       skip: offset,
-      take: limit
+      take: limit,
     });
 
     let paginator = new pagination.SearchPaginator({
@@ -98,7 +104,7 @@ function handleData(data) {
   newData = data.map((el) => {
     el.origTime = moment(el.origTime * 1000).format('DD/MM/YYYY HH:mm:ss')
     el.duration = hms(el.duration);
-
+    el.recordingFileName = _config.pathRecording + el.recordingFileName
     return el;
   });
 

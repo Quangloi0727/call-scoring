@@ -44,5 +44,6 @@
       "name": "UAT",
       "note": "ggg.agent17 - 20 / Abc@4321 là agent mobile --> ko cần login jabber"
     }
-  }
+  },
+  "pathRecording": "http://172.16.16.129/static/"
 }
