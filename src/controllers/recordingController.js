@@ -1,13 +1,10 @@
 
-const { getRepository, Between, Like } = require('typeorm');
+const { getManager } = require('typeorm');
 const pagination = require('pagination');
 const moment = require('moment');
-const CallDetailRecording = require('../entities/CallDetailRecordSchema');
 const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
-  ERR_400,
-  ERR_404,
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 
@@ -34,59 +31,54 @@ exports.getRecording = async (req, res, next) => {
     const limit = 25;
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
-    const recordingRepository = getRepository(CallDetailRecording);
-    let query = {};
+    let query = '';
 
     if (!startTime || startTime === '' || !endTime || endTime === '') {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
 
-    if (caller) query.caller = Like(`%${caller}%`);
-    if (called) query.called = Like(`%${called}%`);
-    if (extension) query.caller = Like(`%${extension}%`);
+    if (caller) query += `AND records.caller LIKE '%${caller}%' `;
+    if (called) query += `AND records.called LIKE '%${called}%' `;
+    if (extension) query += `AND records.caller LIKE '%${extension}%' `;
 
     let startTimeMilisecond = moment(startTime, 'DD/MM/YYYY').startOf('day').format('X');
     let endTimeMilisecond = moment(endTime, 'DD/MM/YYYY').endOf('day').format('X');
 
     if (exportExcel && exportExcel == 1) {
-      const dataResult = await recordingRepository.find({
-        where: {
-          origTime: Between(Number(startTimeMilisecond), Number(endTimeMilisecond)),
-          ...query,
-        },
-        order: {
-          origTime: 'DESC'
-        }
-      });
-
-      const dataHandleResult = handleData(dataResult);
-
-      const linkFile = await createExcelFile(startTime, endTime, dataHandleResult);
-
-      return res.status(SUCCESS_200.code).json({ linkFile: linkFile });
+      return exportExcelHandle(res, startTimeMilisecond, endTimeMilisecond, query);
     }
 
-    const recordResult = await recordingRepository.findAndCount({
-      where: {
-        origTime: Between(Number(startTimeMilisecond), Number(endTimeMilisecond)),
-        ...query
-      },
-      order: {
-        origTime: 'DESC'
-      },
-      skip: offset,
-      take: limit,
-    });
+    let queryData = `
+      SELECT * FROM call_detail_records records
+      WHERE records.origTime >= ${Number(startTimeMilisecond)} 
+        AND records.origTime <= ${Number(endTimeMilisecond)}
+        ${query}
+      ORDER BY records.origTime DESC
+      OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
+    `;
+
+    let queryCountData = `
+      SELECT COUNT(*) AS total
+      FROM call_detail_records records
+      WHERE records.origTime >= ${Number(startTimeMilisecond)} 
+        AND records.origTime <= ${Number(endTimeMilisecond)}
+        ${query}
+    `;
+
+    const [recordResult, totalData] = await Promise.all([
+      await getManager().query(queryData),
+      await getManager().query(queryCountData),
+    ]);
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
-      totalResult: recordResult && recordResult[1] ? recordResult[1] : 0,
+      totalResult: totalData && totalData[0] && totalData[0].total || 0
     });
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult && recordResult[0] && recordResult.length > 0 ? handleData(recordResult[0]) : [],
+      data: recordResult || [],
       paging: paginator.getPaginationData()
     });
   } catch (error) {
@@ -109,6 +101,27 @@ function handleData(data) {
   });
 
   return newData;
+}
+
+
+async function exportExcelHandle(res, startTime, endTime, query) {
+  try {
+    const dataResult = await getManager().query(`
+      SELECT * FROM call_detail_records records
+      WHERE records.origTime >= ${Number(startTime)} 
+        AND records.origTime <= ${Number(endTime)}
+        ${query}
+      ORDER BY records.origTime DESC
+    `);
+
+    const dataHandleResult = handleData(dataResult);
+
+    const linkFile = await createExcelFile(startTime, endTime, dataHandleResult);
+
+    return res.status(SUCCESS_200.code).json({ linkFile: linkFile });
+  } catch (error) {
+    throw new Error(error);
+  }
 }
 
 function createExcelFile(startDate, endDate, data) {

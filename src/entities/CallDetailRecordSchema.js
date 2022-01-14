@@ -35,7 +35,7 @@ module.exports = new EntitySchema({
       type: 'varchar'
     },
     origCalledLoginUserId: {
-      type: 'varchar'
+      type: 'varchar',
     },
     origCallingLoginUserId: {
       type: 'varchar'

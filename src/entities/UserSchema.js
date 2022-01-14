@@ -9,7 +9,7 @@ module.exports = new EntitySchema({
       generated: true,
     },
     firstName: {
-      type: 'varchar'
+      type: 'varchar',
     },
     lastname: {
       type: 'varchar'
@@ -28,4 +28,4 @@ module.exports = new EntitySchema({
       default: 0, // 0: User || 1: Admin
     }
   }
-})
+});
