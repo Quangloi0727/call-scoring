@@ -1,5 +1,6 @@
 <script>
-    var title = JSON.parse('<%- JSON.stringify(title) %>');
+    var dataUser = JSON.parse('<%- JSON.stringify(data) %>');
+    var paginator = JSON.parse('<%- JSON.stringify(paginator) %>');
 </script>
 <div class="wrapper">
     <div>
@@ -10,123 +11,75 @@
                         <div class="card">
                             <div class="card-header row">
                                 <div class="col-12 d-flex justify-content-between">
-                                    <form class="col-10" id="form_search_recording">
+                                    <form class="col-12" id="form_search_user">
                                         <div class="row">
-                                            <div class="col-4">
+                                            <div class="col-3">
                                                 <div class="form-group">
-                                                    <!-- <label>Extension</label> -->
+                                                    <label>Tên đăng nhập</label>
+                                                    <input type="text" class="form-control" name="username" />
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Họ và Tên</label>
+                                                    <input type="text" class="form-control" name="fullname" />
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Extension</label>
                                                     <input type="text" class="form-control" name="extension" />
                                                 </div>
                                             </div>
-                                            <div class="col-1">
-                                                <button type="button"
-                                                    class="form-control btn btn-primary btn-circle btn-md" id="search">
-                                                    <i class="fas fa-search p-0"></i>
-                                                </button>
+                                            <div class="col-3 d-inline-flex">
+                                                <div class="col-3">
+                                                    <label></label>
+                                                    <button type="button"
+                                                        class="form-control btn btn-primary btn-circle" id="searchUser">
+                                                        <i class="fas fa-search p-0"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="col-7">
+                                                    <label></label>
+                                                    <button type="button" class="form-control btn btn-primary"
+                                                        data-toggle="modal" data-target="#modalUser">Thêm mới <i
+                                                            class="fa fa-plus p-0 ml-1" aria-hidden="true"></i></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </form>
-                                    <button type="button" class="form-control btn btn-primary ml-5" data-toggle="modal"
-                                        data-target="#myModal">Thêm mới <i class="fa fa-plus p-0 ml-1"
-                                            aria-hidden="true"></i></button>
                                 </div>
-
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
                                 <table id="example2" class="table table-bordered table-hover">
                                     <thead>
                                         <tr>
-                                            <th class="text-center">Rendering engine</th>
-                                            <th class="text-center">Browser</th>
-                                            <th class="text-center">Platform(s)</th>
-                                            <th class="text-center">Engine version</th>
-                                            <th class="text-center">CSS grade</th>
+                                            <th class="text-center">Họ và Tên</th>
+                                            <th class="text-center">Tên đăng nhập</th>
+                                            <th class="text-center">Extension</th>
+                                            <th class="text-center">Nhóm</th>
+                                            <th class="text-center">Ngày tạo</th>
+                                            <th class="text-center">Người tạo</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Trident</td>
-                                            <td>Internet
-                                                Explorer 4.0
-                                            </td>
-                                            <td>Win 95+</td>
-                                            <td> 4</td>
-                                            <td>X</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Trident</td>
-                                            <td>Internet
-                                                Explorer 5.0
-                                            </td>
-                                            <td>Win 95+</td>
-                                            <td>5</td>
-                                            <td>C</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Trident</td>
-                                            <td>Internet
-                                                Explorer 5.5
-                                            </td>
-                                            <td>Win 95+</td>
-                                            <td>5.5</td>
-                                            <td>A</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Trident</td>
-                                            <td>Internet
-                                                Explorer 6
-                                            </td>
-                                            <td>Win 98+</td>
-                                            <td>6</td>
-                                            <td>A</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Trident</td>
-                                            <td>Internet Explorer 7</td>
-                                            <td>Win XP SP2+</td>
-                                            <td>7</td>
-                                            <td>A</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Trident</td>
-                                            <td>AOL browser (AOL desktop)</td>
-                                            <td>Win XP</td>
-                                            <td>6</td>
-                                            <td>A</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Gecko</td>
-                                            <td>Firefox 1.0</td>
-                                            <td>Win 98+ / OSX.2+</td>
-                                            <td>1.7</td>
-                                            <td>A</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Gecko</td>
-                                            <td>Firefox 1.5</td>
-                                            <td>Win 98+ / OSX.2+</td>
-                                            <td>1.8</td>
-                                            <td>A</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Gecko</td>
-                                            <td>Firefox 2.0</td>
-                                            <td>Win 98+ / OSX.2+</td>
-                                            <td>1.8</td>
-                                            <td>A</td>
-                                        </tr>
+                                    <tbody id="tableBody">
                                     </tbody>
                                     <tfoot>
                                         <tr>
-                                            <th>Rendering engine</th>
-                                            <th>Browser</th>
-                                            <th>Platform(s)</th>
-                                            <th>Engine version</th>
-                                            <th>CSS grade</th>
+                                            <th class="text-center">Họ và Tên</th>
+                                            <th class="text-center">Tên đăng nhập</th>
+                                            <th class="text-center">Extension</th>
+                                            <th class="text-center">Nhóm</th>
+                                            <th class="text-center">Ngày tạo</th>
+                                            <th class="text-center">Người tạo</th>
                                         </tr>
                                     </tfoot>
                                 </table>
+                            </div>
+                            <div class="card-footer text-center">
+                                <div class="col-12 d-flex justify-content-center" id="paging_table">
+                                </div>
                             </div>
                             <!-- /.card-body -->
                         </div>
@@ -144,7 +97,7 @@
 </div>
 
 <!-- /.modal -->
-<div class="modal fade" id="myModal">
+<div class="modal fade" id="modalUser">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -159,20 +112,20 @@
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Họ và tên đệm</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" />
+                                <input type="text" class="form-control" id="firstname" name="firstname" />
                             </div>
                         </div>
                         <div class="col-6">
                             <div class="form-group">
                                 <label>Tên</label>
-                                <input type="text" class="form-control" id="lastName" name="lastName" />
+                                <input type="text" class="form-control" id="lastname" name="lastname" />
                             </div>
                         </div>
                     </div>
                     <div>
                         <div class="form-group">
                             <label>Tên đăng nhập</label>
-                            <input type="text" class="form-control" id="userName" name="userName" />
+                            <input type="text" class="form-control" id="username" name="username" />
                         </div>
                     </div>
                     <div>
@@ -195,7 +148,7 @@
                     </div>
                     <div class="modal-footer justify-content-between">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-primary" id="btn_create_user">Lưu</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
                     </div>
                 </form>
             </div>

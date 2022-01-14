@@ -5,7 +5,10 @@ const router = express.Router();
 router.route('/')
     .get(usersController.index);
 
-// router.route('/list')
-//     .get(recordingController.getRecording);
+router.route('/insert')
+    .post(usersController.createUser);
+
+router.route('/getUsers')
+    .get(usersController.getUsers);
 
 module.exports = router;
