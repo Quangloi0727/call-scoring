@@ -70,7 +70,7 @@ $(function () {
     data.forEach((item) => {
       let audioHtml = '';
 
-      if(item.recordingFileName && item.recordingFileName !== '') {
+      if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
           <audio controls preload="none">
             <source  src="${item.recordingFileName}" type="audio/wav">

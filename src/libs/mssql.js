@@ -43,8 +43,7 @@ async function initialData(connection) {
         .insert()
         .into(UserSchema)
         .values({
-          firstName: 'admin',
-          lastname: 'admin',
+          fullname: 'admin',
           username: 'admin',
           extension: 0,
           password: '123',

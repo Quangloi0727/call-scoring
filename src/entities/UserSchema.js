@@ -1,5 +1,5 @@
 const EntitySchema = require('typeorm').EntitySchema;
-
+const moment = require('moment');
 module.exports = new EntitySchema({
   name: 'Users',
   columns: {
@@ -8,10 +8,7 @@ module.exports = new EntitySchema({
       type: 'int',
       generated: true,
     },
-    firstName: {
-      type: 'varchar'
-    },
-    lastname: {
+    fullname: {
       type: 'varchar'
     },
     username: {
@@ -22,6 +19,14 @@ module.exports = new EntitySchema({
     },
     password: {
       type: 'varchar'
+    },
+    createAt: {
+      type: 'datetime',
+      default: moment(Date.now()).format('DD/MM/YYYY HH:mm:ss')
+    },
+    createBy: {
+      type: 'varchar',
+      default: 'admin'
     },
     role: {
       type: 'bit',
