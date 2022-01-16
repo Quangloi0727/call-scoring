@@ -1,0 +1,14 @@
+{
+  "type": "mssql",
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "pxt@4321",
+  "database": "mcredit_recording",
+  "entities": ["src/entities/*.js"],
+  "migrations": ["src/migrations/*.js"],
+  "cli": {
+    "entitiesDir": "src/entities",
+    "migrationsDir": "src/migrations"
+  }
+}

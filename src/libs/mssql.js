@@ -1,5 +1,4 @@
 const { createConnection } = require('typeorm');
-const CallDetailRecordingSchema = require('../entities/CallDetailRecordSchema');
 const UserSchema = require('../entities/UserSchema');
 
 require('localenv');
@@ -14,7 +13,6 @@ module.exports = async function () {
       password: process.env.MSSQL_PASS,
       database: process.env.MSSQL_DATABASE,
       entities: [
-        CallDetailRecordingSchema,
         UserSchema
       ],
     });

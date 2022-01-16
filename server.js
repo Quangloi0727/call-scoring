@@ -3,7 +3,7 @@ require('localenv');
 const AppError = require('./src/utils/appError');
 const path = require('path');
 const CRUDFlle = require('./src/utils/crud.file');
-const mssqlConnection = require('./src/libs/mssql');
+const models = require('./src/models');
 
 let pathFileConfig = path.normalize(path.join(__dirname, 'config', 'conf.json'));
 
@@ -22,7 +22,13 @@ process.on('uncaughtException', err => {
   process.exit(1);
 });
 
-mssqlConnection();
+models.sequelize.sync().then(function (connection) {
+  console.log('connect to MSSQL success!')
+}).catch(function (error) {
+  console.log(`------- error ------- connect to MSSQL fail!`);
+  console.log(error);
+  console.log(`------- error ------- connect to MSSQL fail!`);
+});
 
 const server = require('./src/libs/express')();
 

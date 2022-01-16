@@ -1,12 +1,13 @@
 
-const { getManager } = require('typeorm');
 const pagination = require('pagination');
+const { QueryTypes } = require('sequelize');
 const moment = require('moment');
 const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
+const model = require('../models');
 
 const titlePage = 'Danh sách cuộc gọi';
 
@@ -66,8 +67,8 @@ exports.getRecording = async (req, res, next) => {
     `;
 
     const [recordResult, totalData] = await Promise.all([
-      await getManager().query(queryData),
-      await getManager().query(queryCountData),
+      await model.sequelize.query(queryData, { type: QueryTypes.SELECT }),
+      await model.sequelize.query(queryCountData, { type: QueryTypes.SELECT }),
     ]);
 
     let paginator = new pagination.SearchPaginator({
@@ -78,7 +79,7 @@ exports.getRecording = async (req, res, next) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult || [],
+      data: recordResult && handleData(recordResult) || [],
       paging: paginator.getPaginationData()
     });
   } catch (error) {
@@ -106,13 +107,13 @@ function handleData(data) {
 
 async function exportExcelHandle(res, startTime, endTime, query) {
   try {
-    const dataResult = await getManager().query(`
+    const dataResult = await model.sequelize.query(`
       SELECT * FROM call_detail_records records
       WHERE records.origTime >= ${Number(startTime)} 
         AND records.origTime <= ${Number(endTime)}
         ${query}
       ORDER BY records.origTime DESC
-    `);
+    `, { type: QueryTypes.SELECT });
 
     const dataHandleResult = handleData(dataResult);
 

@@ -27,8 +27,10 @@
     "promise": "^8.1.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.5",
+    "sequelize": "^6.13.0",
     "serve-favicon": "^2.5.0",
     "socket.io": "^3.0.4",
+    "tedious": "^14.0.0",
     "typeorm": "^0.2.41",
     "util": "^0.12.3",
     "winston": "^3.2.1",
@@ -36,7 +38,8 @@
     "zip-folder": "^1.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.2",
+    "sequelize-cli": "^6.4.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
