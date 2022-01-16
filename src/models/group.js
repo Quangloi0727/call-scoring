@@ -32,6 +32,7 @@
 // };
 
 const { Model, DataTypes } = require('sequelize');
+const UserModel = require('./group');
 
 class Group extends Model {
   static init(sequelize) {
@@ -44,14 +45,22 @@ class Group extends Model {
           type: DataTypes.STRING
         },
         created: {
-          type: DataTypes.INTEGER
+          type: DataTypes.INTEGER,
+          references: {
+            model: 'Users',
+            key: 'id'
+          }
         }
       },
       {
         sequelize,
         modelName: 'Groups'
-      }
+      },
     );
+  }
+
+  static associate(models) {
+    models.Group.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' })
   }
 }
 
