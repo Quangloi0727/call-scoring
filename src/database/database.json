@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "sa",
+    "password": "123456@A",
+    "database": "mcredit_recording",
+    "host": "172.16.88.216",
+    "dialect": "mssql"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "database_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}

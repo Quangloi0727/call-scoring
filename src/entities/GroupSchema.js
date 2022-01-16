@@ -31,7 +31,7 @@ module.exports = new EntitySchema({
       target: 'Users',
       type: 'one-to-many',
       joinTable: true,
-      cascade: true
+      cascade: true,
     }
   }
 });

@@ -1,8 +1,7 @@
 const passport = require('passport');
-const { getRepository } = require('typeorm');
 const LocalStrategy = require('passport-local').Strategy;
 const BasicStrategy = require('passport-http').BasicStrategy;
-const UserSchema = require('../entities/UserSchema');
+const UserModel = require('../models/user');
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -10,8 +9,7 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const userRepository = getRepository(UserSchema);
-    const user = await userRepository.findOne({ id: Number(id) });
+    const user = await UserModel.findOne({ id: Number(id) });
     return done(null, user);
   } catch (error) {
     console.log(`------- error ------- deserializeUser`);
@@ -26,8 +24,7 @@ passport.use('local-login', new LocalStrategy({
   passwordField: 'password',
 }, async (userName, password, done) => {
   try {
-    const userRepository = getRepository(UserSchema);
-    const user = await userRepository.findOne({ username: userName, password: password });
+    const user = await UserModel.findOne({ username: userName, password: password });
     if (!user) {
       const error = new Error();
       error.message = "Tài khoản hoặc mật khẩu không đúng!"
@@ -46,8 +43,7 @@ passport.use('local-login', new LocalStrategy({
 passport.use(new BasicStrategy(
   async function (userName, password, done) {
     try {
-      const userRepository = getRepository(UserSchema);
-      const user = await userRepository.findOne({ username: userName, password: password });
+      const user = await UserModel.findOne({ username: userName, password: password });
 
       if (!user) {
         const error = new Error();
