@@ -12,6 +12,7 @@ $(function () {
   });
 
   $btnExportExcel.on('click', function () {
+    console.log("aaaaaaaaaa");
     return findData(null, true);
   });
 
@@ -49,7 +50,7 @@ $(function () {
         $('.page-loader').hide();
 
         if (exportExcel) {
-          if(!result || !result.linkFile || result.linkFile == '') return;
+          if (!result || !result.linkFile || result.linkFile == '') return;
           return downloadFromUrl(result.linkFile);
         }
 
@@ -69,7 +70,7 @@ $(function () {
     data.forEach((item) => {
       let audioHtml = '';
 
-      if(item.recordingFileName && item.recordingFileName !== '') {
+      if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
           <audio controls preload="none">
             <source  src="${item.recordingFileName}" type="audio/wav">

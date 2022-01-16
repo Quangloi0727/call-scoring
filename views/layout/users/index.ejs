@@ -1,0 +1,160 @@
+<script>
+    var dataUser = JSON.parse('<%- JSON.stringify(data) %>');
+    var paginator = JSON.parse('<%- JSON.stringify(paginator) %>');
+</script>
+<div class="wrapper">
+    <div>
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header row">
+                                <div class="col-12 d-flex justify-content-between">
+                                    <form class="col-12" id="form_search_user">
+                                        <div class="row">
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Tên đăng nhập</label>
+                                                    <input type="text" class="form-control" name="username" />
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Họ và Tên</label>
+                                                    <input type="text" class="form-control" name="fullname" />
+                                                </div>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="form-group">
+                                                    <label>Extension</label>
+                                                    <input type="text" class="form-control" name="extension" />
+                                                </div>
+                                            </div>
+                                            <div class="col-3 d-inline-flex">
+                                                <div class="col-3">
+                                                    <label></label>
+                                                    <button type="button"
+                                                        class="form-control btn btn-primary btn-circle" id="searchUser">
+                                                        <i class="fas fa-search p-0"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="col-7">
+                                                    <label></label>
+                                                    <button type="button" class="form-control btn btn-primary"
+                                                        data-toggle="modal" data-target="#modalUser">Thêm mới <i
+                                                            class="fa fa-plus p-0 ml-1" aria-hidden="true"></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <!-- /.card-header -->
+                            <div class="card-body">
+                                <table id="example2" class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center">Họ và Tên</th>
+                                            <th class="text-center">Tên đăng nhập</th>
+                                            <th class="text-center">Extension</th>
+                                            <th class="text-center">Nhóm</th>
+                                            <th class="text-center">Ngày tạo</th>
+                                            <th class="text-center">Người tạo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tableBody">
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th class="text-center">Họ và Tên</th>
+                                            <th class="text-center">Tên đăng nhập</th>
+                                            <th class="text-center">Extension</th>
+                                            <th class="text-center">Nhóm</th>
+                                            <th class="text-center">Ngày tạo</th>
+                                            <th class="text-center">Người tạo</th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="card-footer text-center">
+                                <div class="col-12 d-flex justify-content-center" id="paging_table">
+                                </div>
+                            </div>
+                            <!-- /.card-body -->
+                        </div>
+                        <!-- /.card -->
+                        <!-- /.card -->
+                    </div>
+                    <!-- /.col -->
+                </div>
+                <!-- /.row -->
+            </div>
+            <!-- /.container-fluid -->
+        </section>
+        <!-- /.content -->
+    </div>
+</div>
+
+<!-- /.modal -->
+<div class="modal fade" id="modalUser">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Tạo người dùng</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="form_input_user">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Họ và tên đệm</label>
+                                <input type="text" class="form-control" id="firstname" name="firstname" />
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <label>Tên</label>
+                                <input type="text" class="form-control" id="lastname" name="lastname" />
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>Tên đăng nhập</label>
+                            <input type="text" class="form-control" id="username" name="username" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>Extension</label>
+                            <input type="text" class="form-control" id="extension" name="extension" />
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>Mật khẩu</label>
+                            <input class="form-control" type="password" id="password" name="password">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="form-group">
+                            <label>Xác nhận mật khẩu</label>
+                            <input class="form-control" type="password" id="repeat_password" name="repeat_password">
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
