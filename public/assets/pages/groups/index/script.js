@@ -1,17 +1,13 @@
 $(function () {
-  const $formCreateUser = $('#form_input_user');
-  const $modalCreateUser = $('#modalUser');
+  const $formCreateGroup = $('#form_input_group');
+  const $formSearchGroup = $('#form_search_groups');
+  const $buttonSearchGroup = $('#search_group');
+  const $modalGroup = $('#modal_group');
   const $loadingData = $('.page-loader');
-  const $buttonSearchUser = $('#searchUser');
-  const $formSearchUser = $('#form_search_user');
-
-  $.validator.addMethod("pwcheck", function (value) {
-    return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value);
-  });
 
   $.validator.setDefaults({
     submitHandler: function () {
-      let inputValue = $formCreateUser.serializeArray();
+      let inputValue = $formCreateGroup.serializeArray();
       let bodyData = {};
 
       inputValue.forEach((el) => {
@@ -24,7 +20,7 @@ $(function () {
 
       $.ajax({
         type: 'POST',
-        url: '/users/insert',
+        url: '/groups/insert',
         data: bodyData,
         dataType: "text",
         success: function () {
@@ -35,65 +31,23 @@ $(function () {
         error: function (error) {
           $loadingData.hide();
 
-          return toastr.error(error.message);
+          return toastr.error(error.responseText.message);
         },
       });
     }
   });
 
   // validate form 
-  const validator = $formCreateUser.validate({
+  const validator = $formCreateGroup.validate({
     rules: {
-      firstname: {
+      name: {
         required: true,
-        maxlength: 30,
       },
-      lastname: {
-        required: true,
-        maxlength: 30,
-      },
-      userame: {
-        required: true,
-        maxlength: 30,
-      },
-      extension: {
-        required: true,
-        number: true
-      },
-      password: {
-        required: true,
-        pwcheck: true
-      },
-      repeat_password: {
-        required: true,
-        equalTo: "#password"
-      }
     },
     messages: {
-      firstname: {
-        required: "Không được để trống Họ và Tên đệm",
-        maxlength: "Số kí tự đối đa là 30/30"
+      name: {
+        required: "Tên nhóm không được để trống!",
       },
-      lastname: {
-        required: "Không được để trống Tên",
-        maxlength: "Số kí tự đối đa là 30/30"
-      },
-      userame: {
-        required: "Không được để trống Tên đăng nhập",
-        maxlength: "Số kí tự đối đa là 30/30"
-      },
-      extension: {
-        required: "Không được để trống extension",
-        number: "chỉ nhập số"
-      },
-      password: {
-        required: "Không được để trống password",
-        pwcheck: "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ HOA, chữ thường và số"
-      },
-      repeat_password: {
-        required: "Không được để trống",
-        equalTo: "Mật khẩu không khớp"
-      }
     },
     errorElement: 'span',
     errorPlacement: function (error, element) {
@@ -115,24 +69,24 @@ $(function () {
   });
 
   // event modal
-  $modalCreateUser.on('hidden.bs.modal', function (e) {
-    $formCreateUser.trigger("reset");
+  $modalGroup.on('hidden.bs.modal', function (e) {
+    $formCreateGroup.trigger("reset");
   })
 
-  $modalCreateUser.on('shown.bs.modal', function (e) {
-    $formCreateUser.trigger("reset");
+  $modalGroup.on('shown.bs.modal', function (e) {
+    $formCreateGroup.trigger("reset");
     validator.resetForm();
   })
 
   //event tìm kiếm
-  $buttonSearchUser.on('click', function () {
+  $buttonSearchGroup.on('click', function () {
     const pageNumber = 1;
     return findData(pageNumber);
   });
 
   function findData(page) {
     let queryData = {};
-    let inputValue = $formSearchUser.serializeArray();
+    let inputValue = $formSearchGroup.serializeArray();
 
     inputValue.forEach((el) => {
       if (el.value && el.value !== '') {
@@ -146,7 +100,7 @@ $(function () {
 
     $.ajax({
       type: 'GET',
-      url: '/users/getUsers?' + $.param(queryData),
+      url: '/groups/getGroups?' + $.param(queryData),
       cache: 'false',
       success: function (result) {
         $loadingData.hide();
@@ -157,7 +111,7 @@ $(function () {
       error: function (error) {
         $loadingData.hide();
 
-        return toastr.error(error.message);
+        return toastr.error(error.responseText.message);
       },
     });
   }
@@ -166,18 +120,14 @@ $(function () {
   function createTable(data) {
     let html = '';
 
-    console.log(`------- data ------- `);
-    console.log(data);
-    console.log(`------- data ------- `);
-
     data.forEach((item) => {
       html += `
         <tr>
-          <td class="text-center">${item.fullName}</td>
-          <td class="text-center">${item.userName}</td>
-          <td class="text-center">${item.extension}</td>
-          <td class="text-center">${item.group ? item.group : ''}</td>
-          <td class="text-center">${moment(item.createAt).format('DD/MM/YYYY HH:mm:ss')}</td>
+          <td class="text-center">${item.name}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center">${item.description || ''}</td>
+          <td class="text-center">${moment(item.createAt).format('HH:mm:ss DD/MM/YYYY')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>
         </tr>
       `;
@@ -254,5 +204,5 @@ $(function () {
     return $('#paging_table').html(pagingHtml);
   };
 
-  findData(1);
+  findData(1)
 });

@@ -66,6 +66,11 @@ function initServer() {
   // Router
   app.use('/', router);
 
+  app.use((req, res, next) => {
+    res.locals.user = req.user.dataValues;
+    next();
+  });
+
   app.use("*", (req, res, next) => {
     const err = new ResError(ERR_404.code, `Page ${ERR_404.message}`);
     next(err, req, res, next);

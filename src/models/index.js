@@ -57,9 +57,11 @@ const models = {
   Group: GroupModel.init(sequelize),
 }
 
-Object.values(models)
-  .filter(model => typeof model.associate === "function")
-  .forEach(model => model.associate(models));
+Object.keys(models).forEach(model => {
+  if (typeof models[model].associate === "function") {
+    models[model].associate(models)
+  }
+});
 
 db = {
   ...models,

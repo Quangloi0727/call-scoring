@@ -1,0 +1,117 @@
+<script>
+</script>
+<div class="wrapper">
+  <div>
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header row">
+                <div class="col-12 d-flex justify-content-between">
+                  <form class="col-12" id="form_search_groups">
+                    <div class="row">
+                      <div class="col-3">
+                        <div class="form-group">
+                          <input type="text" class="form-control" name="name" placeholder="Tìm kiếm..." />
+                        </div>
+                      </div>
+                      <div class="col-3 d-inline-flex">
+                        <div class="col-3">
+                          <button type="button" class="form-control btn btn-primary btn-circle" id="search_group">
+                            <i class="fas fa-search p-0"></i>
+                          </button>
+                        </div>
+                        <div class="col-7">
+                          <button type="button" class="form-control btn btn-primary" data-toggle="modal"
+                            data-target="#modal_group">
+                            Thêm mới
+                            <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <table id="example2" class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th class="text-center">Tên nhóm</th>
+                      <th class="text-center">Giám sát</th>
+                      <th class="text-center">Số thành viên</th>
+                      <th class="text-center">Mô tả</th>
+                      <th class="text-center">Ngày tạo</th>
+                      <th class="text-center">Người tạo</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tableBody"></tbody>
+                </table>
+              </div>
+              <div class="card-footer text-center">
+                <div class="col-12 d-flex justify-content-center" id="paging_table">
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>
+
+<!-- /.modal -->
+<div class="modal fade" id="modal_group">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Tạo nhóm</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_input_group">
+          <div>
+            <div class="form-group">
+              <label>Tên nhóm</label>
+              <input type="text" class="form-control" id="name" name="name" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Giám sát</label>
+            <select class="form-control" name="leader">
+              <option>option 1</option>
+              <option>option 2</option>
+              <option>option 3</option>
+              <option>option 4</option>
+              <option>option 5</option>
+            </select>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>Mô tả</label>
+              <textarea class="form-control" name="description" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->

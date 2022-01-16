@@ -37,6 +37,7 @@
 // };
 
 const { Model, DataTypes } = require('sequelize');
+const GroupModel = require('./group');
 
 class User extends Model {
   static init(sequelize) {
@@ -51,15 +52,25 @@ class User extends Model {
         userName: {
           type: DataTypes.STRING,
         },
+        fullName: {
+          type: DataTypes.STRING,
+        },
         extension: {
           type: DataTypes.INTEGER
         },
         password: {
-          type: DataTypes.INTEGER
+          type: DataTypes.STRING
         },
         role: {
           type: DataTypes.INTEGER,
-          defaultValue: 0
+          defaultValue: 0,
+        },
+        created: {
+          type: DataTypes.INTEGER,
+          references: {
+            model: 'Users',
+            key: 'id'
+          }
         }
       },
       {
@@ -67,6 +78,12 @@ class User extends Model {
         modelName: 'Users'
       }
     );
+  }
+
+  static associate(models) {
+    models.User.hasMany(models.Group, { foreignKey: 'created' });
+    models.User.hasMany(models.User, { foreignKey: 'created' });
+    models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' });
   }
 }
 

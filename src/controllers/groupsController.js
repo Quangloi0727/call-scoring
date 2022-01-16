@@ -2,17 +2,18 @@ const { Op } = require('sequelize');
 const pagination = require('pagination');
 const moment = require('moment');
 const UserModel = require('../models/user');
+const GroupModel = require('../models/group');
 const {
   SUCCESS_200,
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 
-const titlePage = 'Danh sách người dùng';
+const titlePage = 'Danh sách nhóm';
 
 exports.index = async (req, res, next) => {
   try {
     return res.render('pages/index', {
-      page: 'users/index',
+      page: 'groups/index',
       title: titlePage,
       titlePage: titlePage,
     });
@@ -24,33 +25,27 @@ exports.index = async (req, res, next) => {
   }
 }
 
-exports.getUsers = async (req, res, next) => {
+exports.getGroups = async (req, res, next) => {
   try {
-    const { page, extension, username, fullname } = req.query;
-    const limit = 25;
+    const { page, name } = req.query;
+    const limit = 10;
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = {};
 
-    if (username) query.userName = { [Op.substring]: username };
-    if (fullname) query.fullName = { [Op.substring]: fullname };
-    if (extension) query.extension = { [Op.substring]: extension };
-
-    const [recordResult, total] = await Promise.all([
-      UserModel.findAll({
+    const [groupsResult, total] = await Promise.all([
+      GroupModel.findAll({
         where: {
           ...query,
-          [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
         },
         order: [['id', 'DESC']],
         offset: offset,
         limit: limit,
         include: [{ model: UserModel, as: 'userCreate' }]
       }),
-      UserModel.count({
+      GroupModel.count({
         where: {
           ...query,
-          [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
         },
       })
     ]);
@@ -63,7 +58,7 @@ exports.getUsers = async (req, res, next) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult || [],
+      data: groupsResult || [],
       paginator: paginator.getPaginationData(),
     });
   } catch (error) {
@@ -74,22 +69,13 @@ exports.getUsers = async (req, res, next) => {
   }
 }
 
-exports.createUser = async (req, res, next) => {
+exports.createGroup = async (req, res) => {
   try {
     const data = req.body
 
-    if (data.password !== data.repeat_password) {
-      throw new Error('Mật khẩu không trùng khớp!');
-    }
-
-    data.fullName = `${data.firstName} ${data.lastName}`;
-    data.extension = Number(data.extension);
-    data.role = 0;
     data.created = req.user.id;
-    data.createAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss');
-    data.updatedAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss');
 
-    await UserModel.create(data);
+    await GroupModel.create(data);
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
