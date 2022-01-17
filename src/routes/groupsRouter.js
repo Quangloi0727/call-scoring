@@ -11,4 +11,7 @@ router.route('/insert')
 router.route('/getGroups')
   .get(groupsController.getGroups);
 
+router.route('/detail/:id')
+  .get(groupsController.detail);
+
 module.exports = router;
