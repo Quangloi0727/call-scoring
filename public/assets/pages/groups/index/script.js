@@ -119,7 +119,7 @@ $(function () {
   // function 
   function createTable(data) {
     let html = '';
-
+    console.log(data);
     data.forEach((item) => {
       html += `
         <tr>

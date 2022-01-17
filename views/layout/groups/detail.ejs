@@ -2,17 +2,199 @@
 </script>
 <div class="wrapper">
   <div>
-    <section class="content">
+    <section class="content-header">
       <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="#">
+                  <%- "< Quản lí nhóm" %>
+                </a></li>
+            </ol>
           </div>
-          <!-- /.col -->
         </div>
-        <!-- /.row -->
-      </div>
-      <!-- /.container-fluid -->
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1>
+              <%= title ? title :'' %>
+            </h1>
+          </div>
+          <div class="col-sm-4 d-flex">
+            <div class="col-sm-4">
+              <button type="button" class="btn btn-primary float-sm-right" data-toggle="modal"
+                data-target="#modal_group">
+                <i class="fa fa-pencil-alt p-0 mr-2" aria-hidden="true"></i>Sửa</button>
+            </div>
+            <div class="col-sm-4">
+              <button type="button" class="btn btn-danger float-sm-left" data-toggle="modal"
+                data-target="#modal_del_group">
+                <i class="fa fa-trash p-0 mr-2" aria-hidden="true"></i>Xóa</button>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2 border-bottom border-dark">
+          <div class="col-12">
+            <label class="text-primary">Thông tin chung</label>
+            <p class="text-muted">Mô tả</p>
+            <p class="" id="description">adfasdfa</p>
+            <p class="text-muted">Người tạo</p>
+            <p class="" id="created">admin</p>
+            <p class="text-muted">Ngày tạo</p>
+            <p class="" id="createAt">adfasdfa</p>
+            <p class="text-muted">Ngày cập nhật lần cuối</p>
+            <p class="" id="updateAt"></p>
+          </div>
+        </div>
+        <div class="row mb-2 ">
+          <div class="col-sm-12">
+            <label class="text-primary">Thêm thành viên</label>
+          </div>
+          <div class="col-sm-6 d-flex form-group">
+            <div class="col-sm-8">
+              <input type="text" class="form-control" id="username" name="userName" />
+            </div>
+            <div class="col-sm-2">
+              <button type="button" class="btn btn-block btn-primary float-sm-left">Thêm</button>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-sm-12">
+            <label class="text-primary">Danh sách thành viên</label>
+          </div>
+          <div class="col-sm-6 d-flex form-group">
+            <div class="col-sm-8 input-group">
+              <div class="input-group-append">
+                <button type="submit" class="btn btn-block btn-default">
+                  <i class="fa fa-search"></i>
+                </button>
+              </div>
+              <input type="search" class="form-control" placeholder="Tìm kiếm">
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2 d-flex">
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-3 ml-5 mt-2 border rounded border-primary d-flex ">
+            <div class="post">
+              <div class=" col-sm-12 d-flex user-block mt-2">
+                <div class="col-sm-11">
+                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
+                  <span class="mt-2 username">
+                    Con dog
+                  </span>
+                </div>
+                <div class="col-sm-1">
+                  <button type="button" class="btn float-right" data-toggle="tooltip" data-placement="top"
+                    title="Xóa Agent khỏi nhóm"><i class="fas fa-times"></i></button>
+                </div>
+                <!-- <span class="description">Shared publicly - 7:45 PM today</span> -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
   </div>
@@ -55,6 +237,43 @@
           <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
             <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div class="modal fade" id="modal_del_group">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Xóa Nhóm</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_input_group">
+          <div>
+            <div class="border-bottom border-dark">
+              <p>Nhóm <label>[Tên nhóm]</label> sẽ bị xóa</p>
+              <p> <label>[N người dùng]</label> sẽ bị gỡ khỏi nhóm</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <p>Vui lòng xác minh tài khoản quản trị</p>
+            <p class="text-muted">Tên đăng nhập</p>
+            <label>Admin</label>
+            <p class="text-muted">Mật khẩu</p>
+            <input class="form-control" type="password" id="password" name="password">
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-danger">Xóa nhóm</button>
           </div>
         </form>
       </div>

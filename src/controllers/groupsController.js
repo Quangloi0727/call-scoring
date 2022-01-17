@@ -8,10 +8,9 @@ const {
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 
-const titlePage = 'Danh sách nhóm';
-
 exports.index = async (req, res, next) => {
   try {
+    const titlePage = 'Danh sách nhóm';
     return res.render('pages/index', {
       page: 'groups/index',
       title: titlePage,
@@ -87,14 +86,15 @@ exports.createGroup = async (req, res) => {
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
-} 
+}
 
 exports.detail = async (req, res) => {
   try {
+    const titlePage = 'Chi tiết nhóm';
     return res.render('pages/index', {
       page: 'groups/detail',
       title: titlePage,
-      titlePage: titlePage,
+      titlePage: "",
     });
   } catch (error) {
     console.log(`------- error ------- `);
