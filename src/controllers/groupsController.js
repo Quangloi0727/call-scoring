@@ -88,3 +88,18 @@ exports.createGroup = async (req, res) => {
     return res.status(ERR_500.code).json({ message: error.message });
   }
 } 
+
+exports.detail = async (req, res) => {
+  try {
+    return res.render('pages/index', {
+      page: 'groups/detail',
+      title: titlePage,
+      titlePage: titlePage,
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+    return next(error);
+  }
+}
