@@ -1,43 +1,4 @@
-// 'use strict';
-// const {
-//   Model,
-//   DataTypes
-// } = require('sequelize');
-// module.exports = async (sequelize) => {
-//   class User extends Model {}
-
-//   User.init({
-//     firstName: {
-//       type: DataTypes.STRING
-//     },
-//     lastName: {
-//       type: DataTypes.STRING
-//     },
-//     userName: {
-//       type: DataTypes.STRING,
-//     },
-//     extension: {
-//       type: DataTypes.INTEGER
-//     },
-//     password: {
-//       type: DataTypes.INTEGER
-//     },
-//     role: {
-//       type: DataTypes.INTEGER,
-//       defaultValue: 0
-//     }
-//   }, {
-//     sequelize,
-//     modelName: 'User',
-//   });
-
-//   await User.sync({ force: true });
-
-//   return User;
-// };
-
 const { Model, DataTypes } = require('sequelize');
-const GroupModel = require('./group');
 
 class User extends Model {
   static init(sequelize) {
@@ -81,14 +42,14 @@ class User extends Model {
   }
 
   static associate(models) {
-    models.User.hasMany(models.Group, { foreignKey: 'created' });
+    models.User.hasMany(models.Team, { foreignKey: 'created' });
     models.User.hasMany(models.User, { foreignKey: 'created' });
     models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' });
   }
 }
 
 (async () => {
-  await User.sync({ force: true })
+  await User.sync({ force: true });
 });
 
 module.exports = User;

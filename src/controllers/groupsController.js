@@ -2,7 +2,7 @@ const { Op } = require('sequelize');
 const pagination = require('pagination');
 const moment = require('moment');
 const UserModel = require('../models/user');
-const GroupModel = require('../models/group');
+const TeamModel = require('../models/team');
 const {
   SUCCESS_200,
   ERR_500
@@ -34,7 +34,7 @@ exports.getGroups = async (req, res, next) => {
     let query = {};
 
     const [groupsResult, total] = await Promise.all([
-      GroupModel.findAll({
+      TeamModel.findAll({
         where: {
           ...query,
         },
@@ -43,7 +43,7 @@ exports.getGroups = async (req, res, next) => {
         limit: limit,
         include: [{ model: UserModel, as: 'userCreate' }]
       }),
-      GroupModel.count({
+      TeamModel.count({
         where: {
           ...query,
         },
@@ -75,7 +75,7 @@ exports.createGroup = async (req, res) => {
 
     data.created = req.user.id;
 
-    await GroupModel.create(data);
+    await TeamModel.create(data);
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
@@ -87,14 +87,21 @@ exports.createGroup = async (req, res) => {
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
-} 
+}
 
 exports.detail = async (req, res) => {
   try {
+    const { id } = req.param;
+
+    const team = await TeamModel.findOne(
+      { id: id },
+    );
+
     return res.render('pages/index', {
       page: 'groups/detail',
       title: titlePage,
       titlePage: titlePage,
+      team: team
     });
   } catch (error) {
     console.log(`------- error ------- `);
