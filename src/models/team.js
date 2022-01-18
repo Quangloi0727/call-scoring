@@ -30,8 +30,4 @@ class Team extends Model {
   }
 }
 
-(async () => {
-  await Team.sync({ force: true })
-});
-
 module.exports = Team;
