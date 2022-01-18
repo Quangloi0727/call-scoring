@@ -122,7 +122,9 @@ $(function () {
     data.forEach((item) => {
       html += `
         <tr>
-          <td class="text-center">${item.name}</td>
+          <td class="text-center">
+            <a href=/groups/detail/${item.id}>${item.name}</a>
+          </td>
           <td class="text-center"></td>
           <td class="text-center"></td>
           <td class="text-center">${item.description || ''}</td>
