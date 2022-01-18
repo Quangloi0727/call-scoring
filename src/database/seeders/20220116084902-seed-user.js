@@ -14,30 +14,7 @@ module.exports = {
           password: '123',
           created: 1,
           role: 1,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          firstName: 'Phạm Xuân',
-          lastName: 'Tình',
-          userName: 'tinh1',
-          fullName: 'Phạm Xuân Tình',
-          extension: 0,
-          password: 'Pxt@4321',
-          created: 1,
-          role: 0,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
-        {
-          firstName: 'Phạm Minh',
-          lastName: 'Tuân',
-          userName: 'tuan1',
-          fullName: 'Phạm Minh Tuân',
-          extension: 0,
-          password: 'Pxt@4321',
-          created: 1,
-          role: 0,
+          isActive: 1,
           createdAt: new Date(),
           updatedAt: new Date()
         },

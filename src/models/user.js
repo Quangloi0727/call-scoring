@@ -26,6 +26,9 @@ class User extends Model {
           type: DataTypes.INTEGER,
           defaultValue: 0,
         },
+        isActive: {
+          type: DataTypes.INTEGER,
+        },
         created: {
           type: DataTypes.INTEGER,
           references: {
@@ -47,9 +50,5 @@ class User extends Model {
     models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' });
   }
 }
-
-(async () => {
-  await User.sync({ force: true });
-});
 
 module.exports = User;

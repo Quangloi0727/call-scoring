@@ -24,7 +24,7 @@ class AgentTeamMember extends Model {
       },
       {
         sequelize,
-        modelName: 'Teams'
+        modelName: 'AgentTeamMembers'
       },
     );
   }
@@ -33,9 +33,5 @@ class AgentTeamMember extends Model {
 
   }
 }
-
-(async () => {
-  await AgentTeamMember.sync({ force: true })
-});
 
 module.exports = AgentTeamMember;
