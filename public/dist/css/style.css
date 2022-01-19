@@ -28,3 +28,8 @@
 .page-loader {
   display: none;
 }
+
+button.btn.dropdown-toggle.btn-light {
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+}

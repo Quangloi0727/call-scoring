@@ -1,4 +1,5 @@
 <script>
+  var users = JSON.parse('<%- JSON.stringify(users)%>');
 </script>
 <div class="wrapper">
   <div>
@@ -84,23 +85,18 @@
           <div>
             <div class="form-group">
               <label>Tên nhóm</label>
-              <input type="text" class="form-control" id="name" name="name" />
+              <input type="text" class="form-control input" id="name" name="name" />
             </div>
           </div>
           <div class="form-group">
             <label>Giám sát</label>
-            <select class="form-control" name="leader">
-              <option>option 1</option>
-              <option>option 2</option>
-              <option>option 3</option>
-              <option>option 4</option>
-              <option>option 5</option>
+            <select class="form-control selectpicker input" data-live-search="true" name="leader" id="leader" multiple>
             </select>
           </div>
           <div>
             <div class="form-group">
               <label>Mô tả</label>
-              <textarea class="form-control" name="description" rows="3"></textarea>
+              <textarea class="form-control input" name="description" rows="3"></textarea>
             </div>
           </div>
           <div class="modal-footer justify-content-between">

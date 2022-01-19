@@ -171,12 +171,22 @@ $(function () {
     console.log(`------- data ------- `);
 
     data.forEach((item) => {
+      let teamHtml = '';
+      item.ofTeams.forEach(element => {
+        teamHtml += `
+          <a href="/groups/detail/${element.teamId}">
+            <u>${element.teamName}</u>
+            &nbsp;
+          </a>
+        `;
+      });
+
       html += `
         <tr>
           <td class="text-center">${item.fullName}</td>
           <td class="text-center">${item.userName}</td>
           <td class="text-center">${item.extension}</td>
-          <td class="text-center">${item.group ? item.group : ''}</td>
+          <td class="text-center">${teamHtml}</td>
           <td class="text-center">${moment(item.createAt).format('DD/MM/YYYY HH:mm:ss')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>
         </tr>

@@ -4,24 +4,23 @@ $(function () {
   const $buttonSearchGroup = $('#search_group');
   const $modalGroup = $('#modal_group');
   const $loadingData = $('.page-loader');
+  const $inputLeader = $('#form_input_group #leader');
+  const $inputName = $('#form_input_group #name');
 
   $.validator.setDefaults({
     submitHandler: function () {
-      let inputValue = $formCreateGroup.serializeArray();
-      let bodyData = {};
-
-      inputValue.forEach((el) => {
-        if (el.value && el.value !== '') {
-          bodyData[el.name] = el.value;
-        }
-      });
+      let filter = _.chain($('#form_input_group .input')).reduce(function (memo, el) {
+        let value = $(el).val();
+        if (value != '' && value != null) memo[el.name] = value;
+        return memo;
+      }, {}).value();
 
       $loadingData.show();
 
       $.ajax({
         type: 'POST',
         url: '/groups/insert',
-        data: bodyData,
+        data: filter,
         dataType: "text",
         success: function () {
           $loadingData.hide();
@@ -31,7 +30,7 @@ $(function () {
         error: function (error) {
           $loadingData.hide();
 
-          return toastr.error(error.responseText.message);
+          return toastr.error(JSON.parse(error.responseText).message);
         },
       });
     }
@@ -43,12 +42,19 @@ $(function () {
       name: {
         required: true,
       },
+      leader: {
+        required: true,
+      }
     },
     messages: {
       name: {
         required: "Tên nhóm không được để trống!",
       },
+      leader: {
+        required: "Giám sát không được để trống!",
+      }
     },
+    ignore: ":hidden",
     errorElement: 'span',
     errorPlacement: function (error, element) {
       error.addClass('invalid-feedback');
@@ -76,12 +82,43 @@ $(function () {
   $modalGroup.on('shown.bs.modal', function (e) {
     $formCreateGroup.trigger("reset");
     validator.resetForm();
+
+    let leaderHtml = '';
+    users.forEach(user => {
+      leaderHtml += `
+        <option value="${user.id}">
+          ${user.fullName} (${user.userName})
+        </option>
+      `;
+    });
+
+    $inputLeader.html(leaderHtml);
+    return $inputLeader.selectpicker('refresh');
   })
 
   //event tìm kiếm
   $buttonSearchGroup.on('click', function () {
     const pageNumber = 1;
     return findData(pageNumber);
+  });
+
+  $inputName.bind('focusout', function (e) {
+    e.preventDefault();
+    const value = $(this).val();
+
+    if (!value || value == '') return;
+
+    $.ajax({
+      type: 'GET',
+      url: '/groups/search?name=' + value,
+      cache: 'false',
+      success: function () {
+        return validator.showErrors({
+          'name': 'Tên nhóm đã được sử dụng!'
+        });
+      },
+    });
+    console.log('aa: ', value);
   });
 
   function findData(page) {
@@ -111,7 +148,7 @@ $(function () {
       error: function (error) {
         $loadingData.hide();
 
-        return toastr.error(error.responseText.message);
+        return toastr.error(JSON.parse(error.responseText).message);
       },
     });
   }
@@ -120,13 +157,38 @@ $(function () {
   function createTable(data) {
     let html = '';
     data.forEach((item) => {
+      let leaderHtml = '';
+      let totalLeader = 0;
+
+      item.member.forEach((user) => {
+        if (user.leader == 1) {
+          totalLeader++;
+
+          leaderHtml += `
+          <a class="dropdown-item" type="button">
+            ${user.fullName} (${user.userName})
+          </a>
+        `;
+        }
+      });
+
       html += `
         <tr>
           <td class="text-center">
             <a href=/groups/detail/${item.id}>${item.name}</a>
           </td>
-          <td class="text-center"></td>
-          <td class="text-center"></td>
+          <td class="text-center">
+            <div class="dropdown show ${totalLeader <= 0 ? 'd-none' : ''}">
+              <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" 
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                ${item.member.length} giám sát
+              </a>
+              <div class="dropdown-menu" aria-labelledby="dropdown">
+                ${leaderHtml}
+              </div>
+            </div>
+          </td>
+          <td class="text-center">${item.member.length}</td>
           <td class="text-center">${item.description || ''}</td>
           <td class="text-center">${moment(item.createAt).format('HH:mm:ss DD/MM/YYYY')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>
