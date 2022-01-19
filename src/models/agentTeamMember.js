@@ -30,7 +30,9 @@ class AgentTeamMember extends Model {
   }
 
   static associate(models) {
-
+    models.AgentTeamMember.belongsTo(models.User, { foreignKey: 'userId' });
+    
+    models.AgentTeamMember.belongsTo(models.Team, { foreignKey: 'teamId' });
   }
 }
 

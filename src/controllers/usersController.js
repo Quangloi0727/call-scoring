@@ -1,7 +1,9 @@
-const { Op } = require('sequelize');
+const { Op, QueryTypes } = require('sequelize');
 const pagination = require('pagination');
 const moment = require('moment');
+const _ = require('lodash');
 const UserModel = require('../models/user');
+const model = require('../models');
 const {
   SUCCESS_200,
   ERR_500
@@ -11,8 +13,7 @@ const titlePage = 'Danh sách người dùng';
 
 exports.index = async (req, res, next) => {
   try {
-    return res.render('pages/index', {
-      page: 'users/index',
+    return _render(req, res, 'users/index', {
       title: titlePage,
       titlePage: titlePage,
     });
@@ -45,7 +46,11 @@ exports.getUsers = async (req, res, next) => {
         order: [['id', 'DESC']],
         offset: offset,
         limit: limit,
-        include: [{ model: UserModel, as: 'userCreate' }]
+        include: [
+          { model: UserModel, as: 'userCreate' },
+        ],
+        raw: true,
+        nest: true
       }),
       UserModel.count({
         where: {
@@ -55,6 +60,10 @@ exports.getUsers = async (req, res, next) => {
       })
     ]);
 
+    const userIds = _.map(recordResult, 'id');
+
+    const dataResult = await handleAgentOfTeam(userIds, recordResult);
+
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
@@ -63,7 +72,7 @@ exports.getUsers = async (req, res, next) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult || [],
+      data: dataResult || [],
       paginator: paginator.getPaginationData(),
     });
   } catch (error) {
@@ -71,6 +80,31 @@ exports.getUsers = async (req, res, next) => {
     console.log(error);
     console.log(`------- error ------- `);
     return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
+async function handleAgentOfTeam(userIds, users) {
+  try {
+    let queryString = `
+      SELECT 
+	      AgentTeamMembers.userId As userId,
+	      Teams.id AS teamId,
+	      Teams.name AS teamName
+      FROM dbo.AgentTeamMembers
+      LEFT JOIN dbo.Teams ON AgentTeamMembers.teamId = Teams.id
+      WHERE AgentTeamMembers.userId IN ( ${userIds.toString()} )
+    `;
+
+    const agentTeamMember = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
+
+    const dataResult = users.map((user) => {
+      const result = agentTeamMember.filter((agentOfTeam) => agentOfTeam.userId == user.id);
+      return { ...user, ofTeams: result };
+    });
+
+    return dataResult;
+  } catch (error) {
+    throw new Error(error);
   }
 }
 
@@ -82,9 +116,10 @@ exports.createUser = async (req, res, next) => {
       throw new Error('Mật khẩu không trùng khớp!');
     }
 
-    data.fullName = `${data.firstName} ${data.lastName}`;
+    data.fullName = `${data.firstName.trim()} ${data.lastName.trim()}`;
     data.extension = Number(data.extension);
     data.role = 0;
+    data.isActive = 1;
     data.created = req.user.id;
     data.createAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss');
     data.updatedAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss');

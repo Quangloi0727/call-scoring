@@ -14,4 +14,22 @@ router.route('/getGroups')
 router.route('/detail/:id')
   .get(groupsController.detail);
 
+router.route('/')
+  .put(groupsController.update);
+
+router.route('/')
+  .delete(groupsController.delete);
+
+router.route('/search')
+  .get(groupsController.search);
+
+router.route('/add-user')
+  .post(groupsController.addUser);
+
+router.route('/remove-user')
+  .delete(groupsController.removeUser);
+
+router.route('/user-of-team')
+  .get(groupsController.userOfTeam);
+
 module.exports = router;

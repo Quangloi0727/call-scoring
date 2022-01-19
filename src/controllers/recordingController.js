@@ -13,8 +13,7 @@ const titlePage = 'Danh sách cuộc gọi';
 
 exports.index = async (req, res, next) => {
   try {
-    return res.render('pages/index', {
-      page: 'recording/index',
+    return _render(req, res, 'recording/index', {
       title: titlePage,
       titlePage: titlePage,
     });

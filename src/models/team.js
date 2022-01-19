@@ -26,7 +26,9 @@ class Team extends Model {
   }
 
   static associate(models) {
-    models.Team.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' })
+    models.Team.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' });
+    
+    models.Team.hasMany(models.AgentTeamMember, { foreignKey: 'teamId' });
   }
 }
 
