@@ -4,24 +4,21 @@ $(function () {
   const $frmSearch = $('#form_search_recording');
   const $tblSearch = $('#tableBody');
   const $ctnPaging = $('#paging_table');
+  const $popupSearch = $('#btn_popup_search');
+  const $frmPopupSearch = $('#popup_input_search');
+  const $modalSearch = $('#modalSearch')
+  const $btn_cancel = $('#btn_cancel')
+  const $clear_local_storage = $('#clear_local_storage')
 
+  if (localStorage.getItem('modalData')) {
+    let page = 1;
+    let modalData = JSON.parse(localStorage.getItem('modalData'))
+    loadDataByLS(modalData)
+    findData(page, null, modalData);
+  }
+  // button event
   $btnSearch.on('click', function (e) {
     let page = 1;
-
-    return findData(page);
-  });
-
-  $btnExportExcel.on('click', function () {
-    console.log("aaaaaaaaaa");
-    return findData(null, true);
-  });
-
-  $(document).on('click', '.zpaging', function () {
-    let page = $(this).attr('data-link');
-    return findData(page);
-  });
-
-  function findData(page, exportExcel) {
     let inputValue = $frmSearch.serializeArray();
     let queryData = {};
 
@@ -30,7 +27,46 @@ $(function () {
         queryData[el.name] = el.value;
       }
     });
+    return findData(page, null, queryData);
+  });
 
+  $btnExportExcel.on('click', function () {
+    console.log("aaaaaaaaaa");
+    return findData(null, true);
+  });
+
+  $popupSearch.on('click', function () {
+    let page = 1;
+    let inputValue = $frmPopupSearch.serializeArray();
+    let queryData = {};
+    console.log(inputValue);
+    inputValue.forEach((el) => {
+      if (el.value && el.value !== '') {
+        queryData[el.name] = el.value;
+      }
+    });
+    console.log(JSON.stringify(queryData));
+    queryData.searchForm = true;
+    localStorage.setItem('modalData', JSON.stringify(queryData));
+    return findData(page, null, queryData);
+  });
+  $btn_cancel.on('click', () => {
+    $modalSearch.modal('hide')
+  })
+
+  $clear_local_storage.on('click', () => {
+    localStorage.setItem('modalData', '')
+    $frmPopupSearch.trigger("reset");
+  })
+
+  $(document).on('click', '.zpaging', function () {
+    let page = $(this).attr('data-link');
+    return findData(page);
+  });
+
+
+  /// function
+  function findData(page, exportExcel, queryData) {
     if (page) {
       queryData.page = page
     }
@@ -53,7 +89,9 @@ $(function () {
           if (!result || !result.linkFile || result.linkFile == '') return;
           return downloadFromUrl(result.linkFile);
         }
-
+        if (queryData.searchForm) {
+          $modalSearch.modal('hide')
+        }
         createTable(result.data);
         return createPaging(result.paging);
       },
@@ -63,7 +101,12 @@ $(function () {
       },
     });
   }
-
+  function loadDataByLS(modalData) {
+    Object.keys(modalData).forEach(function (key) {
+      console.log(key, modalData[key]);
+      $(`#val_${key}`).val(modalData[key])
+    });
+  }
   function createTable(data) {
     let html = '';
 
@@ -85,6 +128,10 @@ $(function () {
           <td class="text-center">${item.caller}</td>
           <td class="text-center">${item.called}</td>
           <td class="text-center">${item.origTime}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
           <td class="text-center">${item.duration}</td>
           <td class="text-center">${audioHtml}</td>
         </tr>
@@ -175,4 +222,11 @@ $(function () {
   //Date and time picker
   $('#startTime').datetimepicker({ icons: { time: 'far fa-clock' } });
   $('#endTime').datetimepicker({ icons: { time: 'far fa-clock' } });
+
+  $('#popup_startTime').datetimepicker({ format: 'DD/MM/YYYY' });
+  $('#popup_endTime').datetimepicker({ format: 'DD/MM/YYYY' });
+
+  //Date and time picker
+  $('#popup_startTime').datetimepicker({ icons: { time: 'far fa-clock' } });
+  $('#popup_endTime').datetimepicker({ icons: { time: 'far fa-clock' } });
 });

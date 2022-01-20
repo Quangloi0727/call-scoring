@@ -6,7 +6,9 @@
   margin-top: 30px;
   width: 100px !important;
 }
-
+#popup_search{
+  margin-top: 30px;
+}
 .btn-circle {
   width: 30px;
   height: 30px;
