@@ -1,7 +1,7 @@
 "use strict";
 const { Model, DataTypes } = require("sequelize");
 
-class call_detail_records extends Model {
+class CallDetailRecords extends Model {
   /**
    * Helper method for defining associations.
    * This method is not a part of Sequelize lifecycle.
@@ -54,13 +54,13 @@ class call_detail_records extends Model {
 
   static associate(models) {
     // define association here
-    models.call_detail_records.belongsTo(models.User, {
+    models.CallDetailRecords.belongsTo(models.User, {
       foreignKey: "agentId",
     });
-    models.call_detail_records.belongsTo(models.Team, {
+    models.CallDetailRecords.belongsTo(models.Team, {
       foreignKey: "teamId",
     });
   }
 }
 
-module.exports = call_detail_records
+module.exports = CallDetailRecords
