@@ -158,18 +158,17 @@ $(function () {
     let html = '';
     data.forEach((item) => {
       let leaderHtml = '';
-      let totalLeader = 0;
+      let totalMember = item.member.filter((user) => user.role == 0);
+      let leaders = item.member.filter((user) => user.role == 1);
 
-      item.member.forEach((user) => {
-        if (user.leader == 1) {
-          totalLeader++;
+      console.log('leaders: ', leaders)
 
-          leaderHtml += `
+      leaders.forEach((user) => {
+        leaderHtml += `
           <a class="dropdown-item" type="button">
             ${user.fullName} (${user.userName})
           </a>
         `;
-        }
       });
 
       html += `
@@ -178,17 +177,17 @@ $(function () {
             <a href=/groups/detail/${item.id}>${item.name}</a>
           </td>
           <td class="text-center">
-            <div class="dropdown show ${totalLeader <= 0 ? 'd-none' : ''}">
+            <div class="dropdown show ${leaders.length > 0 ? '' : 'd-none'}">
               <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" 
                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                ${item.member.length} giám sát
+                ${leaders.length} giám sát
               </a>
               <div class="dropdown-menu" aria-labelledby="dropdown">
                 ${leaderHtml}
               </div>
             </div>
           </td>
-          <td class="text-center">${item.member.length}</td>
+          <td class="text-center">${totalMember.length}</td>
           <td class="text-center">${item.description || ''}</td>
           <td class="text-center">${moment(item.createAt).format('HH:mm:ss DD/MM/YYYY')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>

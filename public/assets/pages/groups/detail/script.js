@@ -64,6 +64,36 @@ $(function () {
     });
   }
 
+  function getUserAvailable() {
+    $.ajax({
+      type: 'GET',
+      url: '/groups/get-user-available',
+      cache: 'false',
+      success: function (result) {
+        if (!result) return;
+
+        let userHtml = '';
+
+        result.data.forEach(user => {
+          userHtml += `
+            <option value="${user.id}">
+              ${user.fullName} (${user.userName})
+            </option>
+          `;
+        });
+
+        $inputMember.html(userHtml);
+
+        return $inputMember.selectpicker('refresh');
+      },
+      error: function (error) {
+        let errorParse = JSON.parse(error.responseText);
+
+        return toastr.error(errorParse.message);
+      },
+    });
+  }
+
   $(document).on('click', '.remove-user', function () {
     let userId = $(this).attr('data-id');
 
@@ -93,15 +123,9 @@ $(function () {
               success: function () {
                 $loadingData.hide();
 
-                $(document).Toasts('create', {
-                  title: 'Thành công',
-                  class: 'bg-success',
-                  position: 'bottomRight',
-                  autohide: true,
-                  delay: 4000,
-                  body: 'Đã xóa user ra khỏi nhóm'
-                })
+                toastr.success('Đã xóa user ra khỏi nhóm!');
 
+                getUserAvailable();
                 return getMember();
               },
               error: function (error) {
@@ -276,26 +300,15 @@ $(function () {
       data: data,
       dataType: "text",
       success: function () {
-        $(document).Toasts('create', {
-          title: 'Thành công',
-          class: 'bg-success',
-          position: 'bottomRight',
-          autohide: true,
-          delay: 4000,
-          body: 'Đã thêm người dùng vào nhóm'
-        });
+        toastr.success('Đã thêm người dùng vào nhóm');
 
+        getUserAvailable();
         return getMember();
       },
       error: function (error) {
-        $(document).Toasts('create', {
-          title: 'Thêm người dùng thất bại',
-          autohide: true,
-          class: 'bg-danger',
-          position: 'bottomRight',
-          delay: 4000,
-          body: JSON.parse(error.responseText).message,
-        });
+        const errorParse = JSON.parse(error.responseText);
+
+        return toastr.error(errorParse.message);
       },
     });
   });
@@ -321,7 +334,7 @@ $(function () {
     let leaderHtml = '';
     users.forEach(user => {
       leaderHtml += `
-        <option value="${user.id}" ${user.leader == 1 ? 'selected' : ''}>
+        <option value="${user.userId}" ${user.leader == 1 ? 'selected' : ''}>
           ${user.fullName} (${user.userName})
         </option>
       `;
@@ -330,6 +343,8 @@ $(function () {
     $inputLeader.html(leaderHtml);
     return $inputLeader.selectpicker('refresh');
   });
+
+  getUserAvailable();
 
   getMember();
 

@@ -13,7 +13,7 @@ module.exports = {
           extension: 0,
           password: '123',
           created: 1,
-          role: 1,
+          isAvailable: 0,
           isActive: 1,
           createdAt: new Date(),
           updatedAt: new Date()

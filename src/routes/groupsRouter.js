@@ -17,8 +17,8 @@ router.route('/detail/:id')
 router.route('/')
   .put(groupsController.update);
 
-router.route('/')
-  .delete(groupsController.delete);
+// router.route('/')
+//   .delete(groupsController.delete);
 
 router.route('/search')
   .get(groupsController.search);
@@ -31,5 +31,8 @@ router.route('/remove-user')
 
 router.route('/user-of-team')
   .get(groupsController.userOfTeam);
+
+  router.route('/get-user-available')
+  .get(groupsController.getUserAvailable);
 
 module.exports = router;

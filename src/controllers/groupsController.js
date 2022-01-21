@@ -3,6 +3,7 @@ const pagination = require('pagination');
 const moment = require('moment');
 const _ = require('lodash');
 const UserModel = require('../models/user');
+const UserRoleModel = require('../models/userRole');
 const TeamModel = require('../models/team');
 const AgentTeamMemberModel = require('../models/agentTeamMember');
 const model = require('../models');
@@ -19,6 +20,15 @@ exports.index = async (req, res, next) => {
       where: {
         [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
       },
+      include: [{
+        model: UserRoleModel,
+        as: 'roles',
+        where: {
+          role: { [Op.eq]: 1 }
+        }
+      }],
+      raw: true,
+      nest: true
     });
 
     return _render(req, res, 'groups/index', {
@@ -41,6 +51,8 @@ exports.getGroups = async (req, res, next) => {
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = {};
+
+    if (name) query.name = { [Op.substring]: name };
 
     const [groupsResult, total] = await Promise.all([
       TeamModel.findAll({
@@ -86,10 +98,12 @@ exports.getGroups = async (req, res, next) => {
 
 async function handleTeam(teamIds, teams) {
   try {
+    if (!teamIds || teamIds.length <= 0) return teams;
+
     let queryString = `
       SELECT 
         AgentTeamMembers.teamId AS teamId,
-        AgentTeamMembers.leader AS leader,
+        AgentTeamMembers.role AS role,
         Users.id As userId,
         Users.userName AS userName,
         Users.fullName AS fullName
@@ -112,8 +126,12 @@ async function handleTeam(teamIds, teams) {
 }
 
 exports.createGroup = async (req, res) => {
+  let transaction;
+
   try {
     const data = req.body;
+
+    transaction = await model.sequelize.transaction();
 
     data.created = req.user.id;
 
@@ -125,17 +143,19 @@ exports.createGroup = async (req, res) => {
       throw new Error('Giát sát nhóm không được để trống!');
     }
 
-    const teamCreateResult = await TeamModel.create(data);
+    const teamCreateResult = await TeamModel.create(data, { transaction: transaction });
 
     let dataMember = data.leader.map(el => {
       return {
         teamId: teamCreateResult.id,
         userId: el,
-        leader: 1
+        role: 1
       }
     });
 
-    await AgentTeamMemberModel.bulkCreate(dataMember);
+    await AgentTeamMemberModel.bulkCreate(dataMember, { transaction: transaction });
+
+    await transaction.commit();
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
@@ -145,6 +165,8 @@ exports.createGroup = async (req, res) => {
     console.log(error);
     console.log(`------- error ------- getRecording`);
 
+    if (transaction) await transaction.rollback();
+
     return res.status(ERR_500.code).json({ message: error.message });
   }
 }
@@ -153,21 +175,30 @@ exports.detail = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [users, memberOfTeam, team] = await Promise.all([
-      UserModel.findAll({
-        where: {
-          [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
-        },
-        raw: true,
-        nest: true,
-      }),
-      AgentTeamMemberModel.findAll({
-        where: {
-          teamId: Number(id),
-        },
-        raw: true,
-        nest: true
-      }),
+    if (!id || id == '') {
+      throw new Error('Nhóm không tồn tại!');
+    }
+
+    let queryString = `
+      SELECT
+        Users.id AS userId,
+        Users.userName AS userName,
+        Users.fullName AS fullName,
+        CASE
+          WHEN Users.id IN (
+            SELECT AgentTeamMembers.userId FROM dbo.AgentTeamMembers 
+            WHERE AgentTeamMembers.teamId = ${Number(id)}
+              AND AgentTeamMembers.role = 1
+          ) THEN 1 
+          ELSE 0
+        END AS leader 
+      FROM dbo.Users
+      LEFT JOIN dbo.UserRoles ON Users.id = UserRoles.userId 
+      WHERE UserRoles.role = 1
+    `;
+
+    const [users, team] = await Promise.all([
+      model.sequelize.query(queryString, { type: QueryTypes.SELECT }),
       TeamModel.findOne({
         where: { id: { [Op.eq]: Number(id) } },
         include: [{ model: UserModel, as: 'userCreate' }],
@@ -176,20 +207,13 @@ exports.detail = async (req, res) => {
       })
     ]);
 
-    let userHandel = users.map((user) => {
-      let found = memberOfTeam.find(item => item.userId == user.id && item.leader == 1);
-
-      return { ...user, leader: found ? 1 : 0 }
-    });
-
     team.createdAt = moment(team.createdAt).format('HH:mm:ss DD/MM/YYYY');
     team.updatedAt = moment(team.updatedAt).format('HH:mm:ss DD/MM/YYYY');
 
     return _render(req, res, 'groups/detail', {
       titlePage: null,
       team: team,
-      users: userHandel,
-      memberNumber: memberOfTeam && memberOfTeam.length || 0,
+      users: users,
     });
   } catch (error) {
     console.log(`------- error ------- `);
@@ -200,8 +224,12 @@ exports.detail = async (req, res) => {
 }
 
 exports.update = async (req, res) => {
+  let transaction;
+
   try {
     const { description, name, id, leader } = req.body;
+
+    transaction = await model.sequelize.transaction();
 
     if (!name || name.trim() == '') {
       throw new Error('Tên nhóm không được để trống!');
@@ -219,19 +247,25 @@ exports.update = async (req, res) => {
     await TeamModel.update(
       dataUpdate,
       { where: { id: Number(id) } },
+      { transaction: transaction }
     );
 
-    await AgentTeamMemberModel.destroy({ where: { teamId: Number(id), leader: 1 } });
+    await AgentTeamMemberModel.destroy(
+      { where: { teamId: Number(id), role: 1 } },
+      { transaction: transaction }
+    );
 
     let dataMember = leader.map(el => {
       return {
         teamId: id,
         userId: el,
-        leader: 1
+        role: 1
       }
     });
 
-    await AgentTeamMemberModel.bulkCreate(dataMember);
+    await AgentTeamMemberModel.bulkCreate(dataMember, { transaction: transaction });
+
+    await transaction.commit();
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
@@ -240,6 +274,8 @@ exports.update = async (req, res) => {
     console.log(`------- error ------- `);
     console.log(error);
     console.log(`------- error ------- `);
+
+    if (transaction) await transaction.rollback();
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
@@ -309,48 +345,30 @@ exports.search = async (req, res) => {
 }
 
 exports.addUser = async (req, res) => {
+  let transaction;
+
   try {
     const { userId, teamId } = req.body;
+
+    transaction = await model.sequelize.transaction();
 
     if (!userId || !teamId) {
       throw new Error('Có lỗi xảy ra, vui lòng thử lại!');
     }
 
-    let queryString = `
-      SELECT 
-        AgentTeamMembers.teamId AS teamId,
-        Teams.name AS teamName,
-        Users.id As userId,
-        Users.userName AS userName,
-        Users.fullName AS fullName
-      FROM dbo.AgentTeamMembers
-      LEFT JOIN dbo.Users ON AgentTeamMembers.userId = Users.id
-      LEFT JOIN dbo.Teams ON AgentTeamMembers.teamId = Teams.id
-      WHERE AgentTeamMembers.userId = ${Number(userId)}
-    `;
-
-    const teamFound = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
-
-    if (teamFound && teamFound.length > 0) {
-      let teamName = '';
-
-      teamFound.forEach((item, index) => {
-        if (index == 0) {
-          teamName += item.teamName;
-        } else if (index > 0) {
-          teamName += ` và nhóm ${item.teamName}`;
-        }
-      });
-
-      throw new Error(`Người dùng ${teamFound[0].fullName} đã thuộc nhóm ${teamName}`);
-    }
-
-    let createData = {
+    const result = await AgentTeamMemberModel.create({
       teamId: Number(teamId),
-      userId: Number(userId)
-    }
+      userId: Number(userId),
+      role: 0,
+    }, { transaction: transaction });
 
-    const result = await AgentTeamMemberModel.create(createData);
+    await UserModel.update(
+      { isAvailable: 1 },
+      { where: { id: Number(userId) } },
+      { transaction: transaction }
+    );
+
+    await transaction.commit();
 
     return res.status(SUCCESS_200.code).json({
       data: result,
@@ -360,13 +378,19 @@ exports.addUser = async (req, res) => {
     console.log(error);
     console.log(`------- error ------- `);
 
+    if (transaction) await transaction.rollback();
+
     return res.status(ERR_500.code).json({ message: error.message });
   }
 }
 
 exports.removeUser = async (req, res) => {
+  let transaction;
+
   try {
     const { teamId, userId } = req.body;
+
+    transaction = await model.sequelize.transaction();
 
     if (!teamId || !userId) {
       throw new Error('Có lỗi xảy ra, vui lòng thử lại!');
@@ -375,9 +399,18 @@ exports.removeUser = async (req, res) => {
     await AgentTeamMemberModel.destroy({
       where: {
         teamId: { [Op.eq]: Number(teamId) },
-        userId: { [Op.eq]: Number(userId) }
+        userId: { [Op.eq]: Number(userId) },
+        role: { [Op.eq]: 0 }
       }
-    });
+    }, { transaction: transaction });
+
+    await UserModel.update(
+      { isAvailable: 0 },
+      { where: { id: Number(userId) } },
+      { transaction: transaction }
+    );
+
+    await transaction.commit();
 
     return res.status(SUCCESS_200.code).json({
       data: 'success',
@@ -386,6 +419,8 @@ exports.removeUser = async (req, res) => {
     console.log(`------- error ------- `);
     console.log(error);
     console.log(`------- error ------- `);
+
+    if (transaction) await transaction.rollback();
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
@@ -408,6 +443,7 @@ exports.userOfTeam = async (req, res) => {
       FROM dbo.AgentTeamMembers
       LEFT JOIN dbo.Users ON AgentTeamMembers.userId = Users.id
       WHERE AgentTeamMembers.teamId = ${Number(teamId)}
+      AND AgentTeamMembers.role = 0
       ${queryName}
       ORDER BY AgentTeamMembers.id DESC
     `;
@@ -416,6 +452,36 @@ exports.userOfTeam = async (req, res) => {
 
     return res.status(SUCCESS_200.code).json({
       data: teamFound,
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
+exports.getUserAvailable = async (req, res) => {
+  try {
+
+    const userAvailable = await UserModel.findAll({
+      where: {
+        isAvailable: { [Op.eq]: 0 }
+      },
+      include: [{
+        model: UserRoleModel,
+        as: 'roles',
+        where: {
+          role: { [Op.eq]: 0 }
+        }
+      }],
+      raw: true,
+      nest: true
+    });
+
+    return res.status(SUCCESS_200.code).json({
+      data: userAvailable,
     });
   } catch (error) {
     console.log(`------- error ------- `);

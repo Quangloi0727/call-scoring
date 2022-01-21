@@ -18,7 +18,7 @@ class AgentTeamMember extends Model {
             key: 'id'
           }
         },
-        leader: {
+        role: {
           type: DataTypes.INTEGER,
         }
       },
@@ -30,7 +30,7 @@ class AgentTeamMember extends Model {
   }
 
   static associate(models) {
-    models.AgentTeamMember.belongsTo(models.User, { foreignKey: 'userId' });
+    models.AgentTeamMember.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     
     models.AgentTeamMember.belongsTo(models.Team, { foreignKey: 'teamId' });
   }

@@ -5,6 +5,7 @@ const config = require(__dirname + '/../database/database.json')[env];
 const UserModel = require('../models/user');
 const TeamModel = require('./team');
 const AgentTeamMemberModel = require('./agentTeamMember');
+const UserRoleModel = require('./userRole');
 
 let db = {};
 let sequelize = null;
@@ -19,6 +20,7 @@ const models = {
   User: UserModel.init(sequelize),
   Team: TeamModel.init(sequelize),
   AgentTeamMember: AgentTeamMemberModel.init(sequelize),
+  UserRole: UserRoleModel.init(sequelize),
 }
 
 Object.keys(models).forEach(model => {
