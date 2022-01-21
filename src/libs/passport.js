@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const LocalStrategy = require('passport-local').Strategy;
 const BasicStrategy = require('passport-http').BasicStrategy;
 const UserModel = require('../models/user');
+const UserRoleModel = require('../models/userRole');
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -10,8 +11,20 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const user = await UserModel.findOne({ where: { id: { [Op.eq]: Number(id) } } });
-    return done(null, user);
+    const user = await UserModel.findOne({
+      where: { id: { [Op.eq]: Number(id) } },
+      raw: true,
+      nest: true
+    });
+
+    const roles = await UserRoleModel.findAll({
+      where: { userId: { [Op.eq]: Number(user.id) } },
+      attributes: ['role'],
+      raw: true,
+      nest: true
+    });
+
+    return done(null, { ...user, roles: roles });
   } catch (error) {
     console.log(`------- error ------- deserializeUser`);
     console.log(error);

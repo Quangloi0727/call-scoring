@@ -1,7 +1,6 @@
 <script>
   var team = JSON.parse('<%- JSON.stringify(team)%>');
   var users = JSON.parse('<%- JSON.stringify(users)%>');
-  var memberNumber = '<%- memberNumber %>'
 </script>
 <div class="wrapper">
   <div>
@@ -28,9 +27,9 @@
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_group">
               <i class="fa fa-pencil-alt p-0 mr-2" aria-hidden="true"></i>Sửa
             </button>
-            <button type="button" class="btn btn-danger ml-2" data-toggle="modal" data-target="#modal_del_group">
+            <!-- <button type="button" class="btn btn-danger ml-2" data-toggle="modal" data-target="#modal_del_group">
               <i class="fa fa-trash p-0 mr-2" aria-hidden="true"></i>Xóa
-            </button>
+            </button> -->
           </div>
         </div>
         <div class="row mb-2 border-bottom border-dark">
@@ -67,11 +66,6 @@
             <div class="col-sm-8 pl-0">
               <select class="form-control selectpicker input" data-live-search="true" name="members" id="members"
                 title="Chọn...">
-                <% users.forEach((user)=> { %>
-                  <option value="<%= user.id %>">
-                    <%= user.fullName %> (<%= user.userName %>)
-                  </option>
-                  <% }); %>
               </select>
             </div>
             <div class="col-sm-2">
@@ -166,7 +160,7 @@
                   <%= team.name %>
                 </label> sẽ bị xóa</p>
               <p> <label>
-                  <%= memberNumber %> người dùng
+                  Người dùng
                 </label> sẽ bị gỡ khỏi nhóm</p>
             </div>
           </div>

@@ -94,38 +94,48 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Họ và tên đệm</label>
-                <input type="text" class="form-control" id="firstname" name="firstName" />
+                <input type="text" class="form-control input" id="firstname" name="firstName" />
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
                 <label>Tên</label>
-                <input type="text" class="form-control" id="lastname" name="lastName" />
+                <input type="text" class="form-control input" id="lastname" name="lastName" />
               </div>
             </div>
           </div>
           <div>
             <div class="form-group">
               <label>Tên đăng nhập</label>
-              <input type="text" class="form-control" id="username" name="userName" />
+              <input type="text" class="form-control input" id="username" name="userName" />
             </div>
           </div>
           <div>
             <div class="form-group">
               <label>Extension</label>
-              <input type="text" class="form-control" id="extension" name="extension" />
+              <input type="text" class="form-control input" id="extension" name="extension" />
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>Quyền</label>
+              <select class="form-control selectpicker input" name="roles" id="roles" multiple>
+                <option value="0">Agent</option>
+                <option value="1">Supervisor</option>
+                <option value="2">Admin</option>
+              </select>
             </div>
           </div>
           <div>
             <div class="form-group">
               <label>Mật khẩu</label>
-              <input class="form-control" type="password" id="password" name="password">
+              <input class="form-control input" type="password" id="password" name="password">
             </div>
           </div>
           <div>
             <div class="form-group">
               <label>Xác nhận mật khẩu</label>
-              <input class="form-control" type="password" id="repeat_password" name="repeat_password">
+              <input class="form-control input" type="password" id="repeat_password" name="repeat_password">
             </div>
           </div>
           <div class="modal-footer justify-content-between">

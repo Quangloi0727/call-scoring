@@ -26,7 +26,7 @@ module.exports = {
       password: {
         type: Sequelize.STRING
       },
-      role: {
+      isAvailable: {
         type: Sequelize.INTEGER
       },
       created: {

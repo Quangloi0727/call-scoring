@@ -3,6 +3,7 @@ const pagination = require('pagination');
 const moment = require('moment');
 const _ = require('lodash');
 const UserModel = require('../models/user');
+const UserRoleModel = require('../models/userRole');
 const model = require('../models');
 const {
   SUCCESS_200,
@@ -85,6 +86,8 @@ exports.getUsers = async (req, res, next) => {
 
 async function handleAgentOfTeam(userIds, users) {
   try {
+    if (!userIds || userIds.length == 0) return users;
+
     let queryString = `
       SELECT 
 	      AgentTeamMembers.userId As userId,
@@ -92,7 +95,8 @@ async function handleAgentOfTeam(userIds, users) {
 	      Teams.name AS teamName
       FROM dbo.AgentTeamMembers
       LEFT JOIN dbo.Teams ON AgentTeamMembers.teamId = Teams.id
-      WHERE AgentTeamMembers.userId IN ( ${userIds.toString()} )
+      WHERE AgentTeamMembers.userId IN (${userIds.toString()})
+      AND AgentTeamMembers.role = 0
     `;
 
     const agentTeamMember = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
@@ -109,10 +113,14 @@ async function handleAgentOfTeam(userIds, users) {
 }
 
 exports.createUser = async (req, res, next) => {
+  let transaction;
+
   try {
     const data = req.body
 
-    if (data.password !== data.repeat_password) {
+    transaction = await model.sequelize.transaction();
+
+    if (data.password.trim() !== data.repeat_password.trim()) {
       throw new Error('Mật khẩu không trùng khớp!');
     }
 
@@ -124,7 +132,20 @@ exports.createUser = async (req, res, next) => {
     data.createAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss');
     data.updatedAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss');
 
-    await UserModel.create(data);
+    const user = await UserModel.create(data, { transaction: transaction });
+
+    if (data.roles && data.roles.length > 0) {
+      const createRolse = data.roles.map((role) => {
+        return {
+          userId: user.id,
+          role: role
+        }
+      });
+
+      await UserRoleModel.bulkCreate(createRolse, { transaction: transaction });
+    }
+
+    await transaction.commit();
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
@@ -133,6 +154,8 @@ exports.createUser = async (req, res, next) => {
     console.log(`------- error ------- getRecording`);
     console.log(error);
     console.log(`------- error ------- getRecording`);
+
+    if (transaction) await transaction.rollback();
 
     return res.status(ERR_500.code).json({ message: error.message });
   }

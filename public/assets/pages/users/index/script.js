@@ -11,21 +11,18 @@ $(function () {
 
   $.validator.setDefaults({
     submitHandler: function () {
-      let inputValue = $formCreateUser.serializeArray();
-      let bodyData = {};
-
-      inputValue.forEach((el) => {
-        if (el.value && el.value !== '') {
-          bodyData[el.name] = el.value;
-        }
-      });
+      let filter = _.chain($('#form_input_user .input')).reduce(function (memo, el) {
+        let value = $(el).val();
+        if (value != '' && value != null) memo[el.name] = value;
+        return memo;
+      }, {}).value();
 
       $loadingData.show();
 
       $.ajax({
         type: 'POST',
         url: '/users/insert',
-        data: bodyData,
+        data: filter,
         dataType: "text",
         success: function () {
           $loadingData.hide();
@@ -35,7 +32,7 @@ $(function () {
         error: function (error) {
           $loadingData.hide();
 
-          return toastr.error(error.message);
+          return toastr.error(JSON.parse(error.responseText).message);
         },
       });
     }
@@ -44,17 +41,14 @@ $(function () {
   // validate form 
   const validator = $formCreateUser.validate({
     rules: {
-      firstname: {
+      firstName: {
         required: true,
-        maxlength: 30,
       },
-      lastname: {
+      lastName: {
         required: true,
-        maxlength: 30,
       },
-      userame: {
+      userName: {
         required: true,
-        maxlength: 30,
       },
       extension: {
         required: true,
@@ -70,17 +64,14 @@ $(function () {
       }
     },
     messages: {
-      firstname: {
+      firstName: {
         required: "Không được để trống Họ và Tên đệm",
-        maxlength: "Số kí tự đối đa là 30/30"
       },
-      lastname: {
+      lastName: {
         required: "Không được để trống Tên",
-        maxlength: "Số kí tự đối đa là 30/30"
       },
-      userame: {
+      userName: {
         required: "Không được để trống Tên đăng nhập",
-        maxlength: "Số kí tự đối đa là 30/30"
       },
       extension: {
         required: "Không được để trống extension",
@@ -95,6 +86,7 @@ $(function () {
         equalTo: "Mật khẩu không khớp"
       }
     },
+    ignore: ":hidden",
     errorElement: 'span',
     errorPlacement: function (error, element) {
       error.addClass('invalid-feedback');
