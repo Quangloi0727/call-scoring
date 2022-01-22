@@ -81,7 +81,10 @@ $(function () {
 
       html += `
         <tr>
-          <td class="text-center" style="display: none;">${item.caller}</td>
+          <td class="text-center">${item.direction}</td>
+          <td class="text-center">${item.fullName} (${item.userName})</td>
+          <td class="text-center">${item.teamName}</td>
+          <td class="text-center">${item.extension}</td>
           <td class="text-center">${item.caller}</td>
           <td class="text-center">${item.called}</td>
           <td class="text-center">${item.origTime}</td>

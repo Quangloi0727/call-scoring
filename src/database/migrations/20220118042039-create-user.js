@@ -21,7 +21,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       extension: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       password: {
         type: Sequelize.STRING

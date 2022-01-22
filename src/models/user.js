@@ -17,7 +17,7 @@ class User extends Model {
           type: DataTypes.STRING,
         },
         extension: {
-          type: DataTypes.INTEGER
+          type: DataTypes.STRING,
         },
         password: {
           type: DataTypes.STRING
