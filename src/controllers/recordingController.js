@@ -1,6 +1,6 @@
 
 const pagination = require('pagination');
-const { QueryTypes, Op } = require('sequelize');
+const { QueryTypes } = require('sequelize');
 const _ = require('lodash');
 const moment = require('moment');
 const { createExcelPromise } = require('../common/createExcel')
@@ -9,15 +9,17 @@ const {
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 const model = require('../models');
-const AgentTeamMember = require('../models/agentTeamMember');
 
 const titlePage = 'Danh sách cuộc gọi';
 
 exports.index = async (req, res, next) => {
   try {
+    const { teams } = await checkLeader(req.user.id);
+
     return _render(req, res, 'recording/index', {
       title: titlePage,
       titlePage: titlePage,
+      teams: teams || [],
     });
   } catch (error) {
     console.log(`------- error ------- `);
@@ -37,9 +39,11 @@ exports.getRecording = async (req, res, next) => {
       called,
       extension,
       exportExcel,
-      agent,
-      group,
-      callDirection
+      fullName,
+      userName,
+      teamName,
+      callDirection,
+      teams
     } = req.query;
     const limit = 25;
     const pageNumber = page ? Number(page) : 1;
@@ -55,16 +59,18 @@ exports.getRecording = async (req, res, next) => {
       isAdmin = true;
     }
 
-    const teamIds = await checkLeader(req.user.id);
+    const { teamIds } = await checkLeader(req.user.id);
 
     if (!isAdmin) query += `AND records.agentId = ${req.user.id}`;
     if (!isAdmin && teamIds && teamIds.length > 0) query += `OR records.teamId IN (${teamIds.toString()})`;
-    if (caller) query += `AND records.caller LIKE '%${caller}%' `;
-    if (called) query += `AND records.called LIKE '%${called}%' `;
-    if (extension) query += `AND agent.extension LIKE '%${extension}%' `;
-    if (agent) query += `AND agent.fullName LIKE '%${agent}%' `;
-    if (group) query += `AND team.name LIKE '%${group}%' `;
-    if (callDirection) query += `AND records.direction = '${callDirection}' `;
+    if (caller) query += `AND records.caller LIKE '%${caller.toString()}%' `;
+    if (called) query += `AND records.called LIKE '%${called.toString()}%' `;
+    if (extension) query += `AND agent.extension LIKE '%${extension.toString()}%' `;
+    if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
+    if (userName) query += `AND agent.userName LIKE '%${userName.toString()}%' `;
+    if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `;
+    if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
+    if (teams) query += `AND team.id IN (${teams.toString()}) `;
 
     let startTimeMilisecond = moment(startTime, 'DD/MM/YYYY').startOf('day').format('X');
     let endTimeMilisecond = moment(endTime, 'DD/MM/YYYY').endOf('day').format('X');
@@ -80,14 +86,10 @@ exports.getRecording = async (req, res, next) => {
 	      records.origTime AS origTime,
 	      records.duration AS duration,
 	      records.recordingFileName AS recordingFileName,
+        records.direction AS direction,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
-        team.name AS teamName,
-	      CASE
-		      WHEN records.caller = agent.extension THEN 'OUTBOUND'
-		      WHEN records.called = agent.extension THEN 'INBOUND'
-		      ELSE ''
-        END AS direction 
+        team.name AS teamName
       FROM dbo.call_detail_records records 
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
@@ -133,32 +135,38 @@ exports.getRecording = async (req, res, next) => {
   }
 }
 
-async function checkLeader(userId) {
-  try {
-    let teamId = [];
+function checkLeader(userId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let teamIds = [];
 
-    const resulds = await AgentTeamMember.findAll({
-      where: {
-        userId: { [Op.eq]: Number(userId) },
-        role: { [Op.eq]: 1 }
-      },
-      raw: true,
-      nest: true,
-    });
+      const resulds = await model.sequelize.query(
+        `
+          SELECT
+            Teams.id AS teamId,
+            Teams.name AS teamName 
+          FROM dbo.AgentTeamMembers
+          LEFT JOIN dbo.Teams ON AgentTeamMembers.teamId = Teams.id 
+          WHERE AgentTeamMembers.userId = ${Number(userId)}
+            AND AgentTeamMembers.role = 1
+        `,
+        { type: QueryTypes.SELECT }
+      );
 
-    teamId = _.map(resulds, 'teamId');
+      teamIds = _.map(resulds, 'teamId');
 
-    return Promise.resolve(teamId);
-  } catch (error) {
-    return Promise.reject(error);
-  }
+      return resolve({ teams: resulds, teamIds: teamIds });
+    } catch (error) {
+      return reject(error);
+    }
+  });
 }
 
 function handleData(data) {
   let newData = [];
 
   newData = data.map((el) => {
-    el.origTime = moment(el.origTime * 1000).format('DD/MM/YYYY HH:mm:ss')
+    el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
     el.duration = hms(el.duration);
     el.recordingFileName = _config.pathRecording + el.recordingFileName
     return el;
@@ -176,14 +184,10 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
 	      records.origTime AS origTime,
 	      records.duration AS duration,
 	      records.recordingFileName AS recordingFileName,
+        records.direction AS direction,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
-        team.name AS teamName,
-	      CASE
-		      WHEN records.caller = agent.extension THEN 'OUTBOUND'
-		      WHEN records.called = agent.extension THEN 'INBOUND'
-		      ELSE ''
-        END AS direction 
+        team.name AS teamName
       FROM dbo.call_detail_records records 
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
@@ -231,9 +235,12 @@ function createExcelFile(startDate, endDate, data) {
       }
 
       let newData = data.map((item) => {
+        agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
+
         return {
           ...item,
-          agentName: `${item.fullName} (${item.userName})`
+          duration: item.duration || '',
+          agentName: agentName
         }
       });
 

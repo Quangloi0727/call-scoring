@@ -3,7 +3,7 @@
     <div class="card">
       <div class="card-header row">
         <div class="col-12 d-flex justify-content-between">
-          <form class="col-10" id="form_search_recording">
+          <form class="col-10" id="form_search">
             <div class="row">
               <div class="col-2">
                 <div class="form-group">
@@ -11,7 +11,7 @@
                     <span class="text-danger">*</span>
                   </label>
                   <div class="input-group date" id="startTime" data-target-input="nearest">
-                    <input type="text" class="form-control datetimepicker-input" name="startTime"
+                    <input type="text" class="form-control datetimepicker-input input" name="startTime"
                       data-target="#startTime" autocomplete="off" />
                     <div class="input-group-append" data-target="#startTime" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -26,8 +26,8 @@
                     <span class="text-danger">*</span>
                   </label>
                   <div class="input-group date" id="endTime" data-target-input="nearest">
-                    <input type="text" class="form-control datetimepicker-input" name="endTime" data-target="#endTime"
-                      autocomplete="off" />
+                    <input type="text" class="form-control datetimepicker-input input" name="endTime"
+                      data-target="#endTime" autocomplete="off" />
                     <div class="input-group-append" data-target="#endTime" data-toggle="datetimepicker">
                       <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                     </div>
@@ -37,25 +37,19 @@
               <div class="col-2">
                 <div class="form-group">
                   <label>Số gọi đi</label>
-                  <input type="text" class="form-control" name="caller" />
+                  <input type="text" class="form-control input" name="caller" />
                 </div>
               </div>
               <div class="col-2">
                 <div class="form-group">
                   <label>Số gọi đến</label>
-                  <input type="text" class="form-control" name="called" />
-                </div>
-              </div>
-              <div class="col-2">
-                <div class="form-group">
-                  <label>Nhóm</label>
-                  <input type="text" class="form-control" name="group" />
+                  <input type="text" class="form-control input" name="called" />
                 </div>
               </div>
               <div class="col-2 d-flex">
-                <div class="col-4">
+                <div class="col-5">
                   <button type="button" class="form-control btn btn-primary btn-md" id="popup_search"
-                    data-toggle="modal" data-target="#modalSearch">
+                    data-toggle="modal" data-target="#modal_search">
                     <i class="fas fa-filter"></i>
                   </button>
                 </div>
@@ -86,37 +80,33 @@
               <th class="text-center col-recording">Ghi âm</th>
             </tr>
           </thead>
-          <tbody id="tableBody">
-          </tbody>
+          <tbody id="table_data"></tbody>
         </table>
       </div>
       <div class="card-footer text-center">
-        <div class="col-12 d-flex justify-content-center" id="paging_table">
-        </div>
+        <div class="col-12 d-flex justify-content-center" id="paging_table"></div>
       </div>
     </div>
   </div>
 </div>
 
-
-<!-- /.modal -->
-<div class="modal fade" id="modalSearch">
+<div class="modal fade" id="modal_search">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Tạo người dùng</h4>
+        <h4 class="modal-title">Tìm kiếm nâng cao</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
-        <form id="popup_input_search">
+        <form id="form_advanced_search">
           <div class="row">
             <div class="col-6">
               <div class="form-group">
                 <label>Ngày gọi từ <span class="text-danger">*</span></label>
                 <div class="input-group date" id="popup_startTime" data-target-input="nearest">
-                  <input type="text" class="form-control datetimepicker-input" name="startTime"
+                  <input type="text" class="form-control datetimepicker-input input" name="startTime"
                     data-target="#popup_startTime" autocomplete="off" id="val_startTime" />
                   <div class="input-group-append" data-target="#popup_startTime" data-toggle="datetimepicker">
                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -128,7 +118,7 @@
               <div class="form-group">
                 <label>Đến <span class="text-danger">*</span></label>
                 <div class="input-group date" id="popup_endTime" data-target-input="nearest">
-                  <input type="text" class="form-control datetimepicker-input" name="endTime"
+                  <input type="text" class="form-control datetimepicker-input input" name="endTime"
                     data-target="#popup_endTime" autocomplete="off" id="val_endTime" />
                   <div class="input-group-append" data-target="#popup_endTime" data-toggle="datetimepicker">
                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -141,52 +131,77 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Số gọi đi</label>
-                <input type="text" class="form-control" id="val_caller" name="caller" />
+                <input type="text" class="form-control input" id="val_caller" name="caller" />
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
                 <label>Số gọi đến</label>
-                <input type="text" class="form-control" id="val_called" name="called" />
+                <input type="text" class="form-control input" id="val_called" name="called" />
               </div>
             </div>
           </div>
           <div class="row">
             <div class="col-6">
               <div class="form-group">
-                <label>Agent</label>
-                <input class="form-control" type="text" id="val_agent" name="agent">
+                <label>Tên đầy đủ của Agent</label>
+                <input class="form-control input" type="text" id="val_fullName" name="fullName">
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
-                <label>Nhóm</label>
-                <input class="form-control" type="text" id="val_group" name="group">
+                <label>Tên đăng nhập của Agent</label>
+                <input class="form-control input" type="text" id="val_userName" name="userName">
               </div>
             </div>
           </div>
           <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>Tên nhóm</label>
+                <input class="form-control input" type="text" id="val_teamName" name="teamName">
+              </div>
+            </div>
             <div class="col-6">
               <div class="form-group">
                 <label>Hướng gọi</label>
-                <select class="form-control selectpicker input" data-live-search="true" name="callDirection"
-                  id="val_callDirection" multiple>
+                <select class="form-control selectpicker input" name="callDirection" id="val_callDirection"
+                  data-live-search="true" title="Chọn..." multiple>
                   <option value="inbound">inbound</option>
                   <option value="outbound">outbound</option>
                 </select>
               </div>
             </div>
           </div>
+          <div class="row">
+          <% if(teams.length >= 2) { %>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Nhóm</label>
+                <select class="form-control selectpicker input" name="teams" id="val_teams"
+                data-live-search="true" title="Chọn..." multiple>
+                <% teams.forEach((team) => { %>
+                  <option value="<%= team.teamId %>"><%= team.teamName %></option>
+                <% }); %>
+              </select>
+              </div>
+            </div>
+          <% } %>
+          </div>
           <div class="modal-footer justify-content-between">
             <div>
               <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
-                id="clear_local_storage"><i class="far fa-trash-alt"></i>
-                Xóa bộ
-                lọc</button>
+                id="clear_local_storage">
+                <i class="far fa-trash-alt"></i>
+                <span>Xóa bộ lọc</span>
+              </button>
             </div>
             <div>
-              <button type="button" class="btn btn-outline-danger" id="btn_cancel"><span>×</span> Hủy</button>
-              <button type="button" class="btn btn-primary" id="btn_popup_search"> 
+              <button type="button" class="btn btn-outline-danger" id="btn_cancel">
+                <span>×</span>
+                <span>Hủy</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="btn_advanced_search">
                 <i class="fas fa-search p-0"></i>
                 <span>Tìm kiếm</span>
               </button>
@@ -195,8 +210,5 @@
         </form>
       </div>
     </div>
-    <!-- /.modal-content -->
   </div>
-  <!-- /.modal-dialog -->
 </div>
-<!-- /.modal -->
