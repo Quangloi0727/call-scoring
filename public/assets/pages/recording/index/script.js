@@ -10,12 +10,34 @@ $(function () {
   const $btn_cancel = $('#btn_cancel')
   const $clear_local_storage = $('#clear_local_storage')
 
+  //Date picker
+  $('#startTime').datetimepicker({
+    format: 'DD/MM/YYYY',
+    defaultDate: new Date(),
+    icons: { time: 'far fa-clock' }
+  });
+  $('#endTime').datetimepicker({
+    format: 'DD/MM/YYYY',
+    defaultDate: new Date(),
+    icons: { time: 'far fa-clock' }
+  });
+
+  $('#popup_startTime').datetimepicker({
+    format: 'DD/MM/YYYY',
+    icons: { time: 'far fa-clock' }
+  });
+  $('#popup_endTime').datetimepicker({
+    format: 'DD/MM/YYYY',
+    icons: { time: 'far fa-clock' }
+  });
+
   if (localStorage.getItem('modalData')) {
     let page = 1;
     let modalData = JSON.parse(localStorage.getItem('modalData'))
     loadDataByLS(modalData)
     findData(page, null, modalData);
   }
+
   // button event
   $btnSearch.on('click', function (e) {
     let page = 1;
@@ -31,8 +53,16 @@ $(function () {
   });
 
   $btnExportExcel.on('click', function () {
-    console.log("aaaaaaaaaa");
-    return findData(null, true);
+    let inputValue = $frmSearch.serializeArray();
+    let queryData = {};
+
+    inputValue.forEach((el) => {
+      if (el.value && el.value !== '') {
+        queryData[el.name] = el.value;
+      }
+    });
+
+    return findData(null, true, queryData);
   });
 
   $popupSearch.on('click', function () {
@@ -50,6 +80,7 @@ $(function () {
     localStorage.setItem('modalData', JSON.stringify(queryData));
     return findData(page, null, queryData);
   });
+
   $btn_cancel.on('click', () => {
     $modalSearch.modal('hide')
   })
@@ -63,7 +94,6 @@ $(function () {
     let page = $(this).attr('data-link');
     return findData(page);
   });
-
 
   /// function
   function findData(page, exportExcel, queryData) {
@@ -101,17 +131,20 @@ $(function () {
       },
     });
   }
+
   function loadDataByLS(modalData) {
     Object.keys(modalData).forEach(function (key) {
       console.log(key, modalData[key]);
       $(`#val_${key}`).val(modalData[key])
     });
   }
+
   function createTable(data) {
     let html = '';
 
     data.forEach((item) => {
       let audioHtml = '';
+      let agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
 
       if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
@@ -125,16 +158,11 @@ $(function () {
       html += `
         <tr>
           <td class="text-center">${item.direction}</td>
-          <td class="text-center">${item.fullName} (${item.userName})</td>
-          <td class="text-center">${item.teamName}</td>
-          <td class="text-center">${item.extension}</td>
+          <td class="text-center">${agentName}</td>
+          <td class="text-center">${item.teamName || ''}</td>
           <td class="text-center">${item.caller}</td>
           <td class="text-center">${item.called}</td>
           <td class="text-center">${item.origTime}</td>
-          <td class="text-center"></td>
-          <td class="text-center"></td>
-          <td class="text-center"></td>
-          <td class="text-center"></td>
           <td class="text-center">${item.duration}</td>
           <td class="text-center">${audioHtml}</td>
         </tr>
@@ -217,19 +245,4 @@ $(function () {
     link.href = url;
     link.click();
   }
-
-  //Date picker
-  $('#startTime').datetimepicker({ format: 'DD/MM/YYYY' });
-  $('#endTime').datetimepicker({ format: 'DD/MM/YYYY' });
-
-  //Date and time picker
-  $('#startTime').datetimepicker({ icons: { time: 'far fa-clock' } });
-  $('#endTime').datetimepicker({ icons: { time: 'far fa-clock' } });
-
-  $('#popup_startTime').datetimepicker({ format: 'DD/MM/YYYY' });
-  $('#popup_endTime').datetimepicker({ format: 'DD/MM/YYYY' });
-
-  //Date and time picker
-  $('#popup_startTime').datetimepicker({ icons: { time: 'far fa-clock' } });
-  $('#popup_endTime').datetimepicker({ icons: { time: 'far fa-clock' } });
 });

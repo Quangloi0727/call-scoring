@@ -29,22 +29,42 @@ exports.index = async (req, res, next) => {
 
 exports.getRecording = async (req, res, next) => {
   try {
-    const { page, startTime, endTime, caller, called, extension, exportExcel } = req.query;
+    const {
+      page,
+      startTime,
+      endTime,
+      caller,
+      called,
+      extension,
+      exportExcel,
+      agent,
+      group,
+      callDirection
+    } = req.query;
     const limit = 25;
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = '';
+    let isAdmin = false;
 
     if (!startTime || startTime === '' || !endTime || endTime === '') {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
 
+    if (req.user.roles.find((item) => item.role == 2)) {
+      isAdmin = true;
+    }
+
     const teamIds = await checkLeader(req.user.id);
 
-    if (teamIds && teamIds.length > 0) query += `OR records.teamId IN (${teamIds.toString()})`
+    if (!isAdmin) query += `AND records.agentId = ${req.user.id}`;
+    if (!isAdmin && teamIds && teamIds.length > 0) query += `OR records.teamId IN (${teamIds.toString()})`;
     if (caller) query += `AND records.caller LIKE '%${caller}%' `;
     if (called) query += `AND records.called LIKE '%${called}%' `;
     if (extension) query += `AND agent.extension LIKE '%${extension}%' `;
+    if (agent) query += `AND agent.fullName LIKE '%${agent}%' `;
+    if (group) query += `AND team.name LIKE '%${group}%' `;
+    if (callDirection) query += `AND records.direction = '${callDirection}' `;
 
     let startTimeMilisecond = moment(startTime, 'DD/MM/YYYY').startOf('day').format('X');
     let endTimeMilisecond = moment(endTime, 'DD/MM/YYYY').endOf('day').format('X');
@@ -60,7 +80,6 @@ exports.getRecording = async (req, res, next) => {
 	      records.origTime AS origTime,
 	      records.duration AS duration,
 	      records.recordingFileName AS recordingFileName,
-	      agent.extension AS extension,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
         team.name AS teamName,
@@ -74,7 +93,6 @@ exports.getRecording = async (req, res, next) => {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
 	      AND records.origTime <= ${Number(endTimeMilisecond)}
-	      AND records.agentId = ${req.user.id}
 	      ${query}
       ORDER BY records.origTime DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
@@ -87,7 +105,6 @@ exports.getRecording = async (req, res, next) => {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
 	      AND records.origTime <= ${Number(endTimeMilisecond)}
-	      AND records.agentId = ${req.user.id}
 	      ${query}
     `;
 
@@ -150,7 +167,6 @@ function handleData(data) {
   return newData;
 }
 
-
 async function exportExcelHandle(req, res, startTime, endTime, query) {
   try {
     const dataResult = await model.sequelize.query(`
@@ -160,7 +176,6 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
 	      records.origTime AS origTime,
 	      records.duration AS duration,
 	      records.recordingFileName AS recordingFileName,
-	      agent.extension AS extension,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
         team.name AS teamName,
@@ -174,7 +189,6 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTime)}  
 	      AND records.origTime <= ${Number(endTime)}
-	      AND records.agentId = ${req.user.id}
 	      ${query}
       ORDER BY records.origTime DESC
     `, { type: QueryTypes.SELECT });
@@ -200,7 +214,6 @@ function createExcelFile(startDate, endDate, data) {
         TXT_DIRECTION: 'Hướng gọi',
         TXT_USER_NAME: 'Điện thoại viên',
         TXT_TEAM_NAME: 'Nhóm',
-        TXT_EXTENSION: 'Extension',
         TXT_CALLER: 'Số gọi đi',
         TXT_CALLED: 'Số gọi đến	',
         TXT_CREATE_TIME: 'Ngày giờ gọi',
@@ -211,7 +224,6 @@ function createExcelFile(startDate, endDate, data) {
         TXT_DIRECTION: 'direction',
         TXT_USER_NAME: 'agentName',
         TXT_TEAM_NAME: 'teamName',
-        TXT_EXTENSION: "extension",
         TXT_CALLER: "caller",
         TXT_CALLED: "called",
         TXT_CREATE_TIME: "origTime",
