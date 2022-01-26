@@ -135,6 +135,14 @@ exports.createGroup = async (req, res) => {
 
     data.created = req.user.id;
 
+    if(data.name && data.name.length > 50) {
+      throw new Error('Tên nhóm không được dài quá 50 kí tự!');
+    }
+
+    if(data.description && data.description.length > 500) {
+      throw new Error('Mô tả không được dài quá 500 kí tự!');
+    }
+
     if (!data.name || data.name.trim() == '') {
       throw new Error('Tên nhóm không được để trống!');
     }

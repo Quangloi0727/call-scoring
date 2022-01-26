@@ -10,11 +10,12 @@
             <div class="card">
               <div class="card-header row">
                 <div class="col-12 d-flex justify-content-between">
-                  <form class="col-12" id="form_search_groups">
+                  <form class="col-12" id="form_search_groups" onsubmit="return false">
                     <div class="row">
                       <div class="col-3">
                         <div class="form-group">
-                          <input type="text" class="form-control" name="name" placeholder="Tìm kiếm..." />
+                          <input type="text" class="form-control" id="input_search_group" name="name" 
+                            placeholder="Tìm kiếm tên nhóm hoặc người giám sát..." autocomplete="off"/>
                         </div>
                       </div>
                       <div class="col-3 d-inline-flex">
@@ -84,19 +85,31 @@
         <form id="form_input_group">
           <div>
             <div class="form-group">
-              <label>Tên nhóm</label>
+              <label>
+                Tên nhóm
+                <span class="text-danger">*</span>
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="name_length">
+                0/50
+              </label>
               <input type="text" class="form-control input" id="name" name="name" />
             </div>
           </div>
           <div class="form-group">
-            <label>Giám sát</label>
+            <label>
+              Giám sát
+              <span class="text-danger">*</span>
+            </label>
             <select class="form-control selectpicker input" data-live-search="true" name="leader" id="leader" multiple>
             </select>
           </div>
           <div>
             <div class="form-group">
               <label>Mô tả</label>
-              <textarea class="form-control input" name="description" rows="3"></textarea>
+              <label class="float-right font-weight-normal text-muted" id="description_length">
+                0/500
+              </label>
+              <textarea class="form-control input" id="description" name="description" rows="3"></textarea>
             </div>
           </div>
           <div class="modal-footer justify-content-between">

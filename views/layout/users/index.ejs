@@ -89,30 +89,51 @@
         </button>
       </div>
       <div class="modal-body">
-        <form id="form_input_user">
+        <form id="form_input_user" autocomplete="off">
           <div class="row">
             <div class="col-6">
               <div class="form-group">
-                <label>Họ và tên đệm</label>
-                <input type="text" class="form-control input" id="firstname" name="firstName" />
+                <label>
+                  Họ và tên đệm
+                  <span class="text-danger">*</span>
+                </label>
+                <label class="float-right font-weight-normal text-muted" id="first_name_length">
+                  0/30
+                </label>
+                <input type="text" class="form-control input" id="firstname" name="firstName"/>
               </div>
             </div>
             <div class="col-6">
               <div class="form-group">
-                <label>Tên</label>
+                <label>
+                  Tên
+                  <span class="text-danger">*</span>
+                </label>
+                <label class="float-right font-weight-normal text-muted" id="last_name_length">
+                  0/30
+                </label>
                 <input type="text" class="form-control input" id="lastname" name="lastName" />
               </div>
             </div>
           </div>
           <div>
             <div class="form-group">
-              <label>Tên đăng nhập</label>
-              <input type="text" class="form-control input" id="username" name="userName" />
+              <label>
+                Tên đăng nhập
+                <span class="text-danger">*</span>
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="user_name_length">
+                0/30
+              </label>
+              <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password"/>
             </div>
           </div>
           <div>
             <div class="form-group">
-              <label>Extension</label>
+              <label>
+                Extension
+                <span class="text-danger">*</span>
+              </label>
               <input type="text" class="form-control input" id="extension" name="extension" />
             </div>
           </div>
@@ -128,13 +149,19 @@
           </div>
           <div>
             <div class="form-group">
-              <label>Mật khẩu</label>
-              <input class="form-control input" type="password" id="password" name="password">
+              <label>
+                Mật khẩu
+                <span class="text-danger">*</span>
+              </label>
+              <input class="form-control input" type="password" id="password" name="password" autocomplete="new-password">
             </div>
           </div>
           <div>
             <div class="form-group">
-              <label>Xác nhận mật khẩu</label>
+              <label>
+                Xác nhận mật khẩu
+                <span class="text-danger">*</span>
+              </label>
               <input class="form-control input" type="password" id="repeat_password" name="repeat_password">
             </div>
           </div>

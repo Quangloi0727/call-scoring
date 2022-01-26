@@ -29,7 +29,7 @@ exports.index = async (req, res, next) => {
   }
 }
 
-exports.getRecording = async (req, res, next) => {
+exports.getRecording = async (req, res) => {
   try {
     const {
       page,
@@ -61,8 +61,14 @@ exports.getRecording = async (req, res, next) => {
 
     const { teamIds } = await checkLeader(req.user.id);
 
-    if (!isAdmin) query += `AND records.agentId = ${req.user.id}`;
-    if (!isAdmin && teamIds && teamIds.length > 0) query += `OR records.teamId IN (${teamIds.toString()})`;
+    if (!isAdmin && (!teamIds || teamIds.length <= 0)) {
+      query += `AND records.agentId = ${req.user.id} `;
+    }
+
+    if (!isAdmin && teamIds && teamIds.length > 0) {
+      query += `AND ( records.agentId = ${req.user.id} OR records.teamId IN (${teamIds.toString()}) ) `;
+    }
+
     if (caller) query += `AND records.caller LIKE '%${caller.toString()}%' `;
     if (called) query += `AND records.called LIKE '%${called.toString()}%' `;
     if (extension) query += `AND agent.extension LIKE '%${extension.toString()}%' `;
@@ -211,8 +217,8 @@ function createExcelFile(startDate, endDate, data) {
   return new Promise(async (resolve, reject) => {
     try {
 
-      let startTime = moment(startDate, 'DD/MM/YYYY').startOf('day').format('HH:mm YYYY-MM-DD');
-      let endTime = moment(endDate, 'DD/MM/YYYY').endOf('day').format('HH:mm YYYY-MM-DD');
+      let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY');
+      let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY');
 
       let titleExcel = {
         TXT_DIRECTION: 'Hướng gọi',
@@ -252,7 +258,7 @@ function createExcelFile(startDate, endDate, data) {
         titlesHeader: titleExcel,
         data: newData,
         opts: {
-          valueWidthColumn: [25, 25, 30, 25, 35, 35, 35, 35, 35],
+          valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20],
         }
       });
       return resolve(linkFileExcel);

@@ -41,17 +41,25 @@ $(function () {
     rules: {
       name: {
         required: true,
+        maxlength: 50
       },
       leader: {
         required: true,
+      },
+      description: {
+        maxlength: 500
       }
     },
     messages: {
       name: {
         required: "Tên nhóm không được để trống!",
+        maxlength: 'Độ dài không quá 50 kí tự'
       },
       leader: {
         required: "Giám sát không được để trống!",
+      },
+      description: {
+        maxlength: 'Độ dài không quá 500 kí tự'
       }
     },
     ignore: ":hidden",
@@ -101,6 +109,15 @@ $(function () {
     const pageNumber = 1;
     return findData(pageNumber);
   });
+
+  $('#input_search_group').keypress(function (e) {
+    let key = e.which;
+    
+    if(key != 13) return;
+
+    const pageNumber = 1;
+    return findData(pageNumber);
+   });
 
   $inputName.bind('focusout', function (e) {
     e.preventDefault();
@@ -189,7 +206,7 @@ $(function () {
           </td>
           <td class="text-center">${totalMember.length}</td>
           <td class="text-center">${item.description || ''}</td>
-          <td class="text-center">${moment(item.createAt).format('HH:mm:ss DD/MM/YYYY')}</td>
+          <td class="text-center">${moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>
         </tr>
       `;
@@ -265,6 +282,38 @@ $(function () {
 
     return $('#paging_table').html(pagingHtml);
   };
+
+  $('#form_input_group #name').on('input', function () {
+    let value = $(this).val();
+
+    console.log('usrname: ', value)
+
+    $('#name_length').html(`${value.length}/50`);
+
+    if (value.length > 30) {
+      $('#name_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'name': 'Độ dài không quá 50 kí tự!'
+      });
+    } else {
+      $('#name_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
+
+  $('#form_input_group #description').on('input', function () {
+    let value = $(this).val();
+
+    $('#description_length').html(`${value.length}/500`);
+
+    if (value.length > 500) {
+      $('#description_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'description': 'Độ dài không quá 500 kí tự!'
+      });
+    } else {
+      $('#description_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
 
   findData(1)
 });

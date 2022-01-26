@@ -43,12 +43,15 @@ $(function () {
     rules: {
       firstName: {
         required: true,
+        maxlength: 30
       },
       lastName: {
         required: true,
+        maxlength: 30
       },
       userName: {
         required: true,
+        maxlength: 30
       },
       extension: {
         required: true,
@@ -66,12 +69,15 @@ $(function () {
     messages: {
       firstName: {
         required: "Không được để trống Họ và Tên đệm",
+        maxlength: 'Độ dài không quá 30 kí tự'
       },
       lastName: {
         required: "Không được để trống Tên",
+        maxlength: 'Độ dài không quá 30 kí tự'
       },
       userName: {
         required: "Không được để trống Tên đăng nhập",
+        maxlength: 'Độ dài không quá 30 kí tự'
       },
       extension: {
         required: "Không được để trống extension",
@@ -109,11 +115,12 @@ $(function () {
   // event modal
   $modalCreateUser.on('hidden.bs.modal', function (e) {
     $formCreateUser.trigger("reset");
+    validator.resetForm();
   })
 
   $modalCreateUser.on('shown.bs.modal', function (e) {
-    $formCreateUser.trigger("reset");
-    validator.resetForm();
+    // $formCreateUser.trigger("reset");
+    // validator.resetForm();
   })
 
   //event tìm kiếm
@@ -179,7 +186,7 @@ $(function () {
           <td class="text-center">${item.userName}</td>
           <td class="text-center">${item.extension}</td>
           <td class="text-center">${teamHtml}</td>
-          <td class="text-center">${moment(item.createAt).format('DD/MM/YYYY HH:mm:ss')}</td>
+          <td class="text-center">${moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>
         </tr>
       `;
@@ -255,6 +262,53 @@ $(function () {
 
     return $('#paging_table').html(pagingHtml);
   };
+
+  $('#form_input_user #firstname').on('input', function () {
+    let value = $(this).val();
+
+    $('#first_name_length').html(`${value.length}/30`);
+
+    if (value.length > 30) {
+      $('#first_name_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'firstName': 'Độ dài không quá 30 kí tự!'
+      });
+    } else {
+      $('#first_name_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
+
+  $('#form_input_user #lastname').on('input', function () {
+    let value = $(this).val();
+
+    $('#last_name_length').html(`${value.length}/30`);
+
+    if (value.length > 30) {
+      $('#last_name_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'lastName': 'Độ dài không quá 30 kí tự!'
+      });
+    } else {
+      $('#last_name_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
+
+  $('#form_input_user #username').on('input', function () {
+    let value = $(this).val();
+
+    console.log('usrname: ', value)
+
+    $('#user_name_length').html(`${value.length}/30`);
+
+    if (value.length > 30) {
+      $('#user_name_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'userName': 'Độ dài không quá 30 kí tự!'
+      });
+    } else {
+      $('#user_name_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
 
   findData(1);
 });

@@ -115,18 +115,33 @@
         <form id="form_edit_group" onsubmit="return false">
           <div>
             <div class="form-group">
-              <label>Tên nhóm</label>
+              <label>
+                Tên nhóm
+                <span class="text-danger">*</span>
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="name_length">
+                0/50
+              </label>
               <input type="text" class="form-control input" id="name" name="name" />
             </div>
           </div>
           <div class="form-group">
-            <label>Giám sát</label>
-            <select class="form-control selectpicker input" data-live-search="true" name="leader" id="leader" multiple>
+            <label>
+              Giám sát
+              <span class="text-danger">*</span>
+            </label>
+            <select class="form-control selectpicker input" data-live-search="true" 
+              name="leader" id="leader" multiple>
             </select>
           </div>
           <div>
             <div class="form-group">
-              <label>Mô tả</label>
+              <label>
+                Mô tả
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="description_length">
+                0/500
+              </label>
               <textarea class="form-control input" id="description" name="description" rows="3"></textarea>
             </div>
           </div>

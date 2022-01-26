@@ -72,7 +72,11 @@ function bindClick() {
   $buttonClearFilter.on('click', () => {
     localStorage.setItem('modalData', '');
 
-    return $formAdvancedSearch.trigger("reset");
+    $formAdvancedSearch.trigger("reset");
+    $('#val_callDirection').selectpicker('refresh');
+    $('#val_teams').selectpicker('refresh');
+
+    return;
   });
 }
 
@@ -261,8 +265,12 @@ $(function () {
     searchType = ADVANCED_SEARCH;
 
     Object.keys(modalData).forEach(function (key) {
+      console.log('key: ', modalData[key])
       $(`#val_${key}`).val(modalData[key]);
     });
+
+    $('#val_callDirection').selectpicker('refresh');
+    $('#val_teams').selectpicker('refresh');
 
     findData(page, null, modalData);
   } else {

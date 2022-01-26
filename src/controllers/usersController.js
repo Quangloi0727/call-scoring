@@ -120,6 +120,18 @@ exports.createUser = async (req, res, next) => {
 
     transaction = await model.sequelize.transaction();
 
+    if(data.firstName && data.firstName.length > 30) {
+      throw new Error('Họ và tên đệm có độ dài không quá 30 kí tự!');
+    }
+
+    if(data.lastName && data.lastName.length > 30) {
+      throw new Error('Tên có độ dài không quá 30 kí tự!');
+    }
+
+    if(data.userName && data.userName.length > 30) {
+      throw new Error('Tên đăng nhập đệm có độ dài không quá 30 kí tự!');
+    }
+
     if (data.password.trim() !== data.repeat_password.trim()) {
       throw new Error('Mật khẩu không trùng khớp!');
     }

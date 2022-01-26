@@ -149,17 +149,25 @@ $(function () {
     rules: {
       name: {
         required: true,
+        maxlength: 50
       },
       leader: {
         required: true,
+      },
+      description: {
+        maxlength: 500
       }
     },
     messages: {
       name: {
         required: "Tên nhóm không được để trống!",
+        maxlength: 'Độ dài không quá 50 kí tự'
       },
       leader: {
         required: 'Giám sát không được để trống',
+      },
+      description: {
+        maxlength: 'Độ dài không quá 500 kí tự'
       }
     },
     ignore: ":hidden",
@@ -331,18 +339,56 @@ $(function () {
     $inputName.val(team.name);
     $inputDescription.val(team.description);
 
-    let leaderHtml = '';
-    users.forEach(user => {
-      leaderHtml += `
-        <option value="${user.userId}" ${user.leader == 1 ? 'selected' : ''}>
+    const leaders = _.filter(users, function (user) { return user.leader == 1; });
+    const leaderIds = _.pluck(leaders, 'userId');
+
+    $inputLeader.selectpicker('val', leaderIds);
+    return $inputLeader.selectpicker('refresh');
+  });
+
+  $('#form_edit_group #name').on('input', function () {
+    let value = $(this).val();
+
+    console.log('usrname: ', value)
+
+    $('#name_length').html(`${value.length}/50`);
+
+    if (value.length > 30) {
+      $('#name_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'name': 'Độ dài không quá 50 kí tự!'
+      });
+    } else {
+      $('#name_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
+
+  $('#form_edit_group #description').on('input', function () {
+    let value = $(this).val();
+
+    $('#description_length').html(`${value.length}/500`);
+
+    if (value.length > 500) {
+      $('#description_length').removeClass('text-muted').addClass('text-danger');
+      return validator.showErrors({
+        'description': 'Độ dài không quá 500 kí tự!'
+      });
+    } else {
+      $('#description_length').removeClass('text-danger').addClass('text-muted');
+    }
+  });
+
+  // set value leader
+  let leaderHtml = '';
+  users.forEach(user => {
+    leaderHtml += `
+        <option value="${user.userId}">
           ${user.fullName} (${user.userName})
         </option>
       `;
-    });
-
-    $inputLeader.html(leaderHtml);
-    return $inputLeader.selectpicker('refresh');
   });
+  $inputLeader.html(leaderHtml);
+  $inputLeader.selectpicker('refresh');
 
   getUserAvailable();
 
