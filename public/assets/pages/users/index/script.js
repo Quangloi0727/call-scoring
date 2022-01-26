@@ -116,12 +116,21 @@ $(function () {
   $modalCreateUser.on('hidden.bs.modal', function (e) {
     $formCreateUser.trigger("reset");
     validator.resetForm();
-  })
+
+    $('#first_name_length').html('0/30');
+    $('#first_name_length').removeClass('text-danger').addClass('text-muted');
+
+    $('#last_name_length').html('0/30');
+    $('#last_name_length').removeClass('text-danger').addClass('text-muted');
+
+    $('#user_name_length').html('0/30');
+    $('#user_name_length').removeClass('text-danger').addClass('text-muted');
+  });
 
   $modalCreateUser.on('shown.bs.modal', function (e) {
-    // $formCreateUser.trigger("reset");
-    // validator.resetForm();
-  })
+    $formCreateUser.trigger("reset");
+    validator.resetForm();
+  });
 
   //event tìm kiếm
   $buttonSearchUser.on('click', function () {

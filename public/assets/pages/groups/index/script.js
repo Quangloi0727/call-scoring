@@ -85,6 +85,13 @@ $(function () {
   // event modal
   $modalGroup.on('hidden.bs.modal', function (e) {
     $formCreateGroup.trigger("reset");
+    validator.resetForm();
+
+    $('#name_length').html('0/50');
+    $('#name_length').removeClass('text-danger').addClass('text-muted');
+
+    $('#description_length').html('0/500');
+    $('#description_length').removeClass('text-danger').addClass('text-muted');
   })
 
   $modalGroup.on('shown.bs.modal', function (e) {
@@ -112,12 +119,12 @@ $(function () {
 
   $('#input_search_group').keypress(function (e) {
     let key = e.which;
-    
-    if(key != 13) return;
+
+    if (key != 13) return;
 
     const pageNumber = 1;
     return findData(pageNumber);
-   });
+  });
 
   $inputName.bind('focusout', function (e) {
     e.preventDefault();
@@ -191,7 +198,7 @@ $(function () {
       html += `
         <tr>
           <td class="text-center">
-            <a href=/groups/detail/${item.id}>${item.name}</a>
+            <a href=/groups/detail/${item.teamId}>${item.teamName}</a>
           </td>
           <td class="text-center">
             <div class="dropdown show ${leaders.length > 0 ? '' : 'd-none'}">
@@ -206,8 +213,8 @@ $(function () {
           </td>
           <td class="text-center">${totalMember.length}</td>
           <td class="text-center">${item.description || ''}</td>
-          <td class="text-center">${moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')}</td>
-          <td class="text-center">${item.userCreate.fullName}</td>
+          <td class="text-center">${item.createdAt}</td>
+          <td class="text-center">${item.createdName}</td>
         </tr>
       `;
     });
@@ -290,7 +297,7 @@ $(function () {
 
     $('#name_length').html(`${value.length}/50`);
 
-    if (value.length > 30) {
+    if (value.length > 50) {
       $('#name_length').removeClass('text-muted').addClass('text-danger');
       return validator.showErrors({
         'name': 'Độ dài không quá 50 kí tự!'

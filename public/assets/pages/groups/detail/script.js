@@ -330,6 +330,13 @@ $(function () {
   // event modal
   $modelEditGroup.on('hidden.bs.modal', function (e) {
     $formEditGroup.trigger('reset');
+    validatorFormEdit.resetForm();
+
+    $('#name_length').html('0/50');
+    $('#name_length').removeClass('text-danger').addClass('text-muted');
+
+    $('#description_length').html('0/500');
+    $('#description_length').removeClass('text-danger').addClass('text-muted');
   })
 
   $modelEditGroup.on('shown.bs.modal', function (e) {
@@ -353,7 +360,7 @@ $(function () {
 
     $('#name_length').html(`${value.length}/50`);
 
-    if (value.length > 30) {
+    if (value.length > 50) {
       $('#name_length').removeClass('text-muted').addClass('text-danger');
       return validator.showErrors({
         'name': 'Độ dài không quá 50 kí tự!'

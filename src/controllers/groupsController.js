@@ -50,37 +50,56 @@ exports.getGroups = async (req, res, next) => {
     const limit = 10;
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
-    let query = {};
+    let query = '';
 
-    if (name) query.name = { [Op.substring]: name };
+    if (name) query += `AND (team.name LIKE '%${name}%' OR memberOfTeam.fullName LIKE '%${name}%' OR memberOfTeam.userName LIKE '%${name}%')`;
+
+    let queryDataString = `
+      SELECT
+        team.id AS teamId,
+        team.name AS teamName,
+        team.description AS description,
+        team.createdAt AS createdAt,
+        agent.id AS createdId,
+        agent.fullName AS createdName,
+        MIN(memberOfTeam.id) AS memberId,
+        MIN(memberOfTeam.fullName) AS memberFullName,
+        MIN(memberOfTeam.userName) AS memberUserName
+      FROM dbo.Teams team
+      LEFT JOIN dbo.Users agent ON team.created = agent.id
+      LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
+      LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
+      WHERE AgentTeamMembers.role = 1 
+      ${query}
+      GROUP BY team.id, team.name, team.createdAt, team.description, agent.id, agent.fullName
+      ORDER BY team.id DESC
+      OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
+    `;
+
+    let queryCountString = `
+      SELECT COUNT(*) AS total
+      FROM dbo.Teams team
+      LEFT JOIN dbo.Users agent ON team.created = agent.id
+      LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
+      LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
+      WHERE AgentTeamMembers.role = 1
+      ${query}
+      GROUP BY team.id, team.name, agent.id, agent.fullName
+    `;
 
     const [groupsResult, total] = await Promise.all([
-      TeamModel.findAll({
-        where: {
-          ...query,
-        },
-        order: [['id', 'DESC']],
-        offset: offset,
-        limit: limit,
-        include: [{ model: UserModel, as: 'userCreate' }],
-        raw: true,
-        nest: true
-      }),
-      TeamModel.count({
-        where: {
-          ...query,
-        },
-      })
+      await model.sequelize.query(queryDataString, { type: QueryTypes.SELECT }),
+      await model.sequelize.query(queryCountString, { type: QueryTypes.SELECT }),
     ]);
 
-    const teamIds = _.map(groupsResult, 'id');
+    const teamIds = _.map(groupsResult, 'teamId');
 
     const dataResult = await handleTeam(teamIds, groupsResult);
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
-      totalResult: total || 0,
+      totalResult: total && total.length || 0,
     });
 
     return res.status(SUCCESS_200.code).json({
@@ -115,8 +134,12 @@ async function handleTeam(teamIds, teams) {
     const agentTeamMember = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
 
     const dataResult = teams.map((team) => {
-      const result = agentTeamMember.filter((agentOfTeam) => agentOfTeam.teamId == team.id);
-      return { ...team, member: result };
+      const result = agentTeamMember.filter((agentOfTeam) => agentOfTeam.teamId == team.teamId);
+      return { 
+        ...team, 
+        member: result,
+        createdAt: moment(team.createdAt).format('HH:mm:ss DD/MM/YYYY')
+      };
     });
 
     return dataResult;
@@ -135,11 +158,11 @@ exports.createGroup = async (req, res) => {
 
     data.created = req.user.id;
 
-    if(data.name && data.name.length > 50) {
+    if (data.name && data.name.length > 50) {
       throw new Error('Tên nhóm không được dài quá 50 kí tự!');
     }
 
-    if(data.description && data.description.length > 500) {
+    if (data.description && data.description.length > 500) {
       throw new Error('Mô tả không được dài quá 500 kí tự!');
     }
 
