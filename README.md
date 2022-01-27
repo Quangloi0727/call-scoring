@@ -42,3 +42,10 @@ Chạy migration với lệnh :
                 npx sequelize-cli db:migrate
 
 ```
+
+Sequelize có chức năng tạo seed để insert các data cà bảng khi vừa khởi tạo dự án
+
+- file src/database/seeders/20220127081153-seed-initial-data có chức năng khởi tạo các data cần thiết
+- Chạy file seed ta sửa dụng các lệnh sau: 
+  + Chạy từng file: npx sequelize db:seed --seed 20220127081153-seed-initial-data.js
+  + Chạy tất cả các file seed: npx sequelize-cli db:seed:all
