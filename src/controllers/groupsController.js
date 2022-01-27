@@ -69,7 +69,7 @@ exports.getGroups = async (req, res, next) => {
       LEFT JOIN dbo.Users agent ON team.created = agent.id
       LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
       LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
-      WHERE AgentTeamMembers.role = 1 
+      WHERE ( AgentTeamMembers.role = 1 OR AgentTeamMembers.role = 2 )
       ${query}
       GROUP BY team.id, team.name, team.createdAt, team.description, agent.id, agent.fullName
       ORDER BY team.id DESC
@@ -82,7 +82,7 @@ exports.getGroups = async (req, res, next) => {
       LEFT JOIN dbo.Users agent ON team.created = agent.id
       LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
       LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
-      WHERE AgentTeamMembers.role = 1
+      WHERE ( AgentTeamMembers.role = 1 OR AgentTeamMembers.role = 2 )
       ${query}
       GROUP BY team.id, team.name, agent.id, agent.fullName
     `;
