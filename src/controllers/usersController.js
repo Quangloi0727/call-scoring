@@ -120,15 +120,15 @@ exports.createUser = async (req, res, next) => {
 
     transaction = await model.sequelize.transaction();
 
-    if(data.firstName && data.firstName.length > 30) {
+    if (data.firstName && data.firstName.length > 30) {
       throw new Error('Họ và tên đệm có độ dài không quá 30 kí tự!');
     }
 
-    if(data.lastName && data.lastName.length > 30) {
+    if (data.lastName && data.lastName.length > 30) {
       throw new Error('Tên có độ dài không quá 30 kí tự!');
     }
 
-    if(data.userName && data.userName.length > 30) {
+    if (data.userName && data.userName.length > 30) {
       throw new Error('Tên đăng nhập đệm có độ dài không quá 30 kí tự!');
     }
 
@@ -171,4 +171,62 @@ exports.createUser = async (req, res, next) => {
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
-} 
+}
+
+exports.getChangePassword = async (req, res, next) => {
+  try {
+    return _render(req, res, 'users/changePassword', {
+      title: 'Đổi mật khẩu',
+      titlePage: 'Đổi mật khẩu',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+    return next(error);
+  }
+}
+
+exports.postChangePassword = async (req, res, next) => {
+  let transaction;
+
+  try {
+    const { newPassword, oldPassword } = req.body;
+
+    transaction = await model.sequelize.transaction();
+
+    const user = await UserModel.findOne(
+      {
+        where: {
+          id: { [Op.eq]: Number(req.user.id) },
+          password: { [Op.eq]: oldPassword.trim() }
+        },
+      },
+      { transaction: transaction }
+    );
+
+    if (!user) {
+      throw new Error('Mật khẩu không đúng, vui lòng thử lại!');
+    }
+
+    await UserModel.update(
+      { password: newPassword.trim() },
+      { where: { id: { [Op.eq]: Number(req.user.id) } } },
+      { transaction: transaction }
+    )
+
+    await transaction.commit();
+
+    return res.status(SUCCESS_200.code).json({
+      message: 'Success!',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    if (transaction) await transaction.rollback();
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}

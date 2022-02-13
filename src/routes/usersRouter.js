@@ -11,4 +11,10 @@ router.route('/insert')
 router.route('/getUsers')
     .get(usersController.getUsers);
 
+router.route('/changePassword')
+    .get(usersController.getChangePassword);
+
+router.route('/changePassword')
+    .post(usersController.postChangePassword);
+
 module.exports = router;
