@@ -1,5 +1,6 @@
 $(function () {
   const $formChangePassword = $('#form_change_password');
+  const $buttonCancelChangePassword = $('#cancelChangePassword');
   const $loadingData = $('.page-loader');
 
   $.validator.addMethod('pwcheck', function (value) {
@@ -26,11 +27,11 @@ $(function () {
 
           $.confirm({
             title: 'Thông báo!',
-            content: 'Thay đổi mật khẩu thành công',
+            content: 'Thay đổi mật khẩu thành công, vui lòng đăng nhập lại!',
             buttons: {
-              'OK': {
+              'Đồng ý': {
                 action: function () {
-                  return location.reload();
+                  return window.location.replace('/logout');
                 }
               }
             }
@@ -84,5 +85,9 @@ $(function () {
     unhighlight: function (element) {
       $(element).removeClass('is-invalid');
     }
+  });
+
+  $buttonCancelChangePassword.on('click', function () {
+    return window.history.back();
   });
 });

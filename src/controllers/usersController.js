@@ -202,7 +202,6 @@ exports.postChangePassword = async (req, res, next) => {
           password: { [Op.eq]: oldPassword.trim() }
         },
       },
-      { transaction: transaction }
     );
 
     if (!user) {
@@ -216,6 +215,9 @@ exports.postChangePassword = async (req, res, next) => {
     )
 
     await transaction.commit();
+
+    req.logout();
+    req.session.destroy();
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
