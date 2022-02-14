@@ -13,6 +13,11 @@ const $buttonExportExcelAdvanced = $('#export_excel_advanced');
 const DEFAULT_SEARCH = 'default_search';
 const ADVANCED_SEARCH = 'advance_search';
 
+const $modal_customs_table = $("#modal_customs_table");
+const $checkInput = $("#sortable input:checkbox");
+const $tableRecording = $("#tableRecording");
+const $selectAll = $("#select-all");
+const $btn_save_customs = $("#btn_save_customs")
 let searchType = DEFAULT_SEARCH;
 
 function bindClick() {
@@ -78,6 +83,52 @@ function bindClick() {
 
     return;
   });
+
+
+
+  // event popup custom table
+  $("#sortable").sortable();
+
+  $checkInput.prop('checked', true);
+
+  // $chk.click(function () {
+  //   var colToHide = $tableRecording.find("." + $(this).attr("name"));
+  //   console.log($(this).is(":checked"));
+  //   $(colToHide).toggle();
+  // });
+  $btn_save_customs.click(function (event) {
+    let listCheck = [];
+    $checkInput.each(function (index) {
+      // đoạn này e check và cho ẩn hiện luôn ko có save data nguyenvc
+      var colToHide = $tableRecording.find("." + $(this).attr("name"));
+      if ($(this).is(":checked") == false) {
+
+        $(colToHide).toggle(false);
+
+      } else {
+        $(colToHide).toggle(true);
+      }
+      return $modal_customs_table.modal('hide');
+    });
+
+    console.log("@@@@@@@@@@@@@@@@");
+    $("#sortable input:checkbox").each(function () {
+      console.log($(this).attr("name"));
+    });
+  });
+
+  $selectAll.click(function (event) {
+    if (this.checked) {
+      // Iterate each checkbox
+      $(':checkbox').each(function () {
+        this.checked = true;
+      });
+    } else {
+      $(':checkbox').each(function () {
+        this.checked = false;
+      });
+    }
+  });
 }
 
 function getFormData(formId) {
@@ -126,8 +177,8 @@ function findData(page, exportExcel, queryData) {
 
 function createTable(data) {
   let html = '';
-
-  data.forEach((item) => {
+  console.log(data);
+  data.forEach((item, element) => {
     let audioHtml = '';
     let agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
 
@@ -141,15 +192,15 @@ function createTable(data) {
     }
 
     html += `
-      <tr>
-        <td class="text-center">${item.direction || ''}</td>
-        <td class="text-center">${agentName}</td>
-        <td class="text-center">${item.teamName || ''}</td>
-        <td class="text-center">${item.caller}</td>
-        <td class="text-center">${item.called}</td>
-        <td class="text-center">${item.origTime}</td>
-        <td class="text-center">${item.duration}</td>
-        <td class="text-center">${audioHtml}</td>
+      <tr data-ele="${element}">
+        <td class="text-center direction">${item.direction || ''}</td>
+        <td class="text-center agentName">${agentName}</td>
+        <td class="text-center teamName">${item.teamName || ''}</td>
+        <td class="text-center caller">${item.caller}</td>
+        <td class="text-center called">${item.called}</td>
+        <td class="text-center origTime">${item.origTime}</td>
+        <td class="text-center duration">${item.duration}</td>
+        <td class="text-center audioHtml">${audioHtml}</td>
       </tr>
     `;
   });

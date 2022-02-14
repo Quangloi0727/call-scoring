@@ -47,15 +47,21 @@
                 </div>
               </div>
               <div class="col-2 d-flex">
-                <div class="col-5">
-                  <button type="button" class="form-control btn btn-primary btn-md" id="popup_search"
+                <div class="mr-2">
+                  <button type="button" class="form-control btn btn-primary btn-circle btn-sm" id="search">
+                    <i class="fas fa-search p-0"></i>
+                  </button>
+                </div>
+                <div class="mr-2">
+                  <button type="button" class="form-control btn btn-primary btn-sm" id="popup_search"
                     data-toggle="modal" data-target="#modal_search">
                     <i class="fas fa-filter"></i>
                   </button>
                 </div>
-                <div class="col-3">
-                  <button type="button" class="form-control btn btn-primary btn-circle btn-md" id="search">
-                    <i class="fas fa-search p-0"></i>
+                <div class="mr-2">
+                  <button type="button" class="form-control btn btn-primary btn-sm" id="customs_table"
+                    data-toggle="modal" title="Tùy chỉnh bảng" data-target="#modal_customs_table">
+                    <i class="fas fa-cog"></i>
                   </button>
                 </div>
               </div>
@@ -67,17 +73,17 @@
         </div>
       </div>
       <div class="card-body">
-        <table id="example2" class="table table-bordered table-hover">
+        <table id="tableRecording" class="table table-bordered table-hover">
           <thead>
             <tr>
-              <th class="text-center">Hướng gọi</th>
-              <th class="text-center">Điện thoại viên</th>
-              <th class="text-center">Nhóm</th>
-              <th class="text-center">Số gọi đi</th>
-              <th class="text-center">Số gọi đến</th>
-              <th class="text-center">Ngày giờ gọi</th>
-              <th class="text-center">Thời lượng</th>
-              <th class="text-center col-recording">Ghi âm</th>
+              <th class="text-center sortHeader direction">Hướng gọi</th>
+              <th class="text-center sortHeader agentName">Điện thoại viên</th>
+              <th class="text-center sortHeader teamName">Nhóm</th>
+              <th class="text-center sortHeader caller">Số gọi đi</th>
+              <th class="text-center sortHeader called">Số gọi đến</th>
+              <th class="text-center sortHeader origTime">Ngày giờ gọi</th>
+              <th class="text-center sortHeader duration">Thời lượng</th>
+              <th class="text-center sortHeader audioHtml col-recording">Ghi âm</th>
             </tr>
           </thead>
           <tbody id="table_data"></tbody>
@@ -174,26 +180,28 @@
             </div>
           </div>
           <div class="row">
-          <% if(teams.length >= 2) { %>
-            <div class="col-6">
-              <div class="form-group">
-                <label>Nhóm</label>
-                <select class="form-control selectpicker input" name="teams" id="val_teams"
-                data-live-search="true" title="Chọn..." multiple>
-                <% teams.forEach((team) => { %>
-                  <option value="<%= team.teamId %>"><%= team.teamName %></option>
-                <% }); %>
-              </select>
+            <% if(teams.length>= 2) { %>
+              <div class="col-6">
+                <div class="form-group">
+                  <label>Nhóm</label>
+                  <select class="form-control selectpicker input" name="teams" id="val_teams" data-live-search="true"
+                    title="Chọn..." multiple>
+                    <% teams.forEach((team)=> { %>
+                      <option value="<%= team.teamId %>">
+                        <%= team.teamName %>
+                      </option>
+                      <% }); %>
+                  </select>
+                </div>
               </div>
-            </div>
-          <% } %>
+              <% } %>
           </div>
           <div class="modal-footer justify-content-between">
             <div>
               <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
                 id="clear_local_storage">
                 <i class="far fa-trash-alt"></i>
-                <span>Xóa bộ lọc</span>
+                <span>Phục hồi mặc định</span>
               </button>
             </div>
             <div>
@@ -203,11 +211,111 @@
               </button>
               <button type="button" class="btn btn-primary" id="btn_advanced_search">
                 <i class="fas fa-search p-0"></i>
-                <span>Tìm kiếm</span>
+                <span>Lưu</span>
               </button>
             </div>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="modal_customs_table">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Tùy chỉnh bảng</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <ul>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="" id="select-all" />
+            <label>Chọn tất cả</label>
+          </li>
+        </ul>
+        <ul id="sortable">
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="direction" />
+            Hướng gọi <i class="fas fa-arrows"></i>
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="agentName" />
+            Điện thoại viên
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="teamName" />
+            Nhóm
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="caller" />
+            Số gọi đi
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="called" />
+            Số gọi đến
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="origTime" />
+            Ngày giờ gọi
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="duration" />
+            Thời lượng
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="audioHtml" />
+            Ghi âm
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+        </ul>
+
+        <div class="modal-footer justify-content-between">
+          <div>
+            <!-- <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
+              id="clear_local_storage">
+              <i class="far fa-trash-alt"></i>
+              <span>Xóa bộ lọc</span>
+            </button> -->
+          </div>
+          <div>
+            <button type="button" class="btn btn-outline-danger" id="btn_cancel_customs">
+              <span>×</span>
+              <span>Hủy</span>
+            </button>
+            <button type="button" class="btn btn-primary" id="btn_save_customs">
+              <i class="fas fa-search p-0"></i>
+              <span>Lưu tùy chỉnh</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
