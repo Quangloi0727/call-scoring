@@ -41,7 +41,7 @@ class User extends Model {
         sequelize,
         modelName: 'Users',
         hooks: {
-          beforeValidate: handleBeforeValidate
+          beforeCreate: handleBeforeCreate
         }
       }
     );
@@ -59,7 +59,7 @@ class User extends Model {
   }
 }
 
-async function handleBeforeValidate(user, option) {
+async function handleBeforeCreate(user, option) {
   const userNameFound = await User.findOne({
     where: { userName: { [Op.eq]: user.userName.toString() } }
   });

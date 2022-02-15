@@ -53,26 +53,26 @@ $(function () {
         required: true,
         pwcheck: true
       },
+      repeatNewPassword: {
+        required: true,
+        equalTo: "#newPassword"
+      },
       oldPassword: {
         required: true,
       },
-      repeatOldPassword: {
-        required: true,
-        equalTo: "#oldPassword"
-      }
     },
     messages: {
       newPassword: {
         required: "Vui lòng nhập mật khẩu mới",
         pwcheck: "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ HOA, chữ thường và số"
       },
+      repeatNewPassword: {
+        required: "Vui lòng nhập lại mật khẩu mới",
+        equalTo: "Mật khẩu không khớp"
+      },
       oldPassword: {
         required: "Vui lòng nhập mật khẩu cũ",
       },
-      repeatOldPassword: {
-        required: "Vui lòng nhập lại mật khẩu cũ",
-        equalTo: "Mật khẩu không khớp"
-      }
     },
     errorElement: 'span',
     errorPlacement: function (error, element) {
