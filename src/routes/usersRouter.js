@@ -17,4 +17,7 @@ router.route('/changePassword')
 router.route('/changePassword')
     .post(usersController.postChangePassword);
 
+router.route('/importUser')
+    .get(usersController.getImportUser);
+
 module.exports = router;

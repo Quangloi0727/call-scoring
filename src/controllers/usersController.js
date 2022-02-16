@@ -232,3 +232,17 @@ exports.postChangePassword = async (req, res, next) => {
     return res.status(ERR_500.code).json({ message: error.message });
   }
 }
+
+exports.getImportUser = async (req, res, next) => {
+  try {
+    return _render(req, res, 'users/importUser', {
+      title: 'Nhập dữ liệu người dùng hàng loạt',
+      titlePage: 'Nhập dữ liệu người dùng hàng loạt',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+    return next(error);
+  }
+}
