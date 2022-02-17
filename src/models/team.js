@@ -22,7 +22,7 @@ class Team extends Model {
         sequelize,
         modelName: 'Teams',
         hooks: {
-          beforeValidate: handleBeforeValidate
+          beforeCreate: handleBeforeCreate
         }
       },
     );
@@ -35,7 +35,7 @@ class Team extends Model {
   }
 }
 
-async function handleBeforeValidate(team, option) {
+async function handleBeforeCreate(team, option) {
   const teamResult = await Team.findOne({
     where: { name: { [Op.eq]: team.name.toString() } }
   });
