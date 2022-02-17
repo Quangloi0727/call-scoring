@@ -12,6 +12,10 @@ $(function () {
     'TenDangNhap',
   ];
   let validateUserResult = [];
+  let rawUserDatas = [];
+  let uniqueUsernameResult = [];
+  let uniqueExtensionResult = [];
+  let filesData = {};
 
   let previewNode = document.querySelector('#template');
   previewNode.id = '';
@@ -31,6 +35,8 @@ $(function () {
 
   myDropzone.on('addedfile', function (file) {
     if (!file) return;
+
+    console.log('file: ', file);
 
     let name = file.name;
     let size = file.size;
@@ -60,7 +66,6 @@ $(function () {
         return toastr.error('Excel trống, vui lòng nhập dữ liệu!');
       }
 
-      console.log('row: ', rows);
       const firstRow = rows[0];
 
       Object.keys(firstRow).forEach((key) => {
@@ -69,28 +74,20 @@ $(function () {
           return toastr.error('File sai format. Xin vui lòng kiểm tra lại format!');
         }
       });
-    };
 
-    // Hookup the start button
-    file.previewElement.querySelector('.start').onclick = function () {
-      myDropzone.enqueueFile(file);
+      let fileId = file.upload.uuid;
+      filesData[fileId] = rows;
     };
   });
 
-  // Update the total progress bar
-  myDropzone.on('totaluploadprogress', function (progress) {
-    console.log('totaluploadprogress');
-  });
+  myDropzone.on('removedfile', function (file) {
+    if (!file || file == '') return;
 
-  myDropzone.on('sending', function (file) {
-    console.log('sending');
-    // And disable the start button
-    file.previewElement.querySelector('.start').setAttribute('disabled', 'disabled');
-  });
+    let fileId = file.upload.uuid;
 
-  // Hide the total progress bar when nothing's uploading anymore
-  myDropzone.on('queuecomplete', function (progress) {
-    console.log('queuecomplete');
+    if (!filesData[fileId]) return;
+
+    return delete filesData[fileId];
   });
 
   function readExcel(data) {
@@ -102,19 +99,64 @@ $(function () {
     return excelRows;
   }
 
-  $('#actions .cancel').on('click', function () {
-    console.log('action cancel')
-    myDropzone.removeAllFiles(true);
-  });
-
   $btnHandleFile.on('click', function () {
-    console.log('myDropzone: ', myDropzone.files);
+    if (!myDropzone || !myDropzone.files || myDropzone.files.length <= 0) return;
+
+    rawUserDatas = [];
+    uniqueUsernameResult = [];
+
+    console.log('filesData: ', filesData);
+
+    Object.keys(filesData).forEach(function (key) {
+      rawUserDatas = [...rawUserDatas, ...filesData[key]];
+    });
+
+    console.log('rawUserDatas: ', rawUserDatas);
+
+    // Check trùng tên đăng nhập
+    uniqueUsernameResult = _.uniq(rawUserDatas, function (user) {
+      return user.TenDangNhap;
+    });
+
+    console.log('uniqueUsernameResult: ', uniqueUsernameResult);
+
+    // Check trùng extension
+    uniqueExtensionResult = _.uniq(rawUserDatas, function (user) {
+      return user.Extension;
+    });
+
+    console.log('uniqueExtensionResult: ', uniqueExtensionResult);
+
+    // Validate danh sách user
+    uniqueExtensionResult.forEach(function (user) {
+      let validateResult = validateUser(user);
+
+      if (validateResult && validateResult != null) {
+        validateUserResult.push(validateResult);
+      }
+    });
+
+    console.log('validateUserResult: ', validateUserResult);
   });
 
   function validateUser(user) {
-    let isValidate = true;
+    let validateEmpty = [];
     let validateResult = [];
 
+    // Kiểm tra field có bin trống hay không!
+    formatExcel.forEach(function (key) {
+      if (!user[key]) {
+        validateEmpty.push(false);
+      } else {
+        validateEmpty.push(true);
+      }
+    });
+
+    if (validateEmpty.includes(false)) {
+      return null;
+    }
+
+    // Validate dữ liệu user
     Object.keys(user).forEach((key) => {
       if (key == 'HoVaTenDem') {
         validateResult.push(checkName(user[key]));
@@ -143,9 +185,11 @@ $(function () {
       }
     });
 
-    if (!validateResult.includes(false)) {
-      validateUserResult.push(user);
+    if (validateResult.includes(false)) {
+      return null;
     }
+
+    return user;
   }
 
   function isEmpty(value) {
