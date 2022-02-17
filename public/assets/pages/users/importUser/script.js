@@ -3,6 +3,15 @@ $(function () {
 
   let fileTypes = ['xlsx', 'xls'];
   let maxSize = 10000000;
+  let formatExcel = [
+    'Extension',
+    'HoVaTenDem',
+    'MatKhau',
+    'Quyen',
+    'Ten',
+    'TenDangNhap',
+  ];
+  let validateUserResult = [];
 
   let previewNode = document.querySelector('#template');
   previewNode.id = '';
@@ -23,15 +32,9 @@ $(function () {
   myDropzone.on('addedfile', function (file) {
     if (!file) return;
 
-    console.log('addedfile');
-    console.log('file: ', file);
-
     let name = file.name;
     let size = file.size;
     let typeFile = name.split('.').pop();
-
-    console.log('name: ', name)
-    console.log('typeFile: ', typeFile)
 
     if (!fileTypes.includes(typeFile)) {
       myDropzone.removeFile(file);
@@ -45,29 +48,33 @@ $(function () {
 
     let fileReader = new FileReader();
 
-    fileReader.readAsBinaryString(file)
+    fileReader.readAsBinaryString(file);
 
     fileReader.onload = function (event) {
-      var data = event.target.result;
+      let data = event.target.result;
 
-      console.log('data: ', data);
-      // var cfb = XLS.CFB.read(data, { type: 'binary' });
-      // var wb = XLS.parse_xlscfb(cfb);
-      // // Loop Over Each Sheet
-      // wb.SheetNames.forEach(function (sheetName) {
-      //   // Obtain The Current Row As CSV
-      //   var sCSV = XLS.utils.make_csv(wb.Sheets[sheetName]);
-      //   var oJS = XLS.utils.sheet_to_row_object_array(wb.Sheets[sheetName]);
+      let rows = readExcel(data);
 
-      //   $("#my_file_output").html(sCSV);
-      //   console.log(oJS)
-      // });
+      if (!rows || rows.length <= 0) {
+        myDropzone.removeFile(file);
+        return toastr.error('Excel trống, vui lòng nhập dữ liệu!');
+      }
+
+      console.log('row: ', rows);
+      const firstRow = rows[0];
+
+      Object.keys(firstRow).forEach((key) => {
+        if (!formatExcel.includes(key.toString().trim())) {
+          myDropzone.removeFile(file);
+          return toastr.error('File sai format. Xin vui lòng kiểm tra lại format!');
+        }
+      });
     };
 
-    // // Hookup the start button
-    // file.previewElement.querySelector('.start').onclick = function () {
-    //   myDropzone.enqueueFile(file);
-    // };
+    // Hookup the start button
+    file.previewElement.querySelector('.start').onclick = function () {
+      myDropzone.enqueueFile(file);
+    };
   });
 
   // Update the total progress bar
@@ -86,6 +93,15 @@ $(function () {
     console.log('queuecomplete');
   });
 
+  function readExcel(data) {
+    let workbook = XLSX.read(data, { type: 'binary' });
+    let firstSheet = workbook.SheetNames[0];
+
+    excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
+
+    return excelRows;
+  }
+
   $('#actions .cancel').on('click', function () {
     console.log('action cancel')
     myDropzone.removeAllFiles(true);
@@ -94,4 +110,69 @@ $(function () {
   $btnHandleFile.on('click', function () {
     console.log('myDropzone: ', myDropzone.files);
   });
+
+  function validateUser(user) {
+    let isValidate = true;
+    let validateResult = [];
+
+    Object.keys(user).forEach((key) => {
+      if (key == 'HoVaTenDem') {
+        validateResult.push(checkName(user[key]));
+      }
+
+      if (key == 'Ten') {
+        validateResult.push(checkName(user[key]));
+      }
+
+      if (key == 'TenDangNhap') {
+        validateResult.push(checkName(user[key]));
+      }
+
+      if (key == 'Extension') {
+        validateResult.push(isEmpty(user[key]));
+        validateResult.push(isNumber(user[key]));
+      }
+
+      if (key == 'Quyen') {
+        validateResult.push(isEmpty(user[key]));
+        validateResult.push(isNumber(user[key]));
+      }
+
+      if (key == 'MatKhau') {
+        validateResult.push(checkPassword(user[key]));
+      }
+    });
+
+    if (!validateResult.includes(false)) {
+      validateUserResult.push(user);
+    }
+  }
+
+  function isEmpty(value) {
+    if (!value || value === '') return false;
+
+    return true;
+  }
+
+  function isNumber(value) {
+    if (isNaN(value)) return false;
+
+    return true;
+  }
+
+  function checkName(value) {
+    if (!isEmpty(value)) return false;
+    if (value.length > 30) return false;
+
+    return true;
+  }
+
+  function checkPassword(value) {
+    let regex = /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/
+
+    if (!isEmpty(value)) return false;
+    if (!regex.test(value.toString().trim())) return false;
+
+    return true;
+  }
 });
