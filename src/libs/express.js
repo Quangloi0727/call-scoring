@@ -32,7 +32,9 @@ function initServer() {
 
   app.use(express.static("public"));
 
-  app.use('/export', express.static(path.join(__dirname, 'public', 'export')));
+  app.use('/export', express.static(path.join(_rootPath, 'public', 'export')));
+
+  app.use('/public', express.static(path.join(_rootPath, 'public', 'files')));
 
   app.use('/static', express.static("uploads"));
 

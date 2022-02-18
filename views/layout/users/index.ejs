@@ -36,6 +36,10 @@
                       </div>
                     </div>
                   </form>
+                  <a type="button" class="form-control btn btn-primary" id="import_user" href="/users/importUser">
+                    <i class="fa fa-solid fa-file-import ml-1" aria-hidden="true"></i>
+                    Nhập dữ liệu
+                  </a>
                   <button type="button" class="form-control btn btn-primary" data-toggle="modal" id="create_user"
                     data-target="#modalUser">
                     <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
@@ -100,7 +104,7 @@
                 <label class="float-right font-weight-normal text-muted" id="first_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input" id="firstname" name="firstName"/>
+                <input type="text" class="form-control input" id="firstname" name="firstName" />
               </div>
             </div>
             <div class="col-6">
@@ -125,7 +129,7 @@
               <label class="float-right font-weight-normal text-muted" id="user_name_length">
                 0/30
               </label>
-              <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password"/>
+              <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password" />
             </div>
           </div>
           <div>
@@ -153,7 +157,8 @@
                 Mật khẩu
                 <span class="text-danger">*</span>
               </label>
-              <input class="form-control input" type="password" id="password" name="password" autocomplete="new-password">
+              <input class="form-control input" type="password" id="password" name="password"
+                autocomplete="new-password">
             </div>
           </div>
           <div>

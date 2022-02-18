@@ -28,6 +28,7 @@ class User extends Model {
         },
         isActive: {
           type: DataTypes.INTEGER,
+          defaultValue: 1,
         },
         created: {
           type: DataTypes.INTEGER,
