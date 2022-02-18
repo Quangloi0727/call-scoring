@@ -7,5 +7,6 @@ router.route('/')
 
 router.route('/list')
   .get(recordingController.getRecording);
-
+router.route('/SaveConfigurationColums')
+  .post(recordingController.SaveConfigurationColums)
 module.exports = router;

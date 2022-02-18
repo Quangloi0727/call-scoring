@@ -13,6 +13,11 @@ const $buttonExportExcelAdvanced = $('#export_excel_advanced');
 const DEFAULT_SEARCH = 'default_search';
 const ADVANCED_SEARCH = 'advance_search';
 
+const $modal_customs_table = $("#modal_customs_table");
+const $checkInput = $("#sortable input:checkbox");
+const $tableRecording = $("#tableRecording");
+const $selectAll = $("#select-all");
+const $btn_save_customs = $("#btn_save_customs")
 let searchType = DEFAULT_SEARCH;
 
 function bindClick() {
@@ -78,6 +83,72 @@ function bindClick() {
 
     return;
   });
+
+
+
+  // event popup custom table
+  $("#sortable").sortable();
+
+  // $checkInput.prop('checked', true);
+
+  // $chk.click(function () {
+  //   var colToHide = $tableRecording.find("." + $(this).attr("name"));
+  //   console.log($(this).is(":checked"));
+  //   $(colToHide).toggle();
+  // });
+  $btn_save_customs.click(function (event) {
+    let listCheck = [];
+    $checkInput.each(function (index) {
+      // đoạn này e check và cho ẩn hiện luôn ko có save data nguyenvc
+      var colToHide = $tableRecording.find("." + $(this).attr("name"));
+      if ($(this).is(":checked") == false) {
+
+        $(colToHide).toggle(false);
+
+      } else {
+        $(colToHide).toggle(true);
+      }
+      return $modal_customs_table.modal('hide');
+    });
+    let obj = {}
+    $("#sortable input:checkbox").each(function () {
+      let key = $(this).attr("name")
+      let value = $(this).is(":checked")
+      obj[key] = value
+
+    });
+    SaveConfigurationColums(obj);
+  });
+
+  $selectAll.click(function (event) {
+    if (this.checked) {
+      // Iterate each checkbox
+      $(':checkbox').each(function () {
+        this.checked = true;
+      });
+    } else {
+      $(':checkbox').each(function () {
+        this.checked = false;
+      });
+    }
+  });
+}
+
+function SaveConfigurationColums(data) {
+
+  $.ajax({
+    type: 'POST',
+    url: '/recording/SaveConfigurationColums',
+    data: data,
+    dataType: "text",
+    success: function () {
+      return location.reload();
+    },
+    error: function (error) {
+
+      return toastr.error(JSON.parse(error.responseText).message);
+    },
+  });
 }
 
 function getFormData(formId) {
@@ -105,6 +176,7 @@ function findData(page, exportExcel, queryData) {
     cache: 'false',
     success: function (result) {
       console.log('result: ', result);
+
       $('.page-loader').hide();
 
       $modalSearch.modal('hide');
@@ -113,7 +185,7 @@ function findData(page, exportExcel, queryData) {
         return downloadFromUrl(result.linkFile);
       }
 
-      createTable(result.data);
+      createTable(result.data, result.ConfigurationColums);
       return createPaging(result.paging);
     },
     error: function (error) {
@@ -124,37 +196,97 @@ function findData(page, exportExcel, queryData) {
   });
 }
 
-function createTable(data) {
+function createTable(data, ConfigurationColums) {
   let html = '';
-
-  data.forEach((item) => {
-    let audioHtml = '';
-    let agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
-
-    if (item.recordingFileName && item.recordingFileName !== '') {
-      audioHtml = `
-        <audio controls preload="none">
-          <source  src="${item.recordingFileName}" type="audio/wav">
-          Your user agent does not support the HTML5 Audio element.'
-        </audio>
-      `;
+  let headerDefault = {
+    direction: "Hướng gọi",
+    agentName: "Điện thoại viên",
+    teamName: "Nhóm",
+    caller: "Số gọi đi",
+    called: "Số gọi đến",
+    origTime: "Ngày giờ gọi",
+    duration: "Thời lượng",
+    audioHtml: "Ghi âm"
+  }
+  console.log(data);
+  if (ConfigurationColums) {
+    let objColums = JSON.parse(ConfigurationColums);
+    //header table
+    let headerTable = '';
+    let popupHtml = ''
+    for (const [key, value] of Object.entries(objColums)) {
+      headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' ? '' : 'd-none'}">${headerDefault[key]}</th>`;
+      popupHtml += `<li class="mb-3 border-bottom">
+        <input class="form-check-input" type="checkbox" name="${key}" ${value == 'true' ? '' : 'checked'}/>
+        ${headerDefault[key]} <i class="fas fa-arrows"></i>
+        <span style="float: right;">
+        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+        </span>
+      </li>`
     }
+    console.log(popupHtml);
+    $('#tableRecording tr').html(headerTable);
+    $('#sortable').html(popupHtml)
 
-    html += `
-      <tr>
-        <td class="text-center">${item.direction || ''}</td>
-        <td class="text-center">${agentName}</td>
-        <td class="text-center">${item.teamName || ''}</td>
-        <td class="text-center">${item.caller}</td>
-        <td class="text-center">${item.called}</td>
-        <td class="text-center">${item.origTime}</td>
-        <td class="text-center">${item.duration}</td>
-        <td class="text-center">${audioHtml}</td>
+    // body data
+    data.forEach((item, element) => {
+      let audioHtml = '';
+      let agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
+
+      if (item.recordingFileName && item.recordingFileName !== '') {
+        audioHtml = `
+        <td class="text-center audioHtml">
+          <audio controls preload="none">
+            <source  src="${item.recordingFileName}" type="audio/wav">
+            Your user agent does not support the HTML5 Audio element.'
+          </audio>
+        </td>
+        `;
+      }
+      let tdTable = ''
+      for (const [key, value] of Object.entries(objColums)) {
+        if (key == 'audioHtml' && value == 'true') { tdTable += audioHtml }
+        else if (key == 'agentName' && value == 'true') { tdTable += ` <td class="text-center agentName">${agentName}</td>` }
+        else { tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>` }
+      }
+      html += `
+      <tr data-ele="${element}">
+        ${tdTable}
       </tr>
-    `;
-  });
+      `
+    });
+    return $tableData.html(html);
+  }
+  else {
+    data.forEach((item, element) => {
+      let audioHtml = '';
+      let agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
 
-  return $tableData.html(html);
+      if (item.recordingFileName && item.recordingFileName !== '') {
+        audioHtml = `
+          <audio controls preload="none">
+            <source  src="${item.recordingFileName}" type="audio/wav">
+            Your user agent does not support the HTML5 Audio element.'
+          </audio>
+        `;
+      }
+
+      html += `
+        <tr data-ele="${element}">
+          <td class="text-center direction">${item.direction || ''}</td>
+          <td class="text-center agentName">${agentName}</td>
+          <td class="text-center teamName">${item.teamName || ''}</td>
+          <td class="text-center caller">${item.caller}</td>
+          <td class="text-center called">${item.called}</td>
+          <td class="text-center origTime">${item.origTime}</td>
+          <td class="text-center duration">${item.duration}</td>
+          <td class="text-center audioHtml">${audioHtml}</td>
+        </tr>
+      `;
+    });
+
+    return $tableData.html(html);
+  }
 }
 
 function createPaging(paging) {

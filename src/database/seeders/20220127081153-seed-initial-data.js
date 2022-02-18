@@ -155,7 +155,9 @@ const userRole = [
   { userId: 68, role: 0 },
   { userId: 68, role: 1 },
 ];
-
+const configurationcolums = [
+  { userId: 67, configurationColums: "datadata" }
+]
 const teams = [
   { id: 1, name: 'Default', description: 'Đây là nhóm mặc định', created: 1 },
 ]
@@ -195,6 +197,14 @@ module.exports = {
         }
       });
 
+      const newconfigurationcolums = configurationcolums.map((data) => {
+        return {
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      })
+
       await queryInterface.bulkInsert('Users', newUsers, {}, { 'id': { autoIncrement: true } });
 
       await queryInterface.bulkInsert('UserRoles', newUserRole, {});
@@ -202,6 +212,8 @@ module.exports = {
       await queryInterface.bulkInsert('Teams', newTeam, {}, { 'id': { autoIncrement: true } });
 
       await queryInterface.bulkInsert('AgentTeamMembers', agentTeamMember, {});
+      await queryInterface.bulkInsert('configurationcolums', newconfigurationcolums, {});
+
     } catch (error) {
       console.log(error);
     }
