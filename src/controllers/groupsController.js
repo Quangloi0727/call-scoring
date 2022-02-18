@@ -135,8 +135,8 @@ async function handleTeam(teamIds, teams) {
 
     const dataResult = teams.map((team) => {
       const result = agentTeamMember.filter((agentOfTeam) => agentOfTeam.teamId == team.teamId);
-      return { 
-        ...team, 
+      return {
+        ...team,
         member: result,
         createdAt: moment(team.createdAt).format('HH:mm:ss DD/MM/YYYY')
       };

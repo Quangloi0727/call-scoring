@@ -9,7 +9,8 @@ const {
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 const model = require('../models');
-
+const ConfigurationColumsModel = require('../models/configurationcolums');
+const { reject } = require('lodash');
 const titlePage = 'Danh sách cuộc gọi';
 
 exports.index = async (req, res, next) => {
@@ -126,10 +127,12 @@ exports.getRecording = async (req, res) => {
       rowsPerPage: limit,
       totalResult: totalData && totalData[0] && totalData[0].total || 0
     });
+    const ConfigurationColums = await getConfigurationColums(req.user.id);
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: recordResult && handleData(recordResult) || [],
+      ConfigurationColums: ConfigurationColums.data ? ConfigurationColums.data[0].configurationColums : null,
       paging: paginator.getPaginationData()
     });
   } catch (error) {
@@ -139,6 +142,52 @@ exports.getRecording = async (req, res) => {
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
+}
+exports.SaveConfigurationColums = async (req, res) => {
+  let transaction;
+  try {
+    const data = {}
+    data.userId = req.user.id;
+    data.configurationColums = JSON.stringify(req.body);
+    transaction = await model.sequelize.transaction();
+    const result = await ConfigurationColumsModel.update(
+      { configurationColums: JSON.stringify(req.body) },
+      { where: { userId: Number(req.user.id) } },
+      { transaction: transaction }
+    );
+    if (!result) {
+      const _result = await ConfigurationColumsModel.create(data, { transaction: transaction });
+    }
+    await transaction.commit();
+    return res.status(SUCCESS_200.code).json({
+      message: 'Success!',
+    });
+  } catch (error) {
+    console.log(`------- error ------- getRecording`);
+    console.log(error);
+    console.log(`------- error ------- getRecording`);
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
+function getConfigurationColums(userId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const resulds = await model.sequelize.query(
+        `
+        SELECT *
+        FROM dbo.configurationColums  
+        WHERE userId = ${userId}    
+        `,
+        { type: QueryTypes.SELECT }
+      );
+
+      return resolve({ data: resulds });
+    } catch (error) {
+      return reject(error);
+    }
+  })
 }
 
 function checkLeader(userId) {
