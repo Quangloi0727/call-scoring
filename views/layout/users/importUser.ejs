@@ -26,26 +26,54 @@
                 <button type="button" class="btn btn-primary">Kiểm tra dữ liệu</button>
               </div> -->
 
-              <div class="fileinput-button dz-clickable" id="container-input">
+              <div class="d-none" id="container_notification">
+                <table>
+                  <tr>
+                    <td>Tổng số bản ghi cần nhập vào hệ thống:</td>
+                    <td class="value-checked" id="total_data">100</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Tổng số bản ghi nhập thành công:</td>
+                    <td class="value-checked" id="total_success">50</td>
+                    <td></td>
+                  </tr>
+                  <tr>
+                    <td>Tổng số bản ghi không hợp lệ:</td>
+                    <td class="value-checked" id="total_miss">50</td>
+                    <td class="value-icon">
+                      <span>
+                        <i class="fa fa-solid fa-download"></i>
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+
+              <div class="fileinput-button dz-clickable" id="container_input">
                 <div class="table table-striped" class="files" id="previews">
                   <div id="template" class="file-row">
                     <div>
-                      <p class="name" data-dz-name></p>
-                    </div>
-                    <div>
-                    </div>
-                    <div id="actions">
-                      <button data-dz-remove class="btn btn-danger delete">
-                        <i class="glyphicon glyphicon-trash"></i>
-                        <span>Delete</span>
-                      </button>
+                      <span class="name" data-dz-name></span>
+                      <span data-dz-remove class="ml-2 delete">
+                        <i class="fa fa-solid fa-trash" aria-hidden="true"></i>
+                      </span>
                     </div>
                   </div>
+                </div>
+                <div class="row justify-content-center">
+                  <span class="text-center">Kéo thả hoặc click để chọn file</span>
                 </div>
               </div>
               <div class="row justify-content-between p-3">
                 <button type="button" class="btn btn-default">Tải xuống file mẫu</button>
-                <button type="button" class="btn btn-primary" id="btn_handle_file">Kiểm tra dữ liệu</button>
+                <div>
+                  <button type="button" class="btn btn-danger d-none" id="btn_cancel">Hủy</button>
+                  <button type="button" class="btn btn-success d-none" id="btn_done">Done</button>
+                  <button type="button" class="btn btn-primary" id="btn_handle_file">Kiểm tra dữ liệu</button>
+                  <button type="button" class="btn btn-primary d-none" id="btn_import_data">Thực hiện nhập dữ
+                    liệu</button>
+                </div>
               </div>
             </div>
           </div>

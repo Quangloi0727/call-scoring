@@ -1,5 +1,14 @@
 $(function () {
   const $btnHandleFile = $('#btn_handle_file');
+  const $btnImportData = $('#btn_import_data');
+  const $btnCancel = $('#btn_cancel');
+  const $btnDone = $('#btn_done');
+  const $loadingData = $('.page-loader');
+  const $containerInput = $('#container_input');
+  const $containerNotification = $('#container_notification');
+  const $lblTotalData = $('total_data');
+  const $lblTotalSuccess = $('total_success');
+  const $lblTotalMiss = $('total_miss');
 
   let fileTypes = ['xlsx', 'xls'];
   let maxSize = 10000000;
@@ -16,6 +25,7 @@ $(function () {
   let uniqueUsernameResult = [];
   let uniqueExtensionResult = [];
   let filesData = {};
+  let finalData = [];
 
   let previewNode = document.querySelector('#template');
   previewNode.id = '';
@@ -104,9 +114,15 @@ $(function () {
 
     rawUserDatas = [];
     uniqueUsernameResult = [];
+    uniqueExtensionResult = [];
+    validateUserResult = [];
+    finalData = [];
+
+    $loadingData.show();
 
     console.log('filesData: ', filesData);
 
+    // Nhóm dữ liệu file thành một mảng duy nhất
     Object.keys(filesData).forEach(function (key) {
       rawUserDatas = [...rawUserDatas, ...filesData[key]];
     });
@@ -121,7 +137,7 @@ $(function () {
     console.log('uniqueUsernameResult: ', uniqueUsernameResult);
 
     // Check trùng extension
-    uniqueExtensionResult = _.uniq(rawUserDatas, function (user) {
+    uniqueExtensionResult = _.uniq(uniqueUsernameResult, function (user) {
       return user.Extension;
     });
 
@@ -137,6 +153,79 @@ $(function () {
     });
 
     console.log('validateUserResult: ', validateUserResult);
+
+    // Kiểm tra trùng lặp dữ liệu với database
+    let names = _.pluck(validateUserResult, 'TenDangNhap');
+    let extensions = _.pluck(validateUserResult, 'Extension');
+
+    $.ajax({
+      type: 'POST',
+      url: '/users/checkDataUser',
+      data: {
+        names: names,
+        extensions: extensions,
+      },
+      dataType: "text",
+      success: function (data) {
+        $loadingData.hide();
+
+        const userExist = JSON.parse(data).data;
+
+        console.log('userExist: ', userExist);
+
+        validateUserResult.forEach((user) => {
+          const isFound = userExist.find(function (item) {
+            return item.userName == user.TenDangNhap || item.extension == user.Extension;
+          });
+
+          if (!isFound) {
+            finalData.push(user);
+          }
+        });
+
+        console.log('finalData: ', finalData);
+
+        console.log('Số bản ghi cần nhập vào hệ thống: ', rawUserDatas.length);
+        console.log('Số bản ghi hợp lệ: ', finalData.length);
+        console.log('Số bản ghi hợp lệ: ', rawUserDatas.length - finalData.length);
+      },
+      error: function (error) {
+        $loadingData.hide();
+
+        console.log(`------- error ------- check data user`);
+        console.log(error);
+        console.log(`------- error ------- check data user`);
+
+        return toastr.error(JSON.parse(error.responseText).message);
+      },
+    });
+  });
+
+  $btnImportData.on('click', function () {
+    $loadingData.show();
+
+    $.ajax({
+      type: 'POST',
+      url: '/users/importUser',
+      data: { users: finalData },
+      dataType: "text",
+      success: function (data) {
+        $loadingData.hide();
+
+        const dataParse = JSON.parse(data);
+
+        console.log('dataParse: ', dataParse);
+      },
+      error: function (error) {
+        $loadingData.hide();
+
+        console.log(`------- error ------- import user`);
+        console.log(error);
+        console.log(`------- error ------- import user`);
+
+        return toastr.error('Có lỗi xảy ra, vui lòng kiểm tra lại dữ liệu import và thử lại!');
+      },
+    });
   });
 
   function validateUser(user) {

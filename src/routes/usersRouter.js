@@ -20,4 +20,10 @@ router.route('/changePassword')
 router.route('/importUser')
     .get(usersController.getImportUser);
 
+router.route('/checkDataUser')
+    .post(usersController.postCheckDataUser);
+
+router.route('/importUser')
+    .post(usersController.postImportUser)
+
 module.exports = router;

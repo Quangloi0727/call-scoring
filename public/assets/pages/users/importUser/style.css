@@ -1,4 +1,17 @@
-#container-input {
+#container_input {
   min-height: 150px;
   padding: 10px;
+}
+
+#container_notification {
+  min-height: 150px;
+  padding: 10px;
+}
+
+.value-checked {
+  padding-left: 50px;
+}
+
+.value-icon {
+  padding-left: 20px;
 }
