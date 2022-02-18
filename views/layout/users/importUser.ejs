@@ -8,71 +8,104 @@
           <div class="col-3"></div>
           <div class="col-6">
             <div class="card">
-              <div class="card-header"></div>
-              <!-- <div class="fileinput-button dz-clickable" id="container-input">
-                <div class="table table-striped" class="files" id="previews">
-                  <div id="template" class="file-row">
-                    <div>
-                      <span class="name" data-dz-name></span>
-                      <span data-dz-remove class="ml-2 delete">
-                        <i class="fa fa-solid fa-trash" aria-hidden="true"></i>
-                      </span>
+              <div class="card-header">
+                <div class="row justify-content-around">
+                  <span id="step1" class="arrow active">1. Tải lên file Excel</span>
+                  <span id="step2" class="arrow">3. Hoàn tất nhập dữ liệu</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <fieldset style="border: 1px solid #000;">
+                  <legend id="title-border" class="row">
+                    <span id="title">Nhập dữ liệu từ file Excel</span>
+                    <span id="tooltip_title" class="ml-1" data-toggle="tooltip" data-placement="right"
+                      title="Dung lượng tối đa là 10MB!">
+                      <i class="fas fa-info-circle"></i>
+                    </span>
+                  </legend>
+                  <div class="d-none p-3" id="container_notification">
+                    <table>
+                      <tr>
+                        <td>
+                          Tổng số bản ghi được nhập vào hệ thống:
+                        </td>
+                        <td class="value-checked" id="total_data"></td>
+                        <td></td>
+                      </tr>
+                      <tr>
+                        <td>
+                          Tổng số bản ghi đã bị loại bỏ
+                          <span data-toggle="tooltip" data-placement="right" title="
+                          Các bản ghi đã bị loại bỏ vì một trong những lý do sau:
+                            - Họ và tên đệm: bị bỏ trống hoặc vượt quá 30 ký tự
+                            - Tên: bị bỏ trống hoặc vượt quá 30 ký tự
+                            - Tên đăng nhập: bị bỏ trống hoặc vượt quá 30 ký tự
+                            - Extension: nhập chữ cái hoặc ký tự đặc biệt
+                            - Quyền: nhập sai ID hoặc nhập chữ cái, ký tự đặc biệt
+                            - Mật khẩu: bị bỏ trống, mật khẩu ít hơn 8 ký tự, không bao gồm chữ HOA, chữ thường và số 
+                            - Username hoặc extension bị trùng
+                          ">
+                            <i class="fas fa-info-circle"></i>
+                          </span>
+                          :
+                        </td>
+                        <td class="value-checked" id="total_miss"></td>
+                        <td class="value-icon">
+                          <span id="dowload_data_error">
+                            <i class="fa fa-solid fa-download"></i>
+                          </span>
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                  <div id="container_input">
+                    <div class="table table-striped p-3" class="files" id="previews">
+                      <div id="template" class="p-2 file-row">
+                        <table>
+                          <tr style="background: none;">
+                            <td>
+                              <span class="mr-3">
+                                <i class="fas fa-file-spreadsheet fa-2x"></i>
+                              </span>
+                            </td>
+                            <td>
+                              <a href="#" onclick="return false" data-dz-name></a>
+                            </td>
+                            <td>
+                              <span class="size ml-3" data-dz-size></span>
+                            </td>
+                            <td>
+                              <span data-dz-remove class="ml-3 delete">
+                                <i class="fas fa-trash-alt"></i>
+                              </span>
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="fileinput-button dz-clickable">
+                      <div class="row justify-content-center">
+                        <span class="text-muted text-center">
+                          <p>
+                            <i class="fas fa-cloud-upload fa-7x"></i>
+                          </p>
+                          <h4>Click để chọn file</h4>
+                          <h4>hoặc kéo và thả file vào đây</h4>
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </fieldset>
               </div>
               <div class="row justify-content-between p-3">
-                <button type="button" class="btn btn-default">Tải xuống file mẫu</button>
-                <button type="button" class="btn btn-primary">Kiểm tra dữ liệu</button>
-              </div> -->
-
-              <div class="d-none" id="container_notification">
-                <table>
-                  <tr>
-                    <td>Tổng số bản ghi cần nhập vào hệ thống:</td>
-                    <td class="value-checked" id="total_data">100</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>Tổng số bản ghi nhập thành công:</td>
-                    <td class="value-checked" id="total_success">50</td>
-                    <td></td>
-                  </tr>
-                  <tr>
-                    <td>Tổng số bản ghi không hợp lệ:</td>
-                    <td class="value-checked" id="total_miss">50</td>
-                    <td class="value-icon">
-                      <span>
-                        <i class="fa fa-solid fa-download"></i>
-                      </span>
-                    </td>
-                  </tr>
-                </table>
-              </div>
-
-              <div class="fileinput-button dz-clickable" id="container_input">
-                <div class="table table-striped" class="files" id="previews">
-                  <div id="template" class="file-row">
-                    <div>
-                      <span class="name" data-dz-name></span>
-                      <span data-dz-remove class="ml-2 delete">
-                        <i class="fa fa-solid fa-trash" aria-hidden="true"></i>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                <div class="row justify-content-center">
-                  <span class="text-center">Kéo thả hoặc click để chọn file</span>
-                </div>
-              </div>
-              <div class="row justify-content-between p-3">
-                <button type="button" class="btn btn-default">Tải xuống file mẫu</button>
+                <a href="/files/template_user.xlsx" type="button" class="btn btn-default" download>
+                  Tải xuống file mẫu
+                </a>
                 <div>
-                  <button type="button" class="btn btn-danger d-none" id="btn_cancel">Hủy</button>
-                  <button type="button" class="btn btn-success d-none" id="btn_done">Done</button>
-                  <button type="button" class="btn btn-primary" id="btn_handle_file">Kiểm tra dữ liệu</button>
-                  <button type="button" class="btn btn-primary d-none" id="btn_import_data">Thực hiện nhập dữ
-                    liệu</button>
+                  <button type="button" class="btn btn-success d-none" id="btn_done">Đóng</button>
+                  <button type="button" class="btn btn-primary" id="btn_import_data">
+                    Nhập dữ liệu
+                  </button>
                 </div>
               </div>
             </div>

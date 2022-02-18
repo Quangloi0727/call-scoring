@@ -320,7 +320,7 @@ exports.postImportUser = async (req, res, next) => {
       { transaction: transaction }
     );
 
-    await transaction.rollback();
+    await transaction.commit();
 
     return res.status(SUCCESS_200.code).json({
       data: users,

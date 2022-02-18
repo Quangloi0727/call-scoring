@@ -1,14 +1,16 @@
 $(function () {
-  const $btnHandleFile = $('#btn_handle_file');
   const $btnImportData = $('#btn_import_data');
-  const $btnCancel = $('#btn_cancel');
   const $btnDone = $('#btn_done');
   const $loadingData = $('.page-loader');
   const $containerInput = $('#container_input');
   const $containerNotification = $('#container_notification');
-  const $lblTotalData = $('total_data');
-  const $lblTotalSuccess = $('total_success');
-  const $lblTotalMiss = $('total_miss');
+  const $lblTotalData = $('#total_data');
+  const $lblTotalMiss = $('#total_miss');
+  const $lblStep1 = $('#step1');
+  const $lblStep2 = $('#step2');
+  const $lblTitle = $('#title');
+  const $tooltipTitle = $('#tooltip_title');
+  const $btnDowloadDataError = $('#dowload_data_error');
 
   let fileTypes = ['xlsx', 'xls'];
   let maxSize = 10000000;
@@ -20,11 +22,12 @@ $(function () {
     'Ten',
     'TenDangNhap',
   ];
-  let validateUserResult = [];
+
+  let filesData = {};
   let rawUserDatas = [];
   let uniqueUsernameResult = [];
   let uniqueExtensionResult = [];
-  let filesData = {};
+  let validateUserResult = [];
   let finalData = [];
 
   let previewNode = document.querySelector('#template');
@@ -43,6 +46,7 @@ $(function () {
     clickable: '.fileinput-button'
   });
 
+  // Bắt sự kiện thêm file
   myDropzone.on('addedfile', function (file) {
     if (!file) return;
 
@@ -90,6 +94,7 @@ $(function () {
     };
   });
 
+  // Bắt sự kiện xóa file
   myDropzone.on('removedfile', function (file) {
     if (!file || file == '') return;
 
@@ -100,6 +105,7 @@ $(function () {
     return delete filesData[fileId];
   });
 
+  // Convert file xlsx thành json
   function readExcel(data) {
     let workbook = XLSX.read(data, { type: 'binary' });
     let firstSheet = workbook.SheetNames[0];
@@ -109,8 +115,10 @@ $(function () {
     return excelRows;
   }
 
-  $btnHandleFile.on('click', function () {
-    if (!myDropzone || !myDropzone.files || myDropzone.files.length <= 0) return;
+  $btnImportData.on('click', function () {
+    if (!myDropzone || !myDropzone.files || myDropzone.files.length <= 0) {
+      return toastr.error('Vui lòng chọn file!');
+    };
 
     rawUserDatas = [];
     uniqueUsernameResult = [];
@@ -185,9 +193,36 @@ $(function () {
 
         console.log('finalData: ', finalData);
 
-        console.log('Số bản ghi cần nhập vào hệ thống: ', rawUserDatas.length);
-        console.log('Số bản ghi hợp lệ: ', finalData.length);
-        console.log('Số bản ghi hợp lệ: ', rawUserDatas.length - finalData.length);
+        let totalDataMiss = rawUserDatas.length - finalData.length;
+
+        if (!finalData || finalData.length <= 0) {
+          $.confirm({
+            title: 'Thông báo!',
+            content: `Tất cả các bản ghi không hợp lệ, vui lòng kiểm tra dữ liệu và thử lại!`,
+            buttons: {
+              'Đóng': {
+                btnClass: 'btn-red any-other-class',
+                action: function () { }
+              },
+            },
+          });
+        } else if (finalData.length < rawUserDatas.length) {
+          $.confirm({
+            title: 'Thông báo!',
+            content: `Hệ thống tìm thấy ${totalDataMiss} bản ghi không hợp lệ, vui lòng bấm "Đồng ý" để loại bỏ các bản ghi trong file excel!`,
+            buttons: {
+              'Đồng ý': {
+                btnClass: 'btn-red any-other-class',
+                action: function () {
+                  return importData();
+                }
+              },
+              'Hủy': function () { }
+            },
+          });
+        } else {
+          return importData();
+        }
       },
       error: function (error) {
         $loadingData.hide();
@@ -201,7 +236,7 @@ $(function () {
     });
   });
 
-  $btnImportData.on('click', function () {
+  function importData() {
     $loadingData.show();
 
     $.ajax({
@@ -215,6 +250,21 @@ $(function () {
         const dataParse = JSON.parse(data);
 
         console.log('dataParse: ', dataParse);
+
+        $lblStep1.removeClass('active');
+        $lblStep2.addClass('active');
+
+        $btnImportData.addClass('d-none').removeClass('d-block');
+        $btnDone.addClass('d-block').removeClass('d-none');
+
+        $containerInput.addClass('d-none').removeClass('d-block');
+        $containerNotification.addClass('d-block').removeClass('d-none');
+
+        $lblTotalData.html(finalData.length);
+        $lblTotalMiss.html(rawUserDatas.length - finalData.length);
+
+        $lblTitle.html('Kết quả nhập dữ liệu');
+        $tooltipTitle.addClass('d-none').removeClass('d-block');
       },
       error: function (error) {
         $loadingData.hide();
@@ -226,8 +276,72 @@ $(function () {
         return toastr.error('Có lỗi xảy ra, vui lòng kiểm tra lại dữ liệu import và thử lại!');
       },
     });
+  }
+
+  $btnDone.on('click', function () {
+    myDropzone.removeAllFiles(true);
+
+    filesData = {};
+    rawUserDatas = [];
+    uniqueUsernameResult = [];
+    uniqueExtensionResult = [];
+    validateUserResult = [];
+    finalData = [];
+
+    $lblStep1.addClass('active');
+    $lblStep2.removeClass('active');
+
+    $btnImportData.addClass('d-block').removeClass('d-none');
+    $btnDone.addClass('d-none').removeClass('d-block');
+
+    $containerInput.addClass('d-block').removeClass('d-none');
+    $containerNotification.addClass('d-none').removeClass('d-block');
+
+    $lblTotalData.html('');
+    $lblTotalMiss.html('');
+
+    $lblTitle.html('Nhập dữ liệu từ file Excel');
+    $tooltipTitle.addClass('d-block').removeClass('d-none');
   });
 
+  // Tải xuống những dữ liệu bị lỗi
+  $btnDowloadDataError.on('click', function () {
+    if (finalData.length <= 0) return;
+
+    const filename = 'users-error.xlsx';
+    const sheetname = 'User'
+    let dataError = [];
+    let xlsxHeader = [];
+    let xlsxData = [];
+    let createXLSLFormatObj = [];
+
+    dataError = _.difference(rawUserDatas, finalData);
+
+    console.log('dataError: ', dataError);
+
+    Object.keys(dataError[0]).forEach(function (key) {
+      xlsxHeader.push(key);
+    });
+
+    createXLSLFormatObj.push(xlsxHeader);
+
+    $.each(dataError, function (index, value) {
+      var innerRowData = [];
+      $.each(value, function (ind, val) {
+        innerRowData.push(val);
+      });
+      createXLSLFormatObj.push(innerRowData);
+    });
+
+    let workBook = XLSX.utils.book_new();
+    let workSheet = XLSX.utils.aoa_to_sheet(createXLSLFormatObj);
+
+    XLSX.utils.book_append_sheet(workBook, workSheet, sheetname);
+
+    XLSX.writeFile(workBook, filename);
+  });
+
+  // Kiểm tra dữ liệu user
   function validateUser(user) {
     let validateEmpty = [];
     let validateResult = [];
