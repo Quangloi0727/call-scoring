@@ -335,3 +335,32 @@ exports.postImportUser = async (req, res, next) => {
     return res.status(ERR_500.code).json({ message: error.message });
   }
 }
+
+exports.search = async (req, res) => {
+  try {
+    const { userName, id } = req.query;
+    const queryData = {};
+
+    if (id) queryData.id = { [Op.eq]: Number(id.trim()) }
+    if (userName) queryData.userName = { [Op.eq]: userName.trim() }
+
+    const user = await UserModel.findOne({
+      where: { ...queryData },
+      include: [{ model: UserRoleModel, as: 'roles' }],
+    });
+
+    if (!user) {
+      throw new Error('Người dùng không tồn tại!');
+    }
+
+    return res.status(SUCCESS_200.code).json({
+      data: JSON.parse(JSON.stringify(user)),
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}

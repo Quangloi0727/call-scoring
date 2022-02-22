@@ -4,6 +4,7 @@ $(function () {
   const $loadingData = $('.page-loader');
   const $buttonSearchUser = $('#searchUser');
   const $formSearchUser = $('#form_search_user');
+  const $modalEditUser = $('#modalEditUser');
 
   $.validator.addMethod("pwcheck", function (value) {
     return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value);
@@ -172,7 +173,8 @@ $(function () {
 
   // function 
   function createTable(data) {
-    let html = '';
+    let contentTableLeft = '';
+    let contentTableRight = '';
 
     console.log(`------- data ------- `);
     console.log(data);
@@ -180,6 +182,14 @@ $(function () {
 
     data.forEach((item) => {
       let teamHtml = '';
+      let statusHtml = '<span class="badge badge-danger">Đã khóa</span>';
+      let updatedAtHtml = '-';
+      let lockButton = `
+        <span class="p-1 btn-action" title="Mở khóa người dùng">
+          <i class="fas fa-unlock"></i>
+        </span>
+      `;
+
       item.ofTeams.forEach(element => {
         teamHtml += `
           <a href="/groups/detail/${element.teamId}">
@@ -189,19 +199,54 @@ $(function () {
         `;
       });
 
-      html += `
-        <tr>
-          <td class="text-center">${item.fullName}</td>
-          <td class="text-center">${item.userName}</td>
-          <td class="text-center">${item.extension}</td>
-          <td class="text-center">${teamHtml}</td>
-          <td class="text-center">${moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss')}</td>
-          <td class="text-center">${item.userCreate.fullName}</td>
+      if (item.isActive == 1) {
+        lockButton = `
+          <span class="p-1 btn-action" title="Khóa người dùng">
+            <i class="fas fa-lock"></i>
+          </span>
+        `;
+      }
+
+      if (item.isActive == 1) {
+        statusHtml = '<span class="badge badge-success">Đang hoạt động</span>'
+      }
+
+      if (item.createdAt != item.updatedAt) {
+        updatedAtHtml = moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss');
+      }
+
+      contentTableLeft += `
+        <tr class="text-center">
+          <td>${item.fullName}</td>
+          <td>${item.userName}</td>
+          <td>
+            <span class="p-1 btn-action btn-edit-user" title="Chỉnh sửa thông tin người dùng"
+              data-id="${item.id}">
+              <i class="fas fa-pencil"></i>
+            </span>
+            ${lockButton}
+            <span class="p-1 btn-action" title="Reset lại mật khẩu">
+              <i class="fas fa-sync"></i>
+            </span>
+          </td>
+        </tr>
+      `;
+
+      contentTableRight += `
+        <tr class="text-center">
+          <td></td>
+          <td>${item.extension}</td>
+          <td>${teamHtml}</td>
+          <td>${statusHtml}</td>
+          <td>${moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss')}</td>
+          <td>${item.userCreate.fullName}</td>
+          <td>${updatedAtHtml}</td>
         </tr>
       `;
     });
 
-    return $('#tableBody').html(html);
+    $('.content-table-left').html(contentTableLeft);
+    return $('.content-table-right').html(contentTableRight);
   }
 
   function createPaging(paging) {
@@ -272,52 +317,61 @@ $(function () {
     return $('#paging_table').html(pagingHtml);
   };
 
-  $('#form_input_user #firstname').on('input', function () {
-    let value = $(this).val();
+  $(document).on('click', '.btn-edit-user', function () {
+    let userId = $(this).attr('data-id');
 
-    $('#first_name_length').html(`${value.length}/30`);
+    if (!userId || userId == '') return;
 
-    if (value.length > 30) {
-      $('#first_name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'firstName': 'Độ dài không quá 30 kí tự!'
-      });
-    } else {
-      $('#first_name_length').removeClass('text-danger').addClass('text-muted');
-    }
+    $.ajax({
+      type: 'GET',
+      url: 'users/search?id=' + userId,
+      cache: 'false',
+      success: function (data) {
+        console.log('data: ', data);
+        if (!data) return;
+
+        const user = data.data;
+        let inputs = $('#form_edit_user [name]')
+
+        $.each(inputs, function (i, input) {
+          console.log('input: ', input);
+          var split = $(input).attr('name').split('_')[1];
+          console.log('split: ', split);
+          $(input).val(user[split]);
+        });
+
+
+        $modalEditUser.modal('show');
+      },
+      error: function (error) {
+        return toastr.error(JSON.parse(error.responseText).message);
+      }
+    });
   });
 
-  $('#form_input_user #lastname').on('input', function () {
-    let value = $(this).val();
+  function warningLengthInput(formId, inputId, warningClass) {
+    $(`#${formId} #${inputId}`).on('input', function () {
+      let value = $(this).val();
 
-    $('#last_name_length').html(`${value.length}/30`);
+      $(`#${warningClass}`).html(`${value.length}/30`);
 
-    if (value.length > 30) {
-      $('#last_name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'lastName': 'Độ dài không quá 30 kí tự!'
-      });
-    } else {
-      $('#last_name_length').removeClass('text-danger').addClass('text-muted');
-    }
-  });
+      if (value.length > 30) {
+        $(`#${warningClass}`).removeClass('text-muted').addClass('text-danger');
+        return validator.showErrors({
+          'firstName': 'Độ dài không quá 30 kí tự!'
+        });
+      } else {
+        return $(`#${warningClass}`).removeClass('text-danger').addClass('text-muted');
+      }
+    });
+  }
 
-  $('#form_input_user #username').on('input', function () {
-    let value = $(this).val();
-
-    console.log('usrname: ', value)
-
-    $('#user_name_length').html(`${value.length}/30`);
-
-    if (value.length > 30) {
-      $('#user_name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'userName': 'Độ dài không quá 30 kí tự!'
-      });
-    } else {
-      $('#user_name_length').removeClass('text-danger').addClass('text-muted');
-    }
-  });
+  warningLengthInput('form_input_user', 'firstname', 'first_name_length');
+  warningLengthInput('form_input_user', 'lastname', 'last_name_length');
+  warningLengthInput('form_input_user', 'username', 'user_name_length');
+  warningLengthInput('form_edit_user', 'firstname', 'first_name_length');
+  warningLengthInput('form_edit_user', 'lastname', 'last_name_length');
+  warningLengthInput('form_edit_user', 'username', 'user_name_length');
 
   findData(1);
 });

@@ -24,6 +24,9 @@ router.route('/checkDataUser')
     .post(usersController.postCheckDataUser);
 
 router.route('/importUser')
-    .post(usersController.postImportUser)
+    .post(usersController.postImportUser);
+
+router.route('/search')
+    .get(usersController.search);
 
 module.exports = router;
