@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes, Op } = require('sequelize');
 
 class User extends Model {
   static init(sequelize) {
@@ -28,6 +28,7 @@ class User extends Model {
         },
         isActive: {
           type: DataTypes.INTEGER,
+          defaultValue: 1,
         },
         created: {
           type: DataTypes.INTEGER,
@@ -39,7 +40,10 @@ class User extends Model {
       },
       {
         sequelize,
-        modelName: 'Users'
+        modelName: 'Users',
+        hooks: {
+          beforeCreate: handleBeforeCreate
+        }
       }
     );
   }
@@ -53,6 +57,29 @@ class User extends Model {
     models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' });
 
     models.User.hasMany(models.AgentTeamMember, { foreignKey: 'userId', as: 'team' });
+  }
+}
+
+async function handleBeforeCreate(user, option) {
+  const userNameFound = await User.findOne({
+    where: { userName: { [Op.eq]: user.userName.toString() } }
+  });
+
+  if (userNameFound) {
+    throw new Error('Tên đăng nhập đã được sử dụng!');
+  }
+
+  const extensionFound = await User.findOne({
+    where: {
+      [Op.and]: [
+        { extension: { [Op.eq]: Number(user.extension) } },
+        { isActive: { [Op.eq]: 1 } }
+      ]
+    }
+  });
+
+  if (extensionFound) {
+    throw new Error('Extension đã được sử dụng!')
   }
 }
 

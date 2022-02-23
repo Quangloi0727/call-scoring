@@ -36,6 +36,10 @@
                       </div>
                     </div>
                   </form>
+                  <a type="button" class="form-control btn btn-primary" id="import_user" href="/users/importUser">
+                    <i class="fa fa-solid fa-file-import ml-1" aria-hidden="true"></i>
+                    Nhập dữ liệu
+                  </a>
                   <button type="button" class="form-control btn btn-primary" data-toggle="modal" id="create_user"
                     data-target="#modalUser">
                     <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
@@ -45,43 +49,46 @@
               </div>
               <!-- /.card-header -->
               <div class="card-body">
-                <table id="example2" class="table table-bordered table-hover">
-                  <thead>
-                    <tr>
-                      <th class="text-center">Họ và Tên</th>
-                      <th class="text-center">Tên đăng nhập</th>
-                      <th class="text-center">Thao tác</th>
-                      <th class="text-center">Extension</th>
-                      <th class="text-center">Nhóm</th>
-                      <th class="text-center">Trạng thái</th>
-                      <th class="text-center">Cập nhật gần nhất</th>
-                      <th class="text-center">Ngày tạo</th>
-                      <th class="text-center">Người tạo</th>
-                    </tr>
-                  </thead>
-                  <tbody id="tableBody"></tbody>
-                </table>
+                <div class="wrapper-table">
+                  <table class="table-left custom-table">
+                    <thead>
+                      <tr class="text-center">
+                        <th>Họ và Tên</th>
+                        <th>Tên đăng nhập</th>
+                        <th>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody class="content-table-left"></tbody>
+                  </table>
+                  <table class="table-right custom-table">
+                    <thead>
+                      <tr class="text-center">
+                        <th>Quyền</th>
+                        <th>Extension</th>
+                        <th>Nhóm</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Người tạo</th>
+                        <th>Cập nhật gần nhất</th>
+                      </tr>
+                    </thead>
+                    <tbody class="content-table-right"></tbody>
+                  </table>
+                </div>
               </div>
               <div class="card-footer text-center">
                 <div class="col-12 d-flex justify-content-center" id="paging_table">
                 </div>
               </div>
-              <!-- /.card-body -->
             </div>
-            <!-- /.card -->
-            <!-- /.card -->
           </div>
-          <!-- /.col -->
         </div>
-        <!-- /.row -->
       </div>
-      <!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
   </div>
 </div>
 
-<!-- /.modal -->
+<!-- modal create -->
 <div class="modal fade" id="modalUser">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -176,58 +183,103 @@
         </form>
       </div>
     </div>
-    <!-- /.modal-content -->
   </div>
-  <!-- /.modal-dialog -->
 </div>
-<!-- /.modal -->
 
-<!-- /.modal -->
-<div class="modal fade" id="modalResetPassword">
+<!-- modal edit -->
+<div class="modal fade" id="modalEditUser">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Reset mật khẩu người dùng</h4>
+        <h4 class="modal-title">Chỉnh sửa người dùng</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body ">
-        <form id="formResetPassword" autocomplete="off">
-          <div class="border-bottom border-dark">
-            <div class="form-group mb-5 ml-2">
-              <label>
-                Mật khẩu mới của <strong></strong> được đổi thành :
-              </label>
-              <div class="row d-flex">
-                <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password"
-                  style="width: 20%;" disabled />
-                <a type="button" class="text-danger ml-3">click để sao chép*</a>
+      <div class="modal-body">
+        <form id="form_edit_user" autocomplete="off">
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>
+                  Họ và tên đệm
+                  <span class="text-danger">*</span>
+                </label>
+                <label class="float-right font-weight-normal text-muted" id="first_name_length">
+                  0/30
+                </label>
+                <input type="text" class="form-control input" id="firstname" name="firstName" />
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>
+                  Tên
+                  <span class="text-danger">*</span>
+                </label>
+                <label class="float-right font-weight-normal text-muted" id="last_name_length">
+                  0/30
+                </label>
+                <input type="text" class="form-control input" id="lastname" name="lastName" />
               </div>
             </div>
           </div>
-
-          <div class="form-group ml-2">
-            <p>Vui lòng xác minh tài khoản quản trị</p>
+          <div>
             <div class="form-group">
-              <span class="text-muted">Tên đăng nhập:</span>
-              <br>
-              <strong>ADMIN</strong>
-              <br>
-              <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
+              <label>
+                Tên đăng nhập
+                <span class="text-danger">*</span>
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="user_name_length">
+                0/30
+              </label>
+              <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password" />
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>
+                Extension
+                <span class="text-danger">*</span>
+              </label>
+              <input type="text" class="form-control input" id="extension" name="extension" />
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>Quyền</label>
+              <select class="form-control selectpicker input" name="roles" id="roles" multiple>
+                <option value="0">Agent</option>
+                <option value="1">Supervisor</option>
+                <option value="2">Admin</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>
+                Mật khẩu
+                <span class="text-danger">*</span>
+              </label>
               <input class="form-control input" type="password" id="password" name="password"
                 autocomplete="new-password">
             </div>
           </div>
-          <div class="modal-footer justify-content-end">
+          <div>
+            <div class="form-group">
+              <label>
+                Xác nhận mật khẩu
+                <span class="text-danger">*</span>
+              </label>
+              <input class="form-control input" type="password" id="repeat_password" name="repeat_password">
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-primary">Reset Mật Khẩu</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
           </div>
         </form>
       </div>
     </div>
-    <!-- /.modal-content -->
   </div>
-  <!-- /.modal-dialog -->
 </div>
-<!-- /.modal -->

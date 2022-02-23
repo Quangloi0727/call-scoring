@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes, Op } = require('sequelize');
 
 class Team extends Model {
   static init(sequelize) {
@@ -20,15 +20,28 @@ class Team extends Model {
       },
       {
         sequelize,
-        modelName: 'Teams'
+        modelName: 'Teams',
+        hooks: {
+          beforeCreate: handleBeforeCreate
+        }
       },
     );
   }
 
   static associate(models) {
     models.Team.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' });
-    
+
     models.Team.hasMany(models.AgentTeamMember, { foreignKey: 'teamId' });
+  }
+}
+
+async function handleBeforeCreate(team, option) {
+  const teamResult = await Team.findOne({
+    where: { name: { [Op.eq]: team.name.toString() } }
+  });
+
+  if (teamResult) {
+    throw new Error('Tên nhóm đã được sử dụng!');
   }
 }
 

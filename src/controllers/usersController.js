@@ -172,4 +172,196 @@ exports.createUser = async (req, res, next) => {
 
     return res.status(ERR_500.code).json({ message: error.message });
   }
-} 
+}
+
+exports.getChangePassword = async (req, res, next) => {
+  try {
+    return _render(req, res, 'users/changePassword', {
+      title: 'Đổi mật khẩu',
+      titlePage: 'Đổi mật khẩu',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+    return next(error);
+  }
+}
+
+exports.postChangePassword = async (req, res, next) => {
+  let transaction;
+
+  try {
+    const { newPassword, oldPassword } = req.body;
+
+    transaction = await model.sequelize.transaction();
+
+    const user = await UserModel.findOne(
+      {
+        where: {
+          id: { [Op.eq]: Number(req.user.id) },
+          password: { [Op.eq]: oldPassword.trim() }
+        },
+      },
+    );
+
+    if (!user) {
+      throw new Error('Mật khẩu không đúng, vui lòng thử lại!');
+    }
+
+    await UserModel.update(
+      { password: newPassword.trim() },
+      { where: { id: { [Op.eq]: Number(req.user.id) } } },
+      { transaction: transaction }
+    )
+
+    await transaction.commit();
+
+    req.logout();
+    req.session.destroy();
+
+    return res.status(SUCCESS_200.code).json({
+      message: 'Success!',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    if (transaction) await transaction.rollback();
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
+exports.getImportUser = async (req, res, next) => {
+  try {
+    return _render(req, res, 'users/importUser', {
+      title: 'Nhập dữ liệu người dùng hàng loạt',
+      titlePage: 'Nhập dữ liệu người dùng hàng loạt',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+    return next(error);
+  }
+}
+
+exports.postCheckDataUser = async (req, res, next) => {
+  try {
+    const { names, extensions } = req.body;
+
+    const users = await UserModel.findAll({
+      where: {
+        [Op.or]: [
+          { userName: { [Op.in]: names } },
+          { extension: { [Op.in]: extensions } }
+        ]
+      },
+      raw: true,
+      nest: true
+    });
+
+    console.log('user: ', users);
+
+    return res.status(SUCCESS_200.code).json({
+      data: users,
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
+exports.postImportUser = async (req, res, next) => {
+  let transaction;
+
+  try {
+    const { users } = req.body;
+    let roleData = [];
+
+    transaction = await model.sequelize.transaction();
+
+    let newUsers = users.map((user) => {
+      return {
+        firstName: user.HoVaTenDem.trim(),
+        lastName: user.Ten.trim(),
+        fullName: `${user.HoVaTenDem.trim()} ${user.Ten.trim()}`,
+        userName: user.TenDangNhap.trim(),
+        extension: user.Extension.trim(),
+        password: user.MatKhau.trim(),
+        created: Number(req.user.id),
+      }
+    });
+
+    const createResult = await UserModel.bulkCreate(
+      newUsers,
+      { transaction: transaction }
+    );
+
+    createResult.forEach((user) => {
+      const isFound = users.find((item) => item.TenDangNhap == user.userName);
+
+      if (isFound) {
+        roleData.push({
+          userId: user.id,
+          role: Number(isFound.Quyen)
+        });
+      }
+    });
+
+    console.log('role data: ', roleData);
+
+    await UserRoleModel.bulkCreate(
+      roleData,
+      { transaction: transaction }
+    );
+
+    await transaction.commit();
+
+    return res.status(SUCCESS_200.code).json({
+      data: users,
+    });
+  } catch (error) {
+    console.log(`------- error ------- getRecording`);
+    console.log(error);
+    console.log(`------- error ------- getRecording`);
+
+    if (transaction) await transaction.rollback();
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
+exports.search = async (req, res) => {
+  try {
+    const { userName, id } = req.query;
+    const queryData = {};
+
+    if (id) queryData.id = { [Op.eq]: Number(id.trim()) }
+    if (userName) queryData.userName = { [Op.eq]: userName.trim() }
+
+    const user = await UserModel.findOne({
+      where: { ...queryData },
+      include: [{ model: UserRoleModel, as: 'roles' }],
+    });
+
+    if (!user) {
+      throw new Error('Người dùng không tồn tại!');
+    }
+
+    return res.status(SUCCESS_200.code).json({
+      data: JSON.parse(JSON.stringify(user)),
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
