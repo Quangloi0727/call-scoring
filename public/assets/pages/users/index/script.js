@@ -158,8 +158,8 @@ $(function () {
       cache: 'false',
       success: function (result) {
         $loadingData.hide();
-
-        createTable(result.data);
+        console.log(result);
+        createTable(result.data, result.currentUser);
         return createPaging(result.paginator);
       },
       error: function (error) {
@@ -171,13 +171,16 @@ $(function () {
   }
 
   // function 
-  function createTable(data) {
+  function createTable(data, currentUser) {
     let html = '';
 
     console.log(`------- data ------- `);
     console.log(data);
     console.log(`------- data ------- `);
 
+    if (currentUser) {
+      currentUser.id =
+    }
     data.forEach((item) => {
       let teamHtml = '';
       item.ofTeams.forEach(element => {
@@ -193,8 +196,14 @@ $(function () {
         <tr>
           <td class="text-center">${item.fullName}</td>
           <td class="text-center">${item.userName}</td>
+          <td class="text-center"><i class="fas fa-pencil-alt ml-2"></i><i class="fas fa-lock ml-2"></i>
+          <a class="" data-toggle="modal" data-toggle="tooltip" data-placement="bottom" title="Reset password" id="ResetPassword"
+          data-target="#modalResetPassword">
+          <i class="fas fa-sync ml-2"></i></a></td>
           <td class="text-center">${item.extension}</td>
           <td class="text-center">${teamHtml}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
           <td class="text-center">${moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss')}</td>
           <td class="text-center">${item.userCreate.fullName}</td>
         </tr>

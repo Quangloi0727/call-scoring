@@ -33,7 +33,7 @@ exports.getUsers = async (req, res, next) => {
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = {};
-
+    let currentUser = req.user
     if (username) query.userName = { [Op.substring]: username };
     if (fullname) query.fullName = { [Op.substring]: fullname };
     if (extension) query.extension = { [Op.substring]: extension };
@@ -74,6 +74,7 @@ exports.getUsers = async (req, res, next) => {
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: dataResult || [],
+      currentUser: currentUser ? currentUser : null,
       paginator: paginator.getPaginationData(),
     });
   } catch (error) {
@@ -120,15 +121,15 @@ exports.createUser = async (req, res, next) => {
 
     transaction = await model.sequelize.transaction();
 
-    if(data.firstName && data.firstName.length > 30) {
+    if (data.firstName && data.firstName.length > 30) {
       throw new Error('Họ và tên đệm có độ dài không quá 30 kí tự!');
     }
 
-    if(data.lastName && data.lastName.length > 30) {
+    if (data.lastName && data.lastName.length > 30) {
       throw new Error('Tên có độ dài không quá 30 kí tự!');
     }
 
-    if(data.userName && data.userName.length > 30) {
+    if (data.userName && data.userName.length > 30) {
       throw new Error('Tên đăng nhập đệm có độ dài không quá 30 kí tự!');
     }
 
