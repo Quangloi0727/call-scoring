@@ -14,6 +14,9 @@ router.route('/getUsers')
 router.route('/changePassword')
     .get(usersController.getChangePassword);
 
+router.route('/resetPassWord')
+    .post(usersController.postResetPassWord);
+
 router.route('/changePassword')
     .post(usersController.postChangePassword);
 

@@ -234,6 +234,39 @@ exports.postChangePassword = async (req, res, next) => {
   }
 }
 
+exports.postResetPassWord = async (req, res, next) => {
+  let transaction;
+
+  try {
+    const { newPassword, idUser, adminPassword } = req.body;
+
+    transaction = await model.sequelize.transaction();
+    if (adminPassword != req.user.password) {
+      throw new Error('Mật khẩu xác thực không đúng, vui lòng thử lại!');
+    }
+
+
+    await UserModel.update(
+      { password: newPassword.trim() },
+      { where: { id: { [Op.eq]: Number(idUser) } } },
+      { transaction: transaction }
+    )
+
+    await transaction.commit();
+    return res.status(SUCCESS_200.code).json({
+      message: 'Success!',
+    });
+  } catch (error) {
+    console.log(`------- error ------- `);
+    console.log(error);
+    console.log(`------- error ------- `);
+
+    if (transaction) await transaction.rollback();
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
 exports.getImportUser = async (req, res, next) => {
   try {
     return _render(req, res, 'users/importUser', {

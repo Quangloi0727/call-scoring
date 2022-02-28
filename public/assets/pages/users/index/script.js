@@ -5,6 +5,7 @@ $(function () {
   const $buttonSearchUser = $('#searchUser');
   const $formSearchUser = $('#form_search_user');
   const $modalEditUser = $('#modalEditUser');
+  const $modalResetPassword = $('#modalResetPassword');
 
   $.validator.addMethod("pwcheck", function (value) {
     return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value);
@@ -172,16 +173,20 @@ $(function () {
   }
 
   // function 
-  function createTable(data) {
+  function createTable(data, currentUser) {
     let contentTableLeft = '';
     let contentTableRight = '';
+    let found;
 
     console.log(`------- data ------- `);
     console.log(data);
     console.log(`------- data ------- `);
 
     if (currentUser) {
-      currentUser.id =
+      found = currentUser.roles.find(element => element.role == 2);
+      if (found) {
+        $("#admin-account").html(currentUser.fullName);
+      }
     }
     data.forEach((item) => {
       let teamHtml = '';
@@ -228,7 +233,7 @@ $(function () {
               <i class="fas fa-pencil"></i>
             </span>
             ${lockButton}
-            <span class="p-1 btn-action" title="Reset lại mật khẩu">
+            <span class="p-1 btn-action ${found ? "btn-modal-reset-password" : ""}" title="${found ? "Reset lại mật khẩu" : "Bạn không có quyền sử dụng chức năng này"}" data-id="${item.id}">
               <i class="fas fa-sync"></i>
             </span>
           </td>
@@ -351,6 +356,73 @@ $(function () {
       }
     });
   });
+
+  $(document).on('click', '.btn-modal-reset-password', function () {
+    let _generatePassword = generatePassword();
+    $('input[name=reset-password]').val(_generatePassword);
+    console.log($(this).attr("data-id"));
+    $('#btn-reset-password').attr("data-id", $(this).attr("data-id"))
+    $modalResetPassword.modal('show');
+  });
+
+  $(document).on('click', '#copy-to-clipboard', function () {
+    console.log("sssss");
+    copyToClipboard();
+  });
+
+  $(document).on('click', '#copy-to-clipboard', function () {
+    console.log("sssss");
+    copyToClipboard();
+  });
+
+  $(document).on('click', '#btn-reset-password', function () {
+    let filter = {};
+    filter.newPassword = $('#reset-password').val();
+    filter.idUser = $(this).attr("data-id");
+    filter.adminPassword = $('#admin-password').val();
+    $.ajax({
+      type: 'POST',
+      url: '/users/resetPassWord',
+      data: filter,
+      dataType: 'text',
+      success: function () {
+        $loadingData.hide();
+
+        toastr.success('Đã thêm người dùng vào nhóm');
+      },
+      error: function (error) {
+
+        console.log(error);
+        return toastr.error(JSON.parse(error.responseText).message);
+      },
+    });
+  })
+
+  /// random password
+  function generatePassword() {
+    var length = 8,
+      charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+      retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+  }
+  // copyToClipboard
+  function copyToClipboard(element) {
+    var copyText = document.getElementById("reset-password");
+
+    /* Select the text field */
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+    /* Copy the text inside the text field */
+    navigator.clipboard.writeText(copyText.value);
+
+    /* Alert the copied text */
+    toastr.success("Copied the text: " + copyText.value);
+
+  }
 
   function warningLengthInput(formId, inputId, warningClass) {
     $(`#${formId} #${inputId}`).on('input', function () {
