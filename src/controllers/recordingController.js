@@ -8,10 +8,18 @@ const {
   SUCCESS_200,
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
+
+const {
+  cheSo
+} = require("../helpers/functions");
+
 const model = require('../models');
 const ConfigurationColumsModel = require('../models/configurationcolums');
-const { reject } = require('lodash');
 const titlePage = 'Danh sách cuộc gọi';
+const SOURCE_NAME = {
+  oreka : 'ORK',
+  fs : 'FS',
+}
 
 exports.index = async (req, res, next) => {
   try {
@@ -101,7 +109,8 @@ exports.getRecording = async (req, res) => {
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
-	      AND records.origTime <= ${Number(endTimeMilisecond)}
+        AND records.origTime <= ${Number(endTimeMilisecond)}
+        AND records.sourceName = '${SOURCE_NAME.oreka}'
 	      ${query}
       ORDER BY records.origTime DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
@@ -113,7 +122,8 @@ exports.getRecording = async (req, res) => {
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
-	      AND records.origTime <= ${Number(endTimeMilisecond)}
+        AND records.origTime <= ${Number(endTimeMilisecond)}
+        AND records.sourceName = '${SOURCE_NAME.oreka}'
 	      ${query}
     `;
 
@@ -131,7 +141,7 @@ exports.getRecording = async (req, res) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult && handleData(recordResult) || [],
+      data: recordResult && handleData(recordResult, true) || [],
       ConfigurationColums: ConfigurationColums.data ? ConfigurationColums.data[0].configurationColums : null,
       paging: paginator.getPaginationData()
     });
@@ -217,13 +227,20 @@ function checkLeader(userId) {
   });
 }
 
-function handleData(data) {
+function handleData(data, privatePhoneNumber = false) {
   let newData = [];
 
   newData = data.map((el) => {
     el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
     el.duration = hms(el.duration);
-    el.recordingFileName = _config.pathRecording + el.recordingFileName
+    el.recordingFileName = _config.pathRecording + el.recordingFileName;
+
+    // che số
+    if(privatePhoneNumber){
+      if(el.caller && el.caller.length >= 10) el.caller = cheSo(el.caller, 4);
+      if(el.called && el.called.length >= 10) el.called = cheSo(el.called, 4);
+    }
+
     return el;
   });
 

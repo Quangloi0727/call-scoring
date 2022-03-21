@@ -16,3 +16,11 @@ exports.capitalizeFirstLetter = (string) => {
 exports.lowerCaseFirstLetter = (string) => {
     return string.charAt(0).toLowerCase() + string.slice(1);
 }
+
+exports.cheSo = (phone, num) => {
+    if(phone && typeof phone == 'string'){
+        let re = new RegExp(`.(?=.{${num}})`, 'g');
+    
+    return phone.replace(re, '*');
+    }else return phone;
+}
