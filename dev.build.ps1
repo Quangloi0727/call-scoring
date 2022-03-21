@@ -2,7 +2,7 @@
 param ($v)
 $version=$v
 
-docker build -t mt-recording:$version .
+docker build --no-cache -t mt-recording:$version .
 
 #Push image to docker registry
 docker tag mt-recording:$version 172.16.16.110:5000/mt-recording:$version
