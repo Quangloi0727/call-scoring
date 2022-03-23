@@ -142,7 +142,7 @@ exports.getRecording = async (req, res) => {
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: recordResult && handleData(recordResult, true) || [],
-      ConfigurationColums: ConfigurationColums.data ? ConfigurationColums.data[0].configurationColums : null,
+      ConfigurationColums: ConfigurationColums && ConfigurationColums.data && ConfigurationColums.data[0] ? ConfigurationColums.data[0].configurationColums : null,
       paging: paginator.getPaginationData()
     });
   } catch (error) {
