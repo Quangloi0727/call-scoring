@@ -4,6 +4,8 @@ $(function () {
   const $loadingData = $('.page-loader');
   const $buttonSearchUser = $('#searchUser');
   const $formSearchUser = $('#form_search_user');
+  const $modalEditUser = $('#modalEditUser');
+  const $modalResetPassword = $('#modalResetPassword');
 
   $.validator.addMethod("pwcheck", function (value) {
     return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value);
@@ -158,8 +160,8 @@ $(function () {
       cache: 'false',
       success: function (result) {
         $loadingData.hide();
-
-        createTable(result.data);
+        console.log(result);
+        createTable(result.data, result.currentUser);
         return createPaging(result.paginator);
       },
       error: function (error) {
@@ -171,15 +173,31 @@ $(function () {
   }
 
   // function 
-  function createTable(data) {
-    let html = '';
+  function createTable(data, currentUser) {
+    let contentTableLeft = '';
+    let contentTableRight = '';
+    let found;
 
     console.log(`------- data ------- `);
     console.log(data);
     console.log(`------- data ------- `);
 
+    if (currentUser) {
+      found = currentUser.roles.find(element => element.role == 2);
+      if (found) {
+        $("#admin-account").html(currentUser.fullName);
+      }
+    }
     data.forEach((item) => {
       let teamHtml = '';
+      let statusHtml = '<span class="badge badge-danger">Đã khóa</span>';
+      let updatedAtHtml = '-';
+      let lockButton = `
+        <span class="p-1 btn-action" title="Mở khóa người dùng">
+          <i class="fas fa-unlock"></i>
+        </span>
+      `;
+
       item.ofTeams.forEach(element => {
         teamHtml += `
           <a href="/groups/detail/${element.teamId}">
@@ -189,19 +207,54 @@ $(function () {
         `;
       });
 
-      html += `
-        <tr>
-          <td class="text-center">${item.fullName}</td>
-          <td class="text-center">${item.userName}</td>
-          <td class="text-center">${item.extension}</td>
-          <td class="text-center">${teamHtml}</td>
-          <td class="text-center">${moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss')}</td>
-          <td class="text-center">${item.userCreate.fullName}</td>
+      if (item.isActive == 1) {
+        lockButton = `
+          <span class="p-1 btn-action" title="Khóa người dùng">
+            <i class="fas fa-lock"></i>
+          </span>
+        `;
+      }
+
+      if (item.isActive == 1) {
+        statusHtml = '<span class="badge badge-success">Đang hoạt động</span>'
+      }
+
+      if (item.createdAt != item.updatedAt) {
+        updatedAtHtml = moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss');
+      }
+
+      contentTableLeft += `
+        <tr class="text-center">
+          <td>${item.fullName}</td>
+          <td>${item.userName}</td>
+          <td>
+            <span class="p-1 btn-action btn-edit-user" title="Chỉnh sửa thông tin người dùng"
+              data-id="${item.id}">
+              <i class="fas fa-pencil"></i>
+            </span>
+            ${lockButton}
+            <span class="p-1 btn-action ${found ? "btn-modal-reset-password" : ""}" title="${found ? "Reset lại mật khẩu" : "Bạn không có quyền sử dụng chức năng này"}" data-id="${item.id}">
+              <i class="fas fa-sync"></i>
+            </span>
+          </td>
+        </tr>
+      `;
+
+      contentTableRight += `
+        <tr class="text-center">
+          <td></td>
+          <td>${item.extension}</td>
+          <td>${teamHtml}</td>
+          <td>${statusHtml}</td>
+          <td>${moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss')}</td>
+          <td>${item.userCreate.fullName}</td>
+          <td>${updatedAtHtml}</td>
         </tr>
       `;
     });
 
-    return $('#tableBody').html(html);
+    $('.content-table-left').html(contentTableLeft);
+    return $('.content-table-right').html(contentTableRight);
   }
 
   function createPaging(paging) {
@@ -272,52 +325,128 @@ $(function () {
     return $('#paging_table').html(pagingHtml);
   };
 
-  $('#form_input_user #firstname').on('input', function () {
-    let value = $(this).val();
+  $(document).on('click', '.btn-edit-user', function () {
+    let userId = $(this).attr('data-id');
 
-    $('#first_name_length').html(`${value.length}/30`);
+    if (!userId || userId == '') return;
 
-    if (value.length > 30) {
-      $('#first_name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'firstName': 'Độ dài không quá 30 kí tự!'
-      });
-    } else {
-      $('#first_name_length').removeClass('text-danger').addClass('text-muted');
-    }
+    $.ajax({
+      type: 'GET',
+      url: 'users/search?id=' + userId,
+      cache: 'false',
+      success: function (data) {
+        console.log('data: ', data);
+        if (!data) return;
+
+        const user = data.data;
+        let inputs = $('#form_edit_user [name]')
+
+        $.each(inputs, function (i, input) {
+          console.log('input: ', input);
+          var split = $(input).attr('name').split('_')[1];
+          console.log('split: ', split);
+          $(input).val(user[split]);
+        });
+
+
+        $modalEditUser.modal('show');
+      },
+      error: function (error) {
+        return toastr.error(JSON.parse(error.responseText).message);
+      }
+    });
   });
 
-  $('#form_input_user #lastname').on('input', function () {
-    let value = $(this).val();
-
-    $('#last_name_length').html(`${value.length}/30`);
-
-    if (value.length > 30) {
-      $('#last_name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'lastName': 'Độ dài không quá 30 kí tự!'
-      });
-    } else {
-      $('#last_name_length').removeClass('text-danger').addClass('text-muted');
-    }
+  $(document).on('click', '.btn-modal-reset-password', function () {
+    let _generatePassword = generatePassword();
+    $('input[name=reset-password]').val(_generatePassword);
+    console.log($(this).attr("data-id"));
+    $('#btn-reset-password').attr("data-id", $(this).attr("data-id"))
+    $modalResetPassword.modal('show');
   });
 
-  $('#form_input_user #username').on('input', function () {
-    let value = $(this).val();
-
-    console.log('usrname: ', value)
-
-    $('#user_name_length').html(`${value.length}/30`);
-
-    if (value.length > 30) {
-      $('#user_name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'userName': 'Độ dài không quá 30 kí tự!'
-      });
-    } else {
-      $('#user_name_length').removeClass('text-danger').addClass('text-muted');
-    }
+  $(document).on('click', '#copy-to-clipboard', function () {
+    console.log("sssss");
+    copyToClipboard();
   });
+
+  $(document).on('click', '#copy-to-clipboard', function () {
+    console.log("sssss");
+    copyToClipboard();
+  });
+
+  $(document).on('click', '#btn-reset-password', function () {
+    let filter = {};
+    filter.newPassword = $('#reset-password').val();
+    filter.idUser = $(this).attr("data-id");
+    filter.adminPassword = $('#admin-password').val();
+    $.ajax({
+      type: 'POST',
+      url: '/users/resetPassWord',
+      data: filter,
+      dataType: 'text',
+      success: function () {
+        $loadingData.hide();
+
+        toastr.success('Đã thêm người dùng vào nhóm');
+      },
+      error: function (error) {
+
+        console.log(error);
+        return toastr.error(JSON.parse(error.responseText).message);
+      },
+    });
+  })
+
+  /// random password
+  function generatePassword() {
+    var length = 8,
+      charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      retVal = "";
+    for (var i = 0, n = charset.length; i < length; ++i) {
+      retVal += charset.charAt(Math.floor(Math.random() * n));
+    }
+    return retVal;
+  }
+  // copyToClipboard
+  function copyToClipboard(element) {
+    var copyText = document.getElementById("reset-password");
+
+    /* Select the text field */
+    copyText.select();
+    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+
+    /* Copy the text inside the text field */
+    navigator.clipboard.writeText(copyText.value);
+
+    /* Alert the copied text */
+    toastr.success("Copied the text: " + copyText.value);
+
+  }
+
+  function warningLengthInput(formId, inputId, warningClass) {
+    $(`#${formId} #${inputId}`).on('input', function () {
+      let value = $(this).val();
+
+      $(`#${warningClass}`).html(`${value.length}/30`);
+
+      if (value.length > 30) {
+        $(`#${warningClass}`).removeClass('text-muted').addClass('text-danger');
+        return validator.showErrors({
+          'firstName': 'Độ dài không quá 30 kí tự!'
+        });
+      } else {
+        return $(`#${warningClass}`).removeClass('text-danger').addClass('text-muted');
+      }
+    });
+  }
+
+  warningLengthInput('form_input_user', 'firstname', 'first_name_length');
+  warningLengthInput('form_input_user', 'lastname', 'last_name_length');
+  warningLengthInput('form_input_user', 'username', 'user_name_length');
+  warningLengthInput('form_edit_user', 'firstname', 'first_name_length');
+  warningLengthInput('form_edit_user', 'lastname', 'last_name_length');
+  warningLengthInput('form_edit_user', 'username', 'user_name_length');
 
   findData(1);
 });
