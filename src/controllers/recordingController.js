@@ -141,7 +141,7 @@ exports.getRecording = async (req, res) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult && handleData(recordResult, true) || [],
+      data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
       ConfigurationColums: ConfigurationColums && ConfigurationColums.data && ConfigurationColums.data[0] ? ConfigurationColums.data[0].configurationColums : null,
       paging: paginator.getPaginationData()
     });
@@ -269,7 +269,7 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
       ORDER BY records.origTime DESC
     `, { type: QueryTypes.SELECT });
 
-    const dataHandleResult = handleData(dataResult);
+    const dataHandleResult = handleData(dataResult, _config.privatePhoneNumberExcel);
 
     const linkFile = await createExcelFile(startTime, endTime, dataHandleResult);
 
