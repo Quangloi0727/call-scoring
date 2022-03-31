@@ -33,7 +33,7 @@ function bindClick() {
   });
 
   // enter
-  $('#form_search input[name="caller"],input[name="called"]').keypress('enter', function (e) {
+  $('#form_search input[name="caller"],#form_search input[name="called"]').keypress('enter', function (e) {
     if (e.which == 13) {
       let page = 1;
       let formData = getFormData('form_search');
