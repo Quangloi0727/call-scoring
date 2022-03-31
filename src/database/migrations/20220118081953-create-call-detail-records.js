@@ -107,7 +107,7 @@ module.exports = {
     //   },{
     //     quoteIdentifiers: false, // set case-insensitive
     //   });
-    }
+    // }
    
   },
   async down(queryInterface, Sequelize) {
