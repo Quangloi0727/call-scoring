@@ -156,7 +156,7 @@
 
               <div class="form-group">
                 <label>Họ tên</label>
-                <select class="form-control selectpicker input" name="fullName" id="val_fullName" data-live-search="true"
+                <select class="form-control selectpicker input selectpickerAdvanced" name="fullName" id="val_fullName" data-live-search="true"
                   title="Chọn..." multiple>
                   <% teamsDetail.forEach((team)=> { %>
                     <option value="<%= team.memberId %>">
@@ -176,7 +176,7 @@
 
               <div class="form-group">
                 <label>Tên đăng nhập</label>
-                <select class="form-control selectpicker input" name="userName" id="val_userName" data-live-search="true"
+                <select class="form-control selectpicker input selectpickerAdvanced" name="userName" id="val_userName" data-live-search="true"
                   title="Chọn..." multiple>
                   <% teamsDetail.forEach((team)=> { %>
                     <option value="<%= team.memberId %>">
@@ -192,7 +192,7 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Đội ngũ</label>
-                <select class="form-control selectpicker input" name="teams" id="val_teams" data-live-search="true"
+                <select class="form-control selectpicker input selectpickerAdvanced" name="teams" id="val_teams" data-live-search="true"
                   title="Chọn..." multiple>
                   <% teams.forEach((team)=> { %>
                     <option value="<%= team.teamId %>">
@@ -212,7 +212,7 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Hướng gọi</label>
-                <select class="form-control selectpicker input" name="callDirection" id="val_callDirection"
+                <select class="form-control selectpicker input selectpickerAdvanced" name="callDirection" id="val_callDirection"
                   data-live-search="true" title="Chọn..." multiple>
                   <option value="inbound">inbound</option>
                   <option value="outbound">outbound</option>

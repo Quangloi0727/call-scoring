@@ -32,6 +32,24 @@ function bindClick() {
     return findData(page, null, formData);
   });
 
+  // enter
+  $('input[name="caller"],input[name="called"]').keypress('enter', function (e) {
+    if (e.which == 13) {
+      let page = 1;
+      let formData = getFormData('form_search');
+
+      console.log('formData: ', formData)
+
+      searchType = DEFAULT_SEARCH;
+
+      findData(page, null, formData);
+    }else {
+      // console.log('khong tim kiem');
+    }
+    return false;
+    
+  });
+
   $buttonAdvancedSearch.on('click', function () {
     let page = 1;
     let formData = getFormData('form_advanced_search');
@@ -75,11 +93,10 @@ function bindClick() {
   });
 
   $buttonClearFilter.on('click', () => {
-    localStorage.setItem('modalData', '');
+    localStorage.removeItem('modalData', '');
 
     $formAdvancedSearch.trigger("reset");
-    $('#val_callDirection').selectpicker('refresh');
-    $('#val_teams').selectpicker('refresh');
+    $('.selectpickerAdvanced').selectpicker('refresh');
 
     return;
   });
@@ -366,17 +383,7 @@ function downloadFromUrl(url) {
 }
 
 $(function () {
-  $('#startTime').datetimepicker({
-    format: 'DD/MM/YYYY',
-    defaultDate: new Date(),
-    icons: { time: 'far fa-clock' }
-  });
-
-  $('#endTime').datetimepicker({
-    format: 'DD/MM/YYYY',
-    defaultDate: new Date(),
-    icons: { time: 'far fa-clock' }
-  });
+  
 
   $('#popup_startTime').datetimepicker({
     format: 'DD/MM/YYYY',
@@ -397,15 +404,39 @@ $(function () {
     searchType = ADVANCED_SEARCH;
 
     Object.keys(modalData).forEach(function (key) {
-      console.log('key: ', modalData[key])
+      console.log(`key: ${key}`, modalData[key])
       $(`#val_${key}`).val(modalData[key]);
+      if($(`#${key}`).length > 0) {
+        console.log(moment(modalData[key], 'DD/MM/YYYY')._d);
+        
+        // $(`#${key}`).datetimepicker({
+        //   defaultDate: moment(modalData[key], 'DD/MM/YYYY')._d
+        // })
+        $(`#${key}`).datetimepicker({
+          format: 'DD/MM/YYYY',
+          defaultDate: moment(modalData[key], 'DD/MM/YYYY')._d,
+          icons: { time: 'far fa-clock' }
+        });
+        // $(`#${key}`).val();
+      }
     });
 
-    $('#val_callDirection').selectpicker('refresh');
-    $('#val_teams').selectpicker('refresh');
+    $('.selectpickerAdvanced').selectpicker('refresh');
 
     findData(page, null, modalData);
   } else {
+    $('#startTime').datetimepicker({
+      format: 'DD/MM/YYYY',
+      defaultDate: new Date(),
+      icons: { time: 'far fa-clock' }
+    });
+  
+    $('#endTime').datetimepicker({
+      format: 'DD/MM/YYYY',
+      defaultDate: new Date(),
+      icons: { time: 'far fa-clock' }
+    });
+
     let page = 1;
     let formData = getFormData('form_search');
 
