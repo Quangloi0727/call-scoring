@@ -8,6 +8,9 @@ const {
   SUCCESS_200,
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
+const {
+  USER_ROLE
+} = require("../helpers/constants/number");
 
 const {
   cheSo
@@ -23,12 +26,21 @@ const SOURCE_NAME = {
 
 exports.index = async (req, res, next) => {
   try {
-    const { teams } = await checkLeader(req.user.id);
+    let isAdmin = false;
+
+    if (req.user.roles.find((item) => item.role == 2)) {
+      isAdmin = true;
+    }
+
+    const { teams, teamIds } = await checkLeader(req.user.id);
+
+    let { teams: teamsDetail } = await getAgentTeamMemberDetail(isAdmin, teamIds, req.user.id);
 
     return _render(req, res, 'recording/index', {
       title: titlePage,
       titlePage: titlePage,
-      teams: teams || [],
+      teamsDetail:  _.uniqBy(teamsDetail, 'memberId'), // master data
+      teams: _.uniqBy(teamsDetail, 'teamId') || [],
     });
   } catch (error) {
     console.log(`------- error ------- `);
@@ -57,6 +69,7 @@ exports.getRecording = async (req, res) => {
     const limit = 25;
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
+    let userIdFilter = [];
     let query = '';
     let isAdmin = false;
 
@@ -69,7 +82,6 @@ exports.getRecording = async (req, res) => {
     }
 
     const { teamIds } = await checkLeader(req.user.id);
-
     if (!isAdmin && (!teamIds || teamIds.length <= 0)) {
       query += `AND records.agentId = ${req.user.id} `;
     }
@@ -81,8 +93,20 @@ exports.getRecording = async (req, res) => {
     if (caller) query += `AND records.caller LIKE '%${caller.toString()}%' `;
     if (called) query += `AND records.called LIKE '%${called.toString()}%' `;
     if (extension) query += `AND agent.extension LIKE '%${extension.toString()}%' `;
-    if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
-    if (userName) query += `AND agent.userName LIKE '%${userName.toString()}%' `;
+    // if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
+    if (fullName) {
+      userIdFilter = _.concat(userIdFilter, fullName);
+    }
+    if (userName) {
+      userIdFilter = _.concat(userIdFilter, userName);
+    }
+    if(userIdFilter.length > 0){
+      userIdFilter = _.uniq(userIdFilter).map(i => Number(i));
+
+      query += `AND agent.id IN (${userIdFilter.join()}) `;
+
+    }
+
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `;
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
     if (teams) query += `AND team.id IN (${teams.toString()}) `;
@@ -221,6 +245,52 @@ function checkLeader(userId) {
       teamIds = _.map(resulds, 'teamId');
 
       return resolve({ teams: resulds, teamIds: teamIds });
+    } catch (error) {
+      return reject(error);
+    }
+  });
+}
+
+function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let conditionQuery = '';
+      if(isAdmin == true){
+        conditionQuery = `team.name <> 'Default'`;
+      }else {
+        // sup
+        if(teamIds.length > 0){
+          conditionQuery = `team.id IN (${teamIds.join(',')}) and 
+          AgentTeamMembers.role =  ${USER_ROLE.agent}`;
+        }else {
+          // agent
+          conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`;
+        }
+        
+      }
+      const result = await model.sequelize.query(
+        `
+            SELECT
+        team.id AS teamId,
+        team.name AS teamName,
+        memberOfTeam.id AS memberId,
+        memberOfTeam.fullName AS memberFullName,
+        memberOfTeam.userName AS memberUserName
+      FROM dbo.Teams team
+      LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
+      LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
+      
+      WHERE ${conditionQuery}
+
+      GROUP BY team.id, team.name, memberOfTeam.id, memberOfTeam.fullName, memberOfTeam.userName
+
+        `,
+        { type: QueryTypes.SELECT }
+      );
+
+     
+
+      return resolve({ teams: result });
     } catch (error) {
       return reject(error);
     }
