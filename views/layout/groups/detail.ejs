@@ -11,7 +11,7 @@
             <ol class="breadcrumb">
               <li class="breadcrumb-item">
                 <a href="/groups">
-                  <h5>&lsaquo; Quản lí nhóm</h5>
+                  <h5>&lsaquo; Quản lí đội ngũ</h5>
                 </a>
               </li>
             </ol>
@@ -106,7 +106,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Sửa nhóm</h4>
+        <h4 class="modal-title">Sửa đội ngũ</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -116,7 +116,7 @@
           <div>
             <div class="form-group">
               <label>
-                Tên nhóm
+                Tên đội ngũ
                 <span class="text-danger">*</span>
               </label>
               <label class="float-right font-weight-normal text-muted" id="name_length">
@@ -127,7 +127,7 @@
           </div>
           <div class="form-group">
             <label>
-              Giám sát
+              Đội ngũ
               <span class="text-danger">*</span>
             </label>
             <select class="form-control selectpicker input" data-live-search="true" 
@@ -162,7 +162,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Xóa Nhóm</h4>
+        <h4 class="modal-title">Xóa Đội ngũ</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -171,12 +171,12 @@
         <form id="form_delete_group" onsubmit="return false">
           <div>
             <div class="border-bottom border-dark">
-              <p>Nhóm <label>
+              <p>Đội ngũ <label>
                   <%= team.name %>
                 </label> sẽ bị xóa</p>
               <p> <label>
                   Người dùng
-                </label> sẽ bị gỡ khỏi nhóm</p>
+                </label> sẽ bị gỡ khỏi đội ngũ</p>
             </div>
           </div>
           <div class="form-group">
@@ -192,7 +192,7 @@
           </div>
           <div class="modal-footer justify-content-between">
             <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-danger">Xóa nhóm</button>
+            <button type="submit" class="btn btn-danger">Xóa đội ngũ</button>
           </div>
         </form>
       </div>

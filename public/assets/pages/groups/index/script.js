@@ -184,6 +184,7 @@ $(function () {
       let leaderHtml = '';
       let totalMember = item.member.filter((user) => user.role == 0);
       let leaders = item.member.filter((user) => user.role == 1);
+      let htmlLeader = '';
 
       console.log('leaders: ', leaders)
 
@@ -195,21 +196,29 @@ $(function () {
         `;
       });
 
+      if(leaders.length > 1){
+        htmlLeader = `<div class="dropdown show ${leaders.length > 0 ? '' : 'd-none'}">
+          <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" 
+            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            ${leaders.length} quản lý
+          </a>
+          <div class="dropdown-menu" aria-labelledby="dropdown">
+            ${leaderHtml}
+          </div>
+        </div>`;
+      }else if(leaders.length > 0) {
+        htmlLeader = `<div class="dropdown show">
+          ${leaders[0].fullName} (${leaders[0].userName})
+        </div>`;
+
+      }
       html += `
         <tr>
           <td class="text-center">
-            <a href=/groups/detail/${item.teamId}>${item.teamName}</a>
+            <a href=/groups/detail/${item.teamId}>${item.teamName != 'Default' ? item.teamName : 'Đội ngũ mặc định'}</a>
           </td>
           <td class="text-center">
-            <div class="dropdown show ${leaders.length > 0 ? '' : 'd-none'}">
-              <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" 
-                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                ${leaders.length} giám sát
-              </a>
-              <div class="dropdown-menu" aria-labelledby="dropdown">
-                ${leaderHtml}
-              </div>
-            </div>
+            ${htmlLeader}            
           </td>
           <td class="text-center">${totalMember.length}</td>
           <td class="text-center">${item.description || ''}</td>
