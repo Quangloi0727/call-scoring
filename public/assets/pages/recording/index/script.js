@@ -46,7 +46,7 @@ function bindClick() {
     }else {
       // console.log('khong tim kiem');
     }
-    return false;
+    // return false;
     
   });
 
