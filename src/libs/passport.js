@@ -47,6 +47,7 @@ passport.use('local-login', new LocalStrategy({
       const error = new Error();
       error.message = "Tài khoản hoặc mật khẩu không đúng!"
       error.statusCode = 401;
+      error.status = 'api';
       throw error;
     }
     return done(null, user);

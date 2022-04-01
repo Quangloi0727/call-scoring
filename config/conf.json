@@ -1,5 +1,7 @@
 {
   "pathRecording": "http://172.16.16.129/static/",
   "privatePhoneNumberWebView": true, 
-  "privatePhoneNumberExcel": true
+  "privatePhoneNumberExcel": true,
+  "limitSearchDayRecording": 60
+  
 }

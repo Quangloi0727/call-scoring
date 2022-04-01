@@ -26,7 +26,13 @@ function bindClick() {
     let formData = getFormData('form_search');
 
     console.log('formData: ', formData)
+    if(formData.startTime){
+      $('[name="startTime"]').val(formData.startTime);
+    }
 
+    if(formData.endTime){
+      $('[name="endTime"]').val(formData.endTime);
+    }
     searchType = DEFAULT_SEARCH;
 
     return findData(page, null, formData);
@@ -59,6 +65,13 @@ function bindClick() {
     console.log('formData: ', formData)
 
     localStorage.setItem('modalData', JSON.stringify(formData));
+    if(formData.startTime){
+      $('[name="startTime"]').val(formData.startTime);
+    }
+
+    if(formData.endTime){
+      $('[name="endTime"]').val(formData.endTime);
+    }
 
     return findData(page, null, formData);
   });
@@ -207,7 +220,7 @@ function findData(page, exportExcel, queryData) {
     },
     error: function (error) {
       $('.page-loader').hide();
-
+      console.log(error)
       return toastr.error(error.responseJSON.message);
     },
   });
@@ -409,15 +422,11 @@ $(function () {
       if($(`#${key}`).length > 0) {
         console.log(moment(modalData[key], 'DD/MM/YYYY')._d);
         
-        // $(`#${key}`).datetimepicker({
-        //   defaultDate: moment(modalData[key], 'DD/MM/YYYY')._d
-        // })
         $(`#${key}`).datetimepicker({
           format: 'DD/MM/YYYY',
           defaultDate: moment(modalData[key], 'DD/MM/YYYY')._d,
           icons: { time: 'far fa-clock' }
         });
-        // $(`#${key}`).val();
       }
     });
 

@@ -6,7 +6,8 @@ const moment = require('moment');
 const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
-  ERR_500
+  ERR_500,
+  ERR_400
 } = require("../helpers/constants/statusCodeHTTP");
 const {
   USER_ROLE
@@ -77,6 +78,25 @@ exports.getRecording = async (req, res) => {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
 
+    let startTimeMilisecond = Number(moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'));
+    let endTimeMilisecond = Number(moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'));
+
+    if(startTimeMilisecond > endTimeMilisecond){
+      return res.status(ERR_400.code).json({
+        message: ERR_400.message_detail.timeQueryInValid
+      });
+    }
+
+    if(endTimeMilisecond - startTimeMilisecond > Number(_config.limitSearchDayRecording) * 86400 ){
+      return res.status(ERR_400.code).json({
+        message: ERR_400.message_detail.searchDayRecordingInValid(_config.limitSearchDayRecording)
+      });
+    }
+    
+    if (exportExcel && exportExcel == 1) {
+      return exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query);
+    }
+
     if (req.user.roles.find((item) => item.role == 2)) {
       isAdmin = true;
     }
@@ -110,13 +130,6 @@ exports.getRecording = async (req, res) => {
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `;
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
     if (teams) query += `AND team.id IN (${teams.toString()}) `;
-
-    let startTimeMilisecond = moment(startTime, 'DD/MM/YYYY').startOf('day').format('X');
-    let endTimeMilisecond = moment(endTime, 'DD/MM/YYYY').endOf('day').format('X');
-
-    if (exportExcel && exportExcel == 1) {
-      return exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query);
-    }
 
     let queryData = `
       SELECT

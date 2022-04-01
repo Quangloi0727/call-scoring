@@ -18,6 +18,8 @@ module.exports = {
             missingKey: 'Thiếu trường',
             isExists: 'đã tồn tại',
             inValid: 'không hợp lệ',
+            timeQueryInValid: 'Thời gian tìm kiếm không hợp lệ!',
+            searchDayRecordingInValid: (days) => `Thời gian tìm kiếm tối đa ${days} ngày!`,
         },
         description: 'Máy chủ không thể hoặc sẽ không xử lý yêu cầu do lỗi máy khách rõ ràng (ví dụ: cú pháp yêu cầu không đúng định dạng, kích thước quá lớn, khung tin nhắn yêu cầu không hợp lệ hoặc định tuyến yêu cầu lừa đảo)',
     },

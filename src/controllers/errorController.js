@@ -12,7 +12,10 @@ module.exports = (err, req, res, next) => {
   console.log(`------- err ------- Error Controller`);
 
   if (err.status == 'api' && err.statusCode == 401) {
-    return res.status(ERR_401.code).json(ERR_401);
+    let { message } = ERR_401;
+    if(err.message) message = err.message;
+
+    return res.status(ERR_401.code).json({ message });
   }
 
   if (err.statusCode == 404 && req.isAuthenticated()) {
