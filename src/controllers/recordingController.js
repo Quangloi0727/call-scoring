@@ -93,9 +93,6 @@ exports.getRecording = async (req, res) => {
       });
     }
     
-    if (exportExcel && exportExcel == 1) {
-      return exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query);
-    }
 
     if (req.user.roles.find((item) => item.role == 2)) {
       isAdmin = true;
@@ -131,13 +128,23 @@ exports.getRecording = async (req, res) => {
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
     if (teams) query += `AND team.id IN (${teams.toString()}) `;
 
+    if (exportExcel && exportExcel == 1) {
+      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query);
+    }
+    
     let queryData = `
+      DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
+
       SELECT
 	      records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
 	      records.duration AS duration,
-	      records.recordingFileName AS recordingFileName,
+        -- records.recordingFileName AS recordingFileName,
+        case 
+          when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
+          else records.recordingFileName
+        end as recordingFileName,
         records.direction AS direction,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
@@ -347,7 +354,8 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTime)}  
-	      AND records.origTime <= ${Number(endTime)}
+        AND records.origTime <= ${Number(endTime)}
+        AND records.sourceName = '${SOURCE_NAME.oreka}'
 	      ${query}
       ORDER BY records.origTime DESC
     `, { type: QueryTypes.SELECT });
