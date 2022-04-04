@@ -281,7 +281,7 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
         // sup
         if(teamIds.length > 0){
           conditionQuery = `team.id IN (${teamIds.join(',')}) and 
-          AgentTeamMembers.role =  ${USER_ROLE.agent}`;
+          AgentTeamMembers.role =  ${USER_ROLE.agent.n}`;
         }else {
           // agent
           conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`;

@@ -6,7 +6,7 @@ function templateExcel(
   titleTable,
   sheet,
   {
-    companyName = 'METECH - SAO THỦY',
+    companyName = 'Metechvn - SAO THỦY',
     projectName = 'CRM',
     isShowDate = true,
   },

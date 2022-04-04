@@ -5,9 +5,26 @@ const DATE_TIME = {
 }
 
 const USER_ROLE = {
-    agent: 0,
-    supervisor: 1,
-    admin: 2,
+    agent: {
+        n: 0,
+        t: 'Điện thoại viên'
+    },
+    supervisor: {
+        n: 1,
+        t: 'Quản lý đội ngũ'
+    },
+    admin: {
+        n: 2,
+        t: 'Quản trị viên'
+    },
+    evalua: {
+        n: 3,
+        t: 'Người đánh giá'
+    },
+    groupmanager: {
+        n: 4,
+        t: 'Quản lý nhóm'
+    },
 }
 
 module.exports = {

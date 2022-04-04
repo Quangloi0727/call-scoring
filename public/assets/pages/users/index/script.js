@@ -117,6 +117,7 @@ $(function () {
   // event modal
   $modalCreateUser.on('hidden.bs.modal', function (e) {
     $formCreateUser.trigger("reset");
+    $('#form_input_user .selectpicker').selectpicker('refresh');
     validator.resetForm();
 
     $('#first_name_length').html('0/30');

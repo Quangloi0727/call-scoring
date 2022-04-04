@@ -10,6 +10,10 @@ const {
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 
+const {
+  USER_ROLE
+} = require("../helpers/constants/number");
+
 const titlePage = 'Danh sách người dùng';
 
 exports.index = async (req, res, next) => {
@@ -17,6 +21,7 @@ exports.index = async (req, res, next) => {
     return _render(req, res, 'users/index', {
       title: titlePage,
       titlePage: titlePage,
+      USER_ROLE,
     });
   } catch (error) {
     console.log(`------- error ------- `);

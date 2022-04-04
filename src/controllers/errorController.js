@@ -22,5 +22,10 @@ module.exports = (err, req, res, next) => {
     return res.render('pages/404');
   }
 
+  if(req.isAuthenticated()){
+    return res.render('pages/500', {
+      error: err
+    });
+  }
   return res.redirect('/login');
 };

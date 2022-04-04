@@ -151,9 +151,9 @@
             <div class="form-group">
               <label>Quyền</label>
               <select class="form-control selectpicker input" name="roles" id="roles" multiple>
-                <option value="0">Agent</option>
-                <option value="1">Supervisor</option>
-                <option value="2">Admin</option>
+                <%  Object.keys(USER_ROLE).forEach((ele, index) => { %>
+                  <option value="<%- USER_ROLE[ele].n%>"><%- USER_ROLE[ele].t%></option>
+                <% }) %>
               </select>
             </div>
           </div>
