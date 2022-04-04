@@ -211,7 +211,7 @@ $(function () {
 
       if (item.isActive == 1) {
         lockButton = `
-          <span class="p-1 btn-action" title="Khóa người dùng">
+          <span class="p-1 btn-action d-none" title="Khóa người dùng">
             <i class="fas fa-lock"></i>
           </span>
         `;
@@ -230,7 +230,7 @@ $(function () {
           <td>${item.fullName}</td>
           <td>${item.userName}</td>
           <td>
-            <span class="p-1 btn-action btn-edit-user" title="Chỉnh sửa thông tin người dùng"
+            <span class="p-1 btn-action btn-edit-user d-none" title="Chỉnh sửa thông tin người dùng"
               data-id="${item.id}">
               <i class="fas fa-pencil"></i>
             </span>
