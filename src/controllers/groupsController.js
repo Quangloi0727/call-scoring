@@ -47,7 +47,11 @@ exports.index = async (req, res, next) => {
 exports.getGroups = async (req, res, next) => {
   try {
     const { page, name } = req.query;
-    const limit = 10;
+    let { limit } = req.query;
+    if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+    
+    limit = Number(limit);
+
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = '';
@@ -105,7 +109,7 @@ exports.getGroups = async (req, res, next) => {
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: dataResult || [],
-      paginator: paginator.getPaginationData(),
+      paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
     });
   } catch (error) {
     console.log(`------- error ------- `);

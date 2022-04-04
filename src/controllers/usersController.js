@@ -34,7 +34,11 @@ exports.index = async (req, res, next) => {
 exports.getUsers = async (req, res, next) => {
   try {
     const { page, extension, username, fullname } = req.query;
-    const limit = 25;
+    let { limit } = req.query;
+    if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+    
+    limit = Number(limit);
+
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = {};
@@ -80,7 +84,7 @@ exports.getUsers = async (req, res, next) => {
       message: 'Success!',
       data: dataResult || [],
       currentUser: currentUser ? currentUser : null,
-      paginator: paginator.getPaginationData(),
+      paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
     });
   } catch (error) {
     console.log(`------- error ------- `);

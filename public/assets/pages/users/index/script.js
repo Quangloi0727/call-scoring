@@ -151,7 +151,8 @@ $(function () {
       }
     });
 
-    queryData.page = page
+    queryData.page = page;
+    queryData.limit = $('.sl-limit-page').val() || 10;
 
     $loadingData.show();
 
@@ -163,7 +164,7 @@ $(function () {
         $loadingData.hide();
         console.log(result);
         createTable(result.data, result.currentUser);
-        return createPaging(result.paginator);
+        return $('#paging_table').html(window.location.CreatePaging(result.paginator));
       },
       error: function (error) {
         $loadingData.hide();
@@ -371,11 +372,6 @@ $(function () {
     copyToClipboard();
   });
 
-  $(document).on('click', '#copy-to-clipboard', function () {
-    console.log("sssss");
-    copyToClipboard();
-  });
-
   $(document).on('click', '#btn-reset-password', function () {
     let filter = {};
     filter.newPassword = $('#reset-password').val();
@@ -398,6 +394,12 @@ $(function () {
       },
     });
   })
+  
+  $(document).on('change', '.sl-limit-page', function () {
+    console.log('change sl-limit-page');
+    findData(1);
+  })
+  
 
   /// random password
   function generatePassword() {

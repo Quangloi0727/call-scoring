@@ -2,7 +2,7 @@ const $buttonSearch = $('#search');
 const $buttonExportExcel = $('#export_excel')
 const $formSearch = $('#form_search');
 const $tableData = $('#table_data');
-const $containerPaging = $('#paging_table');
+// const $containerPaging = $('#paging_table');
 const $buttonAdvancedSearch = $('#btn_advanced_search');
 const $formAdvancedSearch = $('#form_advanced_search');
 const $modalSearch = $('#modal_search');
@@ -162,6 +162,20 @@ function bindClick() {
       });
     }
   });
+
+  $(document).on('change', '.sl-limit-page', function () {
+    console.log('change sl-limit-page');
+    let formData = {};
+
+    if (searchType === DEFAULT_SEARCH) {
+      formData = getFormData('form_search');
+    } else if (searchType === ADVANCED_SEARCH) {
+      formData = getFormData('form_advanced_search');
+    }
+
+    return findData(1, null, formData);
+  })
+
 }
 
 function SaveConfigurationColums(data) {
@@ -195,6 +209,7 @@ function getFormData(formId) {
 
 function findData(page, exportExcel, queryData) {
   if (page) queryData.page = page;
+  queryData.limit = $('.sl-limit-page').val() || 10;
 
   if (exportExcel) queryData.exportExcel = 1;
 
@@ -216,7 +231,9 @@ function findData(page, exportExcel, queryData) {
       }
 
       createTable(result.data, result.ConfigurationColums);
-      return createPaging(result.paging);
+      // return createPaging(result.paging);
+      return $('#paging_table').html(window.location.CreatePaging(result.paginator));
+
     },
     error: function (error) {
       $('.page-loader').hide();
@@ -226,6 +243,32 @@ function findData(page, exportExcel, queryData) {
   });
 }
 
+function handleAudio() {
+  setTimeout(() => {
+    $(".audio-element").on({
+      play:function(){ // the audio is playing!
+        // $(".audio-element").pause();
+        // _.each($('.audio-element'), function (el) {
+        //   var __audio = $(el)[0];
+        //   __audio.pause();
+        //   // if (__audio != audio && !__audio.paused) {
+                
+        //         // $(el).closest('td').find('.zmdi-play').show();
+        //         // $(el).closest('td').find('.zmdi-pause').hide();
+        //     // }
+        // });
+
+        // let _audio = $(this)[0];
+        // _audio.play();
+
+        console.log('play', )
+      },
+      pause:function(){ // the audio is paused!
+        console.log('páue', this)
+      },
+    })
+  }, 50);
+}
 function createTable(data, ConfigurationColums) {
   let html = '';
   let headerDefault = {
@@ -266,7 +309,7 @@ function createTable(data, ConfigurationColums) {
       if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
         <td class="text-center audioHtml">
-          <audio controls preload="none">
+          <audio controls preload="none" class="audio-element">
             <source  src="${item.recordingFileName}" type="audio/wav">
             Your user agent does not support the HTML5 Audio element.'
           </audio>
@@ -285,7 +328,9 @@ function createTable(data, ConfigurationColums) {
       </tr>
       `
     });
-    return $tableData.html(html);
+    $tableData.html(html);
+    // handleAudio();
+    return ;
   }
   else {
     data.forEach((item, element) => {
@@ -294,7 +339,7 @@ function createTable(data, ConfigurationColums) {
 
       if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
-          <audio controls preload="none">
+          <audio controls preload="none" class="audio-element">
             <source  src="${item.recordingFileName}" type="audio/wav">
             Your user agent does not support the HTML5 Audio element.'
           </audio>
@@ -315,76 +360,11 @@ function createTable(data, ConfigurationColums) {
       `;
     });
 
-    return $tableData.html(html);
+    $tableData.html(html);
+    // handleAudio();
+    return ;
   }
 }
-
-function createPaging(paging) {
-  if (!paging) return '';
-
-  let firstPage = '';
-  let prePage = '';
-  let pageNum = '';
-  let pageNext = '';
-  let pageLast = '';
-
-  if (paging.first) firstPage = `
-    <li class="paginate_button page-item">
-      <a role="button" data-link="${paging.first}" class="page-link zpaging">&laquo;</a>
-    </li>
-  `;
-
-  if (paging.previous) prePage = `
-    <li class="paginate_button page-item">
-      <a role="button" data-link="${paging.previous}" class="page-link zpaging">&lsaquo;</a>
-    </li>
-  `;
-
-  paging.range.forEach((page) => {
-    if (page == paging.current) {
-      pageNum += `
-        <li class="paginate_button page-item active">
-          <a role="button" class="page-link">${page}</a>
-        </li>
-      `;
-    } else {
-      pageNum += `
-        <li class="paginate_button page-item">
-          <a role="button" data-link="${page}" class="page-link zpaging">${page}</a>
-        </li>
-      `;
-    }
-  });
-
-  if (paging.next) pageNext = `
-    <li class="paginate_button page-item">
-      <a role="button" data-link="${paging.next}" class="page-link zpaging">&rsaquo;</a>
-    </li>
-  `;
-  if (paging.last) pageLast = `
-    <li class="paginate_button page-item">
-      <a role="button" data-link="${paging.last}" class="page-link zpaging">&raquo;</a>
-    </li>
-  `;
-
-  let pagingHtml = `
-    <div class="dataTables_paginate paging_simple_numbers">
-      <b> 
-        <span class="TXT_TOTAL">Total</span>:
-        <span class="bold c-red" id="ticket-total">${paging.totalResult}</span>
-      </b>
-      <ul class="pagination mt-2">
-        ${firstPage}
-        ${prePage}
-        ${pageNum}
-        ${pageNext}
-        ${pageLast}
-      </ul>
-    </div>
-  `;
-
-  return $containerPaging.html(pagingHtml);
-};
 
 function downloadFromUrl(url) {
   let link = document.createElement('a');

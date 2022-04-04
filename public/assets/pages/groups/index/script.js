@@ -155,7 +155,8 @@ $(function () {
       }
     });
 
-    queryData.page = page
+    queryData.page = page;
+    queryData.limit = $('.sl-limit-page').val() || 10;
 
     $loadingData.show();
 
@@ -167,7 +168,7 @@ $(function () {
         $loadingData.hide();
 
         createTable(result.data);
-        return createPaging(result.paginator);
+        return $('#paging_table').html(window.location.CreatePaging(result.paginator));
       },
       error: function (error) {
         $loadingData.hide();
@@ -330,6 +331,11 @@ $(function () {
       $('#description_length').removeClass('text-danger').addClass('text-muted');
     }
   });
+
+  $(document).on('change', '.sl-limit-page', function () {
+    console.log('change sl-limit-page');
+    findData(1);
+  })
 
   findData(1)
 });
