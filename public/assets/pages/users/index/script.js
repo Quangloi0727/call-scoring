@@ -202,7 +202,7 @@ $(function () {
 
       item.ofTeams.forEach(element => {
         teamHtml += `
-          <a href="/groups/detail/${element.teamId}">
+          <a href="/teams/detail/${element.teamId}">
             <u>${element.teamName}</u>
             &nbsp;
           </a>
@@ -258,74 +258,6 @@ $(function () {
     $('.content-table-left').html(contentTableLeft);
     return $('.content-table-right').html(contentTableRight);
   }
-
-  function createPaging(paging) {
-    if (!paging) return '';
-
-    let firstPage = '';
-    let prePage = '';
-    let pageNum = '';
-    let pageNext = '';
-    let pageLast = '';
-
-    if (paging.first) firstPage = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.first}" class="page-link zpaging">&laquo;</a>
-      </li>
-    `;
-
-    if (paging.previous) prePage = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.previous}" class="page-link zpaging">&lsaquo;</a>
-      </li>
-    `;
-
-    paging.range.forEach((page) => {
-      if (page == paging.current) {
-        pageNum += `
-          <li class="paginate_button page-item active">
-            <a role="button" class="page-link">${page}</a>
-          </li>
-        `;
-      } else {
-        pageNum += `
-          <li class="paginate_button page-item">
-            <a role="button" data-link="${page}" class="page-link zpaging">${page}</a>
-          </li>
-        `;
-      }
-    });
-
-    if (paging.next) pageNext = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.next}" class="page-link zpaging">&rsaquo;</a>
-      </li>
-    `;
-
-    if (paging.last) pageLast = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.last}" class="page-link zpaging">&raquo;</a>
-      </li>
-    `;
-
-    let pagingHtml = `
-      <div class="dataTables_paginate paging_simple_numbers">
-        <b> 
-          <span class="TXT_TOTAL">Total</span>:
-          <span class="bold c-red" id="ticket-total">${paging.totalResult}</span>
-        </b>
-        <ul class="pagination mt-2">
-          ${firstPage}
-          ${prePage}
-          ${pageNum}
-          ${pageNext}
-          ${pageLast}
-        </ul>
-      </div>
-    `;
-
-    return $('#paging_table').html(pagingHtml);
-  };
 
   $(document).on('click', '.btn-edit-user', function () {
     let userId = $(this).attr('data-id');

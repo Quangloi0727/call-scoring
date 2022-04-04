@@ -231,7 +231,6 @@ function findData(page, exportExcel, queryData) {
       }
 
       createTable(result.data, result.ConfigurationColums);
-      // return createPaging(result.paging);
       return $('#paging_table').html(window.location.CreatePaging(result.paginator));
 
     },

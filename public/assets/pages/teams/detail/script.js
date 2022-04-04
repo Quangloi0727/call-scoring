@@ -23,7 +23,7 @@ $(function () {
 
     $.ajax({
       type: 'GET',
-      url: '/groups/user-of-team?' + $.param(data),
+      url: '/teams/user-of-team?' + $.param(data),
       cache: 'false',
       success: function (result) {
         $loadingData.hide();
@@ -67,7 +67,7 @@ $(function () {
   function getUserAvailable() {
     $.ajax({
       type: 'GET',
-      url: '/groups/get-user-available',
+      url: '/teams/get-user-available',
       cache: 'false',
       success: function (result) {
         if (!result) return;
@@ -117,7 +117,7 @@ $(function () {
 
             $.ajax({
               type: 'DELETE',
-              url: '/groups/remove-user',
+              url: '/teams/remove-user',
               data: data,
               dataType: "text",
               success: function () {
@@ -195,7 +195,7 @@ $(function () {
 
       $.ajax({
         type: 'PUT',
-        url: '/groups',
+        url: '/teams',
         data: filter,
         dataType: "text",
         success: function () {
@@ -249,13 +249,13 @@ $(function () {
 
       $.ajax({
         type: 'DELETE',
-        url: '/groups',
+        url: '/teams',
         data: filter,
         dataType: "text",
         success: function () {
           $loadingData.hide();
 
-          return window.location.replace('/groups');
+          return window.location.replace('/teams');
         },
         error: function (error) {
           $loadingData.hide();
@@ -282,7 +282,7 @@ $(function () {
 
     $.ajax({
       type: 'GET',
-      url: '/groups/search?name=' + value,
+      url: '/teams/search?name=' + value,
       cache: 'false',
       success: function () {
         return validatorFormEdit.showErrors({
@@ -304,7 +304,7 @@ $(function () {
 
     $.ajax({
       type: 'POST',
-      url: '/groups/add-user',
+      url: '/teams/add-user',
       data: data,
       dataType: "text",
       success: function () {
