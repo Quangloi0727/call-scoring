@@ -12,7 +12,7 @@ const {
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 
-const titlePage = 'Danh sách nhóm';
+const titlePage = 'Danh sách đội ngũ';
 
 exports.index = async (req, res, next) => {
   try {
