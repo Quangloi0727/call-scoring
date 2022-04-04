@@ -12,7 +12,7 @@ const {
   ERR_500
 } = require("../helpers/constants/statusCodeHTTP");
 
-const titlePage = 'Danh sách nhóm';
+const titlePage = 'Danh sách đội ngũ';
 
 exports.index = async (req, res, next) => {
   try {
@@ -31,7 +31,7 @@ exports.index = async (req, res, next) => {
       nest: true
     });
 
-    return _render(req, res, 'groups/index', {
+    return _render(req, res, 'teams/index', {
       title: titlePage,
       titlePage: titlePage,
       users: users,
@@ -44,10 +44,14 @@ exports.index = async (req, res, next) => {
   }
 }
 
-exports.getGroups = async (req, res, next) => {
+exports.getTeams = async (req, res, next) => {
   try {
     const { page, name } = req.query;
-    const limit = 10;
+    let { limit } = req.query;
+    if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+    
+    limit = Number(limit);
+
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = '';
@@ -87,14 +91,14 @@ exports.getGroups = async (req, res, next) => {
       GROUP BY team.id, team.name, agent.id, agent.fullName
     `;
 
-    const [groupsResult, total] = await Promise.all([
+    const [teamsResult, total] = await Promise.all([
       await model.sequelize.query(queryDataString, { type: QueryTypes.SELECT }),
       await model.sequelize.query(queryCountString, { type: QueryTypes.SELECT }),
     ]);
 
-    const teamIds = _.map(groupsResult, 'teamId');
+    const teamIds = _.map(teamsResult, 'teamId');
 
-    const dataResult = await handleTeam(teamIds, groupsResult);
+    const dataResult = await handleTeam(teamIds, teamsResult);
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
@@ -105,7 +109,7 @@ exports.getGroups = async (req, res, next) => {
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: dataResult || [],
-      paginator: paginator.getPaginationData(),
+      paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
     });
   } catch (error) {
     console.log(`------- error ------- `);
@@ -241,7 +245,7 @@ exports.detail = async (req, res) => {
     team.createdAt = moment(team.createdAt).format('HH:mm:ss DD/MM/YYYY');
     team.updatedAt = moment(team.updatedAt).format('HH:mm:ss DD/MM/YYYY');
 
-    return _render(req, res, 'groups/detail', {
+    return _render(req, res, 'teams/detail', {
       titlePage: null,
       team: team,
       users: users,

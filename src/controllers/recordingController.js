@@ -67,7 +67,11 @@ exports.getRecording = async (req, res) => {
       callDirection,
       teams
     } = req.query;
-    const limit = 25;
+    let { limit } = req.query;
+    if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+    
+    limit = Number(limit);
+
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let userIdFilter = [];
@@ -187,7 +191,7 @@ exports.getRecording = async (req, res) => {
       message: 'Success!',
       data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
       ConfigurationColums: ConfigurationColums && ConfigurationColums.data && ConfigurationColums.data[0] ? ConfigurationColums.data[0].configurationColums : null,
-      paging: paginator.getPaginationData()
+      paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
     });
   } catch (error) {
     console.log(`------- error ------- getRecording`);

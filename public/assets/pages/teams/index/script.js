@@ -1,6 +1,6 @@
 $(function () {
   const $formCreateGroup = $('#form_input_group');
-  const $formSearchGroup = $('#form_search_groups');
+  const $formSearchGroup = $('#form_search_teams');
   const $buttonSearchGroup = $('#search_group');
   const $modalGroup = $('#modal_group');
   const $loadingData = $('.page-loader');
@@ -19,7 +19,7 @@ $(function () {
 
       $.ajax({
         type: 'POST',
-        url: '/groups/insert',
+        url: '/teams/insert',
         data: filter,
         dataType: "text",
         success: function () {
@@ -134,7 +134,7 @@ $(function () {
 
     $.ajax({
       type: 'GET',
-      url: '/groups/search?name=' + value,
+      url: '/teams/search?name=' + value,
       cache: 'false',
       success: function () {
         return validator.showErrors({
@@ -155,19 +155,20 @@ $(function () {
       }
     });
 
-    queryData.page = page
+    queryData.page = page;
+    queryData.limit = $('.sl-limit-page').val() || 10;
 
     $loadingData.show();
 
     $.ajax({
       type: 'GET',
-      url: '/groups/getGroups?' + $.param(queryData),
+      url: '/teams/getTeams?' + $.param(queryData),
       cache: 'false',
       success: function (result) {
         $loadingData.hide();
 
         createTable(result.data);
-        return createPaging(result.paginator);
+        return $('#paging_table').html(window.location.CreatePaging(result.paginator));
       },
       error: function (error) {
         $loadingData.hide();
@@ -215,7 +216,7 @@ $(function () {
       html += `
         <tr>
           <td class="text-center">
-            <a href=/groups/detail/${item.teamId}>${item.teamName != 'Default' ? item.teamName : 'Đội ngũ mặc định'}</a>
+            <a href=/teams/detail/${item.teamId}>${item.teamName != 'Default' ? item.teamName : 'Đội ngũ mặc định'}</a>
           </td>
           <td class="text-center">
             ${htmlLeader}            
@@ -230,74 +231,6 @@ $(function () {
 
     return $('#tableBody').html(html);
   }
-
-  function createPaging(paging) {
-    if (!paging) return '';
-
-    let firstPage = '';
-    let prePage = '';
-    let pageNum = '';
-    let pageNext = '';
-    let pageLast = '';
-
-    if (paging.first) firstPage = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.first}" class="page-link zpaging">&laquo;</a>
-      </li>
-    `;
-
-    if (paging.previous) prePage = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.previous}" class="page-link zpaging">&lsaquo;</a>
-      </li>
-    `;
-
-    paging.range.forEach((page) => {
-      if (page == paging.current) {
-        pageNum += `
-          <li class="paginate_button page-item active">
-            <a role="button" class="page-link">${page}</a>
-          </li>
-        `;
-      } else {
-        pageNum += `
-          <li class="paginate_button page-item">
-            <a role="button" data-link="${page}" class="page-link zpaging">${page}</a>
-          </li>
-        `;
-      }
-    });
-
-    if (paging.next) pageNext = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.next}" class="page-link zpaging">&rsaquo;</a>
-      </li>
-    `;
-
-    if (paging.last) pageLast = `
-      <li class="paginate_button page-item">
-        <a role="button" data-link="${paging.last}" class="page-link zpaging">&raquo;</a>
-      </li>
-    `;
-
-    let pagingHtml = `
-      <div class="dataTables_paginate paging_simple_numbers">
-        <b> 
-          <span class="TXT_TOTAL">Total</span>:
-          <span class="bold c-red" id="ticket-total">${paging.totalResult}</span>
-        </b>
-        <ul class="pagination mt-2">
-          ${firstPage}
-          ${prePage}
-          ${pageNum}
-          ${pageNext}
-          ${pageLast}
-        </ul>
-      </div>
-    `;
-
-    return $('#paging_table').html(pagingHtml);
-  };
 
   $('#form_input_group #name').on('input', function () {
     let value = $(this).val();
@@ -330,6 +263,11 @@ $(function () {
       $('#description_length').removeClass('text-danger').addClass('text-muted');
     }
   });
+
+  $(document).on('change', '.sl-limit-page', function () {
+    console.log('change sl-limit-page');
+    findData(1);
+  })
 
   findData(1)
 });
