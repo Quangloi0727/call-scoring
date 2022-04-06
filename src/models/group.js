@@ -31,7 +31,8 @@ class Group extends Model {
   static associate(models) {
     models.Group.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' });
 
-    models.Group.hasMany(models.TeamGroup, { foreignKey: 'teamId' });
+    models.Group.hasMany(models.UserGroupMember, { foreignKey: 'groupId', as: 'UserGroupMember' });
+    models.Group.hasMany(models.TeamGroup, { foreignKey: 'teamId', as: 'TeamGroup' });
   }
 }
 

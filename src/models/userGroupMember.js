@@ -32,7 +32,7 @@ class UserGroupMember extends Model {
   static associate(models) {
     models.UserGroupMember.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     
-    models.UserGroupMember.belongsTo(models.Group, { foreignKey: 'groupId' });
+    models.UserGroupMember.belongsTo(models.Group, { foreignKey: 'id' });
   }
 }
 

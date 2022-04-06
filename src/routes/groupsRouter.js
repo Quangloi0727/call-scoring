@@ -23,16 +23,16 @@ router.route('/')
 router.route('/search')
   .get(groupsController.search);
 
-router.route('/add-user')
-  .post(groupsController.addUser);
+router.route('/add-team')
+  .post(groupsController.addTeam);
 
-router.route('/remove-user')
-  .delete(groupsController.removeUser);
+router.route('/remove-team')
+  .delete(groupsController.removeTeam);
 
-router.route('/user-of-team')
-  .get(groupsController.userOfTeam);
+router.route('/team-of-group')
+  .get(groupsController.teamOfGroup);
 
-  router.route('/get-user-available')
-  .get(groupsController.getUserAvailable);
+  router.route('/get-team-available')
+  .get(groupsController.getTeamAvailable);
 
 module.exports = router;

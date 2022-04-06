@@ -1,0 +1,204 @@
+<script>
+  var group = JSON.parse('<%- JSON.stringify(group)%>');
+  var users = JSON.parse('<%- JSON.stringify(users)%>');
+</script>
+<div class="wrapper">
+  <div>
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="/teams">
+                  <h5>&lsaquo; Quản lí nhóm</h5>
+                </a>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-sm-8">
+            <h1>
+              <%= group.name %>
+            </h1>
+          </div>
+          <div class="col-sm-4 d-flex justify-content-end">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal_edit_group">
+              <i class="fa fa-pencil-alt p-0 mr-2" aria-hidden="true"></i>Sửa
+            </button>
+            <!-- <button type="button" class="btn btn-danger ml-2" data-toggle="modal" data-target="#modal_del_group">
+              <i class="fa fa-trash p-0 mr-2" aria-hidden="true"></i>Xóa
+            </button> -->
+          </div>
+        </div>
+        <div class="row mb-2 border-bottom border-dark">
+          <div class="col-12">
+            <label class="text-primary">Thông tin chung</label>
+
+            <br>
+            <span class="text-muted">Mô tả:</span>
+            <p id="description">
+              <%= group.description %>
+            </p>
+
+            <span class="text-muted">Người tạo:</span>
+            <p id="created">
+              <%= group.userCreate.fullName %> (<%= group.userCreate.userName %>)
+            </p>
+
+            <span class="text-muted">Ngày tạo:</span>
+            <p id="createAt">
+              <%= group.createdAt%>
+            </p>
+
+            <span class="text-muted">Ngày cập nhật lần cuối:</span>
+            <p id="updateAt">
+              <%= group.updatedAt %>
+            </p>
+          </div>
+        </div>
+        <div class="row mb-2 ">
+          <div class="col-sm-12">
+            <label class="text-primary">Thêm đội ngũ</label>
+          </div>
+          <div class="col-sm-6 d-flex form-group">
+            <div class="col-sm-8 pl-0">
+              <select class="form-control selectpicker input" data-live-search="true" name="members" id="members"
+                title="Chọn..." multiple >
+              </select>
+            </div>
+            <div class="col-sm-2">
+              <button type="button" class="btn btn-block btn-primary float-sm-left" id="add_user">
+                Thêm
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-2">
+          <div class="col-sm-12">
+            <label class="text-primary">Danh sách đội ngũ</label>
+          </div>
+          <div class="col-sm-6 d-flex form-group">
+            <div class="col-sm-8 pl-0">
+              <div class="input-group">
+                <input type="text" class="form-control" placeholder="Tìm kiếm..." 
+                  id="search_member" name="name" autocomplete="off">
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <button type="button" class="form-control btn btn-primary btn-circle" 
+                id="btn_search_member">
+                <i class="fas fa-search p-0"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="row" id="list_user"></div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>
+
+<!-- /.modal -->
+<div class="modal fade" id="modal_edit_group">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Sửa nhóm</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_edit_group" onsubmit="return false">
+          <div>
+            <div class="form-group">
+              <label>
+                Tên nhóm
+                <span class="text-danger">*</span>
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="name_length">
+                0/50
+              </label>
+              <input type="text" class="form-control input" id="name" name="name" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              Nhóm
+              <span class="text-danger">*</span>
+            </label>
+            <select class="form-control selectpicker input" data-live-search="true" 
+              name="leader" id="leader" multiple>
+            </select>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>
+                Mô tả
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="description_length">
+                0/500
+              </label>
+              <textarea class="form-control input" id="description" name="description" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="submit" id="btn_save_group" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
+
+<div class="modal fade" id="modal_del_group">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Xóa Nhóm</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_delete_group" onsubmit="return false">
+          <div>
+            <div class="border-bottom border-dark">
+              <p>Nhóm <label>
+                  <%= group.name %>
+                </label> sẽ bị xóa</p>
+              <p> <label>
+                  Người dùng
+                </label> sẽ bị gỡ khỏi nhóm</p>
+            </div>
+          </div>
+          <div class="form-group">
+            <p class="mt-2">Vui lòng xác minh tài khoản quản trị</p>
+
+            <span class="text-muted">Tên đăng nhập</span>
+            <p>
+              <%= currUser.userName %>
+            </p>
+
+            <span class="text-muted">Mật khẩu</span>
+            <input class="form-control input" type="password" id="password" name="password">
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-danger">Xóa nhóm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->

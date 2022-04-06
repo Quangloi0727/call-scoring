@@ -19,20 +19,7 @@ const titlePage = 'Danh sách nhóm';
 
 exports.index = async (req, res, next) => {
   try {
-    const users = await UserModel.findAll({
-      where: {
-        [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
-      },
-      include: [{
-        model: UserRoleModel,
-        as: 'roles',
-        where: {
-          role: { [Op.eq]: USER_ROLE.groupmanager.n }
-        }
-      }],
-      raw: true,
-      nest: true
-    });
+    const users = await getUserByRole(UserModel, USER_ROLE.groupmanager.n);
 
     return _render(req, res, 'groups/index', {
       title: titlePage,
@@ -46,6 +33,25 @@ exports.index = async (req, res, next) => {
     console.log(`------- error ------- `);
     return next(error);
   }
+}
+
+async function getUserByRole(_model, role) {
+  if(!role) throw new Error('role is required!');
+  
+  return await _model.findAll({
+    where: {
+      [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
+    },
+    include: [{
+      model: UserRoleModel,
+      as: 'roles',
+      where: {
+        role: { [Op.eq]: role }
+      }
+    }],
+    raw: true,
+    nest: true
+  });
 }
 
 exports.getgroups = async (req, res, next) => {
@@ -65,26 +71,36 @@ exports.getgroups = async (req, res, next) => {
     let queryDataString = `
       SELECT
         t_group.id AS groupId,
-        t_group.name AS groupName,
-        t_group.description AS description,
-        t_group.createdAt AS createdAt,
-        agent.id AS createdId,
-        agent.fullName AS createdName,
-        Sum(case when Users.id is not null then 1 else 0 end) as leaders,
-				string_agg(concat(Users.fullName, ' (', Users.userName, ')'), ';') as leaderDetails,
-				Sum(case when TeamGroups.id is not null then 1 else 0 end) as members
+        min(t_group.name) AS groupName,
+        min(t_group.description) AS description,
+        min(t_group.createdAt) AS createdAt,
+        min(agent.id) AS createdId,
+        min(agent.fullName) AS createdName,
+        Sum(UserGroupMembers1.counts) as leaders,
+				min(UserGroupMembers1.leaderDetails) as leaderDetails,
+				Sum(teamGroup1.counts) as members
       FROM dbo.groups t_group
       LEFT JOIN dbo.Users agent -- nguoi tao
 				ON t_group.created = agent.id
-      LEFT JOIN dbo.UserGroupMembers UserGroupMembers -- leader
-				ON t_group.id = UserGroupMembers.groupId
-				AND UserGroupMembers.role = ${USER_ROLE.groupmanager.n}
-      LEFT JOIN dbo.Users Users -- leader info
-				ON UserGroupMembers.userId = Users.id
-			LEFT JOIN dbo.TeamGroups TeamGroups -- member
-        ON TeamGroups.groupId = t_group.id
+      LEFT JOIN (SELECT
+        UserGroupMembers.groupId,
+        string_agg(concat(Users.fullName, ' (', Users.userName, ')'), ';') as leaderDetails,
+        count(UserGroupMembers.groupId) as counts
+              FROM dbo.UserGroupMembers 
+              LEFT JOIN dbo.Users Users -- leader info
+                ON UserGroupMembers.userId = Users.id
+                
+              where role =  ${USER_ROLE.groupmanager.n}
+              group by UserGroupMembers.groupId) UserGroupMembers1 -- leader
+				ON t_group.id = UserGroupMembers1.groupId
+			LEFT JOIN (SELECT
+        TeamGroups.groupId,
+        count(TeamGroups.groupId) as counts
+              FROM dbo.TeamGroups
+              group by TeamGroups.groupId) teamGroup1 -- member
+        ON teamGroup1.groupId = t_group.id
       ${query}
-      GROUP BY t_group.id, t_group.name, t_group.createdAt, t_group.description, agent.id, agent.fullName
+      GROUP BY t_group.id
       ORDER BY t_group.id DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `;
@@ -215,48 +231,40 @@ exports.createGroup = async (req, res) => {
   }
 }
 
-exports.detail = async (req, res) => {
+exports.detail = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     if (!id || id == '') {
       throw new Error('Nhóm không tồn tại!');
     }
-
-    let queryString = `
-      SELECT
-        Users.id AS userId,
-        Users.userName AS userName,
-        Users.fullName AS fullName,
-        CASE
-          WHEN Users.id IN (
-            SELECT AgentTeamMembers.userId FROM dbo.AgentTeamMembers 
-            WHERE AgentTeamMembers.teamId = ${Number(id)}
-              AND AgentTeamMembers.role = 1
-          ) THEN 1 
-          ELSE 0
-        END AS leader 
-      FROM dbo.Users
-      LEFT JOIN dbo.UserRoles ON Users.id = UserRoles.userId 
-      WHERE UserRoles.role = 1
-    `;
-
-    const [users, team] = await Promise.all([
-      model.sequelize.query(queryString, { type: QueryTypes.SELECT }),
-      model.t_group.findOne({
+    
+    const [users, group] = await Promise.all([
+      getUserByRole(model.User, USER_ROLE.groupmanager.n),
+      model.Group.findOne({
         where: { id: { [Op.eq]: Number(id) } },
-        include: [{ model: UserModel, as: 'userCreate' }],
-        raw: true,
+        include: [
+          { model: model.User, as: 'userCreate' },
+          { 
+            model: model.UserGroupMember, 
+            as: 'UserGroupMember',
+            include: { model: model.User, as: 'user' },
+            where : {
+              role: USER_ROLE.groupmanager.n
+            }
+          }
+        ],
+        // raw: true,
         nest: true
       })
     ]);
 
-    t_group.createdAt = moment(t_group.createdAt).format('HH:mm:ss DD/MM/YYYY');
-    t_group.updatedAt = moment(t_group.updatedAt).format('HH:mm:ss DD/MM/YYYY');
+    group.createdAt = moment(group.createdAt).format('HH:mm:ss DD/MM/YYYY');
+    group.updatedAt = moment(group.updatedAt).format('HH:mm:ss DD/MM/YYYY');
 
     return _render(req, res, 'groups/detail', {
       titlePage: null,
-      team: team,
+      group: group,
       users: users,
     });
   } catch (error) {
@@ -288,26 +296,26 @@ exports.update = async (req, res) => {
     if (name) dataUpdate.name = name;
     if (description) dataUpdate.description = description;
 
-    await model.t_group.update(
+    await model.Group.update(
       dataUpdate,
       { where: { id: Number(id) } },
       { transaction: transaction }
     );
 
-    await AgentTeamMemberModel.destroy(
-      { where: { teamId: Number(id), role: 1 } },
+    await model.UserGroupMember.destroy(
+      { where: { groupId: Number(id), role: USER_ROLE.groupmanager.n } },
       { transaction: transaction }
     );
 
     let dataMember = leader.map(el => {
       return {
-        teamId: id,
+        groupId: id,
         userId: el,
-        role: 1
+        role: USER_ROLE.groupmanager.n
       }
     });
 
-    await AgentTeamMemberModel.bulkCreate(dataMember, { transaction: transaction });
+    await model.UserGroupMember.bulkCreate(dataMember, { transaction: transaction });
 
     await transaction.commit();
 
@@ -345,7 +353,7 @@ exports.delete = async (req, res) => {
     }
 
     await AgentTeamMemberModel.destroy({ where: { teamId: Number(id) } });
-    await model.t_group.destroy({ where: { id: Number(id) } });
+    await model.Group.destroy({ where: { id: Number(id) } });
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
@@ -366,7 +374,7 @@ exports.search = async (req, res) => {
 
     if (name) queryData.name = { [Op.eq]: name.trim() }
 
-    const team = await model.t_group.findOne({
+    const team = await model.Group.findOne({
       where: { ...queryData },
       raw: true,
       nest: true,
@@ -388,31 +396,41 @@ exports.search = async (req, res) => {
   }
 }
 
-exports.addUser = async (req, res) => {
+exports.addTeam = async (req, res) => {
   let transaction;
 
   try {
-    const { userId, teamId } = req.body;
-
+    let { groupId, teamIds } = req.body;
     transaction = await model.sequelize.transaction();
 
-    if (!userId || !teamId) {
+    if (!groupId || !teamIds) {
       throw new Error('Có lỗi xảy ra, vui lòng thử lại!');
     }
+    
+    if (teamIds.length == 0) {
+      throw new Error('Số lượng nhóm không hợp lệ!');
+    }
+    groupId = Number(groupId);
+    teamIds = teamIds.map(Number);
 
-    const result = await AgentTeamMemberModel.create({
-      teamId: Number(teamId),
-      userId: Number(userId),
-      role: 0,
-    }, { transaction: transaction });
 
-    await UserModel.update(
-      { isAvailable: 1 },
-      { where: { id: Number(userId) } },
-      { transaction: transaction }
-    );
+    const result = await model.TeamGroup.bulkCreate(
+      teamIds.map(i => {
+        return {
+          teamId: i,
+          groupId: groupId
+        }
+      }), { transaction: transaction });
+
+    // await UserModel.update(
+    //   { isAvailable: 1 },
+    //   { where: { id: Number(userId) } },
+    //   { transaction: transaction }
+    // );
 
     await transaction.commit();
+    // const age = 5;
+    // age = 6;
 
     return res.status(SUCCESS_200.code).json({
       data: result,
@@ -428,31 +446,24 @@ exports.addUser = async (req, res) => {
   }
 }
 
-exports.removeUser = async (req, res) => {
+exports.removeTeam = async (req, res) => {
   let transaction;
 
   try {
-    const { teamId, userId } = req.body;
+    const { teamId, groupId } = req.body;
 
     transaction = await model.sequelize.transaction();
 
-    if (!teamId || !userId) {
+    if (!teamId || !groupId) {
       throw new Error('Có lỗi xảy ra, vui lòng thử lại!');
     }
 
-    await AgentTeamMemberModel.destroy({
+    await model.TeamGroup.destroy({
       where: {
         teamId: { [Op.eq]: Number(teamId) },
-        userId: { [Op.eq]: Number(userId) },
-        role: { [Op.eq]: 0 }
+        groupId: { [Op.eq]: Number(groupId) }
       }
     }, { transaction: transaction });
-
-    await UserModel.update(
-      { isAvailable: 0 },
-      { where: { id: Number(userId) } },
-      { transaction: transaction }
-    );
 
     await transaction.commit();
 
@@ -470,29 +481,35 @@ exports.removeUser = async (req, res) => {
   }
 }
 
-exports.userOfTeam = async (req, res) => {
+exports.teamOfGroup = async (req, res) => {
   try {
-    const { name, teamId } = req.query;
-    let queryName = '';
+    let { name, groupId } = req.query;
+    let queryWhere = {};
+
+    groupId = Number(groupId);
+
+    if (!groupId ) {
+      throw new Error('groupId là trường bắt buộc!');
+    }
+    queryWhere.groupId = { [Op.eq]: groupId };
 
     if (name) {
-      queryName += `AND Users.fullName LIKE '%${name}%'`;
+      queryWhere["$Team.name$"] = { [Op.like]: `%${name}%` };
     }
 
-    let queryString = `
-      SELECT 
-        Users.id As userId,
-        Users.userName AS userName,
-        Users.fullName AS fullName
-      FROM dbo.AgentTeamMembers
-      LEFT JOIN dbo.Users ON AgentTeamMembers.userId = Users.id
-      WHERE AgentTeamMembers.teamId = ${Number(teamId)}
-      AND AgentTeamMembers.role = 0
-      ${queryName}
-      ORDER BY AgentTeamMembers.id DESC
-    `;
-
-    const teamFound = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
+    const teamFound = await model.TeamGroup.findAll({
+      where: queryWhere,
+      include: [{
+        model: model.Team,
+        as: 'Team',
+        // required: false,
+        // where: {
+          
+        // }
+      }],
+      raw: true,
+      nest: true
+    });
 
     return res.status(SUCCESS_200.code).json({
       data: teamFound,
@@ -506,26 +523,36 @@ exports.userOfTeam = async (req, res) => {
   }
 }
 
-exports.getUserAvailable = async (req, res) => {
+exports.getTeamAvailable = async (req, res) => {
   try {
-
-    const userAvailable = await UserModel.findAll({
-      where: {
-        isAvailable: { [Op.eq]: 0 }
-      },
+    let { id } = req.query;
+    id = Number(id);
+    
+    if (!id || id == '') {
+      throw new Error('Nhóm không tồn tại!');
+    }
+    
+    const itemAvailable = await model.Team.findAll({
       include: [{
-        model: UserRoleModel,
-        as: 'roles',
-        where: {
-          role: { [Op.eq]: 0 }
-        }
+        model: model.TeamGroup,
+        as: 'TeamGroup',
+        required: false, // left outer join
+        // where: {
+          
+        // }
       }],
+      where: {
+        [Op.or]: [
+          { "$TeamGroup.groupId$" : { [Op.eq]: null } },
+          { "$TeamGroup.groupId$" : { [Op.not]: id } },
+        ]
+      },
       raw: true,
       nest: true
     });
 
     return res.status(SUCCESS_200.code).json({
-      data: userAvailable,
+      data: itemAvailable,
     });
   } catch (error) {
     console.log(`------- error ------- `);
