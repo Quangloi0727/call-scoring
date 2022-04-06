@@ -57,6 +57,7 @@ class User extends Model {
     models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' });
 
     models.User.hasMany(models.AgentTeamMember, { foreignKey: 'userId', as: 'team' });
+    models.User.hasMany(models.UserGroupMember, { foreignKey: 'userId', as: 'UserGroupMember' });
   }
 }
 

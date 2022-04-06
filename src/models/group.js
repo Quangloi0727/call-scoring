@@ -1,6 +1,6 @@
 const { Model, DataTypes, Op } = require('sequelize');
 
-class Team extends Model {
+class Group extends Model {
   static init(sequelize) {
     return super.init(
       {
@@ -20,7 +20,7 @@ class Team extends Model {
       },
       {
         sequelize,
-        modelName: 'Teams',
+        modelName: 'Groups',
         hooks: {
           beforeCreate: handleBeforeCreate
         }
@@ -29,16 +29,15 @@ class Team extends Model {
   }
 
   static associate(models) {
-    models.Team.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' });
-    models.Team.hasMany(models.TeamGroup, { foreignKey: 'teamId', as: 'TeamGroup' });
+    models.Group.belongsTo(models.User, { foreignKey: 'created', as: 'userCreate' });
 
-    models.Team.hasMany(models.AgentTeamMember, { foreignKey: 'teamId', as: 'AgentTeamMember'  });
-    // models.Team.hasMany(models.TeamGroup, { foreignKey: 'teamId' });
+    models.Group.hasMany(models.UserGroupMember, { foreignKey: 'groupId', as: 'UserGroupMember' });
+    models.Group.hasMany(models.TeamGroup, { foreignKey: 'groupId', as: 'TeamGroup' });
   }
 }
 
 async function handleBeforeCreate(team, option) {
-  const teamResult = await Team.findOne({
+  const teamResult = await Group.findOne({
     where: { name: { [Op.eq]: team.name.toString() } }
   });
 
@@ -47,4 +46,4 @@ async function handleBeforeCreate(team, option) {
   }
 }
 
-module.exports = Team;
+module.exports = Group;

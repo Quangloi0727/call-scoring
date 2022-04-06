@@ -12,7 +12,7 @@ const {
 
 const {
   USER_ROLE
-} = require("../helpers/constants/number");
+} = require("../helpers/constants/statusField");
 
 const titlePage = 'Danh sách người dùng';
 
