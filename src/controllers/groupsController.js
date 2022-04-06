@@ -65,8 +65,19 @@ exports.getgroups = async (req, res, next) => {
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
     let query = '';
+    // let queryWhere = {};
 
-    if (name) query += `AND (t_group.name LIKE '%${name}%' OR memberOfTeam.fullName LIKE '%${name}%' OR memberOfTeam.userName LIKE '%${name}%')`;
+    if (name) {
+      query += `WHERE (t_group.name LIKE '%${name}%' OR UserGroupMembers1.leaderDetails LIKE '%${name}%')`;
+      // queryWhere = {
+      //   [Op.or]: [
+      //     { "$name$" : { [Op.like]: `%${name}%` } },
+      //     { "$UserGroupMember.user.fullName$": { [Op.like]: `%${name}%` } },
+      //     { "$UserGroupMember.user.userName$": { [Op.like]: `%${name}%` } },
+      //     // { "$TeamGroup.groupId$" : { [Op.not]: id } },
+      //   ]
+      // }
+    }
 
     let queryDataString = `
       SELECT
@@ -76,9 +87,9 @@ exports.getgroups = async (req, res, next) => {
         min(t_group.createdAt) AS createdAt,
         min(agent.id) AS createdId,
         min(agent.fullName) AS createdName,
-        Sum(UserGroupMembers1.counts) as leaders,
+        Sum(case when UserGroupMembers1.counts > 0 then UserGroupMembers1.counts else 0 end) as leaders,
 				min(UserGroupMembers1.leaderDetails) as leaderDetails,
-				Sum(teamGroup1.counts) as members
+				Sum(case when teamGroup1.counts > 0 then teamGroup1.counts else 0 end) as members
       FROM dbo.groups t_group
       LEFT JOIN dbo.Users agent -- nguoi tao
 				ON t_group.created = agent.id
@@ -109,12 +120,50 @@ exports.getgroups = async (req, res, next) => {
       SELECT COUNT(*) AS total
       FROM dbo.groups t_group
       LEFT JOIN dbo.Users agent ON t_group.created = agent.id
-      LEFT JOIN dbo.UserGroupMembers UserGroupMembers ON t_group.id = UserGroupMembers.groupId
-      LEFT JOIN dbo.Users Users ON UserGroupMembers.userId = Users.id
-      WHERE ( UserGroupMembers.role = ${USER_ROLE.groupmanager.n} )
+      LEFT JOIN (SELECT
+        UserGroupMembers.groupId,
+        string_agg(concat(Users.fullName, ' (', Users.userName, ')'), ';') as leaderDetails,
+        count(UserGroupMembers.groupId) as counts
+              FROM dbo.UserGroupMembers 
+              LEFT JOIN dbo.Users Users -- leader info
+                ON UserGroupMembers.userId = Users.id
+                
+              where role =  ${USER_ROLE.groupmanager.n}
+              group by UserGroupMembers.groupId) UserGroupMembers1 -- leader
+				ON t_group.id = UserGroupMembers1.groupId
       ${query}
-      GROUP BY t_group.id, t_group.name, agent.id, agent.fullName
+      GROUP BY t_group.id
     `;
+
+    // let groups = await model.Group.findAndCountAll({
+    //   where: queryWhere,
+    //   order: [['id', 'DESC']],
+    //   limit,
+    //   offset,
+    //   distinct: true,
+    //   include: [
+    //     { model: model.User, as: 'userCreate' },
+    //     { 
+    //       model: model.UserGroupMember, 
+    //       as: 'UserGroupMember',
+    //       include: { model: model.User, as: 'user' },
+    //       where : {
+    //         role: USER_ROLE.groupmanager.n
+    //       }
+    //     },
+    //     { 
+    //       model: model.TeamGroup, 
+    //       as: 'TeamGroup',
+    //       // include: { model: model.User, as: 'user' },
+    //       // where : {
+    //       //   role: USER_ROLE.groupmanager.n
+    //       // }
+    //     }
+    //   ],
+
+    //   // raw: true,
+    //   nest: true
+    // })
 
     const [groupsResult, total] = await Promise.all([
       await model.sequelize.query(queryDataString, { type: QueryTypes.SELECT }),
@@ -252,6 +301,14 @@ exports.detail = async (req, res, next) => {
             where : {
               role: USER_ROLE.groupmanager.n
             }
+          },
+          { 
+            model: model.TeamGroup, 
+            as: 'TeamGroup',
+            // include: { model: model.User, as: 'user' },
+            // where : {
+            //   role: USER_ROLE.groupmanager.n
+            // }
           }
         ],
         // raw: true,
@@ -507,7 +564,7 @@ exports.teamOfGroup = async (req, res) => {
           
         // }
       }],
-      raw: true,
+      // raw: true,
       nest: true
     });
 
@@ -525,7 +582,7 @@ exports.teamOfGroup = async (req, res) => {
 
 exports.getTeamAvailable = async (req, res) => {
   try {
-    let { id } = req.query;
+    let { id, teamIds } = req.query;
     id = Number(id);
     
     if (!id || id == '') {
@@ -542,9 +599,11 @@ exports.getTeamAvailable = async (req, res) => {
         // }
       }],
       where: {
+        
         [Op.or]: [
           { "$TeamGroup.groupId$" : { [Op.eq]: null } },
-          { "$TeamGroup.groupId$" : { [Op.not]: id } },
+          { "$TeamGroup.teamId$": { [Op.notIn]: teamIds.map(Number) }  },
+          // { "$TeamGroup.groupId$" : { [Op.not]: id } },
         ]
       },
       raw: true,

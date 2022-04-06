@@ -65,10 +65,10 @@ $(function () {
   }
 
   function getUserAvailable() {
-    // console.log( $.param({id: group.id} ) );
+    // console.log( group );
     $.ajax({
       type: 'GET',
-      url: '/groups/get-team-available?' + $.param({id: group.id}),
+      url: '/groups/get-team-available?' + $.param({id: group.id, teamIds: _.pluck(group.TeamGroup, 'teamId')}),
       cache: 'false',
       success: function (result) {
         if (!result) return;
@@ -116,6 +116,8 @@ $(function () {
         $loadingData.hide();
 
         // toastr.success('Đã xóa đội ngũ ra khỏi nhóm!');
+        // xoa cache vi ko reload lai trang
+        group.TeamGroup = group.TeamGroup.filter((i, index) => i.teamId != userId);
 
         getUserAvailable();
         return getMember();
@@ -288,7 +290,7 @@ $(function () {
 
     data.teamIds = member;
     data.groupId = group.id;
-    // return console.log(data);
+    // return console.log(data, group);
     $.ajax({
       type: 'POST',
       url: '/groups/add-team',
@@ -296,7 +298,20 @@ $(function () {
       dataType: "text",
       success: function () {
         toastr.success('Đã thêm người dùng vào nhóm');
+        // cache new element vi ko reload lai trang
+        // group.TeamGroup.push();
+        const cacheTeamGroup = member.map((i, index) => {
+          return {
+            id: group.TeamGroup.length > 0 ? group.TeamGroup[group.TeamGroup.length -1].id + 1 + index : 1 + index,
+            teamId: i,
+            groupId: group.id
+          }
+        });
 
+        group.TeamGroup = [
+          ...group.TeamGroup,
+          ...cacheTeamGroup
+        ]
         getUserAvailable();
         return getMember();
       },
