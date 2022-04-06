@@ -8,6 +8,9 @@ const AgentTeamMemberModel = require('./agentTeamMember');
 const CallDetailRecordsModel = require('./call_detail_records');
 const UserRoleModel = require('./userRole');
 const Configurationcolums = require('./configurationcolums');
+const GroupModel = require('./group');
+const TeamGroupModel = require('./teamGroup');
+const UserGroupMemberModel = require('./userGroupMember');
 let db = {};
 let sequelize = null;
 
@@ -23,7 +26,10 @@ const models = {
   AgentTeamMember: AgentTeamMemberModel.init(sequelize),
   CallDetailRecords: CallDetailRecordsModel.init(sequelize),
   UserRole: UserRoleModel.init(sequelize),
-  ConfigurationColums: Configurationcolums.init(sequelize)
+  ConfigurationColums: Configurationcolums.init(sequelize),
+  Group: GroupModel.init(sequelize),
+  TeamGroup: TeamGroupModel.init(sequelize),
+  UserGroupMember: UserGroupMemberModel.init(sequelize),
 }
 
 Object.keys(models).forEach(model => {
