@@ -11,7 +11,7 @@ const {
 } = require("../helpers/constants/statusCodeHTTP");
 const {
   USER_ROLE
-} = require("../helpers/constants/number");
+} = require("../helpers/constants/statusField");
 
 const {
   cheSo
