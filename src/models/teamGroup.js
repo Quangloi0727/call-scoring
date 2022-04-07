@@ -29,8 +29,8 @@ class TeamGroup extends Model {
   static associate(models) {
     // models.TeamGroup.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     
-    models.TeamGroup.belongsTo(models.Team, { foreignKey: 'teamId' });
-    models.TeamGroup.belongsTo(models.Group, { foreignKey: 'groupId'});
+    models.TeamGroup.belongsTo(models.Team, { foreignKey: 'teamId', as: 'Team' });
+    models.TeamGroup.belongsTo(models.Group, { foreignKey: 'groupId', as: 'Group'  });
   }
 }
 

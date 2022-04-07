@@ -14,6 +14,13 @@
 })(this, function (exports, $) {
   "use strict";
   const limitPage = [10, 25, 50, 100];
+  const MESSAGE_ERROR = {
+    "QA-001":	"Không được bỏ trống",
+    "QA-002":	"Thông tin đã tồn tại",
+    "QA-003":	"Tên đăng nhập hoặc mật khẩu không chính xác",
+    "QA-004":	"Lỗi hệ thống!",
+    "QA-005":	"Thời gian bắt đầu phải khác thời gian kết thúc"
+  }
 
   function CreatePaging(paging, classPaging = "zpaging") {
     if (!paging) return "";
@@ -149,10 +156,14 @@
 
   // variables
   window.location.limitPage = limitPage;
+  window.location.MESSAGE_ERROR = MESSAGE_ERROR;
   
    // function
   window.location.CreatePaging = CreatePaging;
   window.location.convertArrayToObject = convertArrayToObject;
   window.location.getOnlyNumber = getOnlyNumber;
+
+  $.validator.messages.required = MESSAGE_ERROR["QA-001"];
+  $.validator.messages.maxlength = $.validator.format( "Độ dài không quá {0} kí tự" );
 });
 //# sourceMappingURL=adminlte.js.map

@@ -42,8 +42,17 @@ const USER_ROLE = {
     },
 }
 
+const MESSAGE_ERROR = {
+    "QA-001":	"Không được bỏ trống",
+    "QA-002":	"Thông tin đã tồn tại",
+    "QA-003":	"Tên đăng nhập hoặc mật khẩu không chính xác",
+    "QA-004":	"Lỗi hệ thống!",
+    "QA-005":	"Thời gian bắt đầu phải khác thời gian kết thúc"
+}
+
 module.exports = {
     TYPE_ADS,
     TYPE_NOTE,
     USER_ROLE,
+    MESSAGE_ERROR
 };

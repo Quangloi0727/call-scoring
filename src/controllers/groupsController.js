@@ -249,7 +249,7 @@ exports.createGroup = async (req, res) => {
     }
 
     if (!data.leader || data.leader.length <= 0) {
-      throw new Error('Giát sát nhóm không được để trống!');
+      throw new Error('Quản lý nhóm không được để trống!');
     }
 
     const groupCreateResult = await model.Group.create(data, { transaction: transaction });
@@ -257,7 +257,7 @@ exports.createGroup = async (req, res) => {
     let dataMember = data.leader.map(el => {
       return {
         groupId: groupCreateResult.id,
-        userId: el,
+        userId: Number(el),
         role: USER_ROLE.groupmanager.n
       }
     });
@@ -288,7 +288,7 @@ exports.detail = async (req, res, next) => {
       throw new Error('Nhóm không tồn tại!');
     }
     
-    const [users, group] = await Promise.all([
+    let [users, groupInfo] = await Promise.all([
       getUserByRole(model.User, USER_ROLE.groupmanager.n),
       model.Group.findOne({
         where: { id: { [Op.eq]: Number(id) } },
@@ -297,7 +297,7 @@ exports.detail = async (req, res, next) => {
           { 
             model: model.UserGroupMember, 
             as: 'UserGroupMember',
-            include: { model: model.User, as: 'user' },
+            include: { model: model.User, as: 'User' },
             where : {
               role: USER_ROLE.groupmanager.n
             }
@@ -315,13 +315,14 @@ exports.detail = async (req, res, next) => {
         nest: true
       })
     ]);
+    // let _group = {...groupInfo};
 
-    group.createdAt = moment(group.createdAt).format('HH:mm:ss DD/MM/YYYY');
-    group.updatedAt = moment(group.updatedAt).format('HH:mm:ss DD/MM/YYYY');
+    // _group.createdAt = moment(new Date(groupInfo.createdAt)).format('HH:mm:ss DD/MM/YYYY');
+    // _group.updatedAt = moment(new Date(groupInfo.updatedAt)).format('HH:mm:ss DD/MM/YYYY');
 
     return _render(req, res, 'groups/detail', {
       titlePage: null,
-      group: group,
+      group: groupInfo,
       users: users,
     });
   } catch (error) {
@@ -394,23 +395,27 @@ exports.delete = async (req, res) => {
   try {
     const { password, id } = req.body;
 
-    if (!password || password == '') {
-      throw new Error('Mật khẩu không được để trống!');
-    }
+    // if (!password || password == '') {
+    //   throw new Error('Mật khẩu không được để trống!');
+    // }
 
-    const user = await UserModel.findOne({
-      where: { id: Number(req.user.id), password: password }
-    });
+    // const user = await UserModel.findOne({
+    //   where: { id: Number(req.user.id), password: password }
+    // });
 
-    if (!user) {
-      return res.status(ERR_500.code).json({
-        message: 'Mật khẩu không đúng!',
-        type: 'password'
-      });
-    }
+    // if (!user) {
+    //   return res.status(ERR_500.code).json({
+    //     message: 'Mật khẩu không đúng!',
+    //     type: 'password'
+    //   });
+    // }
 
-    await AgentTeamMemberModel.destroy({ where: { teamId: Number(id) } });
-    await model.Group.destroy({ where: { id: Number(id) } });
+
+    Promise.all([
+      await model.UserGroupMember.destroy({ where: { groupId: Number(id) } }),
+      await model.TeamGroup.destroy({ where: { groupId: Number(id) } }),
+      await model.Group.destroy({ where: { id: Number(id) } })
+    ])
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
@@ -588,7 +593,9 @@ exports.getTeamAvailable = async (req, res) => {
     if (!id || id == '') {
       throw new Error('Nhóm không tồn tại!');
     }
-    
+    let queryOr = [{ "$TeamGroup.groupId$" : { [Op.eq]: null } }];
+    if(teamIds && teamIds.length > 0) queryOr.push( { "$TeamGroup.teamId$": { [Op.notIn]: teamIds.map(Number) }  });
+    else queryOr.push( { "$TeamGroup.groupId$" : { [Op.not]: id } } );
     const itemAvailable = await model.Team.findAll({
       include: [{
         model: model.TeamGroup,
@@ -600,13 +607,10 @@ exports.getTeamAvailable = async (req, res) => {
       }],
       where: {
         
-        [Op.or]: [
-          { "$TeamGroup.groupId$" : { [Op.eq]: null } },
-          { "$TeamGroup.teamId$": { [Op.notIn]: teamIds.map(Number) }  },
-          // { "$TeamGroup.groupId$" : { [Op.not]: id } },
-        ]
+        [Op.or]: queryOr
       },
-      raw: true,
+      // distince: true,
+      // raw: true,
       nest: true
     });
 

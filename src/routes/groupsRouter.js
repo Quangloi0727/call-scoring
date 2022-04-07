@@ -17,8 +17,8 @@ router.route('/detail/:id')
 router.route('/')
   .put(groupsController.update);
 
-// router.route('/')
-//   .delete(groupsController.delete);
+router.route('/')
+  .delete(groupsController.delete);
 
 router.route('/search')
   .get(groupsController.search);
