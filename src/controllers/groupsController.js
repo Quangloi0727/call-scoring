@@ -395,23 +395,27 @@ exports.delete = async (req, res) => {
   try {
     const { password, id } = req.body;
 
-    if (!password || password == '') {
-      throw new Error('Mật khẩu không được để trống!');
-    }
+    // if (!password || password == '') {
+    //   throw new Error('Mật khẩu không được để trống!');
+    // }
 
-    const user = await UserModel.findOne({
-      where: { id: Number(req.user.id), password: password }
-    });
+    // const user = await UserModel.findOne({
+    //   where: { id: Number(req.user.id), password: password }
+    // });
 
-    if (!user) {
-      return res.status(ERR_500.code).json({
-        message: 'Mật khẩu không đúng!',
-        type: 'password'
-      });
-    }
+    // if (!user) {
+    //   return res.status(ERR_500.code).json({
+    //     message: 'Mật khẩu không đúng!',
+    //     type: 'password'
+    //   });
+    // }
 
-    await AgentTeamMemberModel.destroy({ where: { teamId: Number(id) } });
-    await model.Group.destroy({ where: { id: Number(id) } });
+
+    Promise.all([
+      await model.UserGroupMember.destroy({ where: { groupId: Number(id) } }),
+      await model.TeamGroup.destroy({ where: { groupId: Number(id) } }),
+      await model.Group.destroy({ where: { id: Number(id) } })
+    ])
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',

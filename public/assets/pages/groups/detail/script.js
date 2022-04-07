@@ -202,16 +202,16 @@ $(function () {
 
   // validate form delete group
   const validatorFormDelete = $formDeleteGroup.validate({
-    rules: {
-      password: {
-        required: true,
-      },
-    },
-    messages: {
-      password: {
-        required: "Mật khẩu không được để trống!",
-      },
-    },
+    // rules: {
+    //   password: {
+    //     required: true,
+    //   },
+    // },
+    // messages: {
+    //   password: {
+    //     required: "Mật khẩu không được để trống!",
+    //   },
+    // },
     ignore: ":hidden",
     errorElement: 'span',
     errorPlacement: function (error, element) {
@@ -234,7 +234,7 @@ $(function () {
       filter.id = group.id;
 
       $loadingData.show();
-
+      // return console.log(filter)
       $.ajax({
         type: 'DELETE',
         url: '/groups',
@@ -250,11 +250,11 @@ $(function () {
 
           let errorParse = JSON.parse(error.responseText);
 
-          if (errorParse.type) {
-            return validatorFormDelete.showErrors({
-              'password': errorParse.message
-            });
-          }
+          // if (errorParse.type) {
+          //   return validatorFormDelete.showErrors({
+          //     'password': errorParse.message
+          //   });
+          // }
 
           return toastr.error(errorParse.message);
         },
