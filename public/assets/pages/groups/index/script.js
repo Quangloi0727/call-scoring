@@ -55,14 +55,14 @@ $(function () {
     },
     messages: {
       name: {
-        required: "Tên nhóm không được để trống!",
-        maxlength: 'Độ dài không quá 50 kí tự'
+        // required: "Tên nhóm không được để trống!",
+        // maxlength: $.validator.format( "Độ dài không quá {0} kí tự" )
       },
       leader: {
-        required: "Giám sát không được để trống!",
+        // required: "Giám sát không được để trống!",
       },
       description: {
-        maxlength: 'Độ dài không quá 500 kí tự'
+        // maxlength: 'Độ dài không quá 500 kí tự'
       }
     },
     ignore: ":hidden",
@@ -139,9 +139,9 @@ $(function () {
       type: 'GET',
       url: '/groups/search?name=' + value,
       cache: 'false',
-      success: function () {
+      success: function (error) {
         return validator.showErrors({
-          'name': 'Tên nhóm đã được sử dụng!'
+          'name': window.location.MESSAGE_ERROR["QA-002"]
         });
       },
     });
@@ -210,8 +210,8 @@ $(function () {
             ${itemDrop}
           </div>
         </div>`;
-      }else if(item.leaders.length > 0) {
-        htmlLeader = `${leaders[0].fullName} (${leaders[0].userName})`;
+      }else if(item.leaders > 0) {
+        htmlLeader = `${item.leaderDetails}`;
       }
       html += `
         <tr>
@@ -239,14 +239,14 @@ $(function () {
 
     $('#name_length').html(`${value.length}/50`);
 
-    if (value.length > 50) {
-      $('#name_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'name': 'Độ dài không quá 50 kí tự!'
-      });
-    } else {
-      $('#name_length').removeClass('text-danger').addClass('text-muted');
-    }
+    // if (value.length > 50) {
+    //   $('#name_length').removeClass('text-muted').addClass('text-danger');
+    //   return validator.showErrors({
+    //     'name': 'Độ dài không quá 50 kí tự!'
+    //   });
+    // } else {
+    //   $('#name_length').removeClass('text-danger').addClass('text-muted');
+    // }
   });
 
   $('#form_input_group #description').on('input', function () {
@@ -254,14 +254,14 @@ $(function () {
 
     $('#description_length').html(`${value.length}/500`);
 
-    if (value.length > 500) {
-      $('#description_length').removeClass('text-muted').addClass('text-danger');
-      return validator.showErrors({
-        'description': 'Độ dài không quá 500 kí tự!'
-      });
-    } else {
-      $('#description_length').removeClass('text-danger').addClass('text-muted');
-    }
+    // if (value.length > 500) {
+    //   $('#description_length').removeClass('text-muted').addClass('text-danger');
+    //   return validator.showErrors({
+    //     'description': 'Độ dài không quá 500 kí tự!'
+    //   });
+    // } else {
+    //   $('#description_length').removeClass('text-danger').addClass('text-muted');
+    // }
   });
 
   $(document).on('change', '.sl-limit-page', function () {
