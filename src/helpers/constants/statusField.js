@@ -50,9 +50,21 @@ const MESSAGE_ERROR = {
     "QA-005":	"Thời gian bắt đầu phải khác thời gian kết thúc"
 }
 
+const TYPE_ROLETYPE = {
+    hasExpires: {
+        t: 'Giới hạn thời gian',
+        n: 0,
+    },
+    onlyTick: {
+        t: 'Chỉ tích chọn',
+        n: 1
+    }
+}
+
 module.exports = {
     TYPE_ADS,
     TYPE_NOTE,
     USER_ROLE,
-    MESSAGE_ERROR
+    MESSAGE_ERROR,
+    TYPE_ROLETYPE
 };

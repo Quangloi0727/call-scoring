@@ -11,6 +11,8 @@ const Configurationcolums = require('./configurationcolums');
 const GroupModel = require('./group');
 const TeamGroupModel = require('./teamGroup');
 const UserGroupMemberModel = require('./userGroupMember');
+const RuleTypeModel = require('./ruleType');
+const RuleModel = require('./rule');
 let db = {};
 let sequelize = null;
 
@@ -30,6 +32,8 @@ const models = {
   Group: GroupModel.init(sequelize),
   TeamGroup: TeamGroupModel.init(sequelize),
   UserGroupMember: UserGroupMemberModel.init(sequelize),
+  RuleType: RuleTypeModel.init(sequelize),
+  Rule: RuleModel.init(sequelize),
 }
 
 Object.keys(models).forEach(model => {
