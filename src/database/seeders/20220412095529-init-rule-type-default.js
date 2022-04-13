@@ -26,11 +26,21 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
+    const { Op } = Sequelize;
     /**
      * Add commands to revert seed here.
      *
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
+    // console.log('co vao ady');
+    let dataMapping = Object.keys(TYPE_ROLETYPE).map(i => {
+      return {
+        name: TYPE_ROLETYPE[i].t,
+        type: TYPE_ROLETYPE[i].n
+      };
+    });
+    await queryInterface.bulkDelete('RuleTypes', {name: {[Op.in]: dataMapping.map(i => i.name)}}, {});
+
   }
 };

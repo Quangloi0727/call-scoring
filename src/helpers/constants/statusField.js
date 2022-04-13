@@ -42,6 +42,11 @@ const USER_ROLE = {
     },
 }
 
+const {
+    admin,
+    ...USER_ROLE_NOT_ADMIN
+} = USER_ROLE;
+
 const MESSAGE_ERROR = {
     "QA-001":	"Không được bỏ trống",
     "QA-002":	"Thông tin đã tồn tại",
@@ -66,5 +71,6 @@ module.exports = {
     TYPE_NOTE,
     USER_ROLE,
     MESSAGE_ERROR,
-    TYPE_ROLETYPE
+    TYPE_ROLETYPE,
+    USER_ROLE_NOT_ADMIN
 };

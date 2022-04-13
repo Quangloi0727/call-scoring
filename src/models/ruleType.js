@@ -42,7 +42,7 @@ class RuleType extends Model {
 
   static associate(models) {
 
-    models.RuleType.hasMany(models.Rule, { foreignKey: 'ruleId', as: 'Rule' });
+    models.RuleType.hasMany(models.Rule, { foreignKey: 'ruleTypeId', as: 'Rule' });
 
   }
 }

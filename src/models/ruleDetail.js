@@ -2,26 +2,23 @@ const moment = require("moment");
 const { Model, DataTypes, Op } = require("sequelize");
 
 const { MESSAGE_ERROR, USER_ROLE } = require("../helpers/constants");
-class Rule extends Model {
+class RuleDetail extends Model {
   static init(sequelize) {
     return super.init(
       {
-        name: {
-          type: DataTypes.STRING,
-        },
-        ruleTypeId: {
+        ruleId: {
           type: DataTypes.INTEGER,
           references: {
-            model: "RuleTypes",
+            model: "Rules",
             key: "id",
           },
-        },
-        created: {
+        },      
+        role: {
           type: DataTypes.INTEGER,
-          references: {
-            model: "Users",
-            key: "id",
-          },
+          allowNull: false
+        },
+        expires: {
+          type: DataTypes.INTEGER, // số ngày
         },
         createdAt: {
           type: DataTypes.DATE,
@@ -43,35 +40,31 @@ class Rule extends Model {
       },
       {
         sequelize,
-        modelName: "Rules",
+        modelName: "RuleDetails",
         hooks: {
           beforeCreate: handleBeforeCreate,
         },
-        indexes: [
+        indexes:[
           {
             unique: true,
-            fields: ["name", "ruleTypeId"],
-          },
-        ],
+            fields:['ruleId', 'role']
+          }
+         ]
       }
     );
   }
 
   static associate(models) {
-    models.Rule.hasMany(models.RuleDetail, {
+    models.RuleDetail.belongsTo(models.Rule, {
       foreignKey: "ruleId",
-      as: "RuleDetail",
+      as: "Rule",
     });
 
-    models.Rule.belongsTo(models.RuleType, {
-      foreignKey: "ruleTypeId",
-      as: "RuleType",
-    });
   }
 }
 
 async function handleBeforeCreate(data, option) {
-  const result = await Rule.findOne({
+  const result = await RuleDetail.findOne({
     where: { name: { [Op.eq]: data.name.toString() } },
   });
 
@@ -80,4 +73,4 @@ async function handleBeforeCreate(data, option) {
   }
 }
 
-module.exports = Rule;
+module.exports = RuleDetail;
