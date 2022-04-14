@@ -66,11 +66,23 @@ const TYPE_ROLETYPE = {
     }
 }
 
+const SYSTEM_RULE = {
+    XEM_DU_LIEU: {
+        name: 'Xem dữ liệu',
+        code: 'XEM_DU_LIEU'
+    },
+    XUAT_EXCEL: {
+        name: 'Xuất Excel',
+        code: 'XUAT_EXCEL'
+    }
+}
+
 module.exports = {
     TYPE_ADS,
     TYPE_NOTE,
     USER_ROLE,
     MESSAGE_ERROR,
     TYPE_ROLETYPE,
-    USER_ROLE_NOT_ADMIN
+    USER_ROLE_NOT_ADMIN,
+    SYSTEM_RULE
 };

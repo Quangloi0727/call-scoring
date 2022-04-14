@@ -7,11 +7,13 @@ const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
   ERR_500,
-  ERR_400
+  ERR_400,
+  ERR_403
 } = require("../helpers/constants/statusCodeHTTP");
 const {
-  USER_ROLE
-} = require("../helpers/constants/statusField");
+  USER_ROLE,
+  SYSTEM_RULE
+} = require("../helpers/constants");
 
 const {
   cheSo
@@ -28,6 +30,7 @@ const SOURCE_NAME = {
 exports.index = async (req, res, next) => {
   try {
     let isAdmin = false;
+    let { user } = req;
 
     if (req.user.roles.find((item) => item.role == 2)) {
       isAdmin = true;
@@ -40,6 +43,8 @@ exports.index = async (req, res, next) => {
     return _render(req, res, 'recording/index', {
       title: titlePage,
       titlePage: titlePage,
+      rules: user.rules,
+      SYSTEM_RULE,
       teamsDetail:  _.uniqBy(teamsDetail, 'memberId'), // master data
       teams: _.uniqBy(teamsDetail, 'teamId') || [],
     });
@@ -68,6 +73,8 @@ exports.getRecording = async (req, res) => {
       teams
     } = req.query;
     let { limit } = req.query;
+    let { user } = req;
+    
     if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
     
     limit = Number(limit);
@@ -77,7 +84,21 @@ exports.getRecording = async (req, res) => {
     let userIdFilter = [];
     let query = '';
     let isAdmin = false;
+    let limitTimeExpires;
 
+    // check quyền xem dữ liệu
+    if(!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]){
+      
+      return res.status(ERR_403.code).json({
+        message: ERR_403.message_detail.notHaveAccessData
+      });
+    }else {
+      if(user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0){
+        let _now = moment();
+
+        limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix(); // second times
+      }
+    }
     if (!startTime || startTime === '' || !endTime || endTime === '') {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
@@ -131,6 +152,9 @@ exports.getRecording = async (req, res) => {
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `;
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
     if (teams) query += `AND team.id IN (${teams.toString()}) `;
+
+    // limit time by rule
+    if(limitTimeExpires > startTimeMilisecond) startTimeMilisecond = limitTimeExpires;
 
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query);

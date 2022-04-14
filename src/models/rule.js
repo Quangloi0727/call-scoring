@@ -7,7 +7,10 @@ class Rule extends Model {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING,
+          type: DataTypes.STRING(100),
+        },
+        code: {
+          type: DataTypes.STRING(100),
         },
         ruleTypeId: {
           type: DataTypes.INTEGER,
