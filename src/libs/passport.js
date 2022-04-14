@@ -79,8 +79,8 @@ passport.deserializeUser(async (id, done) => {
       // rules = {};
     }
 
-
-    return done(null, { ...user, roles: roles, rules });
+    console.log(`deserializeUser user.name: ${user.userName}`, roles, {rules});
+    return done(null, { ...user, roles, rules });
   } catch (error) {
     console.log(`------- error ------- deserializeUser`);
     console.log(error);
