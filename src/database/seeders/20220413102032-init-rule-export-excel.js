@@ -3,7 +3,8 @@
 let {
   USER_ROLE_NOT_ADMIN,
   TYPE_ROLETYPE,
-} = require("../../helpers/constants/statusField");
+  SYSTEM_RULE
+} = require("../../helpers/constants");
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -45,7 +46,8 @@ module.exports = {
       // insert rules
       const ruleData = [
         {
-          name: 'Xuất Excel',
+          name: SYSTEM_RULE.XUAT_EXCEL.name,
+          code: SYSTEM_RULE.XUAT_EXCEL.code,
           ruleTypeId: typeFound,
         }
       ]
