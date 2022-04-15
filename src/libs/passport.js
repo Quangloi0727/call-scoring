@@ -155,6 +155,14 @@ exports.isLoggedIn = (req, res, next) => {
   }
   return res.redirect('/login');
 }
+
+exports.isAdmin = (req, res, next) => {
+  let { user } = req;
+  if (user.roles.find(i => i.role == USER_ROLE.admin.n)) {
+    return next();
+  }
+  return next(new Error('Không có quyền truy cập'));
+}
 function getDefined (defined, value) {
   let { df, ...allData } = defined; // do có 1 key "df", cần xóa key này đi trước khi find data;
   let dfFound =  Object.keys(allData).find((i, index) => {

@@ -1,9 +1,11 @@
 const express = require('express');
 const teamsController = require('../controllers/teamsController');
 const router = express.Router();
+const libsPassport = require('../libs/passport');
+
 
 router.route('/')
-  .get(teamsController.index);
+  .get(libsPassport.isAdmin, teamsController.index);
 
 router.route('/insert')
   .post(teamsController.createGroup);
@@ -11,7 +13,7 @@ router.route('/insert')
 router.route('/getTeams')
   .get(teamsController.getTeams);
 
-router.route('/detail/:id')
+router.route(libsPassport.isAdmin, '/detail/:id')
   .get(teamsController.detail);
 
 router.route('/')

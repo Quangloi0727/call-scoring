@@ -70,7 +70,8 @@ module.exports = {
       let dataMapping = Object.keys(USER_ROLE_NOT_ADMIN).map(i => {
         return {
           role: USER_ROLE_NOT_ADMIN[i].n,
-          ruleId: ruleIdFound
+          ruleId: ruleIdFound,
+          unLimited: true
         };
       });
 

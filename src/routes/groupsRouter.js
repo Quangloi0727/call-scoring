@@ -1,9 +1,10 @@
 const express = require('express');
 const groupsController = require('../controllers/groupsController');
 const router = express.Router();
+const libsPassport = require('../libs/passport');
 
 router.route('/')
-  .get(groupsController.index);
+  .get(libsPassport.isAdmin, groupsController.index);
 
 router.route('/insert')
   .post(groupsController.createGroup);
@@ -11,7 +12,7 @@ router.route('/insert')
 router.route('/getgroups')
   .get(groupsController.getgroups);
 
-router.route('/detail/:id')
+router.route(libsPassport.isAdmin, '/detail/:id')
   .get(groupsController.detail);
 
 router.route('/')
