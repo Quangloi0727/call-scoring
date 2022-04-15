@@ -77,6 +77,24 @@ const SYSTEM_RULE = {
     }
 }
 
+const OP_TIME_DEFINE = {
+    ngay: {
+        t: 'Ngày',
+        n: 0,
+        day: 1,
+    },
+    thang: {
+        t: 'Tháng',
+        n: 1,
+        day: 30,
+    },
+    nam: {
+        t: 'Năm',
+        n: 2,
+        day: 365,
+    }
+}
+
 module.exports = {
     TYPE_ADS,
     TYPE_NOTE,
@@ -84,5 +102,6 @@ module.exports = {
     MESSAGE_ERROR,
     TYPE_ROLETYPE,
     USER_ROLE_NOT_ADMIN,
-    SYSTEM_RULE
+    SYSTEM_RULE,
+    OP_TIME_DEFINE
 };

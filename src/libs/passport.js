@@ -8,7 +8,7 @@ const UserRoleModel = require('../models/userRole');
 const RuleDetailModel = require('../models/ruleDetail');
 const RuleModel = require('../models/rule');
 
-const { USER_ROLE, SYSTEM_RULE } = require('../helpers/constants');
+const { USER_ROLE, SYSTEM_RULE, OP_TIME_DEFINE } = require('../helpers/constants');
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -41,7 +41,7 @@ passport.deserializeUser(async (id, done) => {
       
       let ruleFounds = await RuleDetailModel.findAll({
         where: { role: { [Op.in]: roles.map(i => i.role) } },
-        attributes: ['role', 'expires'],
+        attributes: ['role', 'expires', 'expiresType', 'unLimited'],
         include: [
           { model: RuleModel, as: 'Rule' },
         ],
@@ -61,13 +61,19 @@ passport.deserializeUser(async (id, done) => {
         if(element.Rule){
 
           if(element.Rule.code == SYSTEM_RULE.XEM_DU_LIEU.code){
+            if(element.unLimited == true) expires = 30000; // chắc < năm 1945
+            else {
+              // nếu ko limited thì sẽ phải tính theo exprires và expiresType
+              let expiresTypeFound = getDefined(OP_TIME_DEFINE, element.expiresType);
+              element.expires = expiresTypeFound.day * element.expires;
+            }
             expires = _.max([expires, element.expires]);
             rules[SYSTEM_RULE.XEM_DU_LIEU.code] = {
               ...SYSTEM_RULE.XEM_DU_LIEU,
               expires
             };
           }
-          if(element.Rule.code == SYSTEM_RULE.XUAT_EXCEL.code){
+          if(element.unLimited == true && element.Rule.code == SYSTEM_RULE.XUAT_EXCEL.code){
 
             rules[SYSTEM_RULE.XUAT_EXCEL.code] = SYSTEM_RULE.XUAT_EXCEL;
             // break;
@@ -149,3 +155,18 @@ exports.isLoggedIn = (req, res, next) => {
   }
   return res.redirect('/login');
 }
+function getDefined (defined, value) {
+  let { df, ...allData } = defined; // do có 1 key "df", cần xóa key này đi trước khi find data;
+  let dfFound =  Object.keys(allData).find((i, index) => {
+    const ele = allData[i];
+
+    if(ele.n == value) return true;
+    else return false;
+  });
+
+  return allData[dfFound] || {
+    n: null,
+    t: "Not Found!",
+    c: "danger"
+  };
+};

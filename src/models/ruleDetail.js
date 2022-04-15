@@ -20,6 +20,12 @@ class RuleDetail extends Model {
         expires: {
           type: DataTypes.INTEGER, // số ngày
         },
+        expiresType: {
+          type: DataTypes.INTEGER, // loại: ngày: 0, tháng: 1, năm: 2
+        },
+        unLimited: {
+          type: DataTypes.INTEGER, // xem giới hạn: 0, xem không giới hạn: 1
+        },
         createdAt: {
           type: DataTypes.DATE,
           //note here this is the guy that you are looking for
@@ -41,9 +47,6 @@ class RuleDetail extends Model {
       {
         sequelize,
         modelName: "RuleDetails",
-        hooks: {
-          beforeCreate: handleBeforeCreate,
-        },
         indexes:[
           {
             unique: true,
@@ -60,16 +63,6 @@ class RuleDetail extends Model {
       as: "Rule",
     });
 
-  }
-}
-
-async function handleBeforeCreate(data, option) {
-  const result = await RuleDetail.findOne({
-    where: { name: { [Op.eq]: data.name.toString() } },
-  });
-
-  if (result) {
-    throw new Error(MESSAGE_ERROR["QA-002"]);
   }
 }
 

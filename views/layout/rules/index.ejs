@@ -1,0 +1,248 @@
+<div class="wrapper">
+  <div>
+    <section class="content">
+      <div class="container-fluid">
+
+        <% ruleHasExpires.forEach(i => { %>
+          <div class="card">
+            <div class="card-header">
+              <h4><%= i.name %> </h4>
+            </div>
+            <!-- /.card-header -->
+            <div class="card-body">
+              <!-- template ruleType -->
+              <% if(i.RuleType) { %>
+                
+                <% if(i.RuleType.type == TYPE_ROLETYPE.hasExpires.n) { %>
+                  
+                    
+                  <div class="row">
+                  <% Object.keys(USER_ROLE_NOT_ADMIN).forEach((item, index) => { %>
+                    <% let ruleDetailFound = i.RuleDetail.find(j => j.role == USER_ROLE_NOT_ADMIN[item].n); %> 
+                      <div 
+                        class="col-sm-<%- (12/Object.keys(USER_ROLE_NOT_ADMIN).length) %>
+                        <%- (index == Object.keys(USER_ROLE_NOT_ADMIN).length - 1 ? "" : 'border-right') %> 
+                        rule-detail-item
+                        "
+                        item-id="<%- ruleDetailFound && ruleDetailFound.id %>"
+                        item-rule-id="<%- i.id %>"
+                        item-role="<%- USER_ROLE_NOT_ADMIN[item].n %>"
+                        >
+                        
+                        <div class="description-block">
+                          <h5 class="description-header"><%- (USER_ROLE_NOT_ADMIN[item].t ) %> </h5>
+                          
+                          <div class="form-group row">
+                            <label for="" class="col-sm-4 col-form-label">Trong vòng</label>
+                            
+                            <div class="col-sm-8">
+  
+                              <div class="input-group">
+                                <input type="text" class="form-control expires "
+                                <%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "disabled" %>
+                                value="<%- ruleDetailFound && ruleDetailFound.expires %>" 
+                                aria-label="Text input with dropdown button">
+                                <div class="input-group-append">
+                                  <select class="form-control expires-type" <%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "disabled" %> >
+                                    <% Object.keys(OP_TIME_DEFINE).forEach((item2, index2) => { %>
+                                      <option value=<%- OP_TIME_DEFINE[item2].n%> data-day=<%- OP_TIME_DEFINE[item2].day%> 
+                                        <%- ruleDetailFound && OP_TIME_DEFINE[item2].n == ruleDetailFound.expiresType ? "selected": "" %>
+                                        >
+                                        <%- OP_TIME_DEFINE[item2].t%>
+                                      </option>
+                                    
+                                    <% }) %> 
+                                    
+                                  </select>
+                                </div>
+                              </div>
+  
+                            </div>
+                          </div>
+  
+                          <div class="form-check text-left">
+                            <input class="form-check-input cb-unLimited" type="checkbox" <%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "checked" %> >
+                            <label class="form-check-label" >Xem không giới hạn</label>
+                          </div>
+                          <!-- <span class="description-text">SALES</span> -->
+                        </div>
+                      
+                      </div>
+                  <% }) %> 
+                  </div>
+  
+                <% } else { %>  
+                  <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Loại quyền này chưa có giao diện thao tác!</h4>
+                  </div>
+                <%} %> 
+  
+              <% }else { %>  
+                <!-- sẽ không có trường hợp này vì đã tạo khóa ngoài (FK) trong sql -->
+                <div class="alert alert-warning" role="alert">
+                  <h4 class="alert-heading">Loại quyền không tồn tại!</h4>
+                </div>
+              <%} %>  
+              <!-- template ruleType -->
+              <!-- <table id="example2" class="table table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th class="text-center">Tên đội ngũ</th>
+                    <th class="text-center">Quản lý đội ngũ</th>
+                    <th class="text-center">Số thành viên</th>
+                    <th class="text-center">Mô tả</th>
+                    <th class="text-center">Ngày tạo</th>
+                    <th class="text-center">Người tạo</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table> -->
+            </div>
+            <!-- /.card-body -->
+          </div>
+          <!-- /.card -->
+  
+          <% }) %>
+
+
+        <div class="card">
+          <div class="card-header">
+            <h4>Quyền nâng cao </h4>
+          </div>
+          <!-- /.card-header -->
+          <div class="card-body">
+            <div class="row">
+              <div class="col-1">
+                <p>  </p>
+              </div>
+              <div class="col-11">
+                <div class="row">
+                  <% Object.keys(USER_ROLE_NOT_ADMIN).forEach((item, index) => { %>
+                    <div class="col-sm-<%- (12/Object.keys(USER_ROLE_NOT_ADMIN).length) %>">
+                      <div class="description-block">
+                        <h5 class="description-header"><%- (USER_ROLE_NOT_ADMIN[item].t ) %> </h5>
+                      </div>
+                    
+                    </div>
+                  <% }) %> 
+                  </div>
+              </div>
+            </div>
+
+            <!-- template ruleType -->
+          <% ruleOnlyTicks.forEach(i => { %>
+          <div class="row">
+              <div class="col-1">
+                <p><%= i.name %> </p>
+              </div>
+              <div class="col-11">
+                <% if(i.RuleType) { %>
+              
+                  <% if(i.RuleType.type == TYPE_ROLETYPE.onlyTick.n){ %>  
+                    <div class="row">
+                      <% Object.keys(USER_ROLE_NOT_ADMIN).forEach((item, index) => { %>
+                        <% let ruleDetailFound = i.RuleDetail.find(j => j.role == USER_ROLE_NOT_ADMIN[item].n); %> 
+                          <div 
+                            class="col-sm-<%- (12/Object.keys(USER_ROLE_NOT_ADMIN).length) %>
+                            rule-detail-item
+                            "
+                            item-id="<%- ruleDetailFound && ruleDetailFound.id %>"
+                            item-rule-id="<%- i.id %>"
+                            item-role="<%- USER_ROLE_NOT_ADMIN[item].n %>"
+                            >
+                            
+                            <div class="description-block">
+      
+                              <div class="form-check">
+                                <input class="form-check-input cb-unLimited" type="checkbox" <%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "checked" %> >
+                              </div>
+                              <!-- <span class="description-text">SALES</span> -->
+                            </div>
+                          
+                          </div>
+                      <% }) %> 
+                      </div>
+    
+                  <% }else { %>  
+                    <div class="alert alert-warning" role="alert">
+                      <h4 class="alert-heading">Loại quyền này chưa có giao diện thao tác!</h4>
+                    </div>
+                  <%} %> 
+    
+                <% }else { %>  
+                  <!-- sẽ không có trường hợp này vì đã tạo khóa ngoài (FK) trong sql -->
+                  <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Loại quyền không tồn tại!</h4>
+                  </div>
+                <% } %>  
+              </div>
+            </div>
+
+            <% }) %>
+          </div>
+          <!-- /.card-body -->
+        </div>
+        <!-- /.card -->
+
+       
+
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>
+
+<!-- /.modal -->
+<div class="modal fade" id="modal_group">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Tạo đội ngũ</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_input_group">
+          <div>
+            <div class="form-group">
+              <label>
+                Tên đội ngũ
+                <span class="text-danger">*</span>
+              </label>
+              <label class="float-right font-weight-normal text-muted" id="name_length">
+                0/50
+              </label>
+              <input type="text" class="form-control input" id="name" name="name" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              Quản lý đội ngũ
+              <span class="text-danger">*</span>
+            </label>
+            <select class="form-control selectpicker input" data-live-search="true" name="leader" id="leader" multiple>
+            </select>
+          </div>
+          <div>
+            <div class="form-group">
+              <label>Mô tả</label>
+              <label class="float-right font-weight-normal text-muted" id="description_length">
+                0/500
+              </label>
+              <textarea class="form-control input" id="description" name="description" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
