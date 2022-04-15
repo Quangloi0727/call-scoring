@@ -40,6 +40,7 @@ module.exports = {
         message: 'Forbidden',
         message_detail: {
             default: 'Forbidden',
+            notHaveAccessData: 'Không có quyền xem dữ liệu',
         },
         description: 'Yêu cầu chứa dữ liệu hợp lệ và được máy chủ hiểu, nhưng máy chủ đang từ chối hành động. Điều này có thể là do người dùng không có các quyền cần thiết cho tài nguyên hoặc cần một tài khoản nào đó hoặc cố gắng thực hiện một hành động bị cấm (ví dụ: tạo một bản ghi trùng lặp khi chỉ cho phép một bản ghi). Mã này cũng thường được sử dụng nếu yêu cầu cung cấp xác thực thông qua trường tiêu đề WWW-xác thực, nhưng máy chủ không chấp nhận xác thực đó. Yêu cầu không nên lặp lại',
     },

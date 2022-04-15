@@ -42,6 +42,11 @@ const USER_ROLE = {
     },
 }
 
+const {
+    admin,
+    ...USER_ROLE_NOT_ADMIN
+} = USER_ROLE;
+
 const MESSAGE_ERROR = {
     "QA-001":	"Không được bỏ trống",
     "QA-002":	"Thông tin đã tồn tại",
@@ -50,9 +55,53 @@ const MESSAGE_ERROR = {
     "QA-005":	"Thời gian bắt đầu phải khác thời gian kết thúc"
 }
 
+const TYPE_ROLETYPE = {
+    hasExpires: {
+        t: 'Giới hạn thời gian',
+        n: 0,
+    },
+    onlyTick: {
+        t: 'Chỉ tích chọn',
+        n: 1
+    }
+}
+
+const SYSTEM_RULE = {
+    XEM_DU_LIEU: {
+        name: 'Xem dữ liệu',
+        code: 'XEM_DU_LIEU'
+    },
+    XUAT_EXCEL: {
+        name: 'Xuất Excel',
+        code: 'XUAT_EXCEL'
+    }
+}
+
+const OP_TIME_DEFINE = {
+    ngay: {
+        t: 'Ngày',
+        n: 0,
+        day: 1,
+    },
+    thang: {
+        t: 'Tháng',
+        n: 1,
+        day: 30,
+    },
+    nam: {
+        t: 'Năm',
+        n: 2,
+        day: 365,
+    }
+}
+
 module.exports = {
     TYPE_ADS,
     TYPE_NOTE,
     USER_ROLE,
-    MESSAGE_ERROR
+    MESSAGE_ERROR,
+    TYPE_ROLETYPE,
+    USER_ROLE_NOT_ADMIN,
+    SYSTEM_RULE,
+    OP_TIME_DEFINE
 };
