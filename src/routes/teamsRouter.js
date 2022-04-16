@@ -13,8 +13,8 @@ router.route('/insert')
 router.route('/getTeams')
   .get(teamsController.getTeams);
 
-router.route(libsPassport.isAdmin, '/detail/:id')
-  .get(teamsController.detail);
+router.route('/detail/:id')
+  .get(libsPassport.isAdmin, teamsController.detail);
 
 router.route('/')
   .put(teamsController.update);
