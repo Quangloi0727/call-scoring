@@ -119,11 +119,18 @@ exports.getRecording = async (req, res) => {
     }
     
 
-    if (req.user.roles.find((item) => item.role == 2)) {
+    if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
       isAdmin = true;
     }
 
-    const { teamIds } = await checkLeader(req.user.id);
+    let { teamIds } = await checkLeader(req.user.id);
+
+    if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
+      let userGroupTeam = await getTeamOfGroup(req.user.id);
+      let teamFound = _.map(_.unzip(userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId))), _.sum); //; // _.zipWith(, _.add)
+      teamIds = _.uniq([...teamIds, ...teamFound])
+    }
+
     if (!isAdmin && (!teamIds || teamIds.length <= 0)) {
       query += `AND records.agentId = ${req.user.id} `;
     }
@@ -471,4 +478,32 @@ function hms(secs) {
 
 function pad(num) {
   return ('0' + num).slice(-2);
+}
+
+async function getTeamOfGroup(userId) {
+  return await model.UserGroupMember.findAll({
+    where: {
+      userId,
+      role: USER_ROLE.groupmanager.n
+    },
+    include: [{
+      model: model.Group,
+      as: 'Group',
+      include: [{
+        model: model.TeamGroup,
+        as: 'TeamGroup',
+        // required: false,
+        // where: {
+          
+        // }
+      }],
+      // required: false,
+      // where: {
+        
+      // }
+    }],
+    // raw: true,
+    nest: true
+  });
+
 }

@@ -12,8 +12,8 @@ router.route('/insert')
 router.route('/getgroups')
   .get(groupsController.getgroups);
 
-router.route(libsPassport.isAdmin, '/detail/:id')
-  .get(groupsController.detail);
+router.route('/detail/:id')
+  .get(libsPassport.isAdmin, groupsController.detail);
 
 router.route('/')
   .put(groupsController.update);
