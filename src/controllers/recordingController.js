@@ -127,7 +127,16 @@ exports.getRecording = async (req, res) => {
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
       let userGroupTeam = await getTeamOfGroup(req.user.id);
-      let teamFound = _.map(_.unzip(userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId))), _.sum); //; // _.zipWith(, _.add)
+      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0);
+
+      let teamFound = [];
+      teamIdMap.forEach(i => {
+        i.forEach(j => {
+          if(!teamFound.includes(j)) teamFound.push(j);
+        });
+      });
+
+      // _.map(_.unzip(teamIdMap), _.sum); //; // _.zipWith(, _.add)
       teamIds = _.uniq([...teamIds, ...teamFound])
     }
 
