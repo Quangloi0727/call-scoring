@@ -36,7 +36,22 @@ exports.index = async (req, res, next) => {
       isAdmin = true;
     }
 
-    const { teams, teamIds } = await checkLeader(req.user.id);
+    let { teams, teamIds } = await checkLeader(req.user.id);
+
+    if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
+      let userGroupTeam = await getTeamOfGroup(req.user.id);
+      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0);
+
+      let teamFound = [];
+      teamIdMap.forEach(i => {
+        i.forEach(j => {
+          if(!teamFound.includes(j)) teamFound.push(j);
+        });
+      });
+
+      // _.map(_.unzip(teamIdMap), _.sum); //; // _.zipWith(, _.add)
+      teamIds = _.uniq([...teamIds, ...teamFound])
+    }
 
     let { teams: teamsDetail } = await getAgentTeamMemberDetail(isAdmin, teamIds, req.user.id);
 
