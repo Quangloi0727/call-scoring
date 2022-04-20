@@ -23,8 +23,14 @@ const model = require('../models');
 const ConfigurationColumsModel = require('../models/configurationcolums');
 const titlePage = 'Danh sách cuộc gọi';
 const SOURCE_NAME = {
-  oreka : 'ORK',
-  fs : 'FS',
+  oreka : {
+    code: 'ORK',
+    text: 'Orec'
+  },
+  fs :{
+    code: 'FS',
+    text: 'Freeswitch'
+  },
 }
 
 exports.index = async (req, res, next) => {
@@ -195,16 +201,19 @@ exports.getRecording = async (req, res) => {
       DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
 
       SELECT
-	      records.caller AS caller,
+        records.callId AS callId,
+        records.xmlCdrId AS xmlCdrId,
+        records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
 	      records.duration AS duration,
-        -- records.recordingFileName AS recordingFileName,
-        case 
-          when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
-          else records.recordingFileName
-        end as recordingFileName,
+        records.recordingFileName AS recordingFileName,
+        -- case 
+        --   when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
+        --   else records.recordingFileName
+        -- end as recordingFileName,
         records.direction AS direction,
+        records.sourceName AS sourceName,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
         team.name AS teamName
@@ -213,7 +222,15 @@ exports.getRecording = async (req, res) => {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
         AND records.origTime <= ${Number(endTimeMilisecond)}
-        AND records.sourceName = '${SOURCE_NAME.oreka}'
+        AND (
+          records.sourceName = '${SOURCE_NAME.oreka.code}'
+          or
+          (
+            records.sourceName = '${SOURCE_NAME.fs.code}'
+            and records.caller is not null
+            and records.called is not null
+          )
+        )
 	      ${query}
       ORDER BY records.origTime DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
@@ -226,7 +243,15 @@ exports.getRecording = async (req, res) => {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
         AND records.origTime <= ${Number(endTimeMilisecond)}
-        AND records.sourceName = '${SOURCE_NAME.oreka}'
+        AND (
+          records.sourceName = '${SOURCE_NAME.oreka.code}'
+          or
+          (
+            records.sourceName = '${SOURCE_NAME.fs.code}'
+            and records.caller is not null
+            and records.called is not null
+          )
+        )
 	      ${query}
     `;
 
@@ -400,6 +425,9 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
   try {
     const dataResult = await model.sequelize.query(`
       SELECT
+        case when records.sourceName = '${SOURCE_NAME.oreka.code}' then callId
+          else xmlCdrId
+        end as callId,
 	      records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
@@ -414,7 +442,15 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTime)}  
         AND records.origTime <= ${Number(endTime)}
-        AND records.sourceName = '${SOURCE_NAME.oreka}'
+        AND (
+          records.sourceName = '${SOURCE_NAME.oreka.code}'
+          or
+          (
+            records.sourceName = '${SOURCE_NAME.fs.code}'
+            and records.caller is not null
+            and records.called is not null
+          )
+        )
 	      ${query}
       ORDER BY records.origTime DESC
     `, { type: QueryTypes.SELECT });

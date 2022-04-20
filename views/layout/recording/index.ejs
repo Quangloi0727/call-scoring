@@ -75,21 +75,24 @@
         </div>
       </div>
       <div class="card-body">
-        <table id="tableRecording" class="table table-bordered table-hover">
-          <thead>
-            <tr>
-              <th class="text-center sortHeader direction">Hướng gọi</th>
-              <th class="text-center sortHeader agentName">Điện thoại viên</th>
-              <th class="text-center sortHeader teamName">Đội ngũ</th>
-              <th class="text-center sortHeader caller">Số gọi đi</th>
-              <th class="text-center sortHeader called">Số gọi đến</th>
-              <th class="text-center sortHeader origTime">Ngày giờ gọi</th>
-              <th class="text-center sortHeader duration">Thời lượng</th>
-              <th class="text-center sortHeader audioHtml col-recording">Ghi âm</th>
-            </tr>
-          </thead>
-          <tbody id="table_data"></tbody>
-        </table>
+        <div class="primary" >
+          <table id="tableRecording" class="table table-bordered table-hover">
+            <thead>
+              <tr>
+                <th class="text-center sortHeader direction">Hướng gọi</th>
+                <th class="text-center sortHeader agentName">Điện thoại viên</th>
+                <th class="text-center sortHeader teamName">Đội ngũ</th>
+                <th class="text-center sortHeader caller">Số gọi đi</th>
+                <th class="text-center sortHeader called">Số gọi đến</th>
+                <th class="text-center sortHeader origTime">Ngày giờ gọi</th>
+                <th class="text-center sortHeader duration">Thời lượng</th>
+                <th class="text-center sortHeader sourceName">Nguồn</th>
+                <th class="text-center sortHeader audioHtml col-recording">Ghi âm</th>
+              </tr>
+            </thead>
+            <tbody id="table_data"></tbody>
+          </table>
+        </div>
       </div>
       <div class="card-footer text-center">
         <div class="col-12 d-flex justify-content-center" id="paging_table"></div>
@@ -315,6 +318,15 @@
               <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
             </span>
           </li>
+
+          <li class="mb-3 border-bottom">
+            <input class="form-check-input" type="checkbox" name="sourceName" />
+            Nguồn
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>
+          
           <li class="mb-3 border-bottom">
             <input class="form-check-input" type="checkbox" name="audioHtml" />
             Ghi âm
