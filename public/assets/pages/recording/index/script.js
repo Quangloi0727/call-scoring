@@ -93,6 +93,13 @@ function bindClick() {
     } else if (searchType === ADVANCED_SEARCH) {
       formData = getFormData('form_advanced_search');
     }
+    const sortDescActive = $('.sorting_desc');
+    const sortAscActive = $('.sorting_asc');
+    if(sortDescActive.length > 0){
+      formData.sort = {sort_by: $(sortDescActive[0]).attr('id-sort'), sort_type: 'DESC' }
+    }else if(sortAscActive.length > 0){
+      formData.sort = {sort_by: $(sortAscActive[0]).attr('id-sort'), sort_type: 'ASC' }
+    }// TH con lai: ko sort
 
     return findData(null, true, formData);
   });
@@ -203,7 +210,7 @@ function bindClick() {
       formData.sort = {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
     }
 
-    debugger
+    // debugger
     return findData(1, null, formData);
   });
 
@@ -328,7 +335,7 @@ function createTable(data, ConfigurationColums, queryData) {
 
   console.log(data);
   if (ConfigurationColums) {
-    let objColums = JSON.parse(ConfigurationColums);
+    let objColums = {...ConfigurationColums};
     //header table
     let headerTable = '';
     let popupHtml = ''

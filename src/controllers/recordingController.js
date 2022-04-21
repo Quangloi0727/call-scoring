@@ -33,11 +33,12 @@ const SOURCE_NAME = {
   },
 };
 
+// cấu hình bảng mặc định
 let headerDefault = {
   callId: "ID cuộc gọi",
   direction: "Hướng gọi",
   agentName: "Điện thoại viên",
-  teamName: "Nhóm",
+  teamName: "Đội ngũ",
   caller: "Số gọi đi",
   called: "Số gọi đến",
   origTime: "Ngày giờ gọi",
@@ -226,8 +227,9 @@ exports.getRecording = async (req, res) => {
       order = `ORDER BY records.${sort.sort_by} ${sort.sort_type}`
     }
 
+    const ConfigurationColums = await getConfigurationColums(req.user.id);
     if (exportExcel && exportExcel == 1) {
-      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order);
+      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums);
     }
     
     let queryData = `
@@ -298,12 +300,11 @@ exports.getRecording = async (req, res) => {
       rowsPerPage: limit,
       totalResult: totalData && totalData[0] && totalData[0].total || 0
     });
-    const ConfigurationColums = await getConfigurationColums(req.user.id);
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
-      ConfigurationColums: ConfigurationColums && ConfigurationColums.data && ConfigurationColums.data[0] ? ConfigurationColums.data[0].configurationColums : null,
+      ConfigurationColums: ConfigurationColums,
       paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
     });
   } catch (error) {
@@ -345,7 +346,7 @@ exports.SaveConfigurationColums = async (req, res) => {
 function getConfigurationColums(userId) {
   return new Promise(async (resolve, reject) => {
     try {
-      const resulds = await model.sequelize.query(
+      const result = await model.sequelize.query(
         `
         SELECT *
         FROM dbo.configurationColums  
@@ -353,8 +354,10 @@ function getConfigurationColums(userId) {
         `,
         { type: QueryTypes.SELECT }
       );
-
-      return resolve({ data: resulds });
+      if(result && result[0] && result[0].configurationColums){
+        return resolve(JSON.parse(result[0].configurationColums))
+      }
+      return resolve(null);
     } catch (error) {
       return reject(error);
     }
@@ -454,7 +457,7 @@ function handleData(data, privatePhoneNumber = false) {
   return newData;
 }
 
-async function exportExcelHandle(req, res, startTime, endTime, query, order) {
+async function exportExcelHandle(req, res, startTime, endTime, query, order, ConfigurationColums) {
   try {
     const dataResult = await model.sequelize.query(`
       SELECT
@@ -466,6 +469,7 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order) {
 	      records.duration AS duration,
 	      records.recordingFileName AS recordingFileName,
         records.direction AS direction,
+        records.sourceName AS sourceName,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
         team.name AS teamName
@@ -489,7 +493,7 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order) {
 
     const dataHandleResult = handleData(dataResult, _config.privatePhoneNumberExcel);
 
-    const linkFile = await createExcelFile(startTime, endTime, dataHandleResult);
+    const linkFile = await createExcelFile(startTime, endTime, dataHandleResult, ConfigurationColums);
 
     return res.status(SUCCESS_200.code).json({ linkFile: linkFile });
   } catch (error) {
@@ -497,34 +501,66 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order) {
   }
 }
 
-function createExcelFile(startDate, endDate, data) {
+function createExcelFile(startDate, endDate, data, ConfigurationColums) {
   return new Promise(async (resolve, reject) => {
     try {
 
       let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY');
       let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY');
 
-      let titleExcel = {
-        TXT_DIRECTION: 'Hướng gọi',
-        TXT_USER_NAME: 'Điện thoại viên',
-        TXT_TEAM_NAME: 'Nhóm',
-        TXT_CALLER: 'Số gọi đi',
-        TXT_CALLED: 'Số gọi đến	',
-        TXT_CREATE_TIME: 'Ngày giờ gọi',
-        TXT_DURATION: 'Thời lượng'
-      }
+      // default
+      let keysTitleExcel = [
+        "direction",
+        "agentName",
+        "teamName",
+        "caller",
+        "called",
+        "origTime",
+        "duration",
+      ];
 
-      let dataHeader = {
-        TXT_DIRECTION: 'direction',
-        TXT_USER_NAME: 'agentName',
-        TXT_TEAM_NAME: 'teamName',
-        TXT_CALLER: "caller",
-        TXT_CALLED: "called",
-        TXT_CREATE_TIME: "origTime",
-        TXT_DURATION: "duration",
+      let titleExcel = {};
+      let dataHeader = {};
+
+
+
+      if(ConfigurationColums){
+        Object.keys(ConfigurationColums).forEach(i => {
+          
+          if(i == 'audioHtml' || ConfigurationColums[i] == 'false') return; // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
+          
+          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i];
+          dataHeader[`TXT_${i.toUpperCase()}`] = i;
+        });
+      }else {
+        Object.keys(keysTitleExcel).forEach(i => {
+          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i];
+          dataHeader[`TXT_${i.toUpperCase()}`] = i;
+        });
       }
+      // {
+      //   TXT_DIRECTION: 'Hướng gọi',
+      //   TXT_USER_NAME: 'Điện thoại viên',
+      //   TXT_TEAM_NAME: 'Nhóm',
+      //   TXT_CALLER: 'Số gọi đi',
+      //   TXT_CALLed: 'Số gọi đến	z',
+      //   TXT_CREATE_TIME: 'Ngày giờ gọi',
+      //   TXT_DURATION: 'Thời lượng'
+      // }
+
+      // let dataHeader = {
+      //   TXT_DIRECTION: 'direction',
+      //   TXT_USER_NAME: 'agentName',
+      //   TXT_TEAM_NAME: 'teamName',
+      //   TXT_CALLER: "caller",
+      //   TXT_CALLed: "called",
+      //   TXT_CREATE_TIME: "origTime",
+      //   TXT_DURATION: "duration",
+      // }
 
       let newData = data.map((item) => {
+        item.callId = item.callId || item.xmlCdrId;
+
         agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
 
         return {
