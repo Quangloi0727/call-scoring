@@ -49,7 +49,7 @@
   border-radius: 35px;
 }
 
-.col-recording {
+td.audioHtml {
   width: 350px !important;
 }
 
@@ -74,4 +74,90 @@
   background-color: #edf2f7;
   border: 2px dashed #cbd5e0;
   margin-bottom: 1rem;
+}
+
+.primary {
+  overflow-y: auto;
+  scroll-snap-type: both mandatory;
+  /* height: 80vh; */
+}
+
+table thead .sorting {
+  background-image: url(/dist/img/sort_both.png) !important;
+  cursor: pointer;
+  *cursor: hand;
+  background-repeat: no-repeat;
+  background-position: center right;
+}
+
+table thead .sorting_asc {
+  background-image: url(/dist/img/sort_asc.png) !important;
+}
+
+table thead .sorting_desc {
+  background-image: url(/dist/img/sort_desc.png) !important;
+}
+
+.ui-sortable li{
+  cursor: pointer;
+  list-style-type: none;
+}
+
+li.unsortable{
+  cursor: not-allowed;
+}
+
+/*
+table {
+ border-collapse: collapse;
+  border: 0;
+} */
+
+th,
+td {
+  /* border: 1px solid #aaa; */
+  background-clip: padding-box;
+  scroll-snap-align: start;
+}
+tbody tr:last-child th,
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+thead {
+  z-index: 1000;
+  position: relative;
+}
+th,
+td {
+  padding: 0.6rem;
+  min-width: 6rem;
+  text-align: left;
+  margin: 0;
+}
+thead th {
+  position: sticky;
+  top: 0;
+  border-top: 0;
+  background-clip: padding-box;
+}
+thead th.fix {
+  left: 0;
+  z-index: 1001;
+  border-left: 0;
+}
+tbody th {
+  background-clip: padding-box;
+  border-left: 0;
+}
+tbody {
+  z-index: 10;
+  position: relative;
+}
+tbody th {
+  position: sticky;
+  left: 0;
+}
+thead th,
+tbody th {
+  background-color: #f8f8f8;
 }

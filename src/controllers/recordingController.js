@@ -23,9 +23,29 @@ const model = require('../models');
 const ConfigurationColumsModel = require('../models/configurationcolums');
 const titlePage = 'Danh sách cuộc gọi';
 const SOURCE_NAME = {
-  oreka : 'ORK',
-  fs : 'FS',
+  oreka : {
+    code: 'ORK',
+    text: 'Orec'
+  },
+  fs :{
+    code: 'FS',
+    text: 'Freeswitch'
+  },
+};
+
+let headerDefault = {
+  callId: "ID cuộc gọi",
+  direction: "Hướng gọi",
+  agentName: "Điện thoại viên",
+  teamName: "Nhóm",
+  caller: "Số gọi đi",
+  called: "Số gọi đến",
+  origTime: "Ngày giờ gọi",
+  duration: "Thời lượng",
+  audioHtml: "Ghi âm",
+  sourceName: "Nguồn ghi âm",
 }
+
 
 exports.index = async (req, res, next) => {
   try {
@@ -59,6 +79,8 @@ exports.index = async (req, res, next) => {
       title: titlePage,
       titlePage: titlePage,
       rules: user.rules,
+      headerDefault,
+      SOURCE_NAME,
       SYSTEM_RULE,
       teamsDetail:  _.uniqBy(teamsDetail, 'memberId'), // master data
       teams: _.uniqBy(teamsDetail, 'teamId') || [],
@@ -85,12 +107,21 @@ exports.getRecording = async (req, res) => {
       userName,
       teamName,
       callDirection,
-      teams
+      teams, 
+      callId, 
+      sourceName, 
+      sort // sort: {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
     } = req.query;
     let { limit } = req.query;
     let { user } = req;
     
     if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+
+    if(sort && !['ASC', 'DESC'].includes(sort.sort_type)){
+      return res.status(ERR_400.code).json({
+        message: ERR_400.message_detail.sortTypeInValid
+      });
+    }
     
     limit = Number(limit);
 
@@ -98,6 +129,7 @@ exports.getRecording = async (req, res) => {
     const offset = (pageNumber * limit) - limit;
     let userIdFilter = [];
     let query = '';
+    let order = 'ORDER BY records.origTime DESC';
     let isAdmin = false;
     let limitTimeExpires;
 
@@ -183,28 +215,38 @@ exports.getRecording = async (req, res) => {
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `;
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
     if (teams) query += `AND team.id IN (${teams.toString()}) `;
+    if (callId) query += `AND records.callId LIKE '%${callId.toString()}%' `;
+    if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `;
 
     // limit time by rule
     if(limitTimeExpires > startTimeMilisecond) startTimeMilisecond = limitTimeExpires;
 
+    // sort
+    if(sort){
+      order = `ORDER BY records.${sort.sort_by} ${sort.sort_type}`
+    }
+
     if (exportExcel && exportExcel == 1) {
-      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query);
+      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order);
     }
     
     let queryData = `
       DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
 
       SELECT
-	      records.caller AS caller,
+        records.callId AS callId,
+        records.xmlCdrId AS xmlCdrId,
+        records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
 	      records.duration AS duration,
-        -- records.recordingFileName AS recordingFileName,
-        case 
-          when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
-          else records.recordingFileName
-        end as recordingFileName,
+        records.recordingFileName AS recordingFileName,
+        -- case 
+        --   when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
+        --   else records.recordingFileName
+        -- end as recordingFileName,
         records.direction AS direction,
+        records.sourceName AS sourceName,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
         team.name AS teamName
@@ -213,9 +255,17 @@ exports.getRecording = async (req, res) => {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
         AND records.origTime <= ${Number(endTimeMilisecond)}
-        AND records.sourceName = '${SOURCE_NAME.oreka}'
+        AND (
+          records.sourceName = '${SOURCE_NAME.oreka.code}'
+          or
+          (
+            records.sourceName = '${SOURCE_NAME.fs.code}'
+            and records.caller is not null
+            and records.called is not null
+          )
+        )
 	      ${query}
-      ORDER BY records.origTime DESC
+        ${order}
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `;
 
@@ -226,7 +276,15 @@ exports.getRecording = async (req, res) => {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
         AND records.origTime <= ${Number(endTimeMilisecond)}
-        AND records.sourceName = '${SOURCE_NAME.oreka}'
+        AND (
+          records.sourceName = '${SOURCE_NAME.oreka.code}'
+          or
+          (
+            records.sourceName = '${SOURCE_NAME.fs.code}'
+            and records.caller is not null
+            and records.called is not null
+          )
+        )
 	      ${query}
     `;
 
@@ -268,7 +326,7 @@ exports.SaveConfigurationColums = async (req, res) => {
       { where: { userId: Number(req.user.id) } },
       { transaction: transaction }
     );
-    if (!result) {
+    if (result[0] == 0) {
       const _result = await ConfigurationColumsModel.create(data, { transaction: transaction });
     }
     await transaction.commit();
@@ -396,10 +454,12 @@ function handleData(data, privatePhoneNumber = false) {
   return newData;
 }
 
-async function exportExcelHandle(req, res, startTime, endTime, query) {
+async function exportExcelHandle(req, res, startTime, endTime, query, order) {
   try {
     const dataResult = await model.sequelize.query(`
       SELECT
+        records.callId AS callId,
+        records.xmlCdrId AS xmlCdrId,
 	      records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
@@ -414,9 +474,17 @@ async function exportExcelHandle(req, res, startTime, endTime, query) {
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
       WHERE records.origTime >= ${Number(startTime)}  
         AND records.origTime <= ${Number(endTime)}
-        AND records.sourceName = '${SOURCE_NAME.oreka}'
+        AND (
+          records.sourceName = '${SOURCE_NAME.oreka.code}'
+          or
+          (
+            records.sourceName = '${SOURCE_NAME.fs.code}'
+            and records.caller is not null
+            and records.called is not null
+          )
+        )
 	      ${query}
-      ORDER BY records.origTime DESC
+        ${order}
     `, { type: QueryTypes.SELECT });
 
     const dataHandleResult = handleData(dataResult, _config.privatePhoneNumberExcel);

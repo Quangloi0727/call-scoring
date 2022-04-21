@@ -21,6 +21,15 @@ const $btn_save_customs = $("#btn_save_customs")
 let searchType = DEFAULT_SEARCH;
 
 function bindClick() {
+
+  // // const socket = io("http://localhost:6868",{ transports: ["websocket"] });
+  // const socket = io("http://f88.lab.local/chat-server",{ transports: ["websocket"] });
+  // // const socket = io("http://172.16.88.127:3000",{ transports: ["websocket"] });
+
+  // socket.on("connect", () => {
+  //   console.log('socket.disconnected', socket.disconnected); // false
+  // });
+
   $buttonSearch.on('click', function (e) {
     let page = 1;
     let formData = getFormData('form_search');
@@ -117,7 +126,9 @@ function bindClick() {
 
 
   // event popup custom table
-  $("#sortable").sortable();
+  $("#sortable").sortable({
+    items: "li:not(.unsortable)"
+  });
 
   // $checkInput.prop('checked', true);
 
@@ -131,6 +142,7 @@ function bindClick() {
     $checkInput.each(function (index) {
       // đoạn này e check và cho ẩn hiện luôn ko có save data nguyenvc
       var colToHide = $tableRecording.find("." + $(this).attr("name"));
+      
       if ($(this).is(":checked") == false) {
 
         $(colToHide).toggle(false);
@@ -147,6 +159,8 @@ function bindClick() {
       obj[key] = value
 
     });
+    console.log(obj);
+    // debugger;
     SaveConfigurationColums(obj);
   });
 
@@ -158,9 +172,39 @@ function bindClick() {
       });
     } else {
       $(':checkbox').each(function () {
+        console.log($(this).attr('name'));
+        if($(this).attr('name') == 'callId') return;
         this.checked = false;
+
       });
     }
+  });
+
+  $(document).on('click', '.sorting', function (event) {
+    // debugger
+    const target = $(event.currentTarget);
+    // let hasDesc = $(event).hasClass('sorting_desc');
+    let formData = {};
+
+    if (searchType === DEFAULT_SEARCH) {
+      formData = getFormData('form_search');
+    } else if (searchType === ADVANCED_SEARCH) {
+      formData = getFormData('form_advanced_search');
+    }
+
+    if(target.hasClass('sorting_desc')){
+      target.removeClass('sorting_desc').addClass('sorting_asc');
+      formData.sort = {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
+    }else if(target.hasClass('sorting_asc')){
+      target.removeClass('sorting_asc').addClass('sorting_desc')
+      formData.sort = {sort_by: target.attr('id-sort'), sort_type: 'DESC' }
+    }else {
+      target.removeClass('sorting_desc').addClass('sorting_asc')
+      formData.sort = {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
+    }
+
+    debugger
+    return findData(1, null, formData);
   });
 
   $(document).on('change', '.sl-limit-page', function () {
@@ -230,7 +274,7 @@ function findData(page, exportExcel, queryData) {
         return downloadFromUrl(result.linkFile);
       }
 
-      createTable(result.data, result.ConfigurationColums);
+      createTable(result.data, result.ConfigurationColums, queryData);
       return $('#paging_table').html(window.location.CreatePaging(result.paginator));
 
     },
@@ -268,18 +312,20 @@ function handleAudio() {
     })
   }, 50);
 }
-function createTable(data, ConfigurationColums) {
+
+function itemColumn(key, title, value) {
+  return `<li class="mb-3 border-bottom ${key == 'callId' ? "unsortable" :""}">
+        <input class="form-check-input" type="checkbox" name="${key}" ${key== 'callId' ? 'disabled': ''} ${key== 'callId' || value == 'true' ? 'checked' : ''}/>
+        ${title} <i class="fas fa-arrows"></i>
+        <span style="float: right;">
+        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+        </span>
+  </li>`
+}
+
+function createTable(data, ConfigurationColums, queryData) {
   let html = '';
-  let headerDefault = {
-    direction: "Hướng gọi",
-    agentName: "Điện thoại viên",
-    teamName: "Nhóm",
-    caller: "Số gọi đi",
-    called: "Số gọi đến",
-    origTime: "Ngày giờ gọi",
-    duration: "Thời lượng",
-    audioHtml: "Ghi âm"
-  }
+
   console.log(data);
   if (ConfigurationColums) {
     let objColums = JSON.parse(ConfigurationColums);
@@ -287,16 +333,20 @@ function createTable(data, ConfigurationColums) {
     let headerTable = '';
     let popupHtml = ''
     for (const [key, value] of Object.entries(objColums)) {
-      headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' ? '' : 'd-none'}">${headerDefault[key]}</th>`;
-      popupHtml += `<li class="mb-3 border-bottom">
-        <input class="form-check-input" type="checkbox" name="${key}" ${value == 'true' ? '' : 'checked'}/>
-        ${headerDefault[key]} <i class="fas fa-arrows"></i>
-        <span style="float: right;">
-        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
-        </span>
-      </li>`
+      // console.log(key, value);
+      let fixed = (key == 'callId' ? 'fix': '');
+      let sorting = (key == 'duration' ? 'sorting': '');
+      if(queryData.sort && queryData.sort.sort_by == key){
+        sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
+      }
+      headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`;
+      popupHtml += itemColumn(key, headerDefault[key], value);
     }
-    console.log(popupHtml);
+    let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(objColums));
+      columnNotTick.forEach(i => {
+      popupHtml += itemColumn(i, headerDefault[i], false);
+    });
+    
     $('#tableRecording tr').html(headerTable);
     $('#sortable').html(popupHtml)
 
@@ -317,9 +367,17 @@ function createTable(data, ConfigurationColums) {
       }
       let tdTable = ''
       for (const [key, value] of Object.entries(objColums)) {
-        if (key == 'audioHtml' && value == 'true') { tdTable += audioHtml }
-        else if (key == 'agentName' && value == 'true') { tdTable += ` <td class="text-center agentName">${agentName}</td>` }
-        else { tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>` }
+        if (key == 'audioHtml' && value == 'true') { 
+          tdTable += audioHtml
+        }
+        else if (key == 'agentName' && value == 'true') { 
+          tdTable += ` <td class="text-center agentName">${agentName}</td>` 
+        } else if (key == 'callId' && (item[key] || item['xmlCdrId'] ) ) { 
+          tdTable += ` <th class="text-center callId fix"> <div>${item[key] || item['xmlCdrId']}</div> </th>` 
+        }
+        else { 
+          tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>` 
+        }
       }
       html += `
       <tr data-ele="${element}">
@@ -328,6 +386,20 @@ function createTable(data, ConfigurationColums) {
       `
     });
     $tableData.html(html);
+    console.log('co vao day');
+    // $tableData.closest('#tableRecording').DataTable({
+    //   // scrollY:        "200px",
+    //     scrollX:        true,
+    //     scrollCollapse: false,
+    //     paging:         false,
+    //     responsive: true,
+    //     searching: false,
+    //     "ordering": false,
+    //     fixedColumns:   {
+    //         left: 2
+    //     }
+    // });
+
     // handleAudio();
     return ;
   }
@@ -345,18 +417,41 @@ function createTable(data, ConfigurationColums) {
         `;
       }
 
+      let tdTable = ''
+      Object.keys(headerDefault).forEach((key) => {
+        // const ele = headerDefault[key];
+        if (key == 'audioHtml') { 
+        console.log(key, audioHtml);
+        tdTable += `<td class="text-center audioHtml">${audioHtml}</td>`
+        }
+        else if (key == 'agentName') { 
+          tdTable += ` <td class="text-center agentName">${agentName}</td>` 
+        } else if (key == 'callId' && (item[key] || item['xmlCdrId'] ) ) { 
+          tdTable += ` <th class="text-center callId fix"> <div>${item[key] || item['xmlCdrId']}</div> </th>` 
+        }
+        else { 
+          tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>` 
+        }
+      });
+
       html += `
-        <tr data-ele="${element}">
-          <td class="text-center direction">${item.direction || ''}</td>
-          <td class="text-center agentName">${agentName}</td>
-          <td class="text-center teamName">${item.teamName || ''}</td>
-          <td class="text-center caller">${item.caller}</td>
-          <td class="text-center called">${item.called}</td>
-          <td class="text-center origTime">${item.origTime}</td>
-          <td class="text-center duration">${item.duration}</td>
-          <td class="text-center audioHtml">${audioHtml}</td>
-        </tr>
-      `;
+      <tr data-ele="${element}">
+        ${tdTable}
+      </tr>`
+
+      // html += `
+      //   <tr data-ele="${element}">
+      //     <td class="text-center direction">${item.direction || ''}</td>
+      //     <td class="text-center agentName">${agentName}</td>
+      //     <td class="text-center teamName">${item.teamName || ''}</td>
+      //     <td class="text-center caller">${item.caller}</td>
+      //     <td class="text-center called">${item.called}</td>
+      //     <td class="text-center origTime">${item.origTime}</td>
+      //     <td class="text-center duration">${item.duration}</td>
+      //     <td class="text-center audioHtml">${audioHtml}</td>
+      //   </tr>
+      // `;
+      
     });
 
     $tableData.html(html);
