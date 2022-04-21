@@ -1,3 +1,5 @@
+// https://codepen.io/scottjehl/pen/abJrPOP
+
 const $buttonSearch = $('#search');
 const $buttonExportExcel = $('#export_excel')
 const $formSearch = $('#form_search');
@@ -19,6 +21,10 @@ const $tableRecording = $("#tableRecording");
 const $selectAll = $("#select-all");
 const $btn_save_customs = $("#btn_save_customs")
 let searchType = DEFAULT_SEARCH;
+
+// WARNING
+// CACHE
+let CACHE_CONFIG_COLUMN = {};
 
 function bindClick() {
 
@@ -157,7 +163,7 @@ function bindClick() {
       } else {
         $(colToHide).toggle(true);
       }
-      return $modal_customs_table.modal('hide');
+      
     });
     let obj = {}
     $("#sortable input:checkbox").each(function () {
@@ -225,7 +231,18 @@ function bindClick() {
     }
 
     return findData(1, null, formData);
-  })
+  });
+
+  $modal_customs_table.on('show.bs.modal', function (event) {
+    // debugger
+    console.log('show.bs.modal');
+    if(CACHE_CONFIG_COLUMN){
+      renderPopupCustomColumn(CACHE_CONFIG_COLUMN);
+    }else {
+      renderPopupCustomColumn(headerDefault, true);
+    }
+  });
+
 
 }
 
@@ -237,10 +254,20 @@ function SaveConfigurationColums(data) {
     data: data,
     dataType: "text",
     success: function () {
-      return location.reload();
+      let formData = {};
+      $modal_customs_table.modal('hide');
+      if (searchType === DEFAULT_SEARCH) {
+        formData = getFormData('form_search');
+      } else if (searchType === ADVANCED_SEARCH) {
+        formData = getFormData('form_advanced_search');
+      }
+
+      return findData(1, null, formData);
+
+      // return location.reload();
     },
     error: function (error) {
-
+      $modal_customs_table.modal('hide');
       return toastr.error(JSON.parse(error.responseText).message);
     },
   });
@@ -280,6 +307,7 @@ function findData(page, exportExcel, queryData) {
       if (exportExcel) {
         return downloadFromUrl(result.linkFile);
       }
+      CACHE_CONFIG_COLUMN = result.ConfigurationColums;
 
       createTable(result.data, result.ConfigurationColums, queryData);
       return $('#paging_table').html(window.location.CreatePaging(result.paginator));
@@ -321,6 +349,7 @@ function handleAudio() {
 }
 
 function itemColumn(key, title, value) {
+  debugger;
   return `<li class="mb-3 border-bottom ${key == 'callId' ? "unsortable" :""}">
         <input class="form-check-input" type="checkbox" name="${key}" ${key== 'callId' ? 'disabled': ''} ${key== 'callId' || value == 'true' ? 'checked' : ''}/>
         ${title} <i class="fas fa-arrows"></i>
@@ -329,6 +358,40 @@ function itemColumn(key, title, value) {
         </span>
   </li>`
 }
+/**
+ *  
+ * @param {*} ConfigurationColums 
+ * @param {*} init nếu là true: lần khởi tạo đầu tiên nếu không có column
+ */
+function renderPopupCustomColumn(ConfigurationColums, init = false) {
+  let popupHtml = '';
+  for (const [key, value] of Object.entries(ConfigurationColums)) {
+    popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true': value);
+  }
+  let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(ConfigurationColums));
+  columnNotTick.forEach(i => {
+    popupHtml += itemColumn(i, headerDefault[i], false);
+  });
+  
+  $('#sortable').html(popupHtml);
+
+}
+
+function renderHeaderTable(ConfigurationColums, queryData) {
+  let headerTable = '';
+  for (const [key, value] of Object.entries(ConfigurationColums)) {
+    // console.log(key, value);
+    let fixed = (key == 'callId' ? 'fix': '');
+    let sorting = (key == 'duration' ? 'sorting': '');
+    if(queryData.sort && queryData.sort.sort_by == key){
+      sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
+    }
+    headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`;
+  }
+    
+  $('#tableRecording tr').html(headerTable);
+
+}
 
 function createTable(data, ConfigurationColums, queryData) {
   let html = '';
@@ -336,26 +399,8 @@ function createTable(data, ConfigurationColums, queryData) {
   console.log(data);
   if (ConfigurationColums) {
     let objColums = {...ConfigurationColums};
-    //header table
-    let headerTable = '';
-    let popupHtml = ''
-    for (const [key, value] of Object.entries(objColums)) {
-      // console.log(key, value);
-      let fixed = (key == 'callId' ? 'fix': '');
-      let sorting = (key == 'duration' ? 'sorting': '');
-      if(queryData.sort && queryData.sort.sort_by == key){
-        sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
-      }
-      headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`;
-      popupHtml += itemColumn(key, headerDefault[key], value);
-    }
-    let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(objColums));
-      columnNotTick.forEach(i => {
-      popupHtml += itemColumn(i, headerDefault[i], false);
-    });
-    
-    $('#tableRecording tr').html(headerTable);
-    $('#sortable').html(popupHtml)
+    renderPopupCustomColumn(ConfigurationColums);
+    renderHeaderTable(ConfigurationColums, queryData);
 
     // body data
     data.forEach((item, element) => {
@@ -542,5 +587,6 @@ $(window).on('beforeunload', function () {
   $buttonExportExcel.off('click');
   $buttonCancelModal.off('click');
   $buttonClearFilter.off('click');
+  $(document).off('click', '.sorting');
   $(document).off('click', '.zpaging');
 });
