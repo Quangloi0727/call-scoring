@@ -19,12 +19,13 @@ const $modal_customs_table = $("#modal_customs_table");
 const $checkInput = $("#sortable input:checkbox");
 const $tableRecording = $("#tableRecording");
 const $selectAll = $("#select-all");
-const $btn_save_customs = $("#btn_save_customs")
+const $btn_save_customs = $("#btn_save_customs");
+const $resetColumnCustom = $("#resetColumnCustom");
 let searchType = DEFAULT_SEARCH;
 
 // WARNING
 // CACHE
-let CACHE_CONFIG_COLUMN = {};
+let CACHE_CONFIG_COLUMN = null;
 
 function bindClick() {
 
@@ -136,7 +137,46 @@ function bindClick() {
     return;
   });
 
+  $resetColumnCustom.on('click', async () => {
+    // xóa data column
+    await deleteSaveColumn();
+    // reset tick
+    renderPopupCustomColumn(headerDefault, true);
+    // xóa cache
+    CACHE_CONFIG_COLUMN = null;
 
+    // reload data theo cache
+    let formData = {};
+
+    if (searchType === DEFAULT_SEARCH) {
+      formData = getFormData('form_search');
+    } else if (searchType === ADVANCED_SEARCH) {
+      formData = getFormData('form_advanced_search');
+    }
+    // ve lai header
+    renderHeaderTable(headerDefault, formData, true)
+    return findData(1, null, formData);
+  });
+
+  function deleteSaveColumn() {
+    return new Promise((resolve, reject) => {
+      $('.page-loader').show();
+
+      $.ajax({
+        type: 'DELETE',
+        url: '/recording/SaveConfigurationColums',
+        cache: 'false',
+        success: function (result) {
+          $('.page-loader').hide();
+          resolve('success');
+        },
+        error: function (error) {
+          $('.page-loader').hide();
+          reject(error.responseJSON.message);
+        },
+      });
+    }); 
+  }
 
   // event popup custom table
   $("#sortable").sortable({
@@ -308,7 +348,7 @@ function findData(page, exportExcel, queryData) {
         return downloadFromUrl(result.linkFile);
       }
       CACHE_CONFIG_COLUMN = result.ConfigurationColums;
-
+// debugger
       createTable(result.data, result.ConfigurationColums, queryData);
       return $('#paging_table').html(window.location.CreatePaging(result.paginator));
 
@@ -349,10 +389,10 @@ function handleAudio() {
 }
 
 function itemColumn(key, title, value) {
-  debugger;
+  // debugger;
   return `<li class="mb-3 border-bottom ${key == 'callId' ? "unsortable" :""}">
         <input class="form-check-input" type="checkbox" name="${key}" ${key== 'callId' ? 'disabled': ''} ${key== 'callId' || value == 'true' ? 'checked' : ''}/>
-        ${title} <i class="fas fa-arrows"></i>
+        ${title}
         <span style="float: right;">
         <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
         </span>
@@ -377,8 +417,9 @@ function renderPopupCustomColumn(ConfigurationColums, init = false) {
 
 }
 
-function renderHeaderTable(ConfigurationColums, queryData) {
+function renderHeaderTable(ConfigurationColums, queryData, init = false) {
   let headerTable = '';
+  // debugger
   for (const [key, value] of Object.entries(ConfigurationColums)) {
     // console.log(key, value);
     let fixed = (key == 'callId' ? 'fix': '');
@@ -386,10 +427,10 @@ function renderHeaderTable(ConfigurationColums, queryData) {
     if(queryData.sort && queryData.sort.sort_by == key){
       sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
     }
-    headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`;
+    headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' || init == true ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`;
   }
     
-  $('#tableRecording tr').html(headerTable);
+  $('#tableRecording thead tr').html(headerTable);
 
 }
 
@@ -587,6 +628,7 @@ $(window).on('beforeunload', function () {
   $buttonExportExcel.off('click');
   $buttonCancelModal.off('click');
   $buttonClearFilter.off('click');
+  $resetColumnCustom.off('click');
   $(document).off('click', '.sorting');
   $(document).off('click', '.zpaging');
 });

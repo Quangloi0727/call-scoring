@@ -343,6 +343,30 @@ exports.SaveConfigurationColums = async (req, res) => {
   }
 }
 
+exports.deleteConfigurationColums = async (req, res) => {
+  let transaction;
+  try {
+    const data = {}
+    data.userId = req.user.id;
+    transaction = await model.sequelize.transaction();
+    const result = await model.ConfigurationColums.destroy(
+      { where: { userId: Number(req.user.id) } },
+      { transaction: transaction }
+    );
+
+    await transaction.commit();
+    return res.status(SUCCESS_200.code).json({
+      message: 'Success!',
+    });
+  } catch (error) {
+    console.log(`------- error ------- deleteConfigurationColums`);
+    console.log(error);
+    console.log(`------- error ------- deleteConfigurationColums`);
+
+    return res.status(ERR_500.code).json({ message: error.message });
+  }
+}
+
 function getConfigurationColums(userId) {
   return new Promise(async (resolve, reject) => {
     try {
