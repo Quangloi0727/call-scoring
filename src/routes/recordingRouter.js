@@ -9,4 +9,5 @@ router.route('/list')
   .get(recordingController.getRecording);
 router.route('/SaveConfigurationColums')
   .post(recordingController.SaveConfigurationColums)
+  .delete(recordingController.deleteConfigurationColums)
 module.exports = router;
