@@ -95,6 +95,17 @@ const OP_TIME_DEFINE = {
     }
 }
 
+const OP_UNIT_DISPLAY = {
+    phanTram: {
+        t: 'Phần trăm',
+        n: 0,
+    },
+    diem: {
+        t: 'Điểm',
+        n: 1,
+    },
+}
+
 module.exports = {
     TYPE_ADS,
     TYPE_NOTE,
@@ -103,5 +114,6 @@ module.exports = {
     TYPE_ROLETYPE,
     USER_ROLE_NOT_ADMIN,
     SYSTEM_RULE,
-    OP_TIME_DEFINE
+    OP_TIME_DEFINE,
+    OP_UNIT_DISPLAY
 };
