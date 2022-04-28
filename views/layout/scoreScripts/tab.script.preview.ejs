@@ -1,0 +1,18 @@
+<div class="tab-pane fade" id="tab-score-script-preview" role="tabpanel"
+    aria-labelledby="custom-tabs-three-messages-tab">
+    <div class="form-group row">
+        <label for="description" class="col-sm-2 col-form-label">Trạng thái <span
+                class="text-danger">*</span></label>
+        <div class="col-sm-3">
+            <select class="form-control selectpicker input" name="status" id="status"
+                >
+                <% Object.keys(STATUS_SCORE_SCRIPT).forEach((item)=> { %>
+                <option value="<%= STATUS_SCORE_SCRIPT[item].n %>" <%= STATUS_SCORE_SCRIPT[item].default ? STATUS_SCORE_SCRIPT[item].default : null %>>
+                    <%= STATUS_SCORE_SCRIPT[item].t %>
+                </option>
+                <% }); %>
+
+            </select>
+        </div>
+    </div>
+</div>

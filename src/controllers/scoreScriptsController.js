@@ -13,7 +13,8 @@ const {
 } = require("../helpers/constants/statusCodeHTTP");
 const {
   USER_ROLE,
-  OP_UNIT_DISPLAY
+  OP_UNIT_DISPLAY,
+  STATUS_SCORE_SCRIPT
 } = require("../helpers/constants/statusField");
 
 const titlePage = 'Kịch bản chấm điểm';
@@ -321,6 +322,7 @@ exports.new = async (req, res, next) => {
       group: groupInfo,
       users: users,
       OP_UNIT_DISPLAY,
+      STATUS_SCORE_SCRIPT
     });
   } catch (error) {
     console.log(`------- error ------- `);

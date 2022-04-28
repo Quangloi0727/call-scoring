@@ -1,5 +1,5 @@
 $(function () {
-  const $formEditGroup = $("#form_edit_group");
+  const $formEditGroup = $("#form_new_scoreSripts");
   const $formDeleteGroup = $("#form_delete_group");
   const $inputName = $("#form_edit_group #name");
   const $inputLeader = $("#form_edit_group #leader");
@@ -13,12 +13,12 @@ $(function () {
   const $buttonSearchMember = $("#btn_search_member");
 
   const $addCriteriaGroup = $(".add-criteria-group"); // nút thêm nhóm tiêu chí
-  const $addCriteria = $(".add-criteria"); // nút thêm tiêu chí
-  const $addSelectionCriteria = $(".add-selection-criteria"); // nút thêm lựa chọn
+  // const $addCriteria = $(".add-criteria"); // nút thêm tiêu chí
+  // const $addSelectionCriteria = $(".add-selection-criteria"); // nút thêm lựa chọn
 
-  const $rmCriteriaGroup = $(".rm-criteria-group"); // nút xóa nhóm tiêu chí
-  const $rmCriteria = $(".rm-criteria"); // nút xóa tiêu chí
-  const $rmSelectionCriteria = $(".rm-selection-criteria"); // nút xóa lựa chọn
+  // const $rmCriteriaGroup = $(".rm-criteria-group"); // nút xóa nhóm tiêu chí
+  // const $rmCriteria = $(".rm-criteria"); // nút xóa tiêu chí
+  // const $rmSelectionCriteria = $(".rm-selection-criteria"); // nút xóa lựa chọn
 
   const $scoreScript = $("#scoreScript"); // wrapper danh sách nhóm tiêu chí
 
@@ -31,131 +31,6 @@ $(function () {
   const $tempBtnAddCriteria = $("#tempBtnAddCriteria"); // Template nút thêm tiêu chí
   const $tempBtnAddSelectionCriteria = $("#tempBtnAddSelectionCriteria"); // Template nút thêm lựa chọn
 
-  function getMember(name) {
-    let data = {};
-    data.groupId = group.id;
-
-    if (name && name.trim() !== "") data.name = name;
-
-    $loadingData.show();
-
-    $.ajax({
-      type: "GET",
-      url: "/groups/team-of-group?" + $.param(data),
-      cache: "false",
-      success: function (result) {
-        $loadingData.hide();
-
-        if (!result) return;
-
-        let itemCard = "";
-
-        result.data.forEach((item) => {
-          itemCard += `
-            <div class="col-sm-2 col-md-3 col-lg-4">
-              <div class="border rounded border-primary info-box shadow-none">
-                <span class="info-box-icon">
-                  <img class="img-circle img-bordered-sm" src="/dist/img/user.png" alt="user image">
-                </span>
-                <div class="info-box-content">
-                  <span class="info-box-text font-weight-bold">
-                    ${item.Team.name}
-                  </span>
-                </div>
-                <span class="remove-user" data-id="${item.teamId}">
-                  <i class="fas fa-times"></i>
-                </span>
-              </div>
-            </div>
-          `;
-        });
-
-        return $containerUsers.html(itemCard);
-      },
-      error: function (error) {
-        $loadingData.hide();
-
-        let errorParse = JSON.parse(error.responseText);
-
-        return toastr.error(errorParse.message);
-      },
-    });
-  }
-
-  function getUserAvailable() {
-    // console.log( group );
-    $.ajax({
-      type: "GET",
-      url:
-        "/groups/get-team-available?" +
-        $.param({ id: group.id, teamIds: _.pluck(group.TeamGroup, "teamId") }),
-      cache: "false",
-      success: function (result) {
-        if (!result) return;
-
-        let itemOptions = "";
-        console.log("result.data", result.data);
-
-        itemOptions = result.data
-          .map((item) => {
-            return `
-            <option value="${item.id}"> ${item.name} </option>
-          `;
-          })
-          .join("");
-
-        $inputMember.html(itemOptions);
-
-        return $inputMember.selectpicker("refresh");
-      },
-      error: function (error) {
-        let errorParse = JSON.parse(error.responseText);
-
-        return toastr.error(errorParse.message);
-      },
-    });
-  }
-
-  $(document).on("click", ".remove-user", function () {
-    let userId = $(this).attr("data-id");
-
-    console.log("userId: ", userId);
-
-    if (!userId || userId == "") return;
-
-    let data = {};
-
-    data.groupId = group.id;
-    data.teamId = userId;
-
-    $loadingData.show();
-    $.ajax({
-      type: "DELETE",
-      url: "/groups/remove-team",
-      data: data,
-      dataType: "text",
-      success: function () {
-        $loadingData.hide();
-
-        // toastr.success('Đã xóa đội ngũ ra khỏi nhóm!');
-        // xoa cache vi ko reload lai trang
-        group.TeamGroup = group.TeamGroup.filter(
-          (i, index) => i.teamId != userId
-        );
-
-        getUserAvailable();
-        return getMember();
-      },
-      error: function (error) {
-        $loadingData.hide();
-
-        let errorParse = JSON.parse(error.responseText);
-
-        return toastr.error(errorParse.message);
-      },
-    });
-  });
-
   // validate form edit group
   const validatorFormEdit = $formEditGroup.validate({
     rules: {
@@ -167,35 +42,59 @@ $(function () {
         required: true,
       },
       description: {
-        maxlength: 500,
+        required: true,
+        maxlength: 150,
+      },
+      scoreDisplayType: {
+        required: true,
+      },
+      criteriaDisplayType: {
+        required: true,
+      },
+      needImproveMax: {
+        required: true,
+        number: true,
+        min: 1,
+        max: 100,
+      },
+      standardMin: {
+        // required: true,
+      },
+      standardMax: {
+        gte: "#standardMin",
+        max: 100,
+        number: true,
+        required: true,
+      },
+      passStandardMin: {
+        // required: true,
+        // gte: "#standardMax"
       },
     },
     messages: {
-      name: {
-        // required: "Tên nhóm không được để trống!",
-        // maxlength: 'Độ dài không quá 50 kí tự'
-      },
-      leader: {
-        // required: 'Giám sát không được để trống',
-      },
-      description: {
-        // maxlength: 'Độ dài không quá 500 kí tự'
+      standardMax: {
+        gte: window.location.MESSAGE_ERROR["QA-008"],
       },
     },
     ignore: ":hidden",
     errorElement: "span",
+    // debug: false,
     errorPlacement: function (error, element) {
       error.addClass("invalid-feedback");
-      element.closest(".form-group").append(error);
+      // element.closest(".form-group").append(error);
+      console.log(1111, element, element.closest("div"));
+      element.closest("div").append(error);
     },
     highlight: function (element, errorClass, validClass) {
+      console.log(2222, { element, errorClass, validClass });
       $(element).addClass("is-invalid");
     },
     unhighlight: function (element, errorClass, validClass) {
       $(element).removeClass("is-invalid");
     },
     submitHandler: function () {
-      let filter = _.chain($("#form_edit_group .input"))
+      console.log("click");
+      let filter = _.chain($("#form_new_scoreSripts .input"))
         .reduce(function (memo, el) {
           let value = $(el).val();
           if (value != "" && value != null) memo[el.name] = value;
@@ -203,92 +102,33 @@ $(function () {
         }, {})
         .value();
 
-      filter.id = group.id;
-
+      // filter.id = group.id;
+        console.log({filter});
       $loadingData.show();
 
-      $.ajax({
-        type: "PUT",
-        url: "/groups",
-        data: filter,
-        dataType: "text",
-        success: function () {
-          $loadingData.hide();
+      // $.ajax({
+      //   type: "PUT",
+      //   url: "/groups",
+      //   data: filter,
+      //   dataType: "text",
+      //   success: function () {
+      $loadingData.hide();
 
-          return location.reload();
-        },
-        error: function (error) {
-          $loadingData.hide();
+      //     return location.reload();
+      //   },
+      //   error: function (error) {
+      //     $loadingData.hide();
 
-          return toastr.error(JSON.parse(error.responseText).message);
-        },
-      });
+      //     return toastr.error(JSON.parse(error.responseText).message);
+      //   },
+      // });
     },
   });
 
-  // validate form delete group
-  const validatorFormDelete = $formDeleteGroup.validate({
-    // rules: {
-    //   password: {
-    //     required: true,
-    //   },
-    // },
-    // messages: {
-    //   password: {
-    //     required: "Mật khẩu không được để trống!",
-    //   },
-    // },
-    ignore: ":hidden",
-    errorElement: "span",
-    errorPlacement: function (error, element) {
-      error.addClass("invalid-feedback");
-      element.closest(".form-group").append(error);
-    },
-    highlight: function (element, errorClass, validClass) {
-      $(element).addClass("is-invalid");
-    },
-    unhighlight: function (element, errorClass, validClass) {
-      $(element).removeClass("is-invalid");
-    },
-    submitHandler: function () {
-      let filter = _.chain($("#form_delete_group .input"))
-        .reduce(function (memo, el) {
-          let value = $(el).val();
-          if (value != "" && value != null) memo[el.name] = value;
-          return memo;
-        }, {})
-        .value();
-
-      filter.id = group.id;
-
-      $loadingData.show();
-      // return console.log(filter)
-      $.ajax({
-        type: "DELETE",
-        url: "/groups",
-        data: filter,
-        dataType: "text",
-        success: function () {
-          $loadingData.hide();
-
-          return window.location.replace("/groups");
-        },
-        error: function (error) {
-          $loadingData.hide();
-
-          let errorParse = JSON.parse(error.responseText);
-
-          // if (errorParse.type) {
-          //   return validatorFormDelete.showErrors({
-          //     'password': errorParse.message
-          //   });
-          // }
-
-          return toastr.error(errorParse.message);
-        },
-      });
-    },
-  });
+  //   $.validator.addClassRules("name-criteria-group", {
+  //     required: true,
+  //     minlength: 2
+  // });
 
   $inputName.bind("focusout", function (e) {
     e.preventDefault();
@@ -339,8 +179,6 @@ $(function () {
         });
 
         group.TeamGroup = [...group.TeamGroup, ...cacheTeamGroup];
-        getUserAvailable();
-        return getMember();
       },
       error: function (error) {
         const errorParse = JSON.parse(error.responseText);
@@ -350,20 +188,15 @@ $(function () {
     });
   });
 
-  $buttonSearchMember.on("click", function () {
-    let value = $inputSearchMember.val();
-
-    return getMember(value.trim());
-  });
-
-  // let index = 0;
   $addCriteriaGroup.on("click", function () {
     // let scoreScriptHTML = renderScipt("scoreScript", index);
+    const totalCriteriaGroup = $scoreScript.find("> div.card").length;
+    const indexTarget = totalCriteriaGroup + 1;
+
+    console.log("index: ", totalCriteriaGroup);
     let newTempCriteriaGroup = $("<div></div>").append(
       $tempCriteriaGroup.html()
     );
-
-    let getTempCriteria = $tempCriteria.html();
 
     // button template
     let newTempBtnAddCriteria = $("<div></div>").append(
@@ -373,37 +206,181 @@ $(function () {
       $tempBtnAddSelectionCriteria.html()
     );
 
+    newTempCriteriaGroup.find("> div.card").attr("data-id", indexTarget);
+
     newTempCriteriaGroup
       .find(".wp-add-criteria")
       .html(newTempBtnAddCriteria.html());
+
+    newTempCriteriaGroup
+      .find(".custom-switch input")
+      .attr("id", `customSwitches-${indexTarget}`);
+    newTempCriteriaGroup
+      .find(".custom-switch label")
+      .attr("for", `customSwitches-${indexTarget}`);
+    // .html(renderSwitchCustom(indexTarget))
+
+    newTempCriteriaGroup
+      .find("#nameCriteriaGroup")
+      .attr("id", `nameCriteriaGroup-${indexTarget}`)
+      .attr("name", `nameCriteriaGroup-${indexTarget}`);
+
+    newTempCriteriaGroup
+      .find("#nameCriteria")
+      .attr("id", `nameCriteria-${indexTarget}`)
+      .attr("name", `nameCriteria-${indexTarget}`);
+
+    newTempCriteriaGroup
+      .find("#scoreMax")
+      .attr("id", `scoreMax-${indexTarget}`)
+      .attr("name", `scoreMax-${indexTarget}`);
+
+    newTempCriteriaGroup
+      .find("#nameSelectionCriteria")
+      .attr("id", `nameSelectionCriteria-${indexTarget}`)
+      .attr("name", `nameSelectionCriteria-${indexTarget}`);
+
+    newTempCriteriaGroup
+      .find("#score")
+      .attr("id", `score-${indexTarget}`)
+      .attr("name", `score-${indexTarget}`);
+
     newTempCriteriaGroup
       .find(".wp-add-selection-criteria")
       .html(newTempBtnAddSelectionCriteria.html());
 
     $scoreScript.append(newTempCriteriaGroup.html());
-    scrollToElement($scoreScript.find(">div.card:last-child"));
-    // index++;
+    const newCard = $scoreScript.find(">div.card:last-child");
+
+    scrollToElement(newCard);
+
+    // update rule vào form vì có phần tử được append vào
+    // http://jsfiddle.net/rq5ra/1/
+
+    //   $(this).rules('add', {
+    //     required: true,
+    //     number: true,
+    //     messages: {
+    //         required:  "your custom required message",
+    //         number:  "your custom number message"
+    //     }
+    // });
+
+    updateValidationForm(newCard, indexTarget);
   });
+  function updateValidationForm(element, indexTarget) {
+    if (element.find(".name-criteria-group").length > 0)
+      element.find(".name-criteria-group").rules("add", {
+        required: true,
+        // number: true,
+        // messages: {
+        //     required:  "your custom required message",
+        //     number:  "your custom number message"
+        // }
+      });
+    if (element.find(".name-criteria").length > 0)
+      element.find(".name-criteria").rules("add", {
+        required: true,
+        // number: true,
+        // messages: {
+        //     required:  "your custom required message",
+        //     number:  "your custom number message"
+        // }
+      });
+    if (element.find(".score-max").length > 0)
+      element.find(".score-max").rules("add", {
+        required: true,
+        min: 0,
+        max: 99999,
+        // number: true,
+        // messages: {
+        //     required:  "your custom required message",
+        //     number:  "your custom number message"
+        // }
+      });
+
+    if (
+      element.find(".item-selection-criteria .name-selection-criteria").length >
+      0
+    )
+      element
+        .find(".item-selection-criteria .name-selection-criteria")
+        .rules("add", {
+          required: true,
+          // number: true,
+          // messages: {
+          //     required:  "your custom required message",
+          //     number:  "your custom number message"
+          // }
+        });
+    if (element.find(".item-selection-criteria .score").length > 0)
+      element.find(".item-selection-criteria .score").rules("add", {
+        required: true,
+        min: 0,
+        le: `#scoreMax-${indexTarget}`,
+        // number: true,
+        // messages: {
+        //     required:  "your custom required message",
+        //     number:  "your custom number message"
+        // }
+      });
+  }
 
   // như này thì html render sau mới nhận event click
   $(document).on("click", ".add-criteria", function (e) {
     let newTempCriteria = $("<div></div>").append($tempCriteria.html());
+
     let wrapperList = $(e.currentTarget)
       .parent()
       .parent()
       .find(".wp-list-criteria");
 
+    const totalCriteria = wrapperList.find("> div.card").length;
+    const indexCriteriaGroup = $(e.currentTarget)
+      .parent()
+      .parent()
+      .attr("data-id");
+    const indexTarget = `${indexCriteriaGroup}-${totalCriteria + 1}`;
+
+    console.log("index: ", totalCriteria);
+
     let newTempBtnAddSelectionCriteria = $("<div></div>").append(
       $tempBtnAddSelectionCriteria.html()
     );
+    newTempCriteria
+      .find(".custom-switch")
+      .html(renderSwitchCustom(indexTarget));
 
     newTempCriteria
       .find(".wp-add-selection-criteria")
       .html(newTempBtnAddSelectionCriteria.html());
 
+    newTempCriteria
+      .find("#nameCriteria")
+      .attr("id", `nameCriteria-${indexTarget}`)
+      .attr("name", `nameCriteria-${indexTarget}`);
+
+    newTempCriteria
+      .find("#scoreMax")
+      .attr("id", `scoreMax-${indexTarget}`)
+      .attr("name", `scoreMax-${indexTarget}`);
+
+    newTempCriteria
+      .find("#nameSelectionCriteria")
+      .attr("id", `nameSelectionCriteria-${indexTarget}`)
+      .attr("name", `nameSelectionCriteria-${indexTarget}`);
+
+    newTempCriteria
+      .find("#score")
+      .attr("id", `score-${indexTarget}`)
+      .attr("name", `score-${indexTarget}`);
+
     wrapperList.append(newTempCriteria.html());
-    scrollToElement(wrapperList.find(">div.card:last-child"), 500);
+    const newCard = wrapperList.find(">div.card:last-child");
+
+    scrollToElement(newCard, 500);
     console.log("click add-criteria");
+    updateValidationForm(newCard, indexTarget);
   });
   // như này thì html render sau mới nhận event click
   $(document).on("click", ".add-selection-criteria", function (e) {
@@ -433,9 +410,21 @@ $(function () {
 
   $(document).on("click", ".rm-selection-criteria", function (e) {
     console.log("rmSelectionCriteria");
-    removeElementWithAnimation($(e.currentTarget).closest(".item-selection-criteria"));
+    removeElementWithAnimation(
+      $(e.currentTarget).closest(".item-selection-criteria")
+    );
     // $(e.currentTarget).closest(".item-selection-criteria").remove();
   });
+
+  // $("#tablist .nav-link").on("click", function (e) {
+  //   e.preventDefault();
+  //   if ($formEditGroup.valid()) {
+  //     // console.log(object);
+  //     return true; // next
+  //   } else {
+  //     return false; // stop
+  //   }
+  // });
 
   function removeElementWithAnimation(element, timeout = 500) {
     element.addClass("removed-item");
@@ -454,6 +443,13 @@ $(function () {
         800,
         "swing"
       );
+  }
+
+  function renderSwitchCustom(id) {
+    return `<input type="checkbox" class="custom-control-input" id="customSwitches-${id}" checked>
+        <label class="custom-control-label" for="customSwitches-${id}" data-toggle="tooltip"
+        data-placement="right" title="Tiêu chí có sử dụng tính điểm không?"
+        role="button"></label>`;
   }
 
   // event modal
@@ -513,6 +509,112 @@ $(function () {
     // }
   });
 
+  // event_change
+
+  $(document).on("change", "#criteriaDisplayType", function (e) {
+    let target = $(e.currentTarget);
+    let value = target.val();
+    console.log("criteriaDisplayType", value, OP_UNIT_DISPLAY.phanTram.n);
+    const needImproveMax = Number($("#needImproveMax").val());
+
+    if (value == OP_UNIT_DISPLAY.phanTram.n) {
+      $("#needImproveMax").rules("add", {
+        max: 100,
+      });
+      $("#standardMax").rules("add", {
+        max: 100,
+      });
+      if (needImproveMax < 100) {
+        console.log("co vao dayyyy");
+        updateInputAuto(needImproveMax, 99);
+        updateInputPassStandardAuto(Number($("#standardMax").val()), 99);
+      }      
+      
+      $formEditGroup.valid();
+    } else {
+      $("#needImproveMax").rules("add", {
+        max: 99999,
+      });
+      $("#standardMax").rules("add", {
+        max: 99999,
+      });
+      if (needImproveMax < 99999) {
+        updateInputAuto(needImproveMax, 99999);
+        updateInputPassStandardAuto(Number($("#standardMax").val()), 99999);
+      }
+      $formEditGroup.valid();
+    }
+  });
+
+  $(document).on("change", "#needImproveMax", function (e) {
+    let target = $(e.currentTarget);
+    let criteriaDisplayType = $("#criteriaDisplayType").val();
+
+    let value = Number(target.val());
+
+    console.log(
+      "scoreDisplayType",
+      criteriaDisplayType,
+      OP_UNIT_DISPLAY.phanTram.n
+    );
+    if (criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+      updateInputAuto(value, 99);
+      updateInputPassStandardAuto($('#standardMax'), 99);
+    } else {
+      updateInputAuto(value, 99999);
+      updateInputPassStandardAuto($('#standardMax'), 99999);
+    }
+  });
+
+  $(document).on("change", "#standardMax", function (e) {
+    let target = $(e.currentTarget);
+    let criteriaDisplayType = $("#criteriaDisplayType").val();
+
+    let value = Number(target.val());
+    console.log('change #standardMax', value);
+
+    if (criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+      updateInputPassStandardAuto(value, 99);
+    } else {
+      updateInputPassStandardAuto(value, 99999);
+    }
+  });
+
+  function updateInputPassStandardAuto(value, max) {
+    if (value && value <= max + 1) {
+      if (value == max + 1) $("#passStandardMin").val("");
+      else $("#passStandardMin").val(value + 1);
+    } else {
+      $("#passStandardMin").val("");
+    }
+    $formEditGroup.valid();
+  }
+
+  function updateInputAuto(value, max) {
+    if (value < max + 1) {
+      $("#standardMin").val(value + 1);
+      $("#standardMax").prop("disabled", false);
+
+      if (value == max) {
+        $("#standardMax").rules("remove", "required");
+        $("#standardMax").prop("disabled", true);
+        $("#standardMax").removeClass("is-invalid");
+        $("#standardMax,#passStandardMin").val("");
+      } else {
+        $("#standardMax").rules("add", "required");
+        console.log( Number($("#standardMax").val()) , max);
+        if (Number($("#standardMax").val()) > 0) {
+          $("#passStandardMin").val(Number($("#standardMax").val())+1);
+        }
+      }
+    } else {
+      $("#standardMax").rules("remove", "required");
+      $("#standardMax").removeClass("is-invalid");
+      $("#standardMax").prop("disabled", true);
+      $("#standardMax,#passStandardMin").val("");
+    }
+    $formEditGroup.valid();
+  }
   // set value leader
   let leaderHtml = "";
   users.forEach((user) => {
@@ -525,9 +627,6 @@ $(function () {
   $inputLeader.html(leaderHtml);
   $inputLeader.selectpicker("refresh");
 
-  getUserAvailable();
-
-  getMember();
 });
 
 function renderScipt(idParent, index, cardType = "default") {

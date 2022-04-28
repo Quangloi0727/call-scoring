@@ -1,6 +1,7 @@
 <script>
   var group = JSON.parse('<%- JSON.stringify(group)%>');
   var users = JSON.parse('<%- JSON.stringify(users)%>');
+  var OP_UNIT_DISPLAY = JSON.parse('<%- JSON.stringify(OP_UNIT_DISPLAY)%>');
 </script>
 <div class="wrapper">
   <div>
@@ -31,9 +32,6 @@
                 <div class="form-group col-sm-3">
                   <input type="text" class="form-control input" id="name" name="name" placeholder="kịch bản" />
                 </div>
-                <div class="form-group col-sm-3 d-none">
-                  <input type="text" class="form-control input" id="name" name="name" placeholder="kịch bản" />
-                </div>
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
                   <button type="submit" id="btn_save_scoreSripts" class="btn btn-primary">Lưu</button>
@@ -41,15 +39,15 @@
 
               </div>
 
-              <ul class="nav" id="" role="tablist">
+              <ul class="nav" id="tablist" role="tablist">
                 <li class="nav-item">
-                  <a class="nav-link " id="tab-score-script-general-tab" data-toggle="pill"
+                  <a class="nav-link active" id="tab-score-script-general-tab" data-toggle="pill"
                     href="#tab-score-script-general" role="tab" aria-controls="tab-score-script-general"
                     aria-selected="true">Chung</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link active" id="tab-score-script-sript-tab" data-toggle="pill"
-                    href="#tab-score-script-sript" role="tab" aria-controls="tab-score-script-sript"
+                  <a class="nav-link " id="tab-score-script-script-tab" data-toggle="pill"
+                    href="#tab-score-script-script" role="tab" aria-controls="tab-score-script-script"
                     aria-selected="false">Kịch bản</a>
                 </li>
                 <li class="nav-item">
@@ -62,128 +60,16 @@
               <div class="tab-content" id="tab-score-script-tabContent">
 
                 <!-- tab chung -->
-                <div class="tab-pane fade " id="tab-score-script-general" role="tabpanel"
-                  aria-labelledby="custom-tabs-three-home-tab">
-
-                  <div class="form-group row">
-                    <label for="description" class="col-sm-2 col-form-label">Mô tả <span
-                        class="text-danger">*</span></label>
-                    <div class="col-sm-10">
-                      <input type="email" class="form-control" id="description" name="description" placeholder="Mô tả">
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="description" class="col-sm-2 col-form-label">Điểm tổng hiển thị theo <span
-                        class="text-danger">*</span></label>
-                    <div class="col-sm-3">
-                      <select class="form-control selectpicker input" name="scoreDisplayType" id="scoreDisplayType"
-                        title="Chọn...">
-                        <% Object.keys(OP_UNIT_DISPLAY).forEach((item)=> { %>
-                        <option value="<%= OP_UNIT_DISPLAY[item].n %>">
-                          <%= OP_UNIT_DISPLAY[item].t %>
-                        </option>
-                        <% }); %>
-
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="description" class="col-sm-2 col-form-label">Xét chỉ tiêu theo <span
-                        class="text-danger">*</span></label>
-                    <div class="col-sm-3">
-                      <select class="form-control selectpicker input" name="scoreDisplayType" id="scoreDisplayType"
-                        title="Chọn...">
-                        <option value="0">Phần trăm</option>
-                        <option value="1">Điểm</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="" class="col-sm-2 col-form-label">Cần cải thiện <span
-                        class="text-danger">*</span></label>
-                    <div class="col-sm-1 d-flex align-items-center justify-content-center">
-                      0
-                    </div>
-                    <div class="col-sm-1 d-flex align-items-center justify-content-center" style="">
-                      <i class="fa fa-minus" aria-hidden="true"></i>
-                    </div>
-                    <div class="col-sm-1">
-                      <input type="number" class="form-control" id="max" name="max" placeholder="">
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="" class="col-sm-2 col-form-label">Đạt tiêu chuẩn <span
-                        class="text-danger">*</span></label>
-                    <div class="col-sm-1">
-                      <input type="number" class="form-control" id="standardMin" name="standardMin" placeholder="">
-                    </div>
-                    <div class="col-sm-1 d-flex align-items-center justify-content-center" style="">
-                      <i class="fa fa-minus" aria-hidden="true"></i>
-                    </div>
-                    <div class="col-sm-1">
-                      <input type="number" class="form-control" id="standardMax" name="standardMax" placeholder="">
-                    </div>
-                  </div>
-
-                  <div class="form-group row">
-                    <label for="" class="col-sm-2 col-form-label">Vượt tiêu chuẩn từ </label>
-                    <div class="col-sm-1">
-                      <input type="number" class="form-control" id="passStandardMin" name="passStandardMin"
-                        placeholder="">
-                    </div>
-                  </div>
-
-                </div>
+                  <%- include('./tab.script.general.ejs', { OP_UNIT_DISPLAY }) %>
                 <!-- end tab chung -->
 
                 <!-- tab kịch bản -->
-                <div class="tab-pane fade active show" id="tab-score-script-sript" role="tabpanel"
-                  aria-labelledby="custom-tabs-three-profile-tab">
-
-                  <!-- template nhom tieu chi -->
-                  <div id="tempCriteriaGroup" class="d-none">
-                    <%- include('./temp.criteria.group.ejs', { }) %>
-                  </div>
-                  <!-- end template nhom tieu chi -->
-
-                  <!-- template nút thêm tiêu chí -->
-                  <div id="tempBtnAddCriteria" class="d-none">
-                    <%- include('./btn.add.ejs', { BTN_TITLE: 'Thêm tiêu chí', BTN_CLASS_NAME : 'add-criteria' }) %>
-                  </div>
-                  <!-- end template nút thêm tiêu chí -->
-
-                  <!-- template nút thêm lựa chọn -->
-                  <div id="tempBtnAddSelectionCriteria" class="d-none">
-                    <%- include('./btn.add.ejs', { BTN_TITLE: 'Thêm lựa chọn', BTN_CLASS_NAME : 'add-selection-criteria' }) %>
-                  </div>
-                  <!-- end template nút thêm lựa chọn -->
-
-
-
-                  <!-- Danh sách nhóm tiêu chí -->
-                  <div id="scoreScript" class="pt-3">
-
-                  </div>
-                  <!-- end Danh sách nhóm tiêu chí -->
-                  <%- include('./btn.add.ejs', { BTN_TITLE: 'Thêm nhóm tiêu chí', BTN_CLASS_NAME : 'add-criteria-group' }) %>
-
-                </div>
+                  <%- include('./tab.script.ejs', { }) %>
                 <!-- end tab kịch bản -->
 
-                <div class="tab-pane fade" id="tab-score-script-preview" role="tabpanel"
-                  aria-labelledby="custom-tabs-three-messages-tab">
-                  Morbi turpis dolor, vulputate vitae felis non, tincidunt congue mauris. Phasellus volutpat augue id mi
-                  placerat mollis. Vivamus faucibus eu massa eget condimentum. Fusce nec hendrerit sem, ac tristique
-                  nulla. Integer vestibulum orci odio. Cras nec augue ipsum. Suspendisse ut velit condimentum, mattis
-                  urna a, malesuada nunc. Curabitur eleifend facilisis velit finibus tristique. Nam vulputate, eros non
-                  luctus efficitur, ipsum odio volutpat massa, sit amet sollicitudin est libero sed ipsum. Nulla
-                  lacinia, ex vitae gravida fermentum, lectus ipsum gravida arcu, id fermentum metus arcu vel metus.
-                  Curabitur eget sem eu risus tincidunt eleifend ac ornare magna.
-                </div>
+                <!-- tab Xem trước -->
+                  <%- include('./tab.script.preview.ejs', { STATUS_SCORE_SCRIPT }) %>
+                <!-- end tab Xem trước -->
 
               </div>
 
