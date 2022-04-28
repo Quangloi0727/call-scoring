@@ -103,7 +103,7 @@ $(function () {
         .value();
 
       // filter.id = group.id;
-        console.log({filter});
+      console.log({ filter });
       $loadingData.show();
 
       // $.ajax({
@@ -123,30 +123,6 @@ $(function () {
       //   },
       // });
     },
-  });
-
-  //   $.validator.addClassRules("name-criteria-group", {
-  //     required: true,
-  //     minlength: 2
-  // });
-
-  $inputName.bind("focusout", function (e) {
-    e.preventDefault();
-    const value = $(this).val();
-
-    if (!value || value == "") return;
-
-    $.ajax({
-      type: "GET",
-      url: "/groups/search?name=" + value,
-      cache: "false",
-      success: function () {
-        return validatorFormEdit.showErrors({
-          name: window.location.MESSAGE_ERROR["QA-002"],
-        });
-      },
-    });
-    console.log("aa: ", value);
   });
 
   $buttonAddUser.on("click", function () {
@@ -416,15 +392,16 @@ $(function () {
     // $(e.currentTarget).closest(".item-selection-criteria").remove();
   });
 
-  // $("#tablist .nav-link").on("click", function (e) {
-  //   e.preventDefault();
-  //   if ($formEditGroup.valid()) {
-  //     // console.log(object);
-  //     return true; // next
-  //   } else {
-  //     return false; // stop
-  //   }
-  // });
+  $("#tablist .nav-link").on("click", function (e) {
+    e.preventDefault();
+    getDataScoreScript();
+    // if ($formEditGroup.valid()) {
+    //   // console.log(object);
+    //   return true; // next
+    // } else {
+    //   return false; // stop
+    // }
+  });
 
   function removeElementWithAnimation(element, timeout = 500) {
     element.addClass("removed-item");
@@ -446,7 +423,7 @@ $(function () {
   }
 
   function renderSwitchCustom(id) {
-    return `<input type="checkbox" class="custom-control-input" id="customSwitches-${id}" checked>
+    return `<input type="checkbox" class="custom-control-input cb-is-active" id="customSwitches-${id}" checked>
         <label class="custom-control-label" for="customSwitches-${id}" data-toggle="tooltip"
         data-placement="right" title="Tiêu chí có sử dụng tính điểm không?"
         role="button"></label>`;
@@ -528,8 +505,8 @@ $(function () {
         console.log("co vao dayyyy");
         updateInputAuto(needImproveMax, 99);
         updateInputPassStandardAuto(Number($("#standardMax").val()), 99);
-      }      
-      
+      }
+
       $formEditGroup.valid();
     } else {
       $("#needImproveMax").rules("add", {
@@ -602,9 +579,9 @@ $(function () {
         $("#standardMax,#passStandardMin").val("");
       } else {
         $("#standardMax").rules("add", "required");
-        console.log( Number($("#standardMax").val()) , max);
+        console.log(Number($("#standardMax").val()), max);
         if (Number($("#standardMax").val()) > 0) {
-          $("#passStandardMin").val(Number($("#standardMax").val())+1);
+          $("#passStandardMin").val(Number($("#standardMax").val()) + 1);
         }
       }
     } else {
@@ -615,17 +592,48 @@ $(function () {
     }
     $formEditGroup.valid();
   }
-  // set value leader
-  let leaderHtml = "";
-  users.forEach((user) => {
-    leaderHtml += `
-        <option value="${user.id}">
-          ${user.fullName} (${user.userName})
-        </option>
-      `;
-  });
-  $inputLeader.html(leaderHtml);
-  $inputLeader.selectpicker("refresh");
+
+  function getDataScoreScript() {
+    let data = [];
+
+    $scoreScript.find('>div.card').each((i, item) => {
+
+      let card = $(item);
+      let itemCriteriaGroup = {
+        nameCriteriaGroup: card.find('.name-criteria-group').val(),
+        criterias: []
+      };
+
+      // danh sách tiêu chí thuộc nhóm tiêu chí
+      card.find('.wp-list-criteria > .card').each((i2, item2) => {
+        let cardCriteria = $(item2);
+        let itemCriteria = {
+          nameCriteria: cardCriteria.find('.name-criteria').val(),
+          scoreMax: cardCriteria.find('.score-max').val(),
+          isActive: cardCriteria.find('.cb-is-active').is(':checked'),
+          selectionCriterias: []
+        };
+
+        cardCriteria.find('.item-selection-criteria').each((i3, item3) => {
+          let selections = $(item3);
+          let name = selections.find('.name-selection-criteria').val();
+          let score = selections.find('.score').val();
+          let unScoreCriteriaGroup = selections.find('.cb-unScoreCriteriaGroup').is(':checked');
+          let unScoreScript = selections.find('.cb-unScoreScript').is(':checked');
+          itemCriteria.selectionCriterias.push({
+            name,
+            score,
+            unScoreCriteriaGroup,
+            unScoreScript,
+          })
+        });
+        itemCriteriaGroup.criterias.push(itemCriteria)
+      });
+      
+      data.push(itemCriteriaGroup);
+    });
+    console.log({data});
+  }
 
 });
 
@@ -634,8 +642,7 @@ function renderScipt(idParent, index, cardType = "default") {
   <div class="card-header">
     <h4 class="card-title w-100">
     <div class="form-group row">
-    <label for="description" class="col-sm-2 col-form-label">Nhóm kịch bản ${
-      index + 1
+    <label for="description" class="col-sm-2 col-form-label">Nhóm kịch bản ${index + 1
     } <span class="text-danger">*</span> </label>
     <div class="col-sm-10">
       <input type="email" class="form-control" id="description" name="description" placeholder="Mô tả">
@@ -650,6 +657,8 @@ function renderScipt(idParent, index, cardType = "default") {
   </div>
 </div>`;
 }
+
+
 
 {
   /* <div class="card card-primary">
