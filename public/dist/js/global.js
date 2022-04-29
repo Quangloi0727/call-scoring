@@ -155,6 +155,15 @@
     return text.replace(/[^0-9]/g, "");
   }
 
+  function uuidv4() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+      (
+        c ^
+        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+      ).toString(16)
+    );
+  }
+
   // Để check form validate nếu thay đổi giá trị
   // $("select.form-control").on("change", (e) => {
   //   let target = $(e.currentTarget);
@@ -173,13 +182,14 @@
   window.location.CreatePaging = CreatePaging;
   window.location.convertArrayToObject = convertArrayToObject;
   window.location.getOnlyNumber = getOnlyNumber;
+  window.location.uuidv4 = uuidv4;
 
   $.validator.messages.required = MESSAGE_ERROR["QA-001"];
   $.validator.messages.maxlength = $.validator.format(
     "Độ dài không quá {0} kí tự"
   );
-  $.validator.messages.max = $.validator.format( "Hãy nhập từ {0} trở xuống." ),
-  $.validator.messages.min = $.validator.format( "Hãy nhập từ {0} trở lên." )
+  $.validator.messages.max = $.validator.format("Hãy nhập từ {0} trở xuống.");
+  $.validator.messages.min = $.validator.format("Hãy nhập từ {0} trở lên.");
 
   $.validator.addMethod(
     "le",
@@ -199,7 +209,7 @@
   $.validator.addMethod(
     "gte",
     function (value, element, param) {
-      console.log(this.optional(element),  value,  $(param).val());
+      // console.log(this.optional(element), value, $(param).val());
       return this.optional(element) || Number(value) > Number($(param).val());
     },
     "gte Invalid value"

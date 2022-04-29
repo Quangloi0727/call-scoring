@@ -101,27 +101,27 @@ $(function () {
           return memo;
         }, {})
         .value();
-
+      
+      filter = getDataSubmit(filter);
       // filter.id = group.id;
       console.log({ filter });
       $loadingData.show();
 
-      // $.ajax({
-      //   type: "PUT",
-      //   url: "/groups",
-      //   data: filter,
-      //   dataType: "text",
-      //   success: function () {
-      $loadingData.hide();
+      $.ajax({
+        type: "POST",
+        url: "/scoreScripts",
+        data: filter,
+        // dataType: "text",
+        success: function () {
+          $loadingData.hide();
+          return location.redirect('/scoreScripts');
+        },
+        error: function (error) {
+          $loadingData.hide();
 
-      //     return location.reload();
-      //   },
-      //   error: function (error) {
-      //     $loadingData.hide();
-
-      //     return toastr.error(JSON.parse(error.responseText).message);
-      //   },
-      // });
+          return toastr.error(JSON.parse(error.responseText).message);
+        },
+      });
     },
   });
 
@@ -142,7 +142,7 @@ $(function () {
       success: function () {
         toastr.success("Đã thêm người dùng vào nhóm");
         // cache new element vi ko reload lai trang
-        // group.TeamGroup.push();
+
         const cacheTeamGroup = member.map((i, index) => {
           return {
             id:
@@ -165,11 +165,8 @@ $(function () {
   });
 
   $addCriteriaGroup.on("click", function () {
-    // let scoreScriptHTML = renderScipt("scoreScript", index);
-    const totalCriteriaGroup = $scoreScript.find("> div.card").length;
-    const indexTarget = totalCriteriaGroup + 1;
+    const indexTarget = window.location.uuidv4();
 
-    console.log("index: ", totalCriteriaGroup);
     let newTempCriteriaGroup = $("<div></div>").append(
       $tempCriteriaGroup.html()
     );
@@ -233,14 +230,6 @@ $(function () {
     // update rule vào form vì có phần tử được append vào
     // http://jsfiddle.net/rq5ra/1/
 
-    //   $(this).rules('add', {
-    //     required: true,
-    //     number: true,
-    //     messages: {
-    //         required:  "your custom required message",
-    //         number:  "your custom number message"
-    //     }
-    // });
 
     updateValidationForm(newCard, indexTarget);
   });
@@ -248,31 +237,16 @@ $(function () {
     if (element.find(".name-criteria-group").length > 0)
       element.find(".name-criteria-group").rules("add", {
         required: true,
-        // number: true,
-        // messages: {
-        //     required:  "your custom required message",
-        //     number:  "your custom number message"
-        // }
       });
     if (element.find(".name-criteria").length > 0)
       element.find(".name-criteria").rules("add", {
         required: true,
-        // number: true,
-        // messages: {
-        //     required:  "your custom required message",
-        //     number:  "your custom number message"
-        // }
       });
     if (element.find(".score-max").length > 0)
       element.find(".score-max").rules("add", {
         required: true,
         min: 0,
         max: 99999,
-        // number: true,
-        // messages: {
-        //     required:  "your custom required message",
-        //     number:  "your custom number message"
-        // }
       });
 
     if (
@@ -283,22 +257,12 @@ $(function () {
         .find(".item-selection-criteria .name-selection-criteria")
         .rules("add", {
           required: true,
-          // number: true,
-          // messages: {
-          //     required:  "your custom required message",
-          //     number:  "your custom number message"
-          // }
         });
     if (element.find(".item-selection-criteria .score").length > 0)
       element.find(".item-selection-criteria .score").rules("add", {
         required: true,
         min: 0,
         le: `#scoreMax-${indexTarget}`,
-        // number: true,
-        // messages: {
-        //     required:  "your custom required message",
-        //     number:  "your custom number message"
-        // }
       });
   }
 
@@ -311,14 +275,7 @@ $(function () {
       .parent()
       .find(".wp-list-criteria");
 
-    const totalCriteria = wrapperList.find("> div.card").length;
-    const indexCriteriaGroup = $(e.currentTarget)
-      .parent()
-      .parent()
-      .attr("data-id");
-    const indexTarget = `${indexCriteriaGroup}-${totalCriteria + 1}`;
-
-    console.log("index: ", totalCriteria);
+    const indexTarget = window.location.uuidv4();
 
     let newTempBtnAddSelectionCriteria = $("<div></div>").append(
       $tempBtnAddSelectionCriteria.html()
@@ -367,20 +324,43 @@ $(function () {
       .parent()
       .parent()
       .find(".wp-list-selection-criteria");
+    const indexTarget = window.location.uuidv4();
+
+    newTempSelectionCriteria
+    .find("#nameSelectionCriteria")
+      .attr("id", `nameSelectionCriteria-${indexTarget}`)
+      .attr("name", `nameSelectionCriteria-${indexTarget}`);
+
+    newTempSelectionCriteria
+    .find("#score")
+      .attr("id", `score-${indexTarget}`)
+      .attr("name", `score-${indexTarget}`);
 
     wrapperList.append(newTempSelectionCriteria.html());
+    const newCard = wrapperList.find(">div.item-selection-criteria:last-child");
     // index++;
     console.log("click add-selection-criteria");
+
+
+    newCard
+        .find(".name-selection-criteria")
+        .rules("add", {
+          required: true,
+        });
+    newCard.find(".score").rules("add", {
+        required: true,
+        min: 0,
+        le: `#scoreMax-${indexTarget}`,
+      });
+    
   });
 
   $(document).on("click", ".rm-criteria-group", function (e) {
     console.log("rmCriteriaGroup");
-    // $(e.currentTarget).closest('.card').remove();
     removeElementWithAnimation($(e.currentTarget).closest(".card"));
   });
   $(document).on("click", ".rm-criteria", function (e) {
     console.log("rmCriteria");
-    // $(e.currentTarget).closest(".card").remove();
     removeElementWithAnimation($(e.currentTarget).closest(".card"));
   });
 
@@ -389,18 +369,21 @@ $(function () {
     removeElementWithAnimation(
       $(e.currentTarget).closest(".item-selection-criteria")
     );
-    // $(e.currentTarget).closest(".item-selection-criteria").remove();
   });
 
   $("#tablist .nav-link").on("click", function (e) {
     e.preventDefault();
-    getDataScoreScript();
-    // if ($formEditGroup.valid()) {
-    //   // console.log(object);
-    //   return true; // next
-    // } else {
-    //   return false; // stop
-    // }
+    let target = $(e.currentTarget);
+
+    if ($formEditGroup.valid()) {
+      if (target.attr("href").includes("preview")) {
+        renderDataPreview();
+      }
+
+      return true; // next
+    } else {
+      return false; // stop
+    }
   });
 
   function removeElementWithAnimation(element, timeout = 500) {
@@ -461,14 +444,6 @@ $(function () {
 
     $("#name_length").html(`${value.length}/50`);
 
-    // if (value.length > 50) {
-    //   $('#name_length').removeClass('text-muted').addClass('text-danger');
-    //   return validator.showErrors({
-    //     'name': 'Độ dài không quá 50 kí tự!'
-    //   });
-    // } else {
-    //   $('#name_length').removeClass('text-danger').addClass('text-muted');
-    // }
   });
 
   $("#form_edit_group #description").on("input", function () {
@@ -476,14 +451,6 @@ $(function () {
 
     $("#description_length").html(`${value.length}/500`);
 
-    // if (value.length > 500) {
-    //   $('#description_length').removeClass('text-muted').addClass('text-danger');
-    //   return validator.showErrors({
-    //     'description': 'Độ dài không quá 500 kí tự!'
-    //   });
-    // } else {
-    //   $('#description_length').removeClass('text-danger').addClass('text-muted');
-    // }
   });
 
   // event_change
@@ -536,10 +503,10 @@ $(function () {
     );
     if (criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
       updateInputAuto(value, 99);
-      updateInputPassStandardAuto($('#standardMax'), 99);
+      updateInputPassStandardAuto($("#standardMax"), 99);
     } else {
       updateInputAuto(value, 99999);
-      updateInputPassStandardAuto($('#standardMax'), 99999);
+      updateInputPassStandardAuto($("#standardMax"), 99999);
     }
   });
 
@@ -548,12 +515,27 @@ $(function () {
     let criteriaDisplayType = $("#criteriaDisplayType").val();
 
     let value = Number(target.val());
-    console.log('change #standardMax', value);
+    console.log("change #standardMax", value);
 
     if (criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
       updateInputPassStandardAuto(value, 99);
     } else {
       updateInputPassStandardAuto(value, 99999);
+    }
+  });
+
+  $(document).on("change", ".cb-is-active", function (e) {
+    let target = $(e.currentTarget);
+    let card = target.closest(".card");
+
+    let isActive = target.is(":checked");
+    if (isActive) {
+      card.find(".score-max").prop("disabled", false);
+      card.find(".score").prop("disabled", false);
+      
+    } else {
+      card.find(".score-max").removeClass('is-invalid').prop("disabled", true);
+      card.find(".score").removeClass('is-invalid').prop("disabled", true);
     }
   });
 
@@ -593,136 +575,112 @@ $(function () {
     $formEditGroup.valid();
   }
 
+  function getDataSubmit(dataForm) {
+    return {
+      ...dataForm,
+      scoreScripts: getDataScoreScript()
+    }
+  }
+
   function getDataScoreScript() {
     let data = [];
 
-    $scoreScript.find('>div.card').each((i, item) => {
-
+    $scoreScript.find(">div.card").each((i, item) => {
       let card = $(item);
       let itemCriteriaGroup = {
-        nameCriteriaGroup: card.find('.name-criteria-group').val(),
-        criterias: []
+        nameCriteriaGroup: card.find(".name-criteria-group").val(),
+        criterias: [],
+        totalScore: 0,
       };
 
       // danh sách tiêu chí thuộc nhóm tiêu chí
-      card.find('.wp-list-criteria > .card').each((i2, item2) => {
+      card.find(".wp-list-criteria > .card").each((i2, item2) => {
         let cardCriteria = $(item2);
         let itemCriteria = {
-          nameCriteria: cardCriteria.find('.name-criteria').val(),
-          scoreMax: cardCriteria.find('.score-max').val(),
-          isActive: cardCriteria.find('.cb-is-active').is(':checked'),
-          selectionCriterias: []
+          nameCriteria: cardCriteria.find(".name-criteria").val(),
+          scoreMax: Number(cardCriteria.find(".score-max").val()),
+          isActive: cardCriteria.find(".cb-is-active").is(":checked"),
+          selectionCriterias: [],
         };
 
-        cardCriteria.find('.item-selection-criteria').each((i3, item3) => {
+        cardCriteria.find(".item-selection-criteria").each((i3, item3) => {
           let selections = $(item3);
-          let name = selections.find('.name-selection-criteria').val();
-          let score = selections.find('.score').val();
-          let unScoreCriteriaGroup = selections.find('.cb-unScoreCriteriaGroup').is(':checked');
-          let unScoreScript = selections.find('.cb-unScoreScript').is(':checked');
+          let name = selections.find(".name-selection-criteria").val();
+          let score = selections.find(".score").val();
+          let unScoreCriteriaGroup = selections
+            .find(".cb-unScoreCriteriaGroup")
+            .is(":checked");
+          let unScoreScript = selections
+            .find(".cb-unScoreScript")
+            .is(":checked");
           itemCriteria.selectionCriterias.push({
             name,
             score,
             unScoreCriteriaGroup,
             unScoreScript,
-          })
+          });
         });
-        itemCriteriaGroup.criterias.push(itemCriteria)
+
+        if (itemCriteria.isActive == true)
+          itemCriteriaGroup.totalScore += itemCriteria.scoreMax;
+
+        itemCriteriaGroup.criterias.push(itemCriteria);
       });
-      
+
       data.push(itemCriteriaGroup);
     });
-    console.log({data});
+    console.log({ data });
+    return data;
   }
 
-});
+  function renderDataPreview() {
+    let _html;
+    let data = getDataScoreScript();
+    const totalScore = data.reduce((s, f) => s + f.totalScore, 0);
 
-function renderScipt(idParent, index, cardType = "default") {
-  return `<div class="card card-${cardType}">
-  <div class="card-header">
-    <h4 class="card-title w-100">
-    <div class="form-group row">
-    <label for="description" class="col-sm-2 col-form-label">Nhóm kịch bản ${index + 1
-    } <span class="text-danger">*</span> </label>
-    <div class="col-sm-10">
-      <input type="email" class="form-control" id="description" name="description" placeholder="Mô tả">
-    </div>
-  </div>
-    </h4>
-  </div>
-  <div id="collapse-${index}" class="collapse show" data-parent="#${idParent}">
-    <div class="card-body">
+    _html = data
+      .map((item) => {
+        return htmlItemCriteriaGroup(item, totalScore);
+      })
+      .join("");
       
+    _html = `<h3>Tổng điểm: ${totalScore}</h3>
+            ${_html}`;
+    $("#data_preview").html(_html);
+  }
+
+  function htmlItemCriteriaGroup(item, totalScore) {
+    const percent = (item.totalScore / totalScore) * 100;
+    console.log(item.totalScore, [0, 100].includes(item.totalScore));
+    let htmlTotalScore = `(${item.totalScore} - ${
+      [0, 100].includes(percent) ? percent : percent.toFixed(2)
+    } %)`;
+
+    return `<div class="col-12">
+    <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
+    <div class="row">
+      ${item.criterias // tiêu chí
+        .map((i) => {
+          const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : "";
+
+          return `<div class="col-12">
+          <div class="form-group">
+          <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
+          <select class="form-control">
+            ${i.selectionCriterias
+              .map((j) => {
+                return `<option>${j.name}</option>`;
+              })
+              .join("")}
+          </select>
+        </div>
+        
+      </div>`;
+        })
+        .join("")}
+    
     </div>
   </div>
-</div>`;
-}
-
-
-
-{
-  /* <div class="card card-primary">
-                      <div class="card-header">
-                        <h4 class="card-title w-100">
-                          <a class="d-block w-100" data-toggle="collapse" href="#collapseOne">
-                            Collapsible Group Item #1
-                          </a>
-                        </h4>
-                      </div>
-                      <div id="collapseOne" class="collapse show" data-parent="#accordion">
-                        <div class="card-body">
-                          
-                          <div class="card card-success">
-                            <div class="card-header">
-                              <h4 class="card-title w-100">
-                                <a class="d-block w-100" data-toggle="collapse" href="#collapse5">
-                                  Collapsible Group Danger
-                                </a>
-                              </h4>
-                            </div>
-                            <div id="collapse5" class="collapse" data-parent="#collapseOne">
-                              <div class="card-body">
-                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid.
-                                3
-                                wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt
-                                laborum
-                                eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee
-                                nulla
-                                assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred
-                                nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft
-                                beer
-                                farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus
-                                labore sustainable VHS.
-                              </div>
-                            </div>
-                          </div>
-                          <div class="card card-success">
-                            <div class="card-header">
-                              <h4 class="card-title w-100">
-                                <a class="d-block w-100" data-toggle="collapse" href="#collapse6">
-                                  Collapsible Group Success
-                                </a>
-                              </h4>
-                            </div>
-                            <div id="collapse6" class="collapse" data-parent="#collapseOne">
-                              <div class="card-body">
-                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid.
-                                3
-                                wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt
-                                laborum
-                                eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee
-                                nulla
-                                assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred
-                                nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft
-                                beer
-                                farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus
-                                labore sustainable VHS.
-                              </div>
-                            </div>
-                          </div>
-
-                          
-                        </div>
-                      </div>
-                    </div> */
-}
+  `;
+  }
+});

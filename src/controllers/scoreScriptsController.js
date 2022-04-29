@@ -9,12 +9,14 @@ const AgentTeamMemberModel = require('../models/agentTeamMember');
 const model = require('../models');
 const {
   SUCCESS_200,
-  ERR_500
+  ERR_500,
+  ERR_400
 } = require("../helpers/constants/statusCodeHTTP");
 const {
   USER_ROLE,
   OP_UNIT_DISPLAY,
-  STATUS_SCORE_SCRIPT
+  STATUS_SCORE_SCRIPT,
+  MESSAGE_ERROR
 } = require("../helpers/constants/statusField");
 
 const titlePage = 'Kịch bản chấm điểm';
@@ -56,7 +58,7 @@ async function getUserByRole(_model, role) {
   });
 }
 
-exports.getgroups = async (req, res, next) => {
+exports.gets = async (req, res, next) => {
   try {
     const { page, name } = req.query;
     let { limit } = req.query;
@@ -228,12 +230,56 @@ async function handleResult(ids, scoreScripts) {
   }
 }
 
-exports.createGroup = async (req, res) => {
+exports.create = async (req, res) => {
   let transaction;
 
   try {
     const data = req.body;
 
+    const { scoreScripts } = req.body;
+
+    // criteriaDisplayType:"0"
+    // description:"mo ta kich ban"
+    // name:"ten kich ban"
+    // needImproveMax:"1"
+    // passStandardMin:"4"
+    // scoreDisplayType:"0"
+    // standardMax:"3"
+    // standardMin:"2"
+    // status:0
+
+    // convert to number
+    Object.keys(req.body).forEach(i => {
+      let listNumber = [ 'criteriaDisplayType', 'needImproveMax', 'passStandardMin', 'scoreDisplayType', 'standardMax', 'standardMin', 'status' ];
+      if(listNumber.includes(i) && req.body[i] != undefined){
+        req.body[i] = Number(req.body[i]);
+      }
+    });
+    // check kich ban
+    if(scoreScripts && scoreScripts.length > 0){
+      // neu co nhom tieu chi ma ko co tieu chi --> bao loi
+      try {
+        for (let i = 0; i < scoreScripts.length; i++) {
+          
+          const { criterias, nameCriteriaGroup, totalScore } = scoreScripts[i];
+          if(!nameCriteriaGroup) throw new Error('Nhóm tiêu chí có tên rỗng');
+          if(!criterias || criterias.length == 0) throw new Error('Nhóm tiêu chí có tiêu chí rỗng');
+          
+          // có tiêu chí mà không có lựa chọn thì báo lỗi 
+          for (let i = 0; i < criterias.length; i++) {
+            const {  nameCriteria, selectionCriterias } = criterias[i];
+          
+            if(!nameCriteria) throw new Error('Tiêu chí có tên rỗng');
+            if(!selectionCriterias || selectionCriterias.length == 0) throw new Error('Tiêu chí có lựa chọn rỗng');
+          }
+
+        }
+      } catch (error) {
+        console.log('validate kịch bản lỗi: ', error);
+        return res.status(ERR_400.code).json({ message: MESSAGE_ERROR['QA-007']});
+      }
+    }
+    
     transaction = await model.sequelize.transaction();
 
     data.created = req.user.id;

@@ -4,15 +4,13 @@ const router = express.Router();
 const libsPassport = require('../libs/passport');
 
 router.route('/')
-  .get(libsPassport.isAdmin, scoreScriptsController.index);
-  router.route('/new')
+  .get(libsPassport.isAdmin, scoreScriptsController.index)
+  .post(scoreScriptsController.create);
+router.route('/new')
   .get(libsPassport.isAdmin, scoreScriptsController.new);
 
-router.route('/insert')
-  .post(scoreScriptsController.createGroup);
-
-router.route('/getgroups')
-  .get(scoreScriptsController.getgroups);
+router.route('/gets')
+  .get(scoreScriptsController.gets);
 
 router.route('/detail/:id')
   .get(libsPassport.isAdmin, scoreScriptsController.detail);
