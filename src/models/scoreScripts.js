@@ -40,6 +40,10 @@ class ScoreScript extends Model {
         passStandardMin: {
           type: DataTypes.INTEGER,
         },
+        status: {
+          type: DataTypes.INTEGER,
+          allowNull: false
+        },
         created: {
           type: DataTypes.INTEGER,
           allowNull: false,

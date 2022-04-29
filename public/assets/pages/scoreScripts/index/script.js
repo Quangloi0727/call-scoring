@@ -10,75 +10,6 @@ $(function () {
   //
   USER_ROLE = JSON.parse(decodeURIComponent(USER_ROLE));
 
-  $.validator.setDefaults({
-    submitHandler: function () {
-      let filter = _.chain($('#form_input_group .input')).reduce(function (memo, el) {
-        let value = $(el).val();
-        if (value != '' && value != null) memo[el.name] = value;
-        return memo;
-      }, {}).value();
-
-      $loadingData.show();
-
-      $.ajax({
-        type: 'POST',
-        url: '/groups/insert',
-        data: filter,
-        dataType: "text",
-        success: function () {
-          $loadingData.hide();
-
-          return location.reload();
-        },
-        error: function (error) {
-          $loadingData.hide();
-
-          return toastr.error(JSON.parse(error.responseText).message);
-        },
-      });
-    }
-  });
-
-  // validate form 
-  const validator = $formCreateGroup.validate({
-    rules: {
-      name: {
-        required: true,
-        maxlength: 50
-      },
-      leader: {
-        required: true,
-      },
-      description: {
-        maxlength: 500
-      }
-    },
-    messages: {
-      name: {
-        // required: "Tên nhóm không được để trống!",
-        // maxlength: $.validator.format( "Độ dài không quá {0} kí tự" )
-      },
-      leader: {
-        // required: "Giám sát không được để trống!",
-      },
-      description: {
-        // maxlength: 'Độ dài không quá 500 kí tự'
-      }
-    },
-    ignore: ":hidden",
-    errorElement: 'span',
-    errorPlacement: function (error, element) {
-      error.addClass('invalid-feedback');
-      element.closest('.form-group').append(error);
-    },
-    highlight: function (element, errorClass, validClass) {
-      $(element).addClass('is-invalid');
-    },
-    unhighlight: function (element, errorClass, validClass) {
-      $(element).removeClass('is-invalid');
-    }
-  });
-
   //event phân trang 
   $(document).on('click', '.zpaging', function () {
     let page = $(this).attr('data-link');
@@ -165,7 +96,7 @@ $(function () {
 
     $.ajax({
       type: 'GET',
-      url: '/groups/getGroups?' + $.param(queryData),
+      url: '/scoreScripts/gets?' + $.param(queryData),
       cache: 'false',
       success: function (result) {
         $loadingData.hide();
@@ -185,46 +116,18 @@ $(function () {
   function createTable(data) {
     let html = '';
     data.forEach((item) => {
-      let leaderHtml = '';
-      let totalMember = item.member.filter((user) => user.role == 0);
-      // let leaders = item.member.filter((user) => user.role == USER_ROLE.groupmanager.n);
-      let htmlLeader = '';
+      console.log({item});
 
-      // console.log('leaders: ', leaders);
-
-      if(item.leaders > 1){
-        let itemDrop = item.leaderDetails.split(';').map((user) => {
-          return `
-            <a class="dropdown-item" type="button">
-              ${user}
-            </a>
-          `;
-        }).join('');
-        
-        htmlLeader = `<div class="dropdown show">
-          <a class="dropdown-custom dropdown-toggle" role="button" 
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            ${item.leaders} quản lý
-          </a>
-          <div class="dropdown-menu" aria-labelledby="dropdown">
-            ${itemDrop}
-          </div>
-        </div>`;
-      }else if(item.leaders > 0) {
-        htmlLeader = `${item.leaderDetails}`;
-      }
       html += `
         <tr>
           <td class="text-center">
-            <a href=/groups/detail/${item.groupId}>${item.groupName != 'Default' ? item.groupName : 'Nhóm mặc định'}</a>
+            <a href=/scorescripts/detail/${item.id}>${item.name}</a>
           </td>
-          <td class="text-center">
-            ${htmlLeader}            
-          </td>
-          <td class="text-center">${item.members}</td>
-          <td class="text-center">${item.description || ''}</td>
-          <td class="text-center">${item.createdAt}</td>
-          <td class="text-center">${item.createdName}</td>
+          <td class="text-center">${item.status || ''}</td>
+          <td class="text-center">${item.createdAt || ''}</td>
+          <td class="text-center">${item.created || ''}</td>
+          <td class="text-center">${item.updatedAt || ''}</td>
+          <td class="text-center">${item.updated || ''}</td>
         </tr>
       `;
     });

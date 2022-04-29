@@ -73,111 +73,47 @@ exports.gets = async (req, res, next) => {
     // let queryWhere = {};
 
     if (name) {
-      query += `WHERE (t_group.name LIKE '%${name}%' OR UserGroupMembers1.leaderDetails LIKE '%${name}%')`;
-      // queryWhere = {
-      //   [Op.or]: [
-      //     { "$name$" : { [Op.like]: `%${name}%` } },
-      //     { "$UserGroupMember.user.fullName$": { [Op.like]: `%${name}%` } },
-      //     { "$UserGroupMember.user.userName$": { [Op.like]: `%${name}%` } },
-      //     // { "$TeamGroup.groupId$" : { [Op.not]: id } },
-      //   ]
-      // }
+      query += `WHERE (ss.name LIKE '%${name}%')`;
     }
 
     let queryDataString = `
-      SELECT
-        t_group.id AS groupId,
-        min(t_group.name) AS groupName,
-        min(t_group.description) AS description,
-        min(t_group.createdAt) AS createdAt,
-        min(agent.id) AS createdId,
-        min(agent.fullName) AS createdName,
-        Sum(case when UserGroupMembers1.counts > 0 then UserGroupMembers1.counts else 0 end) as leaders,
-				min(UserGroupMembers1.leaderDetails) as leaderDetails,
-				Sum(case when teamGroup1.counts > 0 then teamGroup1.counts else 0 end) as members
-      FROM dbo.scoreScripts t_group
-      LEFT JOIN dbo.Users agent -- nguoi tao
-				ON t_group.created = agent.id
-      LEFT JOIN (SELECT
-        UserGroupMembers.groupId,
-        string_agg(concat(Users.fullName, ' (', Users.userName, ')'), ';') as leaderDetails,
-        count(UserGroupMembers.groupId) as counts
-              FROM dbo.UserGroupMembers 
-              LEFT JOIN dbo.Users Users -- leader info
-                ON UserGroupMembers.userId = Users.id
-                
-              where role =  ${USER_ROLE.groupmanager.n}
-              group by UserGroupMembers.groupId) UserGroupMembers1 -- leader
-				ON t_group.id = UserGroupMembers1.groupId
-			LEFT JOIN (SELECT
-        TeamGroups.groupId,
-        count(TeamGroups.groupId) as counts
-              FROM dbo.TeamGroups
-              group by TeamGroups.groupId) teamGroup1 -- member
-        ON teamGroup1.groupId = t_group.id
+    SELECT
+      ss.id as id,
+      ss.name as name,
+      case 
+        when ss.status = ${STATUS_SCORE_SCRIPT.nhap.n} then  N'${STATUS_SCORE_SCRIPT.nhap.t}'
+        when ss.status = ${STATUS_SCORE_SCRIPT.ngungHoatDong.n} then  N'${STATUS_SCORE_SCRIPT.ngungHoatDong.t}'
+        when ss.status = ${STATUS_SCORE_SCRIPT.hoatDong.n} then  N'${STATUS_SCORE_SCRIPT.hoatDong.t}'
+        else null
+      end as status,
+      FORMAT (DATEADD(HOUR, 7, ss.createdAt) , 'dd/MM/yyyy HH:mm:ss ') as createdAt,
+      CONCAT(userCreate.fullName, ' (', userCreate.userName, ')') as created,
+      FORMAT (DATEADD(HOUR, 7, ss.updatedAt) , 'dd/MM/yyyy HH:mm:ss ') as updatedAt,
+      case 
+        when ss.updated is not null then  CONCAT(userUpdate.fullName, ' (', userUpdate.userName, ')')
+        else null
+      end as updated
+    FROM dbo.ScoreScripts ss
+    LEFT JOIN dbo.Users userCreate -- nguoi tao
+      ON ss.created = userCreate.id
+          LEFT JOIN dbo.Users userUpdate -- nguoi cap nhat
+      ON ss.updated = userUpdate.id
       ${query}
-      GROUP BY t_group.id
-      ORDER BY t_group.id DESC
+
+      ORDER BY ss.id DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `;
 
     let queryCountString = `
       SELECT COUNT(*) AS total
-      FROM dbo.scoreScripts t_group
-      LEFT JOIN dbo.Users agent ON t_group.created = agent.id
-      LEFT JOIN (SELECT
-        UserGroupMembers.groupId,
-        string_agg(concat(Users.fullName, ' (', Users.userName, ')'), ';') as leaderDetails,
-        count(UserGroupMembers.groupId) as counts
-              FROM dbo.UserGroupMembers 
-              LEFT JOIN dbo.Users Users -- leader info
-                ON UserGroupMembers.userId = Users.id
-                
-              where role =  ${USER_ROLE.groupmanager.n}
-              group by UserGroupMembers.groupId) UserGroupMembers1 -- leader
-				ON t_group.id = UserGroupMembers1.groupId
+      FROM dbo.ScoreScripts ss
       ${query}
-      GROUP BY t_group.id
     `;
 
-    // let scoreScripts = await model.Group.findAndCountAll({
-    //   where: queryWhere,
-    //   order: [['id', 'DESC']],
-    //   limit,
-    //   offset,
-    //   distinct: true,
-    //   include: [
-    //     { model: model.User, as: 'userCreate' },
-    //     { 
-    //       model: model.UserGroupMember, 
-    //       as: 'UserGroupMember',
-    //       include: { model: model.User, as: 'user' },
-    //       where : {
-    //         role: USER_ROLE.groupmanager.n
-    //       }
-    //     },
-    //     { 
-    //       model: model.TeamGroup, 
-    //       as: 'TeamGroup',
-    //       // include: { model: model.User, as: 'user' },
-    //       // where : {
-    //       //   role: USER_ROLE.groupmanager.n
-    //       // }
-    //     }
-    //   ],
-
-    //   // raw: true,
-    //   nest: true
-    // })
-
-    const [groupsResult, total] = await Promise.all([
+    const [result, total] = await Promise.all([
       await model.sequelize.query(queryDataString, { type: QueryTypes.SELECT }),
       await model.sequelize.query(queryCountString, { type: QueryTypes.SELECT }),
     ]);
-
-    const teamIds = _.map(groupsResult, 'groupId');
-
-    const dataResult = await handleResult(teamIds, groupsResult);
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
@@ -187,7 +123,7 @@ exports.gets = async (req, res, next) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: dataResult || [],
+      data: result || [],
       paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
     });
   } catch (error) {
@@ -198,38 +134,38 @@ exports.gets = async (req, res, next) => {
   }
 }
 
-async function handleResult(ids, scoreScripts) {
-  try {
-    if (!ids || ids.length <= 0) return scoreScripts;
+// async function handleResult(ids, scoreScripts) {
+//   try {
+//     if (!ids || ids.length <= 0) return scoreScripts;
 
-    let queryString = `
-      SELECT 
-        UserGroupMembers.groupId AS groupId,
-        UserGroupMembers.role AS role,
-        Users.id As userId,
-        Users.userName AS userName,
-        Users.fullName AS fullName
-      FROM dbo.UserGroupMembers
-      LEFT JOIN dbo.Users ON UserGroupMembers.userId = Users.id
-      WHERE UserGroupMembers.groupId IN ( ${ids.toString()} )
-    `;
+//     let queryString = `
+//       SELECT 
+//         UserGroupMembers.groupId AS groupId,
+//         UserGroupMembers.role AS role,
+//         Users.id As userId,
+//         Users.userName AS userName,
+//         Users.fullName AS fullName
+//       FROM dbo.UserGroupMembers
+//       LEFT JOIN dbo.Users ON UserGroupMembers.userId = Users.id
+//       WHERE UserGroupMembers.groupId IN ( ${ids.toString()} )
+//     `;
 
-    const userMembers = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
+//     const userMembers = await model.sequelize.query(queryString, { type: QueryTypes.SELECT });
 
-    const dataResult = scoreScripts.map((item) => {
-      const result = userMembers.filter((itemMember) => itemMember.groupId == item.groupId);
-      return {
-        ...item,
-        member: result,
-        createdAt: moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')
-      };
-    });
+//     const dataResult = scoreScripts.map((item) => {
+//       const result = userMembers.filter((itemMember) => itemMember.groupId == item.groupId);
+//       return {
+//         ...item,
+//         member: result,
+//         createdAt: moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')
+//       };
+//     });
 
-    return dataResult;
-  } catch (error) {
-    throw new Error(error);
-  }
-}
+//     return dataResult;
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// }
 
 exports.create = async (req, res) => {
   let transaction;
