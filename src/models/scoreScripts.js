@@ -2,30 +2,37 @@ const moment = require("moment");
 const { Model, DataTypes, Op } = require("sequelize");
 
 const { MESSAGE_ERROR } = require("../helpers/constants");
-class ScoreScipt extends Model {
+const { getLengthField } = require("../helpers/functions");
+class ScoreScript extends Model {
   static init(sequelize) {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING(100),
+          type: DataTypes.STRING(getLengthField('name')),
+          allowNull: false
         },
         description: {
-          type: DataTypes.STRING(500),
+          type: DataTypes.STRING(getLengthField('description')),
+          allowNull: false
         },
-        scoreType: {
+        scoreDisplayType: {
           type: DataTypes.INTEGER,
+          allowNull: false
         },
-        criteriaType: {
+        criteriaDisplayType: {
           type: DataTypes.INTEGER,
+          allowNull: false
         },
         needImproveMin: {
           type: DataTypes.INTEGER,
+          allowNull: false
         },
         needImproveMax: {
           type: DataTypes.INTEGER,
+          allowNull: false
         },
         standardMin: {
-          type: DataTypes.INTEGER,
+          type: DataTypes.INTEGER
         },
         standardMax: {
           type: DataTypes.INTEGER,
@@ -34,6 +41,14 @@ class ScoreScipt extends Model {
           type: DataTypes.INTEGER,
         },
         created: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "Users",
+            key: "id",
+          },
+        },
+        updated: {
           type: DataTypes.INTEGER,
           references: {
             model: "Users",
@@ -60,33 +75,37 @@ class ScoreScipt extends Model {
       },
       {
         sequelize,
-        modelName: "ScoreScipts",
+        modelName: "ScoreScripts",
         hooks: {
           beforeCreate: handleBeforeCreate,
         },
+        // If don't want updatedAt
+        updatedAt: false,
       }
     );
   }
 
   static associate(models) {
-    models.ScoreScipt.belongsTo(models.User, {
+    models.ScoreScript.belongsTo(models.User, {
       foreignKey: "created",
       as: "userCreate",
     });
+    
+    models.ScoreScript.belongsTo(models.User, {
+      foreignKey: "updated",
+      as: "userUpdate",
+    });
 
-    models.ScoreScipt.hasMany(models.UserScoreSciptMember, {
-      foreignKey: "groupId",
-      as: "UserScoreSciptMember",
+    models.ScoreScript.hasMany(models.CriteriaGroup, {
+      foreignKey: "scoreScriptId",
+      as: "CriteriaGroup",
     });
-    models.ScoreScipt.hasMany(models.TeamScoreScipt, {
-      foreignKey: "groupId",
-      as: "TeamScoreScipt",
-    });
+
   }
 }
 
 async function handleBeforeCreate(team, option) {
-  const teamResult = await ScoreScipt.findOne({
+  const teamResult = await ScoreScript.findOne({
     where: { name: { [Op.eq]: team.name.toString() } },
   });
 
@@ -95,4 +114,4 @@ async function handleBeforeCreate(team, option) {
   }
 }
 
-module.exports = ScoreScipt;
+module.exports = ScoreScript;

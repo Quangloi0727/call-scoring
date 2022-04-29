@@ -127,6 +127,15 @@ const STATUS_SCORE_SCRIPT = {
     },
   };
 
+const FIELD_CONFIG = {
+  name: {
+    default: 100
+  },
+  description: {
+    default: 500
+  },
+}
+
 module.exports = {
   TYPE_ADS,
   TYPE_NOTE,
@@ -138,4 +147,5 @@ module.exports = {
   OP_TIME_DEFINE,
   OP_UNIT_DISPLAY,
   STATUS_SCORE_SCRIPT,
+  FIELD_CONFIG
 };

@@ -18,6 +18,7 @@ const {
   STATUS_SCORE_SCRIPT,
   MESSAGE_ERROR
 } = require("../helpers/constants/statusField");
+const { getLengthField } = require('../helpers/functions');
 
 const titlePage = 'Kịch bản chấm điểm';
 
@@ -236,17 +237,10 @@ exports.create = async (req, res) => {
   try {
     const data = req.body;
 
-    const { scoreScripts } = req.body;
+    // default
+    data.needImproveMin = 0;
 
-    // criteriaDisplayType:"0"
-    // description:"mo ta kich ban"
-    // name:"ten kich ban"
-    // needImproveMax:"1"
-    // passStandardMin:"4"
-    // scoreDisplayType:"0"
-    // standardMax:"3"
-    // standardMin:"2"
-    // status:0
+    const { scoreScripts } = req.body;
 
     // convert to number
     Object.keys(req.body).forEach(i => {
@@ -255,7 +249,7 @@ exports.create = async (req, res) => {
         req.body[i] = Number(req.body[i]);
       }
     });
-    // check kich ban
+    // validate nhóm kịch bản
     if(scoreScripts && scoreScripts.length > 0){
       // neu co nhom tieu chi ma ko co tieu chi --> bao loi
       try {
@@ -284,33 +278,82 @@ exports.create = async (req, res) => {
 
     data.created = req.user.id;
 
-    if (data.name && data.name.length > 50) {
-      throw new Error('Tên nhóm không được dài quá 50 kí tự!');
+    if (data.name && data.name.length > getLengthField('name')) {
+      throw new Error(`Tên không được dài quá ${getLengthField('name')} kí tự!`);
     }
 
-    if (data.description && data.description.length > 500) {
-      throw new Error('Mô tả không được dài quá 500 kí tự!');
+    if (data.description && data.description.length > getLengthField('description')) {
+      throw new Error(`Mô tả không được dài quá ${getLengthField('description')} kí tự!`);
     }
 
     if (!data.name || data.name.trim() == '') {
-      throw new Error('Tên nhóm không được để trống!');
+      throw new Error('Tên không được để trống!');
     }
 
-    if (!data.leader || data.leader.length <= 0) {
-      throw new Error('Quản lý nhóm không được để trống!');
-    }
-
-    const groupCreateResult = await model.Group.create(data, { transaction: transaction });
-
-    let dataMember = data.leader.map(el => {
+    /**
+     * 1. tạo kịch bản chung
+     * 2. tạo nhóm tiêu chí 
+     * 3. --> tạo tiêu chí
+     * 4. --> tạo lựa chọn
+     */
+    // 1. tạo kịch bản chung
+    const scoreScriptResult = await model.ScoreScript.create(data, { transaction: transaction });
+    // 2. tạo nhóm tiêu chí 
+    let dataCriteriaGroups = scoreScripts.map(i => {
       return {
-        groupId: groupCreateResult.id,
-        userId: Number(el),
-        role: USER_ROLE.groupmanager.n
+        name: i.nameCriteriaGroup,
+        scoreScriptId: scoreScriptResult.id,
+        created: data.created
       }
     });
+    const criteriaGroupResult = await model.CriteriaGroup.bulkCreate(dataCriteriaGroups, { transaction: transaction });
+    // 3. --> tạo tiêu chí
+    let dataCriterias = [];
 
-    await model.UserGroupMember.bulkCreate(dataMember, { transaction: transaction });
+    scoreScripts.forEach((i, index) => {
+
+      i.criterias.forEach(j => {
+        dataCriterias.push({
+          name: j.nameCriteria,
+          scoreMax: j.scoreMax,
+          isActive: j.isActive,
+          criteriaGroupId: criteriaGroupResult[index].id,
+          created: data.created,
+          selectionCriterias: j.selectionCriterias
+        })
+      });
+
+    });
+    const criteriaResult = await model.Criteria.bulkCreate(dataCriterias, { transaction: transaction });
+    
+    // 3. --> tạo lựa chọn
+    let dataSelectionCriterias = [];
+    dataCriterias.forEach((i, index) => {
+
+      i.selectionCriterias.forEach(j => {
+        dataSelectionCriterias.push({
+          name: j.name,
+          score: Number(j.score),
+          unScoreCriteriaGroup: j.unScoreCriteriaGroup,
+          unScoreScript: j.unScoreScript,
+          criteriaId: criteriaResult[index].id,
+          created: data.created,
+        })
+      });
+
+    });
+
+    const selectionCriteriasResult = await model.SelectionCriteria.bulkCreate(dataSelectionCriterias, { transaction: transaction });
+
+    // let dataMember = data.leader.map(el => {
+    //   return {
+    //     groupId: scoreScriptResult.id,
+    //     userId: Number(el),
+    //     role: USER_ROLE.groupmanager.n
+    //   }
+    // });
+
+    // await model.UserGroupMember.bulkCreate(dataMember, { transaction: transaction });
 
     await transaction.commit();
 

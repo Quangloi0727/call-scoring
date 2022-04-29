@@ -1,3 +1,4 @@
+const { FIELD_CONFIG } = require('../constants/index');
 const ObjectID = require('mongodb').ObjectID;
 
 const {
@@ -87,4 +88,9 @@ exports.replaceSignOfVietnameseString = (str) => {
 exports.baseHttpIP = (ip = IP_PUBLIC, port = PORT) => {
 
     return `http://${ip}:${port}`;
+};
+
+exports.getLengthField = (fieldName, detail = 'default') => {
+
+    return FIELD_CONFIG[fieldName][detail];
 };
