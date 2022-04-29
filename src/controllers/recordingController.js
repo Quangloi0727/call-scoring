@@ -558,8 +558,9 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
         });
       }else {
         Object.keys(keysTitleExcel).forEach(i => {
-          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i];
-          dataHeader[`TXT_${i.toUpperCase()}`] = i;
+          let nameField = keysTitleExcel[i];
+          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField];
+          dataHeader[`TXT_${nameField.toUpperCase()}`] = nameField;
         });
       }
       // {
