@@ -31,6 +31,7 @@ exports.index = async (req, res, next) => {
       titlePage: titlePage,
       users: users,
       USER_ROLE,
+      STATUS_SCORE_SCRIPT
     });
   } catch (error) {
     console.log(`------- error ------- `);
@@ -61,7 +62,7 @@ async function getUserByRole(_model, role) {
 
 exports.gets = async (req, res, next) => {
   try {
-    const { page, name } = req.query;
+    const { page, name, status } = req.query;
     let { limit } = req.query;
     if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
     
@@ -69,11 +70,14 @@ exports.gets = async (req, res, next) => {
 
     const pageNumber = page ? Number(page) : 1;
     const offset = (pageNumber * limit) - limit;
-    let query = '';
+    let query = [];
     // let queryWhere = {};
 
     if (name) {
-      query += `WHERE (ss.name LIKE '%${name}%')`;
+      query.push(`ss.name LIKE '%${name}%'`);
+    }
+    if (status) {
+      query.push(`ss.status = ${status}`);
     }
 
     let queryDataString = `
@@ -98,7 +102,7 @@ exports.gets = async (req, res, next) => {
       ON ss.created = userCreate.id
           LEFT JOIN dbo.Users userUpdate -- nguoi cap nhat
       ON ss.updated = userUpdate.id
-      ${query}
+      ${query.length > 0 ? 'WHERE ' + query.join(' AND ') : ''}
 
       ORDER BY ss.id DESC
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
@@ -107,7 +111,7 @@ exports.gets = async (req, res, next) => {
     let queryCountString = `
       SELECT COUNT(*) AS total
       FROM dbo.ScoreScripts ss
-      ${query}
+      ${query.length > 0 ? 'WHERE ' + query.join(' AND ') : ''}
     `;
 
     const [result, total] = await Promise.all([
@@ -365,42 +369,36 @@ exports.detail = async (req, res, next) => {
       throw new Error('Nhóm không tồn tại!');
     }
     
-    let [users, groupInfo] = await Promise.all([
-      getUserByRole(model.User, USER_ROLE.groupmanager.n),
-      model.Group.findOne({
+    let [scoreScriptInfo] = await Promise.all([
+      model.ScoreScript.findOne({
         where: { id: { [Op.eq]: Number(id) } },
         include: [
           { model: model.User, as: 'userCreate' },
           { 
-            model: model.UserGroupMember, 
-            as: 'UserGroupMember',
-            include: { model: model.User, as: 'User' },
-            where : {
-              role: USER_ROLE.groupmanager.n
-            }
+            model: model.CriteriaGroup,
+            as: 'CriteriaGroup',
+            include: { 
+              model: model.Criteria, 
+              as: 'Criteria',
+              include: { 
+                model: model.SelectionCriteria,
+                as: 'SelectionCriteria'
+              },
+            },
           },
-          { 
-            model: model.TeamGroup, 
-            as: 'TeamGroup',
-            // include: { model: model.User, as: 'user' },
-            // where : {
-            //   role: USER_ROLE.groupmanager.n
-            // }
-          }
         ],
         // raw: true,
         nest: true
       })
     ]);
-    // let _group = {...groupInfo};
 
-    // _group.createdAt = moment(new Date(groupInfo.createdAt)).format('HH:mm:ss DD/MM/YYYY');
-    // _group.updatedAt = moment(new Date(groupInfo.updatedAt)).format('HH:mm:ss DD/MM/YYYY');
 
     return _render(req, res, 'scoreScripts/detail', {
       titlePage: null,
-      group: groupInfo,
-      users: users,
+      scoreScript: scoreScriptInfo,
+      // users: users,
+      OP_UNIT_DISPLAY,
+      STATUS_SCORE_SCRIPT 
     });
   } catch (error) {
     console.log(`------- error ------- `);

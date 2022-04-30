@@ -1,0 +1,62 @@
+.nav-link.active {
+  /* background-color: red !important; */
+  border-bottom: solid 2px rgb(12, 109, 255);
+}
+
+.card .removeCard {
+  position: absolute;
+  right: 0;
+  z-index: 1;
+}
+
+#tab-score-script-script .card {
+  opacity: 0;
+  -webkit-animation: new-item-animation 0.3s linear forwards;
+  -o-animation: new-item-animation 0.3s linear forwards;
+  animation: new-item-animation 0.3s linear forwards;
+}
+
+@keyframes new-item-animation {
+  from {
+    opacity: 0;
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    -o-transform: scale(0);
+    transform: scale(0);
+  }
+
+  to {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+    transform: scale(1);
+  }
+}
+
+#tab-score-script-script .removed-item {
+  -webkit-animation: removed-item-animation 0.6s
+    cubic-bezier(0.55, -0.04, 0.91, 0.94) forwards;
+  -o-animation: removed-item-animation 0.6s
+    cubic-bezier(0.55, -0.04, 0.91, 0.94) forwards;
+  animation: removed-item-animation 0.6s cubic-bezier(0.55, -0.04, 0.91, 0.94)
+    forwards;
+}
+
+@keyframes removed-item-animation {
+  from {
+    opacity: 1;
+    -webkit-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+    transform: scale(1);
+  }
+
+  to {
+    -webkit-transform: scale(0);
+    -ms-transform: scale(0);
+    -o-transform: scale(0);
+    transform: scale(0);
+    opacity: 0;
+  }
+}

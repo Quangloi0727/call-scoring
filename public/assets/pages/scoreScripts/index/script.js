@@ -2,13 +2,13 @@ $(function () {
   const $formCreateGroup = $('#form_input_group');
   const $formSearchGroup = $('#form_search_groups');
   const $buttonSearchGroup = $('#search_group');
+  const $btnAddScoreScript = $('#btnAddScoreScript');
   const $modalGroup = $('#modal_group');
   const $loadingData = $('.page-loader');
   const $inputLeader = $('#form_input_group #leader');
   const $inputName = $('#form_input_group #name');
 
   //
-  USER_ROLE = JSON.parse(decodeURIComponent(USER_ROLE));
 
   //event phân trang 
   $(document).on('click', '.zpaging', function () {
@@ -16,39 +16,13 @@ $(function () {
     return findData(page);
   });
 
-  // event modal
-  $modalGroup.on('hidden.bs.modal', function (e) {
-    $formCreateGroup.trigger("reset");
-    validator.resetForm();
-
-    $('#name_length').html('0/50');
-    $('#name_length').removeClass('text-danger').addClass('text-muted');
-
-    $('#description_length').html('0/500');
-    $('#description_length').removeClass('text-danger').addClass('text-muted');
-  })
-
-  $modalGroup.on('shown.bs.modal', function (e) {
-    $formCreateGroup.trigger("reset");
-    validator.resetForm();
-
-    let leaderHtml = '';
-    users.forEach(user => {
-      leaderHtml += `
-        <option value="${user.id}">
-          ${user.fullName} (${user.userName})
-        </option>
-      `;
-    });
-
-    $inputLeader.html(leaderHtml);
-    return $inputLeader.selectpicker('refresh');
-  })
-
   //event tìm kiếm
   $buttonSearchGroup.on('click', function () {
     const pageNumber = 1;
     return findData(pageNumber);
+  });
+  $btnAddScoreScript.on('click', function () {
+    window.location.replace('/scoreScripts/new')
   });
 
   $('#input_search_group').keypress(function (e) {
