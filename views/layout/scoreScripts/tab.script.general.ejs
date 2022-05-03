@@ -1,9 +1,12 @@
+<% let isEdit = scoreScript ? true : false%>
 <div class="tab-pane fade active show" id="tab-score-script-general" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
 
     <div class="form-group row">
         <label for="description" class="col-sm-2 col-form-label">Mô tả <span class="text-danger">*</span></label>
         <div class="col-sm-10">
-            <input type="text" class="form-control input" id="description" name="description" placeholder="Mô tả">
+            <input 
+            <%- isEdit ? 'value="' + scoreScript.description +'"' : '' %> 
+            type="text" class="form-control input" id="description" name="description" placeholder="Mô tả">
         </div>
     </div>
 
@@ -14,9 +17,13 @@
             <select class="form-control selectpicker input" name="scoreDisplayType" id="scoreDisplayType"
                 >
                 <% Object.keys(OP_UNIT_DISPLAY).forEach((item)=> { %>
-                <option value="<%= OP_UNIT_DISPLAY[item].n %>">
-                    <%= OP_UNIT_DISPLAY[item].t %>
-                </option>
+                    <% let selected = isEdit && scoreScript.scoreDisplayType == OP_UNIT_DISPLAY[item].n ? 'selected' : '' %> 
+                    <option 
+                        <%- selected %>
+                        value="<%= OP_UNIT_DISPLAY[item].n %>">
+
+                        <%= OP_UNIT_DISPLAY[item].t %>
+                    </option>
                 <% }); %>
 
             </select>
@@ -29,7 +36,10 @@
         <div class="col-sm-3">
             <select class="form-control selectpicker input" name="criteriaDisplayType" id="criteriaDisplayType">
                 <% Object.keys(OP_UNIT_DISPLAY).forEach((item)=> { %>
-                    <option value="<%= OP_UNIT_DISPLAY[item].n %>">
+                    <% let selected = isEdit && scoreScript.criteriaDisplayType == OP_UNIT_DISPLAY[item].n ? 'selected' : '' %> 
+                    <option 
+                        <%- selected %>
+                        value="<%= OP_UNIT_DISPLAY[item].n %>">
                         <%= OP_UNIT_DISPLAY[item].t %>
                     </option>
                     <% }); %>
@@ -46,7 +56,9 @@
             <i class="fa fa-minus" aria-hidden="true"></i>
         </div>
         <div class="col-sm-1">
-            <input type="number" class="form-control input" id="needImproveMax" name="needImproveMax" placeholder="">
+            <input 
+            <%- isEdit ? 'value="' + scoreScript.needImproveMax +'"' : '' %> 
+            type="number" class="form-control input" id="needImproveMax" name="needImproveMax" placeholder="">
         </div>
     </div>
 
@@ -55,20 +67,26 @@
             <!-- <span class="text-danger">*</span> -->
         </label>
         <div class="col-sm-1">
-            <input type="number" class="form-control input" id="standardMin" name="standardMin" placeholder="" disabled>
+            <input 
+            <%- isEdit ? 'value="' + scoreScript.standardMin +'"' : '' %> 
+            type="number" class="form-control input" id="standardMin" name="standardMin" placeholder="" disabled>
         </div>
         <div class="col-sm-1 d-flex align-items-center justify-content-center" style="">
             <i class="fa fa-minus" aria-hidden="true"></i>
         </div>
         <div class="col-sm-1">
-            <input type="number" class="form-control input" id="standardMax" name="standardMax" placeholder="">
+            <input 
+            <%- isEdit ? 'value="' + scoreScript.standardMax+'"' : '' %> 
+            type="number" class="form-control input" id="standardMax" name="standardMax" placeholder="">
         </div>
     </div>
 
     <div class="form-group row">
         <label for="" class="col-sm-2 col-form-label">Vượt tiêu chuẩn từ </label>
         <div class="col-sm-1">
-            <input type="number" class="form-control input" id="passStandardMin" name="passStandardMin" placeholder="" disabled>
+            <input 
+            <%- isEdit ? 'value="' + scoreScript.passStandardMin +'"' : '' %> 
+            type="number" class="form-control input" id="passStandardMin" name="passStandardMin" placeholder="" disabled>
         </div>
     </div>
 

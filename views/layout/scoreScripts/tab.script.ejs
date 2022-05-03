@@ -1,9 +1,10 @@
+<% let isEdit = scoreScript ? true : false%>
 <div class="tab-pane fade" id="tab-score-script-script" role="tabpanel"
     aria-labelledby="custom-tabs-three-profile-tab">
 
     <!-- template nhom tieu chi -->
     <div id="tempCriteriaGroup" class="d-none">
-        <%- include('./temp.criteria.group.ejs', { }) %>
+        <%- include('./temp.criteria.group.ejs', { criteriaGroup: null }) %>
     </div>
     <!-- end template nhom tieu chi -->
 
@@ -23,7 +24,9 @@
 
     <!-- Danh sách nhóm tiêu chí -->
     <div id="scoreScript" class="pt-3">
-
+        <% scoreScript.CriteriaGroup.forEach(i => { %>
+            <%- include('./temp.criteria.group.ejs', { criteriaGroup: i }) %>
+        <% }) %> 
     </div>
     <!-- end Danh sách nhóm tiêu chí -->
     <%- include('./btn.add.ejs', { BTN_TITLE: 'Thêm nhóm tiêu chí', BTN_CLASS_NAME : 'add-criteria-group' }) %>

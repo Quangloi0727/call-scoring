@@ -314,42 +314,9 @@ exports.create = async (req, res) => {
 exports.new = async (req, res, next) => {
   try {
     
-    let [users, groupInfo] = await Promise.all([
-      getUserByRole(model.User, USER_ROLE.groupmanager.n),
-      model.Group.findOne({
-        // where: { id: { [Op.eq]: Number(id) } },
-        include: [
-          { model: model.User, as: 'userCreate' },
-          { 
-            model: model.UserGroupMember, 
-            as: 'UserGroupMember',
-            include: { model: model.User, as: 'User' },
-            where : {
-              role: USER_ROLE.groupmanager.n
-            }
-          },
-          { 
-            model: model.TeamGroup, 
-            as: 'TeamGroup',
-            // include: { model: model.User, as: 'user' },
-            // where : {
-            //   role: USER_ROLE.groupmanager.n
-            // }
-          }
-        ],
-        // raw: true,
-        nest: true
-      })
-    ]);
-    // let _group = {...groupInfo};
-
-    // _group.createdAt = moment(new Date(groupInfo.createdAt)).format('HH:mm:ss DD/MM/YYYY');
-    // _group.updatedAt = moment(new Date(groupInfo.updatedAt)).format('HH:mm:ss DD/MM/YYYY');
-
     return _render(req, res, 'scoreScripts/new', {
       titlePage: null,
-      group: groupInfo,
-      users: users,
+      scoreScript: null,
       OP_UNIT_DISPLAY,
       STATUS_SCORE_SCRIPT
     });
@@ -393,7 +360,7 @@ exports.detail = async (req, res, next) => {
     ]);
 
 
-    return _render(req, res, 'scoreScripts/detail', {
+    return _render(req, res, 'scoreScripts/new', {
       titlePage: null,
       scoreScript: scoreScriptInfo,
       // users: users,

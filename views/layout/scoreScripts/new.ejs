@@ -1,8 +1,7 @@
 <script>
-  var group = JSON.parse('<%- JSON.stringify(group)%>');
-  var users = JSON.parse('<%- JSON.stringify(users)%>');
   var OP_UNIT_DISPLAY = JSON.parse('<%- JSON.stringify(OP_UNIT_DISPLAY)%>');
 </script>
+<% let isEdit = scoreScript ? true : false%>
 <div class="wrapper">
   <div>
     <section class="content-header">
@@ -30,8 +29,22 @@
 
               <div class="row">
                 <div class="form-group col-sm-3">
-                  <input type="text" class="form-control input" id="name" name="name" placeholder="kịch bản" />
+                  <% if (isEdit) { %>
+                    <% } else { %> 
+                    <% } %> 
+                  <input 
+                  <%- isEdit ? 'value="' + scoreScript.name +'"' : '' %> 
+
+                  type="text" class="form-control input" id="name" name="name" placeholder="kịch bản" />
                 </div>
+
+                <% if (isEdit) { %>
+                  <div class="form-group col-sm-3">
+                    <button type="button" id="btnClone" class="btn btn-primary">Nhân bản</button>
+                  </div>
+                <% } %> 
+                
+                
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
                   <button type="submit" id="btn_save_scoreSripts" class="btn btn-primary">Lưu</button>
@@ -60,11 +73,11 @@
               <div class="tab-content" id="tab-score-script-tabContent">
 
                 <!-- tab chung -->
-                  <%- include('./tab.script.general.ejs', { OP_UNIT_DISPLAY }) %>
+                  <%- include('./tab.script.general.ejs', { OP_UNIT_DISPLAY, scoreScript }) %>
                 <!-- end tab chung -->
 
                 <!-- tab kịch bản -->
-                  <%- include('./tab.script.ejs', { }) %>
+                  <%- include('./tab.script.ejs', { scoreScript }) %>
                 <!-- end tab kịch bản -->
 
                 <!-- tab Xem trước -->
