@@ -36,6 +36,14 @@ npx sequelize-cli model:generate --name Demo --attributes realName:string,addres
 npx sequelize-cli model:generate --name pol_user --attributes realName:string,address:string
 npx sequelize-cli model:generate --name call_detail_records --attributes id:UUID,callId:bigint,called:string,caller:string,connectTime:bigint,destLegId:bigint,direction:string,disconnectTime:bigint,duration:INTEGER,fileStatus:string,origCalledLoginUserId:string,origCallingLoginUserId:string,origLegId:bigint,origTime:bigint,teamId:INTEGER,agentId:INTEGER,recordingFileName:string
 
+npx sequelize-cli model:generate --name groups --attributes name:string
+npx sequelize-cli model:generate --name UserGroupMembers --attributes name:string
+npx sequelize-cli model:generate --name UserRoles --attributes name:string
+npx sequelize-cli model:generate --name TeamGroups --attributes name:string
+npx sequelize-cli model:generate --name RuleTypes --attributes name:string
+npx sequelize-cli model:generate --name Rules --attributes name:string
+npx sequelize-cli model:generate --name RuleDetails --attributes name:string
+
 Chạy Migration
 Chạy migration với lệnh :
 
