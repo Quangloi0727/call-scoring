@@ -17,7 +17,7 @@ class CallDetailRecords extends Model {
           type: 'UNIQUEIDENTIFIER'
         },
         callId: DataTypes.BIGINT,
-        called: DataTypes.STRING(25, true),
+        called: DataTypes.STRING(25),
         caller: DataTypes.STRING(25),
         connectTime: DataTypes.BIGINT,
         destLegId: DataTypes.BIGINT,
@@ -29,6 +29,10 @@ class CallDetailRecords extends Model {
         origCallingLoginUserId: DataTypes.STRING(50),
         origLegId: DataTypes.BIGINT,
         origTime: DataTypes.BIGINT,
+        sourceName: DataTypes.STRING(50),
+        xmlCdrId: DataTypes.STRING(36),
+        node: DataTypes.STRING(20),
+        lastUpdateTime: DataTypes.BIGINT,
         teamId: {
           type: DataTypes.INTEGER,
           references: {
@@ -47,6 +51,7 @@ class CallDetailRecords extends Model {
       },
       {
         sequelize,
+        timestamps: false,
         modelName: "call_detail_records",
       }
     );
