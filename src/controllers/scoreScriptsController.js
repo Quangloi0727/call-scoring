@@ -313,10 +313,13 @@ exports.create = async (req, res) => {
 
 exports.new = async (req, res, next) => {
   try {
+    let initScoreScript = {
+      CriteriaGroup: []
+    }
     
     return _render(req, res, 'scoreScripts/new', {
       titlePage: null,
-      scoreScript: null,
+      scoreScript: initScoreScript,
       OP_UNIT_DISPLAY,
       STATUS_SCORE_SCRIPT
     });
