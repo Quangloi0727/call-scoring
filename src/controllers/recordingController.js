@@ -33,8 +33,7 @@ const SOURCE_NAME = {
   },
 };
 
-const { headerDefault } = require('../constants/constants.js')
-const { keysTitleExcel } = require('../constants/constants.js')
+const { headerDefault, var1Tovar10, keysTitleExcel } = require('../constants/constants.js')
 
 exports.index = async (req, res, next) => {
   try {
@@ -69,6 +68,7 @@ exports.index = async (req, res, next) => {
       titlePage: titlePage,
       rules: user.rules,
       headerDefault,
+      var1Tovar10,
       SOURCE_NAME,
       SYSTEM_RULE,
       teamsDetail: _.uniqBy(teamsDetail, 'memberId'), // master data

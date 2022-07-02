@@ -22,6 +22,19 @@ const headerDefault = {
     var10: "Var10"
 }
 
+const var1Tovar10 = {
+    var1: "Var1",
+    var2: "Var2",
+    var3: "Var3",
+    var4: "Var4",
+    var5: "Var5",
+    var6: "Var6",
+    var7: "Var7",
+    var8: "Var8",
+    var9: "Var9",
+    var10: "Var10"
+}
+
 const keysTitleExcel = [
     "direction",
     "agentName",
@@ -44,5 +57,6 @@ const keysTitleExcel = [
 
 module.exports = {
     headerDefault,
-    keysTitleExcel
+    keysTitleExcel,
+    var1Tovar10
 }
