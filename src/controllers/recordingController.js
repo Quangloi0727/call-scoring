@@ -34,6 +34,7 @@ const SOURCE_NAME = {
 };
 
 const { headerDefault } = require('../constants/constants.js')
+const { keysTitleExcel } = require('../constants/constants.js')
 
 exports.index = async (req, res, next) => {
   try {
@@ -560,21 +561,8 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
       let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY');
       let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY');
 
-      // default
-      let keysTitleExcel = [
-        "direction",
-        "agentName",
-        "teamName",
-        "caller",
-        "called",
-        "origTime",
-        "duration",
-      ];
-
       let titleExcel = {};
       let dataHeader = {};
-
-
 
       if (ConfigurationColums) {
         Object.keys(ConfigurationColums).forEach(i => {
@@ -612,7 +600,7 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
         titlesHeader: titleExcel,
         data: newData,
         opts: {
-          valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20],
+          valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
         }
       });
       return resolve(linkFileExcel);
