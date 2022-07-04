@@ -205,7 +205,7 @@ exports.getRecording = async (req, res) => {
     if (var6) query += `AND records.var6 LIKE '%${var6.toString()}%' `;
     if (var7) query += `AND records.var7 LIKE '%${var7.toString()}%' `;
     if (var8) query += `AND records.var8 LIKE '%${var8.toString()}%' `;
-    if (var8) query += `AND records.var9 LIKE '%${var9.toString()}%' `;
+    if (var9) query += `AND records.var9 LIKE '%${var9.toString()}%' `;
     if (var10) query += `AND records.var10 LIKE '%${var10.toString()}%' `;
 
     // if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
