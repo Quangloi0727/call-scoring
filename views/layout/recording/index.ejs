@@ -208,12 +208,6 @@
               </div>
             </div>
             
-            <!-- <div class="col-6">
-              <div class="form-group">
-                <label>Tên đội ngũ</label>
-                <input class="form-control input" type="text" id="val_teamName" name="teamName">
-              </div>
-            </div> -->
             <div class="col-6">
               <div class="form-group">
                 <label>Hướng gọi</label>
@@ -245,6 +239,17 @@
                 </select>
               </div>
             </div>
+
+            <%
+              for (const [key, value] of Object.entries(var1Tovar10)) { %>
+                <div class="col-6">
+                  <div class="form-group">
+                    <label><%- value %></label>
+                    <input type="text" class="form-control input" id="val_<%- key %>" name="<%- key %>" />
+                  </div>
+                </div>
+              <%}
+            %>
 
           </div>
           

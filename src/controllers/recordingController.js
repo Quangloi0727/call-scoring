@@ -23,30 +23,17 @@ const model = require('../models');
 const ConfigurationColumsModel = require('../models/configurationcolums');
 const titlePage = 'Danh sách cuộc gọi';
 const SOURCE_NAME = {
-  oreka : {
+  oreka: {
     code: 'ORK',
     text: 'Orec'
   },
-  fs :{
+  fs: {
     code: 'FS',
     text: 'Freeswitch'
   },
 };
 
-// cấu hình bảng mặc định
-let headerDefault = {
-  callId: "ID cuộc gọi",
-  direction: "Hướng gọi",
-  agentName: "Điện thoại viên",
-  teamName: "Đội ngũ",
-  caller: "Số gọi đi",
-  called: "Số gọi đến",
-  origTime: "Ngày giờ gọi",
-  duration: "Thời lượng",
-  audioHtml: "Ghi âm",
-  sourceName: "Nguồn ghi âm",
-}
-
+const { headerDefault, var1Tovar10, keysTitleExcel } = require('../constants/constants.js')
 
 exports.index = async (req, res, next) => {
   try {
@@ -66,7 +53,7 @@ exports.index = async (req, res, next) => {
       let teamFound = [];
       teamIdMap.forEach(i => {
         i.forEach(j => {
-          if(!teamFound.includes(j)) teamFound.push(j);
+          if (!teamFound.includes(j)) teamFound.push(j);
         });
       });
 
@@ -81,9 +68,10 @@ exports.index = async (req, res, next) => {
       titlePage: titlePage,
       rules: user.rules,
       headerDefault,
+      var1Tovar10,
       SOURCE_NAME,
       SYSTEM_RULE,
-      teamsDetail:  _.uniqBy(teamsDetail, 'memberId'), // master data
+      teamsDetail: _.uniqBy(teamsDetail, 'memberId'), // master data
       teams: _.uniqBy(teamsDetail, 'teamId') || [],
     });
   } catch (error) {
@@ -108,22 +96,32 @@ exports.getRecording = async (req, res) => {
       userName,
       teamName,
       callDirection,
-      teams, 
-      callId, 
-      sourceName, 
+      teams,
+      callId,
+      sourceName,
+      var1,
+      var2,
+      var3,
+      var4,
+      var5,
+      var6,
+      var7,
+      var8,
+      var9,
+      var10,
       sort // sort: {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
     } = req.query;
     let { limit } = req.query;
     let { user } = req;
-    
-    if(!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
 
-    if(sort && !['ASC', 'DESC'].includes(sort.sort_type)){
+    if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+
+    if (sort && !['ASC', 'DESC'].includes(sort.sort_type)) {
       return res.status(ERR_400.code).json({
         message: ERR_400.message_detail.sortTypeInValid
       });
     }
-    
+
     limit = Number(limit);
 
     const pageNumber = page ? Number(page) : 1;
@@ -135,13 +133,13 @@ exports.getRecording = async (req, res) => {
     let limitTimeExpires;
 
     // check quyền xem dữ liệu
-    if(!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]){
-      
+    if (!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]) {
+
       return res.status(ERR_403.code).json({
         message: ERR_403.message_detail.notHaveAccessData
       });
-    }else {
-      if(user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0){
+    } else {
+      if (user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0) {
         let _now = moment();
 
         limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix(); // second times
@@ -154,18 +152,18 @@ exports.getRecording = async (req, res) => {
     let startTimeMilisecond = Number(moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'));
     let endTimeMilisecond = Number(moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'));
 
-    if(startTimeMilisecond > endTimeMilisecond){
+    if (startTimeMilisecond > endTimeMilisecond) {
       return res.status(ERR_400.code).json({
         message: ERR_400.message_detail.timeQueryInValid
       });
     }
 
-    if(endTimeMilisecond - startTimeMilisecond > Number(_config.limitSearchDayRecording) * 86400 ){
+    if (endTimeMilisecond - startTimeMilisecond > Number(_config.limitSearchDayRecording) * 86400) {
       return res.status(ERR_400.code).json({
         message: ERR_400.message_detail.searchDayRecordingInValid(_config.limitSearchDayRecording)
       });
     }
-    
+
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
       isAdmin = true;
@@ -180,7 +178,7 @@ exports.getRecording = async (req, res) => {
       let teamFound = [];
       teamIdMap.forEach(i => {
         i.forEach(j => {
-          if(!teamFound.includes(j)) teamFound.push(j);
+          if (!teamFound.includes(j)) teamFound.push(j);
         });
       });
 
@@ -199,6 +197,17 @@ exports.getRecording = async (req, res) => {
     if (caller) query += `AND records.caller LIKE '%${caller.toString()}%' `;
     if (called) query += `AND records.called LIKE '%${called.toString()}%' `;
     if (extension) query += `AND agent.extension LIKE '%${extension.toString()}%' `;
+    if (var1) query += `AND records.var1 LIKE '%${var1.toString()}%' `;
+    if (var2) query += `AND records.var2 LIKE '%${var2.toString()}%' `;
+    if (var3) query += `AND records.var3 LIKE '%${var3.toString()}%' `;
+    if (var4) query += `AND records.var4 LIKE '%${var4.toString()}%' `;
+    if (var5) query += `AND records.var5 LIKE '%${var5.toString()}%' `;
+    if (var6) query += `AND records.var6 LIKE '%${var6.toString()}%' `;
+    if (var7) query += `AND records.var7 LIKE '%${var7.toString()}%' `;
+    if (var8) query += `AND records.var8 LIKE '%${var8.toString()}%' `;
+    if (var9) query += `AND records.var9 LIKE '%${var9.toString()}%' `;
+    if (var10) query += `AND records.var10 LIKE '%${var10.toString()}%' `;
+
     // if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
     if (fullName) {
       userIdFilter = _.concat(userIdFilter, fullName);
@@ -206,7 +215,7 @@ exports.getRecording = async (req, res) => {
     if (userName) {
       userIdFilter = _.concat(userIdFilter, userName);
     }
-    if(userIdFilter.length > 0){
+    if (userIdFilter.length > 0) {
       userIdFilter = _.uniq(userIdFilter).map(i => Number(i));
 
       query += `AND agent.id IN (${userIdFilter.join()}) `;
@@ -220,10 +229,10 @@ exports.getRecording = async (req, res) => {
     if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `;
 
     // limit time by rule
-    if(limitTimeExpires > startTimeMilisecond) startTimeMilisecond = limitTimeExpires;
+    if (limitTimeExpires > startTimeMilisecond) startTimeMilisecond = limitTimeExpires;
 
     // sort
-    if(sort){
+    if (sort) {
       order = `ORDER BY records.${sort.sort_by} ${sort.sort_type}`
     }
 
@@ -231,7 +240,7 @@ exports.getRecording = async (req, res) => {
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums);
     }
-    
+
     let queryData = `
       DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
 
@@ -242,6 +251,16 @@ exports.getRecording = async (req, res) => {
 	      records.called AS called,
 	      records.origTime AS origTime,
 	      records.duration AS duration,
+	      records.var1 AS var1,
+	      records.var2 AS var2,
+	      records.var3 AS var3,
+	      records.var4 AS var4,
+	      records.var5 AS var5,
+	      records.var6 AS var6,
+	      records.var7 AS var7,
+	      records.var8 AS var8,
+	      records.var9 AS var9,
+	      records.var10 AS var10,
         records.recordingFileName AS recordingFileName,
         -- case 
         --   when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
@@ -305,7 +324,7 @@ exports.getRecording = async (req, res) => {
       message: 'Success!',
       data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
       ConfigurationColums: ConfigurationColums,
-      paginator: {...paginator.getPaginationData(), rowsPerPage: limit},
+      paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
     });
   } catch (error) {
     console.log(`------- error ------- getRecording`);
@@ -378,7 +397,7 @@ function getConfigurationColums(userId) {
         `,
         { type: QueryTypes.SELECT }
       );
-      if(result && result[0] && result[0].configurationColums){
+      if (result && result[0] && result[0].configurationColums) {
         return resolve(JSON.parse(result[0].configurationColums))
       }
       return resolve(null);
@@ -419,18 +438,18 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
   return new Promise(async (resolve, reject) => {
     try {
       let conditionQuery = '';
-      if(isAdmin == true){
+      if (isAdmin == true) {
         conditionQuery = `team.name <> 'Default'`;
-      }else {
+      } else {
         // sup
-        if(teamIds.length > 0){
+        if (teamIds.length > 0) {
           conditionQuery = `team.id IN (${teamIds.join(',')}) and 
           AgentTeamMembers.role =  ${USER_ROLE.agent.n}`;
-        }else {
+        } else {
           // agent
           conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`;
         }
-        
+
       }
       const result = await model.sequelize.query(
         `
@@ -452,7 +471,7 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
         { type: QueryTypes.SELECT }
       );
 
-     
+
 
       return resolve({ teams: result });
     } catch (error) {
@@ -470,9 +489,9 @@ function handleData(data, privatePhoneNumber = false) {
     el.recordingFileName = _config.pathRecording + el.recordingFileName;
 
     // che số
-    if(privatePhoneNumber){
-      if(el.caller && el.caller.length >= 10) el.caller = cheSo(el.caller, 4);
-      if(el.called && el.called.length >= 10) el.called = cheSo(el.called, 4);
+    if (privatePhoneNumber) {
+      if (el.caller && el.caller.length >= 10) el.caller = cheSo(el.caller, 4);
+      if (el.called && el.called.length >= 10) el.called = cheSo(el.called, 4);
     }
 
     return el;
@@ -490,7 +509,17 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
 	      records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
-	      records.duration AS duration,
+        records.duration AS duration,
+        records.var1 AS var1,
+	      records.var2 AS var2,
+	      records.var3 AS var3,
+	      records.var4 AS var4,
+	      records.var5 AS var5,
+	      records.var6 AS var6,
+	      records.var7 AS var7,
+	      records.var8 AS var8,
+	      records.var9 AS var9,
+	      records.var10 AS var10,
 	      records.recordingFileName AS recordingFileName,
         records.direction AS direction,
         records.sourceName AS sourceName,
@@ -532,56 +561,24 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
       let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY');
       let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY');
 
-      // default
-      let keysTitleExcel = [
-        "direction",
-        "agentName",
-        "teamName",
-        "caller",
-        "called",
-        "origTime",
-        "duration",
-      ];
-
       let titleExcel = {};
       let dataHeader = {};
 
-
-
-      if(ConfigurationColums){
+      if (ConfigurationColums) {
         Object.keys(ConfigurationColums).forEach(i => {
-          
-          if(i == 'audioHtml' || ConfigurationColums[i] == 'false') return; // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
-          
+
+          if (i == 'audioHtml' || ConfigurationColums[i] == 'false') return; // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
+
           titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i];
           dataHeader[`TXT_${i.toUpperCase()}`] = i;
         });
-      }else {
+      } else {
         Object.keys(keysTitleExcel).forEach(i => {
           let nameField = keysTitleExcel[i];
           titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField];
           dataHeader[`TXT_${nameField.toUpperCase()}`] = nameField;
         });
       }
-      // {
-      //   TXT_DIRECTION: 'Hướng gọi',
-      //   TXT_USER_NAME: 'Điện thoại viên',
-      //   TXT_TEAM_NAME: 'Nhóm',
-      //   TXT_CALLER: 'Số gọi đi',
-      //   TXT_CALLed: 'Số gọi đến	z',
-      //   TXT_CREATE_TIME: 'Ngày giờ gọi',
-      //   TXT_DURATION: 'Thời lượng'
-      // }
-
-      // let dataHeader = {
-      //   TXT_DIRECTION: 'direction',
-      //   TXT_USER_NAME: 'agentName',
-      //   TXT_TEAM_NAME: 'teamName',
-      //   TXT_CALLER: "caller",
-      //   TXT_CALLed: "called",
-      //   TXT_CREATE_TIME: "origTime",
-      //   TXT_DURATION: "duration",
-      // }
 
       let newData = data.map((item) => {
         item.callId = item.callId || item.xmlCdrId;
@@ -603,7 +600,7 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
         titlesHeader: titleExcel,
         data: newData,
         opts: {
-          valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20],
+          valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
         }
       });
       return resolve(linkFileExcel);
@@ -647,12 +644,12 @@ async function getTeamOfGroup(userId) {
         as: 'TeamGroup',
         // required: false,
         // where: {
-          
+
         // }
       }],
       // required: false,
       // where: {
-        
+
       // }
     }],
     // raw: true,
