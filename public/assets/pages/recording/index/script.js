@@ -65,10 +65,7 @@ function bindClick() {
       searchType = DEFAULT_SEARCH;
 
       findData(page, null, formData);
-    }else {
-      // console.log('khong tim kiem');
     }
-    // return false;
     
   });
 
@@ -183,13 +180,6 @@ function bindClick() {
     items: "li:not(.unsortable)"
   });
 
-  // $checkInput.prop('checked', true);
-
-  // $chk.click(function () {
-  //   var colToHide = $tableRecording.find("." + $(this).attr("name"));
-  //   console.log($(this).is(":checked"));
-  //   $(colToHide).toggle();
-  // });
   $btn_save_customs.click(function (event) {
     let listCheck = [];
     $checkInput.each(function (index) {
@@ -437,7 +427,6 @@ function renderHeaderTable(ConfigurationColums, queryData, init = false) {
 function createTable(data, ConfigurationColums, queryData) {
   let html = '';
 
-  console.log(data);
   if (ConfigurationColums) {
     let objColums = {...ConfigurationColums};
     renderPopupCustomColumn(ConfigurationColums);
@@ -479,21 +468,6 @@ function createTable(data, ConfigurationColums, queryData) {
       `
     });
     $tableData.html(html);
-    console.log('co vao day');
-    // $tableData.closest('#tableRecording').DataTable({
-    //   // scrollY:        "200px",
-    //     scrollX:        true,
-    //     scrollCollapse: false,
-    //     paging:         false,
-    //     responsive: true,
-    //     searching: false,
-    //     "ordering": false,
-    //     fixedColumns:   {
-    //         left: 2
-    //     }
-    // });
-
-    // handleAudio();
     return ;
   }
   else {

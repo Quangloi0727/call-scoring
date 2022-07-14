@@ -14,7 +14,7 @@ class configurationColums extends Model {
           }
         },
         configurationColums: {
-          type: DataTypes.STRING
+          type: DataTypes.TEXT
         },
       },
       {
