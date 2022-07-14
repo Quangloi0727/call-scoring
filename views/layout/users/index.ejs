@@ -110,7 +110,7 @@
                 <label class="float-right font-weight-normal text-muted" id="first_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input " id="firstname" name="firstName"/>
+                <input type="text" class="form-control input " id="firstname" name="firstName" />
               </div>
             </div>
             <div class="col-6">
@@ -151,9 +151,11 @@
             <div class="form-group">
               <label>Quyền</label>
               <select class="form-control selectpicker input" name="roles" id="roles" multiple>
-                <%  Object.keys(USER_ROLE).forEach((ele, index) => { %>
-                  <option value="<%- USER_ROLE[ele].n%>"><%- USER_ROLE[ele].t%></option>
-                <% }) %>
+                <% Object.keys(USER_ROLE).forEach((ele, index)=> { %>
+                  <option value="<%- USER_ROLE[ele].n%>">
+                    <%- USER_ROLE[ele].t%>
+                  </option>
+                  <% }) %>
               </select>
             </div>
           </div>
@@ -283,7 +285,7 @@
     </div>
   </div>
 </div>
-
+<!-- modal reset pass -->
 <div class="modal fade" id="modalResetPassword">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -314,7 +316,7 @@
               <div class="form-group">
                 <span class="text-muted">Tên đăng nhập:</span>
                 <br>
-                <strong id="admin-account"></strong>
+                <strong class="admin-account"></strong>
                 <br>
                 <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
                 <input class="form-control input" type="password" id="admin-password" name="admin-password"
@@ -331,5 +333,51 @@
     </div>
   </div>
   <!-- /.modal-dialog -->
+</div>
+</div>
+<!-- /.modal block -->
+<div class="modal fade" id="modalBlockUser">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Khóa tài khoản người dùng</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body ">
+        <form id="formBlockUser" autocomplete="off">
+          <div class="border-bottom border-dark">
+            <div class="form-group mb-5 ml-2">
+              Tài khoản <strong id="userName-block"></strong> sẽ bị khóa
+              <br>
+              Người dùng sẽ không thể đăng nhập được vào hệ thống
+              <br>
+              Số máy lẻ <strong id="extension-block"></strong> của người dùng có thẻ được tái sử dụng
+              <br>
+            </div>
+          </div>
+
+          <div class="form-group ml-2">
+            <p>Vui lòng xác minh tài khoản quản trị</p>
+            <div>
+              <div class="form-group">
+                <span class="text-muted">Tên đăng nhập:</span>
+                <br>
+                <strong class="admin-account"></strong>
+                <br>
+                <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
+                <input class="form-control input" type="password" id="admin_password" name="admin_password"
+                  autocomplete="password">
+              </div>
+            </div>
+            <div class="modal-footer justify-content-end">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+              <button type="submit" id="btn-block-user" class="btn btn-primary "></button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 <!-- /.modal -->

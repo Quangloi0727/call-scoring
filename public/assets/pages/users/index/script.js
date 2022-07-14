@@ -1,25 +1,26 @@
 $(function () {
-  const $formCreateUser = $('#form_input_user');
-  const $modalCreateUser = $('#modalUser');
-  const $loadingData = $('.page-loader');
-  const $buttonSearchUser = $('#searchUser');
-  const $formSearchUser = $('#form_search_user');
-  const $modalEditUser = $('#modalEditUser');
-  const $modalResetPassword = $('#modalResetPassword');
+  const $formCreateUser = $('#form_input_user')
+  const $modalCreateUser = $('#modalUser')
+  const $loadingData = $('.page-loader')
+  const $buttonSearchUser = $('#searchUser')
+  const $formSearchUser = $('#form_search_user')
+  const $modalEditUser = $('#modalEditUser')
+  const $modalResetPassword = $('#modalResetPassword')
+  const $modalBlockUser = $('#modalBlockUser')
 
   $.validator.addMethod("pwcheck", function (value) {
-    return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value);
-  });
+    return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value)
+  })
 
   $.validator.setDefaults({
     submitHandler: function () {
       let filter = _.chain($('#form_input_user .input')).reduce(function (memo, el) {
-        let value = $(el).val();
-        if (value != '' && value != null) memo[el.name] = value;
-        return memo;
-      }, {}).value();
+        let value = $(el).val()
+        if (value != '' && value != null) memo[el.name] = value
+        return memo
+      }, {}).value()
 
-      $loadingData.show();
+      $loadingData.show()
 
       $.ajax({
         type: 'POST',
@@ -27,18 +28,18 @@ $(function () {
         data: filter,
         dataType: "text",
         success: function () {
-          $loadingData.hide();
+          $loadingData.hide()
 
-          return location.reload();
+          return location.reload()
         },
         error: function (error) {
-          $loadingData.hide();
+          $loadingData.hide()
 
-          return toastr.error(JSON.parse(error.responseText).message);
+          return toastr.error(JSON.parse(error.responseText).message)
         },
-      });
+      })
     }
-  });
+  })
 
   // validate form 
   const validator = $formCreateUser.validate({
@@ -97,108 +98,110 @@ $(function () {
     ignore: ":hidden",
     errorElement: 'span',
     errorPlacement: function (error, element) {
-      error.addClass('invalid-feedback');
-      element.closest('.form-group').append(error);
+      error.addClass('invalid-feedback')
+      element.closest('.form-group').append(error)
     },
     highlight: function (element, errorClass, validClass) {
-      $(element).addClass('is-invalid');
+      $(element).addClass('is-invalid')
     },
     unhighlight: function (element, errorClass, validClass) {
-      $(element).removeClass('is-invalid');
+      $(element).removeClass('is-invalid')
     }
-  });
+  })
 
   //event phân trang 
   $(document).on('click', '.zpaging', function () {
-    let page = $(this).attr('data-link');
-    return findData(page);
-  });
+    let page = $(this).attr('data-link')
+    return findData(page)
+  })
 
   // event modal
   $modalCreateUser.on('hidden.bs.modal', function (e) {
-    $formCreateUser.trigger("reset");
-    $('#form_input_user .selectpicker').selectpicker('refresh');
-    validator.resetForm();
+    $formCreateUser.trigger("reset")
+    $('#form_input_user .selectpicker').selectpicker('refresh')
+    validator.resetForm()
 
-    $('#first_name_length').html('0/30');
-    $('#first_name_length').removeClass('text-danger').addClass('text-muted');
+    $('#first_name_length').html('0/30')
+    $('#first_name_length').removeClass('text-danger').addClass('text-muted')
 
-    $('#last_name_length').html('0/30');
-    $('#last_name_length').removeClass('text-danger').addClass('text-muted');
+    $('#last_name_length').html('0/30')
+    $('#last_name_length').removeClass('text-danger').addClass('text-muted')
 
-    $('#user_name_length').html('0/30');
-    $('#user_name_length').removeClass('text-danger').addClass('text-muted');
-  });
+    $('#user_name_length').html('0/30')
+    $('#user_name_length').removeClass('text-danger').addClass('text-muted')
+  })
 
   $modalCreateUser.on('shown.bs.modal', function (e) {
-    $formCreateUser.trigger("reset");
-    validator.resetForm();
-  });
+    $formCreateUser.trigger("reset")
+    validator.resetForm()
+  })
 
   //event tìm kiếm
   $buttonSearchUser.on('click', function () {
-    const pageNumber = 1;
-    return findData(pageNumber);
-  });
+    const pageNumber = 1
+    return findData(pageNumber)
+  })
 
   function findData(page) {
-    let queryData = {};
-    let inputValue = $formSearchUser.serializeArray();
+    let queryData = {}
+    let inputValue = $formSearchUser.serializeArray()
 
     inputValue.forEach((el) => {
       if (el.value && el.value !== '') {
-        queryData[el.name] = el.value;
+        queryData[el.name] = el.value
       }
-    });
+    })
 
-    queryData.page = page;
-    queryData.limit = $('.sl-limit-page').val() || 10;
+    queryData.page = page
+    queryData.limit = $('.sl-limit-page').val() || 10
 
-    $loadingData.show();
+    $loadingData.show()
 
     $.ajax({
       type: 'GET',
       url: '/users/getUsers?' + $.param(queryData),
       cache: 'false',
       success: function (result) {
-        $loadingData.hide();
-        console.log(result);
-        createTable(result.data, result.currentUser);
-        return $('#paging_table').html(window.location.CreatePaging(result.paginator));
+        $loadingData.hide()
+        console.log(result)
+        createTable(result.data, result.currentUser)
+        return $('#paging_table').html(window.location.CreatePaging(result.paginator))
       },
       error: function (error) {
-        $loadingData.hide();
+        $loadingData.hide()
 
-        return toastr.error(error.message);
+        return toastr.error(error.message)
       },
-    });
+    })
   }
 
   // function 
   function createTable(data, currentUser) {
-    let contentTableLeft = '';
-    let contentTableRight = '';
-    let found;
+    let contentTableLeft = ''
+    let contentTableRight = ''
+    let found
 
-    console.log(`------- data ------- `);
-    console.log(data);
-    console.log(`------- data ------- `);
+    console.log(`------- data ------- `)
+    console.log(data)
+    console.log(`------- data ------- `)
 
     if (currentUser) {
-      found = currentUser.roles.find(element => element.role == 2);
+      found = currentUser.roles.find(element => element.role == 2)
       if (found) {
-        $("#admin-account").html(currentUser.fullName);
+        $(".admin-account").html(currentUser.fullName)
       }
     }
     data.forEach((item) => {
-      let teamHtml = '';
-      let statusHtml = '<span class="badge badge-danger">Đã khóa</span>';
-      let updatedAtHtml = '-';
+      let teamHtml = ''
+      let statusHtml = `<span class="badge ${item.isActive == 1 ? 'badge-success' : 'badge-danger'}">${item.isActive == 1 ? 'Đang hoạt động' : 'Đã khóa'}</span>`
+      let updatedAtHtml = '-'
       let lockButton = `
-        <span class="p-1 btn-action" title="Mở khóa người dùng">
-          <i class="fas fa-unlock"></i>
+        <span class="p-1 btn-action btn-modal-block-user" title="Mở khóa người dùng"
+        data-extension="${item.extension}" data-userName="${item.userName}" data-id="${item.id}"
+        data-isActive="${item.isActive}">
+          <i class="fas ${item.isActive == 1 ? 'fa-lock' : 'fa-unlock'}"></i>
         </span>
-      `;
+      `
 
       item.ofTeams.forEach(element => {
         teamHtml += `
@@ -206,23 +209,11 @@ $(function () {
             <u>${element.teamName}</u>
             &nbsp;
           </a>
-        `;
-      });
-
-      if (item.isActive == 1) {
-        lockButton = `
-          <span class="p-1 btn-action d-none" title="Khóa người dùng">
-            <i class="fas fa-lock"></i>
-          </span>
-        `;
-      }
-
-      if (item.isActive == 1) {
-        statusHtml = '<span class="badge badge-success">Đang hoạt động</span>'
-      }
+        `
+      })
 
       if (item.createdAt != item.updatedAt) {
-        updatedAtHtml = moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss');
+        updatedAtHtml = moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
 
       contentTableLeft += `
@@ -230,7 +221,7 @@ $(function () {
           <td>${item.fullName}</td>
           <td>${item.userName}</td>
           <td>
-            <span class="p-1 btn-action btn-edit-user d-none" title="Chỉnh sửa thông tin người dùng"
+            <span class="p-1 btn-action btn-edit-user" title="Chỉnh sửa thông tin người dùng"
               data-id="${item.id}">
               <i class="fas fa-pencil"></i>
             </span>
@@ -240,7 +231,7 @@ $(function () {
             </span>
           </td>
         </tr>
-      `;
+      `
 
       contentTableRight += `
         <tr class="text-center">
@@ -252,136 +243,170 @@ $(function () {
           <td>${item.userCreate.fullName}</td>
           <td>${updatedAtHtml}</td>
         </tr>
-      `;
-    });
+      `
+    })
 
-    $('.content-table-left').html(contentTableLeft);
-    return $('.content-table-right').html(contentTableRight);
+    $('.content-table-left').html(contentTableLeft)
+    return $('.content-table-right').html(contentTableRight)
   }
 
   $(document).on('click', '.btn-edit-user', function () {
-    let userId = $(this).attr('data-id');
+    let userId = $(this).attr('data-id')
 
-    if (!userId || userId == '') return;
+    if (!userId || userId == '') return
 
     $.ajax({
       type: 'GET',
       url: 'users/search?id=' + userId,
       cache: 'false',
       success: function (data) {
-        console.log('data: ', data);
-        if (!data) return;
+        console.log('data: ', data)
+        if (!data) return
 
-        const user = data.data;
+        const user = data.data
         let inputs = $('#form_edit_user [name]')
 
         $.each(inputs, function (i, input) {
-          console.log('input: ', input);
-          var split = $(input).attr('name').split('_')[1];
-          console.log('split: ', split);
-          $(input).val(user[split]);
-        });
+          var split = $(input).attr('name').split('_')[1]
+          $(input).val(user[split])
+        })
 
 
-        $modalEditUser.modal('show');
+        $modalEditUser.modal('show')
       },
       error: function (error) {
-        return toastr.error(JSON.parse(error.responseText).message);
+        return toastr.error(JSON.parse(error.responseText).message)
       }
-    });
-  });
+    })
+  })
 
   $(document).on('click', '.btn-modal-reset-password', function () {
-    let _generatePassword = generatePassword();
-    $('input[name=reset-password]').val(_generatePassword);
-    console.log($(this).attr("data-id"));
+    let _generatePassword = generatePassword()
+    $('input[name=reset-password]').val(_generatePassword)
+    console.log($(this).attr("data-id"))
     $('#btn-reset-password').attr("data-id", $(this).attr("data-id"))
-    $modalResetPassword.modal('show');
-  });
+    $modalResetPassword.modal('show')
+  })
 
   $(document).on('click', '#copy-to-clipboard', function () {
-    console.log("sssss");
-    copyToClipboard();
-  });
+    copyToClipboard()
+  })
 
   $(document).on('click', '#btn-reset-password', function () {
-    let filter = {};
-    filter.newPassword = $('#reset-password').val();
-    filter.idUser = $(this).attr("data-id");
-    filter.adminPassword = $('#admin-password').val();
+    let filter = {}
+    filter.newPassword = $('#reset-password').val()
+    filter.idUser = $(this).attr("data-id")
+    filter.adminPassword = $('#admin-password').val()
     $.ajax({
       type: 'POST',
       url: '/users/resetPassWord',
       data: filter,
       dataType: 'text',
       success: function () {
-        $loadingData.hide();
+        $loadingData.hide()
 
-        toastr.success('Đã thêm người dùng vào nhóm');
+        toastr.success('Đã thêm người dùng vào nhóm')
       },
       error: function (error) {
 
-        console.log(error);
-        return toastr.error(JSON.parse(error.responseText).message);
+        console.log(error)
+        return toastr.error(JSON.parse(error.responseText).message)
       },
-    });
+    })
   })
-  
+
+  $(document).on('click', '.btn-modal-block-user', function () {
+    let userId = $(this).attr('data-id')
+    let extension = $(this).attr('data-extension')
+    let userName = $(this).attr('data-userName')
+    let isActive = $(this).attr('data-isActive')
+    $('#userName-block').text(userName)
+    $('#extension-block').text(extension)
+    $('#btn-block-user').html(isActive == 1 ? 'Mở khóa tài khoản' : 'Khóa tài khoản')
+    if (!userId || userId == '') return
+    $('#btn-block-user').attr("data-id", userId)
+
+    $modalBlockUser.modal('show')
+  })
+
+  $(document).on('click', '#btn-block-user', function () {
+    let filter = {}
+    filter.newPassword = $('#reset-password').val()
+    filter.idUser = $(this).attr("data-id")
+    filter.adminPassword = $('#admin_password').val()
+    $.ajax({
+      type: 'POST',
+      url: '/users/resetPassWord',
+      data: filter,
+      dataType: 'text',
+      success: function () {
+        $loadingData.hide()
+
+        toastr.success('Đã khóa người dùng thành công')
+      },
+      error: function (error) {
+
+        console.log(error)
+        return toastr.error(JSON.parse(error.responseText).message)
+      },
+    })
+  })
+
   $(document).on('change', '.sl-limit-page', function () {
-    console.log('change sl-limit-page');
-    findData(1);
+    console.log('change sl-limit-page')
+    findData(1)
   })
-  
+
 
   /// random password
   function generatePassword() {
     var length = 8,
       charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-      retVal = "";
+      retVal = ""
     for (var i = 0, n = charset.length; i < length; ++i) {
-      retVal += charset.charAt(Math.floor(Math.random() * n));
+      retVal += charset.charAt(Math.floor(Math.random() * n))
     }
-    return retVal;
+    return retVal
   }
   // copyToClipboard
   function copyToClipboard(element) {
-    var copyText = document.getElementById("reset-password");
+    var copyText = document.getElementById("reset-password")
 
     /* Select the text field */
-    copyText.select();
-    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    copyText.select()
+    copyText.setSelectionRange(0, 99999) /* For mobile devices */
 
     /* Copy the text inside the text field */
-    navigator.clipboard.writeText(copyText.value);
+    navigator.clipboard.writeText(copyText.value)
 
     /* Alert the copied text */
-    toastr.success("Copied the text: " + copyText.value);
+    toastr.success("Copied the text: " + copyText.value)
 
   }
 
   function warningLengthInput(formId, inputId, warningClass) {
     $(`#${formId} #${inputId}`).on('input', function () {
-      let value = $(this).val();
+      let value = $(this).val()
 
-      $(`#${warningClass}`).html(`${value.length}/30`);
+      $(`#${warningClass}`).html(`${value.length}/30`)
 
       if (value.length > 30) {
-        $(`#${warningClass}`).removeClass('text-muted').addClass('text-danger');
+        $(`#${warningClass}`).removeClass('text-muted').addClass('text-danger')
         return validator.showErrors({
           'firstName': 'Độ dài không quá 30 kí tự!'
-        });
+        })
       } else {
-        return $(`#${warningClass}`).removeClass('text-danger').addClass('text-muted');
+        return $(`#${warningClass}`).removeClass('text-danger').addClass('text-muted')
       }
-    });
+    })
   }
 
-  warningLengthInput('form_input_user', 'firstname', 'first_name_length');
-  warningLengthInput('form_input_user', 'lastname', 'last_name_length');
-  warningLengthInput('form_input_user', 'username', 'user_name_length');
-  warningLengthInput('form_edit_user', 'firstname', 'first_name_length');
-  warningLengthInput('form_edit_user', 'lastname', 'last_name_length');
-  warningLengthInput('form_edit_user', 'username', 'user_name_length');
+  warningLengthInput('form_input_user', 'firstname', 'first_name_length')
+  warningLengthInput('form_input_user', 'lastname', 'last_name_length')
+  warningLengthInput('form_input_user', 'username', 'user_name_length')
+  warningLengthInput('form_edit_user', 'firstname', 'first_name_length')
+  warningLengthInput('form_edit_user', 'lastname', 'last_name_length')
+  warningLengthInput('form_edit_user', 'username', 'user_name_length')
 
-  findData(1);
-});
+  findData(1)
+})
