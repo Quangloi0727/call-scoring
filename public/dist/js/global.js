@@ -15,12 +15,21 @@
   "use strict";
   const limitPage = [10, 25, 50, 100];
   const MESSAGE_ERROR = {
-    "QA-001":	"Không được bỏ trống",
-    "QA-002":	"Thông tin đã tồn tại",
-    "QA-003":	"Tên đăng nhập hoặc mật khẩu không chính xác",
-    "QA-004":	"Lỗi hệ thống!",
-    "QA-005":	"Thời gian bắt đầu phải khác thời gian kết thúc"
-  }
+    "QA-001": "Không được bỏ trống",
+    "QA-002": "Thông tin đã tồn tại",
+    "QA-003": "Tên đăng nhập hoặc mật khẩu không chính xác",
+    "QA-004": "Lỗi hệ thống!",
+    "QA-005": "Thời gian bắt đầu phải khác thời gian kết thúc",
+    "QA-006": "Lưu thành công!",
+    "QA-007": "Thông tin cấu hình lỗi!",
+    "QA-008": "Giá trị đến phải lớn hơn giá trị từ",
+    "QA-009":
+      "Khoảng đạt chỉ tiêu cần lớn hơn và nằm ngoài khoảng cần cải thiện",
+    "QA-010":
+      "Khoảng vượt chỉ tiêu cần lớn hơn và nằm ngoài khoảng đạt chỉ tiêu",
+    "QA-011": "Điểm lựa chọn phải nhỏ hơn hoặc bằng điểm tối đa",
+    "QA-012": "Đã tồn tại ghi chú tại thời điểm này",
+  };
 
   function CreatePaging(paging, classPaging = "zpaging") {
     if (!paging) return "";
@@ -84,12 +93,14 @@
       pageLast +
       `
       <select class="form-control sl-limit-page ml-3">
-            ${limitPage.map(ele => {
-              let selected = '';
-              if(ele == paging.rowsPerPage) selected = 'selected';
+            ${limitPage
+              .map((ele) => {
+                let selected = "";
+                if (ele == paging.rowsPerPage) selected = "selected";
 
-              return `<option value=${ele} ${selected}>${ele}</option>`
-            }).join('')}
+                return `<option value=${ele} ${selected}>${ele}</option>`;
+              })
+              .join("")}
           </select>
 
       </ul> ${total} </div>`
@@ -144,6 +155,15 @@
     return text.replace(/[^0-9]/g, "");
   }
 
+  function uuidv4() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+      (
+        c ^
+        (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+      ).toString(16)
+    );
+  }
+
   // Để check form validate nếu thay đổi giá trị
   // $("select.form-control").on("change", (e) => {
   //   let target = $(e.currentTarget);
@@ -157,13 +177,50 @@
   // variables
   window.location.limitPage = limitPage;
   window.location.MESSAGE_ERROR = MESSAGE_ERROR;
-  
-   // function
+
+  // function
   window.location.CreatePaging = CreatePaging;
   window.location.convertArrayToObject = convertArrayToObject;
   window.location.getOnlyNumber = getOnlyNumber;
+  window.location.uuidv4 = uuidv4;
 
   $.validator.messages.required = MESSAGE_ERROR["QA-001"];
-  $.validator.messages.maxlength = $.validator.format( "Độ dài không quá {0} kí tự" );
+  $.validator.messages.maxlength = $.validator.format(
+    "Độ dài không quá {0} kí tự"
+  );
+  $.validator.messages.max = $.validator.format("Hãy nhập từ {0} trở xuống.");
+  $.validator.messages.min = $.validator.format("Hãy nhập từ {0} trở lên.");
+
+  $.validator.addMethod(
+    "le",
+    function (value, element, param) {
+      // console.log(this.optional(element),  value,  $(param).val());
+      return this.optional(element) || Number(value) <= Number($(param).val());
+    },
+    MESSAGE_ERROR["QA-011"]
+  );
+  $.validator.addMethod(
+    "ge",
+    function (value, element, param) {
+      return this.optional(element) || Number(value) >= Number($(param).val());
+    },
+    "ge Invalid value"
+  );
+  $.validator.addMethod(
+    "gte",
+    function (value, element, param) {
+      // console.log(this.optional(element), value, $(param).val());
+      return this.optional(element) || Number(value) > Number($(param).val());
+    },
+    "gte Invalid value"
+  );
+  // $.validator.addMethod(
+  //   "Percent",
+  //   function (value, element, param) {
+  //     // console.log(this.optional(element),  value,  $(param).val());
+  //     return this.optional(element) || Number(value) <= Number($(param).val());
+  //   },
+  //   MESSAGE_ERROR["QA-011"]
+  // );
 });
 //# sourceMappingURL=adminlte.js.map

@@ -1,0 +1,116 @@
+<!-- template nhóm tiêu chí -->
+<div class="card card-default item-criteria-group">
+    <div class="removeCard">
+        <%- include('./btn.rm.ejs', { BTN_TITLE: 'Xóa nhóm tiêu chí', BTN_CLASS_NAME : 'rm-criteria-group' }) %>
+    </div>
+
+    <div class="card-header">
+        <h4 class="card-title w-100">
+            <div class="form-group row">
+                <label for="description" class="col-sm-2 col-form-label">nhóm tiêu chí <span
+                        class="text-danger">*</span> </label>
+                <div class="col-sm-9">
+                    <input type="text" class="form-control name-criteria-group" id="nameCriteriaGroup" name="nameCriteriaGroup" placeholder="Tên">
+                </div>
+
+                <!-- <div class="col-sm-1 d-flex align-items-center justify-content-end">
+<button type="button" class="btn rounded-circle text-danger" id="removeScoreScript">
+<i class="fas fa-times" style="font-size: 2rem;"></i>
+</button>
+</div> -->
+
+            </div>
+        </h4>
+    </div>
+
+    <div class="card-body wp-list-criteria" id="tempCriteria">
+
+        <!-- template tiêu chí -->
+        <div class="card card-default">
+            <div class="removeCard">
+                <%- include('./btn.rm.ejs', { BTN_TITLE: 'Xóa tiêu chí', BTN_CLASS_NAME : 'rm-criteria' }) %>
+            </div>
+
+            <div class="card-header">
+                <h4 class="card-title w-100">
+                    <!-- info tieu chi -->
+                    <div class="row">
+
+                        <div class="col">
+                            <div class="form-group row">
+
+                                <label for="description" class="col-sm-12 col-form-label d-flex">Tiêu chí <span
+                                        class="text-danger pl-2 pr-2">*</span>
+                                    <!-- <input type="checkbox" checked data-toggle="toggle" data-height="30" data-on="-" data-off="-"> -->
+                                    <!-- Default switch -->
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input cb-is-active" id="customSwitches" checked>
+                                        <label class="custom-control-label" for="customSwitches" data-toggle="tooltip"
+                                            data-placement="right" title="Tiêu chí có sử dụng tính điểm không?"
+                                            role="button"></label>
+                                    </div>
+                                </label>
+
+                                <div class="col-sm-12">
+                                    <input type="text" class="form-control name-criteria" id="nameCriteria" name="nameCriteria"
+                                        placeholder="Tên">
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-group row">
+
+                                <label for="description" class="col-sm-12 col-form-label d-flex">Điểm tối đa của
+                                    tiêu
+                                    chí
+                                    <span class="text-danger pl-2 pr-2">*</span>
+
+                                </label>
+
+                                <div class="col-sm-11">
+                                    <input type="number" class="form-control score-max" id="scoreMax" name="scoreMax"
+                                        placeholder="Điểm">
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <!-- info tieu chi -->
+
+                </h4>
+            </div>
+
+            <div class="card-body">
+                <!-- body tieu chi, danh sách lựa chọn -->
+
+                <%- include('./title.selection.criteria.ejs', { }) %>
+
+                <div class="row wp-list-selection-criteria" id="tempSelectionCriteria">
+
+                    <%- include('./temp.selection.criteria.ejs', { }) %>
+
+                </div>
+
+                <!-- body tieu chi, danh sách lựa chọn -->
+
+
+            </div>
+
+            <p class="m-0 wp-add-selection-criteria">
+            </p>
+
+        </div>
+        <!-- end template tiêu chí -->
+
+    </div>
+
+    <p class="m-0 wp-add-criteria">
+        
+    </p>
+
+</div>
+<!-- template nhóm tiêu chí -->
