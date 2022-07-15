@@ -421,7 +421,7 @@ exports.postBlockUser = async (req, res, next) => {
 
 
     await UserModel.update(
-      { isActive: blockUser },
+      { isActive: Number(blockUser) },
       { where: { id: { [Op.eq]: Number(idUser) } } },
       { transaction: transaction }
     )
@@ -431,10 +431,7 @@ exports.postBlockUser = async (req, res, next) => {
       message: 'Success!',
     })
   } catch (error) {
-    console.log(`------- error ------- `)
-    console.log(error)
-    console.log(`------- error ------- `)
-
+    console.log("Khóa người dùng bị lỗi", error)
     if (transaction) await transaction.rollback()
 
     return res.status(ERR_500.code).json({ message: error.message })

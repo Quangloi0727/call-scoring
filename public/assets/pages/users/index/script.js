@@ -320,24 +320,37 @@ $(function () {
     let extension = $(this).attr('data-extension')
     let userName = $(this).attr('data-userName')
     let isActive = $(this).attr('data-isActive')
-    $('#userName-block').text(userName)
-    $('#extension-block').text(extension)
-    $('#btn-block-user').html(isActive == 1 ? 'Mở khóa tài khoản' : 'Khóa tài khoản')
+
+
+    let html = `
+    Tài khoản <strong>${userName}</strong> sẽ bị khóa
+    <br>
+    Người dùng sẽ không thể đăng nhập được vào hệ thống
+    <br>
+    Số máy lẻ <strong>${extension}</strong> của người dùng có thẻ được tái sử dụng
+    <br>
+    `
+    if (isActive != 1) {
+      html = `Tài khoản <strong>${userName}</strong> sẽ được mở khóa`
+    }
+
+    $('#body-noti-block').html(html)
+    $('#btn-block-user').html(isActive == 1 ? 'Khóa tài khoản' : 'Mở khóa tài khoản')
     if (!userId || userId == '') return
     $('#btn-block-user').attr("data-id", userId)
-
+    $('#btn-block-user').attr("data-blockUser", isActive)
     $modalBlockUser.modal('show')
   })
 
   $(document).on('click', '#btn-block-user', function () {
-    let filter = {}
-    filter.newPassword = $('#reset-password').val()
-    filter.idUser = $(this).attr("data-id")
-    filter.adminPassword = $('#admin_password').val()
+    let body = {}
+    body.blockUser = $(this).attr("data-blockUser") == '1' ? '0' : '1'
+    body.idUser = $(this).attr("data-id")
+    body.adminPassword = $('#admin_password').val()
     $.ajax({
       type: 'POST',
-      url: '/users/resetPassWord',
-      data: filter,
+      url: '/users/blockUser',
+      data: body,
       dataType: 'text',
       success: function () {
         $loadingData.hide()
