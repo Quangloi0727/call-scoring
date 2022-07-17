@@ -1,5 +1,7 @@
 $(function () {
   const $formCreateUser = $('#form_input_user')
+  const $formEditUser = $('#form_edit_user')
+
   const $modalCreateUser = $('#modalUser')
   const $loadingData = $('.page-loader')
   const $buttonSearchUser = $('#searchUser')
@@ -11,36 +13,67 @@ $(function () {
   $.validator.addMethod("pwcheck", function (value) {
     return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value)
   })
+  $formCreateUser.submit(function (event) {
+    let filter = _.chain($('#form_input_user .input')).reduce(function (memo, el) {
+      let value = $(el).val()
+      if (value != '' && value != null) memo[el.name] = value
+      return memo
+    }, {}).value()
 
-  $.validator.setDefaults({
-    submitHandler: function () {
-      let filter = _.chain($('#form_input_user .input')).reduce(function (memo, el) {
-        let value = $(el).val()
-        if (value != '' && value != null) memo[el.name] = value
-        return memo
-      }, {}).value()
+    $loadingData.show()
 
-      $loadingData.show()
+    $.ajax({
+      type: 'POST',
+      url: '/users/insert',
+      data: filter,
+      dataType: "text",
+      success: function () {
+        $loadingData.hide()
+        toastr.success('Thêm mới thành công')
+        return location.reload()
+      },
+      error: function (error) {
+        $loadingData.hide()
 
-      $.ajax({
-        type: 'POST',
-        url: '/users/insert',
-        data: filter,
-        dataType: "text",
-        success: function () {
-          $loadingData.hide()
-
-          return location.reload()
-        },
-        error: function (error) {
-          $loadingData.hide()
-
-          return toastr.error(JSON.parse(error.responseText).message)
-        },
-      })
-    }
+        return toastr.error(JSON.parse(error.responseText).message)
+      },
+    })
   })
 
+  $(document).on('click', '#btn-save-edit-user', function () {
+    let filter = _.chain($('#form_edit_user .input')).reduce(function (memo, el) {
+      let value = $(el).val()
+      if (value != '' && value != null) memo[el.name] = value
+      return memo
+    }, {}).value()
+    $loadingData.show()
+
+    $.ajax({
+      type: 'POST',
+      url: '/users/updateUser',
+      data: filter,
+      dataType: "text",
+      success: function () {
+        $loadingData.hide()
+        toastr.success('Cập nhật thành công')
+        toastr.options = {
+          closeButton: true,
+          onCloseClick: () => {
+            location.reload()
+          }
+        }
+
+        $modalEditUser.modal('hide')
+        return setTimeout(() => {
+          location.reload()
+        }, 2500)
+      },
+      error: function (error) {
+        $loadingData.hide()
+        return toastr.error(JSON.parse(error.responseText).message)
+      },
+    })
+  })
   // validate form 
   const validator = $formCreateUser.validate({
     rules: {
@@ -108,6 +141,56 @@ $(function () {
       $(element).removeClass('is-invalid')
     }
   })
+  const formEditUser_validator = $formEditUser.validate({
+    rules: {
+      'edit-userName': {
+        required: true,
+        maxlength: 30
+      },
+      'edit-lastName': {
+        required: true,
+        maxlength: 30
+      },
+      'edit-firstName': {
+        required: true,
+        maxlength: 30
+      },
+      'edit-extension': {
+        required: true,
+        number: true
+      }
+    },
+    messages: {
+      'edit-userName': {
+        required: "Không được để trống Họ và Tên đệm",
+        maxlength: 'Độ dài không quá 30 kí tự'
+      },
+      'edit-lastName': {
+        required: "Không được để trống Tên",
+        maxlength: 'Độ dài không quá 30 kí tự'
+      },
+      'edit-firstName': {
+        required: "Không được để trống Tên đăng nhập",
+        maxlength: 'Độ dài không quá 30 kí tự'
+      },
+      'edit-extension': {
+        required: "Không được để trống extension",
+        number: "chỉ nhập số"
+      }
+    },
+    ignore: ":hidden",
+    errorElement: 'span',
+    errorPlacement: function (error, element) {
+      error.addClass('invalid-feedback')
+      element.closest('.form-group').append(error)
+    },
+    highlight: function (element, errorClass, validClass) {
+      $(element).addClass('is-invalid')
+    },
+    unhighlight: function (element, errorClass, validClass) {
+      $(element).removeClass('is-invalid')
+    }
+  })
 
   //event phân trang 
   $(document).on('click', '.zpaging', function () {
@@ -115,7 +198,7 @@ $(function () {
     return findData(page)
   })
 
-  // event modal
+  // event modal create user
   $modalCreateUser.on('hidden.bs.modal', function (e) {
     $formCreateUser.trigger("reset")
     $('#form_input_user .selectpicker').selectpicker('refresh')
@@ -136,6 +219,25 @@ $(function () {
     validator.resetForm()
   })
 
+
+  // event modal edit user
+  $modalEditUser.on('hidden.bs.modal', function (e) {
+    $('#form_edit_user .selectpicker').selectpicker('refresh')
+    formEditUser_validator.resetForm()
+
+    $('#edit_first_name_length').html('0/30')
+    $('#edit_first_name_length').removeClass('text-danger').addClass('text-muted')
+
+    $('#edit_last_name_length').html('0/30')
+    $('#edit_last_name_length').removeClass('text-danger').addClass('text-muted')
+
+    $('#edit_user_name_length').html('0/30')
+    $('#edit_user_name_length').removeClass('text-danger').addClass('text-muted')
+  })
+
+  $modalEditUser.on('shown.bs.modal', function (e) {
+    formEditUser_validator.resetForm()
+  })
   //event tìm kiếm
   $buttonSearchUser.on('click', function () {
     const pageNumber = 1
@@ -163,7 +265,6 @@ $(function () {
       cache: 'false',
       success: function (result) {
         $loadingData.hide()
-        console.log(result)
         createTable(result.data, result.currentUser)
         return $('#paging_table').html(window.location.CreatePaging(result.paginator))
       },
@@ -267,10 +368,18 @@ $(function () {
         let inputs = $('#form_edit_user [name]')
 
         $.each(inputs, function (i, input) {
-          var split = $(input).attr('name').split('_')[1]
+          var split = $(input).attr('name').split('-')[1]
           $(input).val(user[split])
         })
 
+        if (user.roles.length > 0) {
+          let arr = []
+          user.roles.map((el) => {
+            arr.push(el.role)
+          })
+          $('select[name=edit_roles]').val(arr)
+          $('.selectpicker').selectpicker('refresh')
+        }
 
         $modalEditUser.modal('show')
       },
@@ -304,8 +413,7 @@ $(function () {
       dataType: 'text',
       success: function () {
         $loadingData.hide()
-
-        toastr.success('Đã thêm người dùng vào nhóm')
+        toastr.success('Reset password thành công!')
       },
       error: function (error) {
 
@@ -333,7 +441,8 @@ $(function () {
     if (isActive != 1) {
       html = `Tài khoản <strong>${userName}</strong> sẽ được mở khóa`
     }
-
+    $('#blockUser_extension_input').val(extension)
+    $('#blockUser_extension').addClass("d-none")
     $('#body-noti-block').html(html)
     $('#btn-block-user').html(isActive == 1 ? 'Khóa tài khoản' : 'Mở khóa tài khoản')
     if (!userId || userId == '') return
@@ -347,6 +456,7 @@ $(function () {
     body.blockUser = $(this).attr("data-blockUser") == '1' ? '0' : '1'
     body.idUser = $(this).attr("data-id")
     body.adminPassword = $('#admin_password').val()
+    body.extension = $('#blockUser_extension_input').val()
     $.ajax({
       type: 'POST',
       url: '/users/blockUser',
@@ -356,10 +466,11 @@ $(function () {
         $loadingData.hide()
 
         toastr.success('Đã khóa người dùng thành công')
+        return location.reload()
       },
       error: function (error) {
-
         console.log(error)
+        if (error.status == 400) $('#blockUser_extension').removeClass('d-none')
         return toastr.error(JSON.parse(error.responseText).message)
       },
     })
@@ -370,7 +481,15 @@ $(function () {
     findData(1)
   })
 
+  $(document).on('change', 'select[name=edit_roles]', function () {
+    let html = `<span id="edit_roles_error" class="error" 
+    style="width: 100%;margin-top: 0.25rem;font-size: 80%;color: #dc3545;">
+    Hệ thống sẽ gỡ người dùng ra khỏi tất cả các nhóm/đội ngũ nếu có</span>`
+    if ($(this).val().length == 0) {
+      $('.edit-roles').append(html)
+    } else $('span[id="edit_roles_error"]').remove()
 
+  })
   /// random password
   function generatePassword() {
     var length = 8,
@@ -417,9 +536,9 @@ $(function () {
   warningLengthInput('form_input_user', 'firstname', 'first_name_length')
   warningLengthInput('form_input_user', 'lastname', 'last_name_length')
   warningLengthInput('form_input_user', 'username', 'user_name_length')
-  warningLengthInput('form_edit_user', 'firstname', 'first_name_length')
-  warningLengthInput('form_edit_user', 'lastname', 'last_name_length')
-  warningLengthInput('form_edit_user', 'username', 'user_name_length')
+  warningLengthInput('form_edit_user', 'edit-firstname', 'edit_first_name_length')
+  warningLengthInput('form_edit_user', 'edit-lastname', 'edit_last_name_length')
+  warningLengthInput('form_edit_user', 'edit-username', 'edit_user_name_length')
 
   findData(1)
 })

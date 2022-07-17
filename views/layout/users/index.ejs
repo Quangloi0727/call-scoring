@@ -199,7 +199,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <form id="form_edit_user" autocomplete="off">
+        <form id="form_edit_user">
           <div class="row">
             <div class="col-6">
               <div class="form-group">
@@ -207,10 +207,10 @@
                   Họ và tên đệm
                   <span class="text-danger">*</span>
                 </label>
-                <label class="float-right font-weight-normal text-muted" id="first_name_length">
+                <label class="float-right font-weight-normal text-muted" id="edit_first_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input" id="firstname" name="firstName" />
+                <input type="text" class="form-control input" id="edit-firstName" name="edit-firstName" />
               </div>
             </div>
             <div class="col-6">
@@ -219,10 +219,10 @@
                   Tên
                   <span class="text-danger">*</span>
                 </label>
-                <label class="float-right font-weight-normal text-muted" id="last_name_length">
+                <label class="float-right font-weight-normal text-muted" id="edit_last_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input" id="lastname" name="lastName" />
+                <input type="text" class="form-control input" id="edit-lastName" name="edit-lastName" />
               </div>
             </div>
           </div>
@@ -232,10 +232,10 @@
                 Tên đăng nhập
                 <span class="text-danger">*</span>
               </label>
-              <label class="float-right font-weight-normal text-muted" id="user_name_length">
+              <label class="float-right font-weight-normal text-muted" id="edit_user_name_length">
                 0/30
               </label>
-              <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password" />
+              <input type="text" class="form-control input" id="edit-userName" name="edit-userName" />
             </div>
           </div>
           <div>
@@ -244,13 +244,13 @@
                 Extension
                 <span class="text-danger">*</span>
               </label>
-              <input type="text" class="form-control input" id="extension" name="extension" />
+              <input type="text" class="form-control input" id="edit-extension" name="edit-extension" />
             </div>
           </div>
           <div>
-            <div class="form-group">
+            <div class="form-group edit-roles">
               <label>Quyền</label>
-              <select class="form-control selectpicker input" name="roles" id="roles" multiple>
+              <select class="form-control selectpicker input" name="edit_roles" id="edit_roles" multiple>
                 <% Object.keys(USER_ROLE).forEach((ele, index)=> { %>
                   <option value="<%- USER_ROLE[ele].n%>">
                     <%- USER_ROLE[ele].t%>
@@ -259,15 +259,23 @@
               </select>
             </div>
           </div>
-          <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-primary">Lưu</button>
+          <div class="d-none">
+            <div class="form-group">
+              <input type="text" class="form-control input" id="edit-id" name="edit-id" />
+            </div>
+          </div>
+          <div>
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+              <button type="button" id="btn-save-edit-user" class="btn btn-primary">Lưu</button>
+            </div>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+
 <!-- modal reset pass -->
 <div class="modal fade" id="modalResetPassword">
   <div class="modal-dialog">
@@ -306,18 +314,19 @@
                   autocomplete="new-password">
               </div>
             </div>
-            <div class="modal-footer justify-content-end">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-              <button type="submit" id="btn-reset-password" class="btn btn-primary btn-reset-password">Reset Mật
-                Khẩu</button>
-            </div>
+          </div>
+          <div class="modal-footer justify-content-end">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="button" id="btn-reset-password" class="btn btn-primary btn-reset-password">Reset Mật
+              Khẩu</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
-  <!-- /.modal-dialog -->
 </div>
-</div>
+
+<!-- /.modal-dialog -->
 <!-- /.modal block -->
 <div class="modal fade" id="modalBlockUser">
   <div class="modal-dialog">
@@ -346,12 +355,21 @@
                 <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
                 <input class="form-control input" type="password" id="admin_password" name="admin_password"
                   autocomplete="password">
+                <div class="d-none" id="blockUser_extension">
+                  <label>
+                    Extension
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input class="form-control input" type="text" id="blockUser_extension_input"
+                    name="blockUser_extension">
+                </div>
               </div>
             </div>
-            <div class="modal-footer justify-content-end">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-              <button type="submit" id="btn-block-user" class="btn btn-primary "></button>
-            </div>
+          </div>
+          <div class="modal-footer justify-content-end">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="button" id="btn-block-user" class="btn btn-primary "></button>
+          </div>
         </form>
       </div>
     </div>

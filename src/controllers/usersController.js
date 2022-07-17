@@ -7,7 +7,8 @@ const UserRoleModel = require('../models/userRole')
 const model = require('../models')
 const {
   SUCCESS_200,
-  ERR_500
+  ERR_500,
+  ERR_400
 } = require("../helpers/constants/statusCodeHTTP")
 
 const {
@@ -147,24 +148,32 @@ exports.createUser = async (req, res, next) => {
     }
 
     data.fullName = `${data.firstName.trim()} ${data.lastName.trim()}`
-    data.extension = Number(data.extension)
+    data.extension = v
     data.role = 0
     data.isActive = 1
     data.created = req.user.id
     data.createAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss')
     data.updatedAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss')
 
+
+    if (data.extension) {
+      let foundUser = await UserModel.findOne({ where: { extension: Number(data.extension), isActive: 1 } })
+      if (foundUser)
+        return res.status(ERR_400.code).json({
+          message: 'Extension đã được sử dụng!',
+        })
+    }
     const user = await UserModel.create(data, { transaction: transaction })
 
     if (data.roles && data.roles.length > 0) {
-      const createRolse = data.roles.map((role) => {
+      const createRoles = data.roles.map((role) => {
         return {
           userId: user.id,
           role: role
         }
       })
 
-      await UserRoleModel.bulkCreate(createRolse, { transaction: transaction })
+      await UserRoleModel.bulkCreate(createRoles, { transaction: transaction })
     }
 
     await transaction.commit()
@@ -412,16 +421,26 @@ exports.postBlockUser = async (req, res, next) => {
   let transaction
 
   try {
-    const { blockUser, idUser, adminPassword } = req.body
+    const { blockUser, idUser, adminPassword, extension } = req.body
 
     transaction = await model.sequelize.transaction()
     if (adminPassword != req.user.password) {
       throw new Error('Mật khẩu xác thực không đúng, vui lòng thử lại!')
     }
+    if (!Number(extension)) throw new Error('Extension chưa đúng định dạng số!')
 
-
+    if (extension && Number(blockUser) == 1) {
+      let foundUser = await UserModel.findOne({ where: { extension: Number(extension), isActive: 1 } })
+      if (foundUser)
+        return res.status(ERR_400.code).json({
+          message: 'Extension đã được sử dụng!',
+        })
+    }
     await UserModel.update(
-      { isActive: Number(blockUser) },
+      {
+        isActive: Number(blockUser),
+        extension: Number(extension)
+      },
       { where: { id: { [Op.eq]: Number(idUser) } } },
       { transaction: transaction }
     )
@@ -432,6 +451,70 @@ exports.postBlockUser = async (req, res, next) => {
     })
   } catch (error) {
     console.log("Khóa người dùng bị lỗi", error)
+    if (transaction) await transaction.rollback()
+
+    return res.status(ERR_500.code).json({ message: error.message })
+  }
+}
+
+exports.updateUser = async (req, res) => {
+  let transaction
+
+  try {
+
+    const data = req.body
+    transaction = await model.sequelize.transaction()
+
+    if (data['edit-firstName'] && data['edit-firstName'].length > 30) {
+      throw new Error('Họ và tên đệm có độ dài không quá 30 kí tự!')
+    }
+
+    if (data['edit-lastName'] && data['edit-lastName'].length > 30) {
+      throw new Error('Tên có độ dài không quá 30 kí tự!')
+    }
+
+    if (data['edit-userName'] && data['edit-userName'].length > 30) {
+      throw new Error('Tên đăng nhập đệm có độ dài không quá 30 kí tự!')
+    }
+    data.firstName = data['edit-firstName']
+    data.lastName = data['edit-lastName']
+    data.fullName = `${data['edit-firstName'].trim()} ${data['edit-lastName'].trim()}`
+    data.userName = data['edit-userName']
+    data.extension = Number(data['edit-extension'])
+    data.updatedAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss')
+
+
+    if (data.extension) {
+      let foundUser = await UserModel.findOne({ where: { extension: Number(data.extension), isActive: 1 } })
+      if (foundUser && foundUser.id != Number(data['edit-id']))
+        return res.status(ERR_400.code).json({
+          message: 'Extension đã được sử dụng!',
+        })
+    }
+
+
+    let userUpdate = await UserModel.update(
+      data,
+      { where: { id: Number(data['edit-id']) } },
+      { transaction: transaction })
+    await UserRoleModel.destroy({ where: { userId: Number(data['edit-id']) } })
+    if (data['edit_roles'] && data['edit_roles'].length > 0) {
+      const createRoles = data['edit_roles'].map((role) => {
+        return {
+          userId: Number(data['edit-id']),
+          role: Number(role)
+        }
+      })
+
+      await UserRoleModel.bulkCreate(createRoles, { transaction: transaction })
+
+    }
+    await transaction.commit()
+    return res.status(SUCCESS_200.code).json({
+      message: 'Success!',
+    })
+  } catch (error) {
+    console.log('Update người dùng lỗi', error)
     if (transaction) await transaction.rollback()
 
     return res.status(ERR_500.code).json({ message: error.message })

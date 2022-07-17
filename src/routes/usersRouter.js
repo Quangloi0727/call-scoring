@@ -35,4 +35,7 @@ router.route('/search')
 router.route('/blockUser')
     .post(usersController.postBlockUser)
 
+router.route('/updateUser')
+    .post(usersController.updateUser)
+
 module.exports = router
