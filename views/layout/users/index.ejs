@@ -110,7 +110,7 @@
                 <label class="float-right font-weight-normal text-muted" id="first_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input " id="firstname" name="firstName"/>
+                <input type="text" class="form-control input " id="firstname" name="firstName" />
               </div>
             </div>
             <div class="col-6">
@@ -151,9 +151,11 @@
             <div class="form-group">
               <label>Quyền</label>
               <select class="form-control selectpicker input" name="roles" id="roles" multiple>
-                <%  Object.keys(USER_ROLE).forEach((ele, index) => { %>
-                  <option value="<%- USER_ROLE[ele].n%>"><%- USER_ROLE[ele].t%></option>
-                <% }) %>
+                <% Object.keys(USER_ROLE).forEach((ele, index)=> { %>
+                  <option value="<%- USER_ROLE[ele].n%>">
+                    <%- USER_ROLE[ele].t%>
+                  </option>
+                  <% }) %>
               </select>
             </div>
           </div>
@@ -197,7 +199,7 @@
         </button>
       </div>
       <div class="modal-body">
-        <form id="form_edit_user" autocomplete="off">
+        <form id="form_edit_user">
           <div class="row">
             <div class="col-6">
               <div class="form-group">
@@ -205,10 +207,10 @@
                   Họ và tên đệm
                   <span class="text-danger">*</span>
                 </label>
-                <label class="float-right font-weight-normal text-muted" id="first_name_length">
+                <label class="float-right font-weight-normal text-muted" id="edit_first_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input" id="firstname" name="firstName" />
+                <input type="text" class="form-control input" id="edit-firstName" name="edit-firstName" />
               </div>
             </div>
             <div class="col-6">
@@ -217,10 +219,10 @@
                   Tên
                   <span class="text-danger">*</span>
                 </label>
-                <label class="float-right font-weight-normal text-muted" id="last_name_length">
+                <label class="float-right font-weight-normal text-muted" id="edit_last_name_length">
                   0/30
                 </label>
-                <input type="text" class="form-control input" id="lastname" name="lastName" />
+                <input type="text" class="form-control input" id="edit-lastName" name="edit-lastName" />
               </div>
             </div>
           </div>
@@ -230,10 +232,10 @@
                 Tên đăng nhập
                 <span class="text-danger">*</span>
               </label>
-              <label class="float-right font-weight-normal text-muted" id="user_name_length">
+              <label class="float-right font-weight-normal text-muted" id="edit_user_name_length">
                 0/30
               </label>
-              <input type="text" class="form-control input" id="username" name="userName" autocomplete="new-password" />
+              <input type="text" class="form-control input" id="edit-userName" name="edit-userName" />
             </div>
           </div>
           <div>
@@ -242,41 +244,31 @@
                 Extension
                 <span class="text-danger">*</span>
               </label>
-              <input type="text" class="form-control input" id="extension" name="extension" />
+              <input type="text" class="form-control input" id="edit-extension" name="edit-extension" />
             </div>
           </div>
           <div>
-            <div class="form-group">
+            <div class="form-group edit-roles">
               <label>Quyền</label>
-              <select class="form-control selectpicker input" name="roles" id="roles" multiple>
-                <option value="0">Agent</option>
-                <option value="1">Supervisor</option>
-                <option value="2">Admin</option>
+              <select class="form-control selectpicker input" name="edit_roles" id="edit_roles" multiple>
+                <% Object.keys(USER_ROLE).forEach((ele, index)=> { %>
+                  <option value="<%- USER_ROLE[ele].n%>">
+                    <%- USER_ROLE[ele].t%>
+                  </option>
+                  <% }) %>
               </select>
             </div>
           </div>
-          <div>
+          <div class="d-none">
             <div class="form-group">
-              <label>
-                Mật khẩu
-                <span class="text-danger">*</span>
-              </label>
-              <input class="form-control input" type="password" id="password" name="password"
-                autocomplete="new-password">
+              <input type="text" class="form-control input" id="edit-id" name="edit-id" />
             </div>
           </div>
           <div>
-            <div class="form-group">
-              <label>
-                Xác nhận mật khẩu
-                <span class="text-danger">*</span>
-              </label>
-              <input class="form-control input" type="password" id="repeat_password" name="repeat_password">
+            <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+              <button type="button" id="btn-save-edit-user" class="btn btn-primary">Lưu</button>
             </div>
-          </div>
-          <div class="modal-footer justify-content-between">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-primary">Lưu</button>
           </div>
         </form>
       </div>
@@ -284,6 +276,7 @@
   </div>
 </div>
 
+<!-- modal reset pass -->
 <div class="modal fade" id="modalResetPassword">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -314,22 +307,72 @@
               <div class="form-group">
                 <span class="text-muted">Tên đăng nhập:</span>
                 <br>
-                <strong id="admin-account"></strong>
+                <strong class="admin-account"></strong>
                 <br>
                 <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
                 <input class="form-control input" type="password" id="admin-password" name="admin-password"
                   autocomplete="new-password">
               </div>
             </div>
-            <div class="modal-footer justify-content-end">
-              <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-              <button type="submit" id="btn-reset-password" class="btn btn-primary btn-reset-password">Reset Mật
-                Khẩu</button>
-            </div>
+          </div>
+          <div class="modal-footer justify-content-end">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="button" id="btn-reset-password" class="btn btn-primary btn-reset-password">Reset Mật
+              Khẩu</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
-  <!-- /.modal-dialog -->
+</div>
+
+<!-- /.modal-dialog -->
+<!-- /.modal block -->
+<div class="modal fade" id="modalBlockUser">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Khóa tài khoản người dùng</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body ">
+        <form id="formBlockUser" autocomplete="off">
+          <div class="border-bottom border-dark">
+            <div class="form-group mb-5 ml-2" id="body-noti-block">
+            </div>
+          </div>
+
+          <div class="form-group ml-2">
+            <p>Vui lòng xác minh tài khoản quản trị</p>
+            <div>
+              <div class="form-group">
+                <span class="text-muted">Tên đăng nhập:</span>
+                <br>
+                <strong class="admin-account"></strong>
+                <br>
+                <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
+                <input class="form-control input" type="password" id="admin_password" name="admin_password"
+                  autocomplete="password">
+                <div class="d-none" id="blockUser_extension">
+                  <label>
+                    Extension
+                    <span class="text-danger">*</span>
+                  </label>
+                  <input class="form-control input" type="text" id="blockUser_extension_input"
+                    name="blockUser_extension">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-end">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+            <button type="button" id="btn-block-user" class="btn btn-primary "></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 <!-- /.modal -->

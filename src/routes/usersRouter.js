@@ -1,35 +1,41 @@
-const express = require('express');
-const usersController = require('../controllers/usersController');
-const router = express.Router();
+const express = require('express')
+const usersController = require('../controllers/usersController')
+const router = express.Router()
 
 router.route('/')
-    .get(usersController.index);
+    .get(usersController.index)
 
 router.route('/insert')
-    .post(usersController.createUser);
+    .post(usersController.createUser)
 
 router.route('/getUsers')
-    .get(usersController.getUsers);
+    .get(usersController.getUsers)
 
 router.route('/changePassword')
-    .get(usersController.getChangePassword);
+    .get(usersController.getChangePassword)
 
 router.route('/resetPassWord')
-    .post(usersController.postResetPassWord);
+    .post(usersController.postResetPassWord)
 
 router.route('/changePassword')
-    .post(usersController.postChangePassword);
+    .post(usersController.postChangePassword)
 
 router.route('/importUser')
-    .get(usersController.getImportUser);
+    .get(usersController.getImportUser)
 
 router.route('/checkDataUser')
-    .post(usersController.postCheckDataUser);
+    .post(usersController.postCheckDataUser)
 
 router.route('/importUser')
-    .post(usersController.postImportUser);
+    .post(usersController.postImportUser)
 
 router.route('/search')
-    .get(usersController.search);
+    .get(usersController.search)
 
-module.exports = router;
+router.route('/blockUser')
+    .post(usersController.postBlockUser)
+
+router.route('/updateUser')
+    .post(usersController.updateUser)
+
+module.exports = router
