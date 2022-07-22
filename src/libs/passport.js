@@ -105,13 +105,7 @@ passport.use('local-login', new LocalStrategy({
         [Op.and]: [{ userName: userName }, { password: password }]
       }
     })
-    if (user.isActive != 1) {
-      const _error = new Error()
-      _error.message = "Tài khoản bị khóa. Vui lòng liên hệ quản trị viên!"
-      _error.statusCode = 401
-      _error.status = 'api'
-      throw _error
-    }
+
     if (!user) {
       const error = new Error()
       error.message = "Tài khoản hoặc mật khẩu không đúng!"
@@ -119,6 +113,15 @@ passport.use('local-login', new LocalStrategy({
       error.status = 'api'
       throw error
     }
+
+    if (user.isActive != 1) {
+      const _error = new Error()
+      _error.message = "Tài khoản bị khóa. Vui lòng liên hệ quản trị viên!"
+      _error.statusCode = 401
+      _error.status = 'api'
+      throw _error
+    }
+
     return done(null, user)
   } catch (error) {
     console.log(`begin ------- error ------- local-login LocalStrategy`)
@@ -136,19 +139,21 @@ passport.use(new BasicStrategy(
           [Op.and]: [{ userName: userName }, { password: password }]
         }
       })
-      if (user.isActive && user.isActive != 1) {
-        const _error = new Error()
-        _error.message = "Tài khoản bị khóa. Vui lòng liên hệ quản trị viên!"
-        _error.statusCode = 401
-        _error.status = 'api'
-        throw _error
-      }
+      
       if (!user) {
         const error = new Error()
         error.message = "Tài khoản hoặc mật khẩu không đúng!"
         error.statusCode = 401
         error.status = 'api'
         throw error
+      }
+
+      if (user.isActive && user.isActive != 1) {
+        const _error = new Error()
+        _error.message = "Tài khoản bị khóa. Vui lòng liên hệ quản trị viên!"
+        _error.statusCode = 401
+        _error.status = 'api'
+        throw _error
       }
       return done(null, user)
     } catch (error) {
