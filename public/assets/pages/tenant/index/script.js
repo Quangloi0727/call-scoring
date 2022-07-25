@@ -22,7 +22,6 @@ $(function () {
     })
     // bắt sự kiện click xóa file ảnh đang có
     $(document).on('click', 'i[class*="fa-trash"]', function () {
-        console.log("aaaaaaaa")
         $('span[class*="name-file-logo"]').remove()
         $('.default-text').removeClass("d-none")
         $('#my_image').attr('src', '')
