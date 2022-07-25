@@ -282,9 +282,8 @@ $(function () {
     let contentTableRight = ''
     let found
 
-    console.log(`------- data ------- `)
+    console.log(`Data table của user:`)
     console.log(data)
-    console.log(`------- data ------- `)
 
     if (currentUser) {
       found = currentUser.roles.find(element => element.role == 2)
@@ -429,7 +428,7 @@ $(function () {
     let userName = $(this).attr('data-userName')
     let isActive = $(this).attr('data-isActive')
 
-
+    let title = `Khóa tài khoản người dùng`
     let html = `
     Tài khoản <strong>${userName}</strong> sẽ bị khóa
     <br>
@@ -440,7 +439,10 @@ $(function () {
     `
     if (isActive != 1) {
       html = `Tài khoản <strong>${userName}</strong> sẽ được mở khóa`
+      title = `Mở khóa tài khoản người dùng`
     }
+
+    // render nội dung lên modal
     $('#blockUser_extension_input').val(extension)
     $('#blockUser_extension').addClass("d-none")
     $('#body-noti-block').html(html)
@@ -448,6 +450,9 @@ $(function () {
     if (!userId || userId == '') return
     $('#btn-block-user').attr("data-id", userId)
     $('#btn-block-user').attr("data-blockUser", isActive)
+    console.log(title)
+    $('#modalBlockUser h4.modal-title').text(title)
+
     $modalBlockUser.modal('show')
   })
 
