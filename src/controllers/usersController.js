@@ -434,6 +434,7 @@ exports.postBlockUser = async (req, res, next) => {
       if (foundUser)
         return res.status(ERR_400.code).json({
           message: 'Extension đã được sử dụng!',
+          extension: foundUser.extension
         })
     }
     await UserModel.update(

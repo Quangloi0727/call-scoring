@@ -340,10 +340,16 @@
       <div class="modal-body ">
         <form id="formBlockUser" autocomplete="off">
           <div class="border-bottom border-dark">
-            <div class="form-group mb-5 ml-2" id="body-noti-block">
+            <div class="ml-2" id="body-noti-block">
+            </div>
+            <div class="form-group mb-5 ml-2 d-none" class="d-none" id="blockUser_extension">
+              <p>
+                Số máy lẻ <strong id="old_extension_User"></strong> đã được sử dụng .Vui lòng chọn số máy lẻ mới cho
+                người dùng
+              </p>
+              <input class="form-control input" type="text" id="blockUser_extension_input" name="blockUser_extension">
             </div>
           </div>
-
           <div class="form-group ml-2">
             <p>Vui lòng xác minh tài khoản quản trị</p>
             <div>
@@ -355,14 +361,6 @@
                 <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
                 <input class="form-control input" type="password" id="admin_password" name="admin_password"
                   autocomplete="password">
-                <div class="d-none" id="blockUser_extension">
-                  <label>
-                    Extension
-                    <span class="text-danger">*</span>
-                  </label>
-                  <input class="form-control input" type="text" id="blockUser_extension_input"
-                    name="blockUser_extension">
-                </div>
               </div>
             </div>
           </div>

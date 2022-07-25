@@ -471,11 +471,14 @@ $(function () {
         $loadingData.hide()
 
         toastr.success('Đã khóa người dùng thành công')
-        return location.reload()
+        return setTimeout(() => {
+          location.reload()
+        }, 1500)
       },
       error: function (error) {
-        console.log(error)
         if (error.status == 400) $('#blockUser_extension').removeClass('d-none')
+        $("#blockUser_extension_input").val("")
+        $("#old_extension_User").text(JSON.parse(error.responseText).extension)
         return toastr.error(JSON.parse(error.responseText).message)
       },
     })
