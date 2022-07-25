@@ -16,7 +16,6 @@ $(function () {
         `
         $(".custom-file-label").append(html)
         $('.default-text').addClass("d-none")
-        // $("#hidden-value").val($(".custom-file-input").val)
 
         readURL(this)
     })
@@ -27,12 +26,8 @@ $(function () {
         $('#my_image').attr('src', '')
     })
 
-    // $("#submitform").submit(function (event) {
-    //     console.log("check")
-    // })
+    // btn upload ảnh
     $(document).on('click', '#btn-upload-logo', function () {
-        // $('#fileUploadForm').trigger('submit')
-        // // data = new FormData()
 
         var form = $('#fileUploadForm')[0]
         var data = new FormData(form)

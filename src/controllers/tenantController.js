@@ -26,7 +26,7 @@ exports.index = async (req, res, next) => {
     }
 }
 
-exports.Upload = async (req, res, next) => {
+exports.upload = async (req, res, next) => {
     try {
         const foundLogo = await fsPromises.readdir('public/dist/img/logo')
         if (foundLogo.length > 0) {
@@ -43,9 +43,7 @@ exports.Upload = async (req, res, next) => {
                 // res.send(err)
                 return res.status(ERR_400.code).json({ message: err })
             }
-            else {
-                return res.status(SUCCESS_200.code).json({ message: "Upload ảnh thàng công" })
-            }
+            return res.status(SUCCESS_200.code).json({ message: "Upload ảnh thàng công" })
         })
     } catch (error) {
         return res.status(ERR_500.code).json({ message: error })
@@ -59,6 +57,8 @@ var storage = multer.diskStorage({
         cb(null, "public/dist/img/logo")
     },
     filename: function (req, file, cb) {
+
+        // rename lại thành tên mặc định để hiển thị luôn ở giao diện
         cb(null, "default.png")
     }
 })

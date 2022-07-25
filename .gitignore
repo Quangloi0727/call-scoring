@@ -46,5 +46,5 @@ client/
 *.code-workspace
 
 /public/export
-
+/public/dist/img/logo
 # /projects/*/logs/*.log

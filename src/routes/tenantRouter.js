@@ -7,5 +7,5 @@ const libsPassport = require('../libs/passport')
 router.route('/')
     .get(libsPassport.isAdmin, tenantController.index)
 router.route('/uploadLogo')
-    .post(tenantController.Upload)
+    .post(tenantController.upload)
 module.exports = router
