@@ -1,4 +1,5 @@
 <script>
+  var USER_ROLE = JSON.parse('<%- JSON.stringify(USER_ROLE)%>');
 </script>
 <div class="wrapper">
   <div>
@@ -63,7 +64,7 @@
                   <table class="table-right custom-table">
                     <thead>
                       <tr class="text-center">
-                        <th>Quyền</th>
+                        <th class="text-truncate">Quyền</th>
                         <th>Extension</th>
                         <th>Đội ngũ</th>
                         <th>Trạng thái</th>
@@ -281,7 +282,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Chỉnh sửa người dùng</h4>
+        <h4 class="modal-title">Reset mật khẩu người dùng</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -290,9 +291,9 @@
         <form id="formResetPassword" autocomplete="off">
           <div class="border-bottom border-dark">
             <div class="form-group mb-5 ml-2">
-              <label>
-                Mật khẩu mới của <strong></strong> được đổi thành :
-              </label>
+              <p>
+                Mật khẩu mới của <strong id="name_user_reset_password"></strong> được đổi thành :
+              </p>
               <div class="row d-flex">
                 <input type="text" class="form-control input" id="reset-password" name="reset-password"
                   autocomplete="reset-password" style="width: 20%;" disabled />
@@ -309,7 +310,7 @@
                 <br>
                 <strong class="admin-account"></strong>
                 <br>
-                <span class="text-muted">mật khẩu:</span><span class="text-danger">*</span>
+                <span class="text-muted">Mật khẩu:</span><span class="text-danger">*</span>
                 <input class="form-control input" type="password" id="admin-password" name="admin-password"
                   autocomplete="new-password">
               </div>

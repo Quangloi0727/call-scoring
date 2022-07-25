@@ -19,7 +19,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "mongodb": "^3.6.3",
-    "multer": "^1.4.2",
+    "multer": "^1.4.4",
     "pagination": "^0.4.6",
     "passport": "^0.4.1",
     "passport-http": "^0.3.0",

@@ -47,4 +47,5 @@ client/
 
 /public/export
 /public/dist/img/logo
+/public/dist/img
 # /projects/*/logs/*.log

@@ -281,7 +281,7 @@ $(function () {
     let contentTableLeft = ''
     let contentTableRight = ''
     let found
-
+    console.log(USER_ROLE)
     console.log(`Data table của user:`)
     console.log(data)
 
@@ -316,6 +316,16 @@ $(function () {
         updatedAtHtml = moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss')
       }
 
+      let rolesHtml = ``
+      Object.keys(USER_ROLE).forEach((ele, index) => {
+        // USER_ROLE[ele].n == 
+        if (item.roles.length > 0) {
+          let found = item.roles.find(element => element.role = USER_ROLE[ele].n)
+          if (found) {
+            rolesHtml += (`${USER_ROLE[ele].t}` + ',')
+          }
+        }
+      })
       contentTableLeft += `
         <tr class="text-center">
           <td>${item.fullName}</td>
@@ -326,8 +336,8 @@ $(function () {
               <i class="fas fa-pencil"></i>
             </span>
             ${lockButton}
-            <span class="p-1 btn-action ${found ? "btn-modal-reset-password" : ""}" title="${found ? "Reset lại mật khẩu" : "Bạn không có quyền sử dụng chức năng này"}" data-id="${item.id}">
-              <i class="fas fa-sync"></i>
+            <span class="p-1 btn-action ${found ? "btn-modal-reset-password" : ""}" title="${found ? "Reset lại mật khẩu" : "Bạn không có quyền sử dụng chức năng này"}" 
+              data-id="${item.id}" data-userName="${item.userName}" ><i class="fas fa-sync"></i>
             </span>
           </td>
         </tr>
@@ -335,7 +345,7 @@ $(function () {
 
       contentTableRight += `
         <tr class="text-center">
-          <td></td>
+          <td title="${rolesHtml}"><div class="text-truncate" style="width: 200px;">${rolesHtml}</div></td>
           <td>${item.extension}</td>
           <td>${teamHtml}</td>
           <td>${statusHtml}</td>
@@ -389,10 +399,15 @@ $(function () {
   })
 
   $(document).on('click', '.btn-modal-reset-password', function () {
+
     let _generatePassword = generatePassword()
+    let userName = $(this).attr('data-userName')
+    let userId = $(this).attr("data-id")
+
     $('input[name=reset-password]').val(_generatePassword)
-    console.log($(this).attr("data-id"))
-    $('#btn-reset-password').attr("data-id", $(this).attr("data-id"))
+    $('#btn-reset-password').attr("data-id", userId)
+    $('#name_user_reset_password').text(userName)
+
     $modalResetPassword.modal('show')
   })
 
@@ -401,10 +416,12 @@ $(function () {
   })
 
   $(document).on('click', '#btn-reset-password', function () {
+
     let filter = {}
     filter.newPassword = $('#reset-password').val()
     filter.idUser = $(this).attr("data-id")
     filter.adminPassword = $('#admin-password').val()
+
     $.ajax({
       type: 'POST',
       url: '/users/resetPassWord',
@@ -423,6 +440,7 @@ $(function () {
   })
 
   $(document).on('click', '.btn-modal-block-user', function () {
+
     let userId = $(this).attr('data-id')
     let extension = $(this).attr('data-extension')
     let userName = $(this).attr('data-userName')
@@ -457,11 +475,13 @@ $(function () {
   })
 
   $(document).on('click', '#btn-block-user', function () {
+
     let body = {}
     body.blockUser = $(this).attr("data-blockUser") == '1' ? '0' : '1'
     body.idUser = $(this).attr("data-id")
     body.adminPassword = $('#admin_password').val()
     body.extension = $('#blockUser_extension_input').val()
+
     $.ajax({
       type: 'POST',
       url: '/users/blockUser',
@@ -476,9 +496,11 @@ $(function () {
         }, 1500)
       },
       error: function (error) {
+
         if (error.status == 400) $('#blockUser_extension').removeClass('d-none')
         $("#blockUser_extension_input").val("")
         $("#old_extension_User").text(JSON.parse(error.responseText).extension)
+
         return toastr.error(JSON.parse(error.responseText).message)
       },
     })
@@ -490,6 +512,7 @@ $(function () {
   })
 
   $(document).on('change', 'select[name=edit_roles]', function () {
+
     let html = `<span id="edit_roles_error" class="error" 
     style="width: 100%;margin-top: 0.25rem;font-size: 80%;color: #dc3545;">
     Hệ thống sẽ gỡ người dùng ra khỏi tất cả các nhóm/đội ngũ nếu có</span>`
@@ -500,16 +523,19 @@ $(function () {
   })
   /// random password
   function generatePassword() {
+
     var length = 8,
       charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
       retVal = ""
     for (var i = 0, n = charset.length; i < length; ++i) {
       retVal += charset.charAt(Math.floor(Math.random() * n))
     }
+
     return retVal
   }
   // copyToClipboard
   function copyToClipboard(element) {
+
     var copyText = document.getElementById("reset-password")
 
     /* Select the text field */
@@ -525,6 +551,7 @@ $(function () {
   }
 
   function warningLengthInput(formId, inputId, warningClass) {
+
     $(`#${formId} #${inputId}`).on('input', function () {
       let value = $(this).val()
 
@@ -539,6 +566,7 @@ $(function () {
         return $(`#${warningClass}`).removeClass('text-danger').addClass('text-muted')
       }
     })
+
   }
 
   warningLengthInput('form_input_user', 'firstname', 'first_name_length')
