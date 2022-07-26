@@ -1,6 +1,5 @@
 const fs = require("fs");
 const fse = require("fs-extra");
-const { DailyRotateFile } = require("winston/lib/winston/transports");
 
 class CRUDFile {
 

@@ -1,57 +1,29 @@
-const { createLogger, format, transports } = require("winston");
-require('winston-daily-rotate-file');
+var log4js = require('log4js')
+var fs = require('fs-extra')
 
-const { formatDate } = require("../helpers/functions");
-const { combine, timestamp, label, printf,  } = format;
+var getLogger = function (moduleName) {
+    try {
+        var appList = []
+        appList.push(moduleName)
+        var logger = log4js.getLogger(moduleName)
+        var appLog = './logs/app.log'
+        fs.ensureFileSync(appLog)
 
-module.exports = (basename) => {
-    const myFormat = printf(({ level, message, label, timestamp }) => {
-        let t = new Date(timestamp);
-        let timeNow = formatDate(t, 'YYYY-MM-DD HH:mm:ss');
-        const timeZone = t.getTimezoneOffset() / 60;
-        return `${timeNow} ${timeZone}Z [${label}] ${basename} ${level}: ${message}`;
-    });
-    
-    const combineF = combine(
-        label({ label: 'debug' }),
-        timestamp(),
-        myFormat,
-        format.colorize(),
-        format.align(),
-    );
+        log4js.configure({
+            appenders: {
+                console: { type: 'console' },
+                filelog: { type: 'file', filename: appLog, pattern: '-yyyy-MM-dd', category: appList } //log theo từng ngày (có thể set up theo từng giờ/phút/giây -yyyy-MM-dd-hh-mm-ss)
+            },
+            categories: {
+                file: { appenders: ['filelog'], level: 'error' },
+                another: { appenders: ['console'], level: 'trace' },
+                default: { appenders: ['console', 'filelog'], level: 'trace' }
+            }
+        })
 
-    
-    const logger = createLogger({
-        level: 'debug',
-        format: combineF,
-        defaultMeta: { service: 'user-service' },
-        exceptionHandlers: (e) =>{
-            console.log({e})
-        },
-        transports: [
-    
-            new transports.DailyRotateFile({
-                filename: 'logs/error-%DATE%.log',
-                datePattern: 'YYYY-MM-DD',
-                zippedArchive: true,
-                maxSize: '20m',
-                maxFiles: '14d', level: 'error'
-            }),
-            new transports.DailyRotateFile({
-                filename: 'logs/info-%DATE%.log',
-                datePattern: 'YYYY-MM-DD',
-                zippedArchive: true,
-                maxSize: '20m',
-                maxFiles: '14d', level: 'info'
-            }),
-        ],
-    });
-    
-    if (process.env.NODE_ENV !== 'production') {
-        logger.add(new transports.Console({
-            format: combineF,
-        }));
+    } catch (err) {
+        console.log(err)
     }
-
-    return logger;
-};
+    return logger
+}
+exports.getLogger = getLogger

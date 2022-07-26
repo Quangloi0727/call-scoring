@@ -1,11 +1,3 @@
-const { Op, QueryTypes } = require("sequelize");
-const pagination = require("pagination");
-const moment = require("moment");
-const _ = require("lodash");
-// const UserModel = require('../models/user');
-// const UserRoleModel = require('../models/userRole');
-// const TeamModel = require('../models/team');
-// const AgentTeamMemberModel = require('../models/agentTeamMember');
 const model = require("../models");
 const { SUCCESS_200, ERR_500, TYPE_ROLETYPE, USER_ROLE_NOT_ADMIN, OP_TIME_DEFINE  } = require("../helpers/constants");
 

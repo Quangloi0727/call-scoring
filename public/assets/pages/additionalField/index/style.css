@@ -1,0 +1,8 @@
+.btn-action {
+    cursor: pointer;
+    color: #009bff;
+  }
+  
+  .btn-action:hover {
+    color: #007bff;
+  }

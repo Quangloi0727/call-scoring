@@ -240,17 +240,15 @@
               </div>
             </div>
 
-            <%
-              for (const [key, value] of Object.entries(var1Tovar10)) { %>
-                <div class="col-6">
-                  <div class="form-group">
-                    <label><%- value %></label>
-                    <input type="text" class="form-control input" id="val_<%- key %>" name="<%- key %>" />
-                  </div>
+            <% additionalField.forEach(function(el){ %>
+              <div class="col-6">
+                <div class="form-group">
+                  <label><%- el.value %></label>
+                  <input type="text" class="form-control input" id="val_<%- el.code %>" name="<%- el.code %>" />
                 </div>
-              <%}
-            %>
-
+              </div>
+            <% }) %>
+                
           </div>
           
           <div class="modal-footer justify-content-between">
@@ -314,11 +312,6 @@
 
         <div class="modal-footer justify-content-between">
           <div>
-            <!-- <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
-              id="clear_local_storage">
-              <i class="far fa-trash-alt"></i>
-              <span>Xóa bộ lọc</span>
-            </button> -->
             <button type="button" class="btn btn-outline-primary" data-dismiss="modal" id="resetColumnCustom">
               <i class="far fa-trash-alt"></i>
               <span>Phục hồi mặc định</span>

@@ -1,3 +1,4 @@
+
 const path = require("path")
 const express = require("express")
 const bodyParser = require("body-parser")
@@ -41,6 +42,8 @@ function initServer() {
   app.use(favicon(path.join(_rootPath, 'public', 'favicon.ico')))
 
   app.use(cors())
+
+  _.mixin(_.extend(require('underscore.string').exports(), require(path.join(_rootPath, 'src', 'libs', 'function'))))
 
   // Config socket.io version 3.0.4
   const server = http.createServer(app)
