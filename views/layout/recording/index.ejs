@@ -70,24 +70,27 @@
               </div>
             </div>
           </form>
-          <% if(rules[SYSTEM_RULE.XUAT_EXCEL.code]) { %> 
-          <button type="button" class="form-control btn btn-primary" id="export_excel">
-            Xuất Excel
-          </button>
-          <% } %> 
+          <% if(rules[SYSTEM_RULE.XUAT_EXCEL.code]) { %>
+            <button type="button" class="form-control btn btn-primary" id="export_excel">
+              Xuất Excel
+            </button>
+            <% } %>
         </div>
       </div>
       <div class="card-body">
-        <div class="primary" >
+        <div class="primary">
           <table id="tableRecording" class="table table-bordered table-hover tableFixColumn">
             <thead>
               <tr>
-                <% Object.keys(headerDefault).forEach((i) => { %> 
-                  <% let ele = headerDefault[i]; %>
-                  <% let sorting = ['duration'].includes(i) ? 'sorting' : '' ; %> <!-- them sort -->
-                  
-                  <th class="text-center sortHeader <%= i %> <%= sorting %>" id-sort="<%= i %>" ><%= ele%></th>
-                <% }) %> 
+                <% Object.keys(headerDefault).forEach((i)=> { %>
+                  <% let ele=headerDefault[i]; %>
+                    <% let sorting=['duration'].includes(i) ? 'sorting' : '' ; %>
+                      <!-- them sort -->
+
+                      <th class="text-center sortHeader <%= i %> <%= sorting %>" id-sort="<%= i %>">
+                        <%= ele%>
+                      </th>
+                      <% }) %>
               </tr>
             </thead>
             <tbody id="table_data"></tbody>
@@ -161,8 +164,8 @@
 
               <div class="form-group">
                 <label>Họ tên</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="fullName" id="val_fullName" data-live-search="true"
-                  title="Chọn..." multiple>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="fullName" id="val_fullName"
+                  data-live-search="true" title="Chọn..." multiple>
                   <% teamsDetail.forEach((team)=> { %>
                     <option value="<%= team.memberId %>">
                       <%= team.memberFullName %>
@@ -181,8 +184,8 @@
 
               <div class="form-group">
                 <label>Tên đăng nhập</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="userName" id="val_userName" data-live-search="true"
-                  title="Chọn..." multiple>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="userName" id="val_userName"
+                  data-live-search="true" title="Chọn..." multiple>
                   <% teamsDetail.forEach((team)=> { %>
                     <option value="<%= team.memberId %>">
                       <%= team.memberUserName %>
@@ -197,8 +200,8 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Đội ngũ</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="teams" id="val_teams" data-live-search="true"
-                  title="Chọn..." multiple>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="teams" id="val_teams"
+                  data-live-search="true" title="Chọn..." multiple>
                   <% teams.forEach((team)=> { %>
                     <option value="<%= team.teamId %>">
                       <%= team.teamName %>
@@ -207,12 +210,12 @@
                 </select>
               </div>
             </div>
-            
+
             <div class="col-6">
               <div class="form-group">
                 <label>Hướng gọi</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="callDirection" id="val_callDirection"
-                  data-live-search="true" title="Chọn..." multiple>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="callDirection"
+                  id="val_callDirection" data-live-search="true" title="Chọn..." multiple>
                   <option value="inbound">inbound</option>
                   <option value="outbound">outbound</option>
                 </select>
@@ -229,30 +232,30 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Nguồn ghi âm</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="sourceName" id="val_sourceName"
-                  data-live-search="true" title="Chọn..." multiple>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="sourceName"
+                  id="val_sourceName" data-live-search="true" title="Chọn..." multiple>
                   <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
                     <option value="<%= SOURCE_NAME[item].code %>">
                       <%= SOURCE_NAME[item].text %>
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
 
-            <%
-              for (const [key, value] of Object.entries(var1Tovar10)) { %>
-                <div class="col-6">
-                  <div class="form-group">
-                    <label><%- value %></label>
-                    <input type="text" class="form-control input" id="val_<%- key %>" name="<%- key %>" />
-                  </div>
+            <% for (const [key, value] of Object.entries(var1Tovar10)) { %>
+              <div class="col-6">
+                <div class="form-group">
+                  <label>
+                    <%- value %>
+                  </label>
+                  <input type="text" class="form-control input" id="val_<%- key %>" name="<%- key %>" />
                 </div>
-              <%}
-            %>
+              </div>
+              <%} %>
 
           </div>
-          
+
           <div class="modal-footer justify-content-between">
             <div>
               <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
@@ -296,20 +299,19 @@
           </li>
         </ul>
         <ul id="sortable">
-          <% Object.keys(headerDefault).forEach((i) => { %> 
-            <% let ele = headerDefault[i]; %>
-            <li class="mb-3 border-bottom <%- (i== 'callId' ? "unsortable" :"")%>" >
-              <input class="form-check-input" type="checkbox" name="<%= i %>"
-              <%- (i== 'callId' ? "disabled" :"")%>
-              checked
-              />
-              <%= ele%>
-              <span style="float: right;">
-                <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
-              </span>
-            </li>
-          <% }) %> 
-        
+          <% Object.keys(headerDefault).forEach((i)=> { %>
+            <% let ele=headerDefault[i]; %>
+              <li class="mb-3 border-bottom <%- (i== 'callId' ? " unsortable" :"")%>" >
+                <input class="form-check-input" type="checkbox" name="<%= i %>" <%- (i=='callId' ? "disabled" :"")%>
+                checked
+                />
+                <%= ele%>
+                  <span style="float: right;">
+                    <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+                  </span>
+              </li>
+              <% }) %>
+
         </ul>
 
         <div class="modal-footer justify-content-between">

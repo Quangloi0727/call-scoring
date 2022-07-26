@@ -59,8 +59,9 @@ exports.getUsers = async (req, res, next) => {
         limit: limit,
         include: [
           { model: UserModel, as: 'userCreate' },
+          { model: UserRoleModel, as: 'roles' }
         ],
-        raw: true,
+        raw: false,
         nest: true
       }),
       UserModel.count({
@@ -70,10 +71,9 @@ exports.getUsers = async (req, res, next) => {
         },
       })
     ])
-
-    const userIds = _.map(recordResult, 'id')
-
-    const dataResult = await handleAgentOfTeam(userIds, recordResult)
+    let convertUser = JSON.parse(JSON.stringify(recordResult))
+    const userIds = _.map(convertUser, 'id')
+    const dataResult = await handleAgentOfTeam(userIds, convertUser)
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
@@ -148,7 +148,7 @@ exports.createUser = async (req, res, next) => {
     }
 
     data.fullName = `${data.firstName.trim()} ${data.lastName.trim()}`
-    data.extension = v
+    data.extension = Number(data.extension)
     data.role = 0
     data.isActive = 1
     data.created = req.user.id
@@ -434,6 +434,7 @@ exports.postBlockUser = async (req, res, next) => {
       if (foundUser)
         return res.status(ERR_400.code).json({
           message: 'Extension đã được sử dụng!',
+          extension: foundUser.extension
         })
     }
     await UserModel.update(

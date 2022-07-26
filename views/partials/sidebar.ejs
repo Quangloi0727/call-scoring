@@ -2,7 +2,7 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
   <!-- Brand Logo -->
   <a href="/" class="brand-link">
-    <img src="/dist/img/logo.png" alt="AdminLTE Logo" class="brand-image"
+    <img src="/dist/img/logo/default.png" alt="AdminLTE Logo" class="brand-image"
       style="width: 80%; margin: 2px 0.3rem; max-height: 55px;">
     <div style="clear: both;"></div>
   </a>
@@ -20,7 +20,7 @@
             <p>Recording</p>
           </a>
         </li>
-        <% if(currUser && currUser.roles.find((item) => item.role == 2)) { %>
+        <% if(currUser && currUser.roles.find((item)=> item.role == 2)) { %>
           <li class="nav-item ">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-cog"></i>
@@ -62,24 +62,35 @@
                 <ul class="nav nav-treeview">
                   <li class="nav-item">
                     <a href="/" class="nav-link">
-                      <p class="" 
-                      style="margin-left: 5rem !important;"
-                      >Mục tiêu chấm điểm</p>
+                      <p class="" style="margin-left: 5rem !important;">Mục tiêu chấm điểm</p>
                     </a>
                   </li>
                   <li class="nav-item">
                     <a href="/scoreScripts/new" class="nav-link">
-                      <p class="" 
-                      style="margin-left: 5rem !important;"
-                      >Kịch bản chấm điểm</p>
+                      <p class="" style="margin-left: 5rem !important;">Kịch bản chấm điểm</p>
                     </a>
                   </li>
                 </ul>
               </li>
-                
+
+              <!-- quản lí tenant -->
+              <li class="nav-item ">
+                <a href="#" class="nav-link">
+                  <p class="ml-5">
+                    Quản lí tenant<i class="right fas fa-angle-left"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="/tenant" class="nav-link">
+                      <p style="margin-left: 5rem !important;">Logo</p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
             </ul>
           </li>
-        <% } %>
+          <% } %>
       </ul>
     </nav>
     <!-- /.sidebar-menu -->
