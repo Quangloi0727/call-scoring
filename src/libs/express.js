@@ -1,3 +1,4 @@
+
 const path = require("path")
 const express = require("express")
 const bodyParser = require("body-parser")
@@ -12,6 +13,8 @@ const { passport } = require('./passport')
 const { ERR_404 } = require("../helpers/constants")
 const globalErrHandler = require("../controllers/errorController")
 const ResError = require("../utils/resError")
+const multer = require('multer')
+const forms = multer()
 
 function initServer() {
   const app = new express()
@@ -27,6 +30,7 @@ function initServer() {
   app.use(bodyParser.json())
 
   // for parsing multipart/form-data
+  app.use(forms.array())
 
   app.set('view engine', 'ejs')
 
@@ -41,6 +45,8 @@ function initServer() {
   app.use(favicon(path.join(_rootPath, 'public', 'favicon.ico')))
 
   app.use(cors())
+
+  _.mixin(_.extend(require('underscore.string').exports(), require(path.join(_rootPath, 'src', 'libs', 'function'))))
 
   // Config socket.io version 3.0.4
   const server = http.createServer(app)

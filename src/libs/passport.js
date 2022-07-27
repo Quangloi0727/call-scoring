@@ -1,4 +1,3 @@
-const _ = require('lodash')
 const passport = require('passport')
 const { Op } = require('sequelize')
 const LocalStrategy = require('passport-local').Strategy
