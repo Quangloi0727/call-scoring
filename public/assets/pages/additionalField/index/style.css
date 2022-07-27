@@ -1,4 +1,5 @@
 .btn-action {
+<<<<<<< HEAD
   cursor: pointer;
   color: #009bff;
 }
@@ -10,3 +11,12 @@
 .c-red {
   color: red;
 }
+=======
+    cursor: pointer;
+    color: #009bff;
+  }
+  
+  .btn-action:hover {
+    color: #007bff;
+  }
+>>>>>>> 01d5792e025709867c70a896f333d86287af1f99
