@@ -5,4 +5,5 @@ module.exports = {
     ...require("./statusCodeHTTP"),
     ...require("./statusField"),
     ...require("./special.character"),
-};
+    ...require("./fieldRecording"),
+}

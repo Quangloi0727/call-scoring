@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "code": "var1",
+        "value": "Số 121"
+    },
+    {
+        "id": 2,
+        "code": "var2",
+        "value": "Số 2"
+    },
+    {
+        "id": 3,
+        "code": "var3",
+        "value": "Số 33"
+    },
+    {
+        "id": 4,
+        "code": "var4",
+        "value": "Số 4"
+    },
+    {
+        "id": 5,
+        "code": "var5",
+        "value": "Số 5"
+    },
+    {
+        "id": 6,
+        "code": "var6",
+        "value": "Số 6"
+    },
+    {
+        "id": 7,
+        "code": "var7",
+        "value": "Số 7"
+    },
+    {
+        "id": 8,
+        "code": "var8",
+        "value": "Số 8"
+    },
+    {
+        "id": 9,
+        "code": "var9",
+        "value": "Số 9"
+    },
+    {
+        "id": 10,
+        "code": "var10",
+        "value": "Số 10"
+    }
+]

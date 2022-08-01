@@ -9,30 +9,7 @@ const headerDefault = {
     origTime: "Ngày giờ gọi",
     duration: "Thời lượng",
     audioHtml: "Ghi âm",
-    sourceName: "Nguồn ghi âm",
-    var1: "Var1",
-    var2: "Var2",
-    var3: "Var3",
-    var4: "Var4",
-    var5: "Var5",
-    var6: "Var6",
-    var7: "Var7",
-    var8: "Var8",
-    var9: "Var9",
-    var10: "Var10"
-}
-
-const var1Tovar10 = {
-    var1: "Var1",
-    var2: "Var2",
-    var3: "Var3",
-    var4: "Var4",
-    var5: "Var5",
-    var6: "Var6",
-    var7: "Var7",
-    var8: "Var8",
-    var9: "Var9",
-    var10: "Var10"
+    sourceName: "Nguồn ghi âm"
 }
 
 const keysTitleExcel = [
@@ -53,10 +30,9 @@ const keysTitleExcel = [
     "var8",
     "var9",
     "var10",
-];
+]
 
 module.exports = {
     headerDefault,
-    keysTitleExcel,
-    var1Tovar10
+    keysTitleExcel
 }
