@@ -27,9 +27,9 @@ exports.edit = async (req, res, next) => {
 
         if (newArrayValue.indexOf(value.toUpperCase()) > -1) return res.json({ code: 500 })
 
-        const newData = arrayValue.map(obj =>
-            obj.id == req.id ? { ...obj, value: value } : obj
-        );
+        const newData = JSON.parse(additionalField).map(obj =>
+            obj.id == id ? { ...obj, value: value } : obj
+        )
 
         saveAdditionalFieldData(newData)
 

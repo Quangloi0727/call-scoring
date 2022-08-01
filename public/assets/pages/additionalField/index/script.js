@@ -52,6 +52,8 @@ var bindClick = function () {
                 title: 'Thông báo!',
                 text: 'Lưu thành công !',
                 icon: 'success'
+            }).then(() => {
+                window.location.reload(true)
             })
         })
 
