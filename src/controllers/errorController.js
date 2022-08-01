@@ -7,9 +7,9 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || ERR_500.code;
   err.status = err.status || 'error';
 
-  console.log(`------- err ------- Error Controller`);
-  console.log('err: ', err);
-  console.log(`------- err ------- Error Controller`);
+  _logger.error(`------- err ------- Error Controller`);
+  _logger.error('err: ', err);
+  _logger.error(`------- err ------- Error Controller`);
 
   if (err.status == 'api' && err.statusCode == 401) {
     let { message } = ERR_401;
