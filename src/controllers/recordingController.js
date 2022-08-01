@@ -1,27 +1,25 @@
 
-const pagination = require('pagination');
-const { QueryTypes } = require('sequelize');
-const _ = require('lodash');
-const moment = require('moment');
+const pagination = require('pagination')
+const { QueryTypes } = require('sequelize')
+const lodash = require('lodash')
+const moment = require('moment')
 const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
   ERR_500,
   ERR_400,
   ERR_403
-} = require("../helpers/constants/statusCodeHTTP");
+} = require("../helpers/constants/statusCodeHTTP")
 const {
   USER_ROLE,
   SYSTEM_RULE
-} = require("../helpers/constants");
+} = require("../helpers/constants")
 
-const {
-  cheSo
-} = require("../helpers/functions");
+const { cheSo } = require("../helpers/functions")
 
-const model = require('../models');
-const ConfigurationColumsModel = require('../models/configurationcolums');
-const titlePage = 'Danh sách cuộc gọi';
+const model = require('../models')
+const ConfigurationColumsModel = require('../models/configurationcolums')
+const titlePage = 'Danh sách cuộc gọi'
 const SOURCE_NAME = {
   oreka: {
     code: 'ORK',
@@ -31,54 +29,55 @@ const SOURCE_NAME = {
     code: 'FS',
     text: 'Freeswitch'
   },
-};
+}
 
-const { headerDefault, var1Tovar10, keysTitleExcel } = require('../constants/constants.js')
+const { headerDefault, keysTitleExcel } = require('../helpers/constants/fieldRecording')
 
 exports.index = async (req, res, next) => {
   try {
-    let isAdmin = false;
-    let { user } = req;
+    let isAdmin = false
+    let { user } = req
 
     if (req.user.roles.find((item) => item.role == 2)) {
-      isAdmin = true;
+      isAdmin = true
     }
 
-    let { teams, teamIds } = await checkLeader(req.user.id);
+    let { teams, teamIds } = await checkLeader(req.user.id)
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
-      let userGroupTeam = await getTeamOfGroup(req.user.id);
-      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0);
+      let userGroupTeam = await getTeamOfGroup(req.user.id)
+      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0)
 
-      let teamFound = [];
+      let teamFound = []
       teamIdMap.forEach(i => {
         i.forEach(j => {
-          if (!teamFound.includes(j)) teamFound.push(j);
-        });
-      });
+          if (!teamFound.includes(j)) teamFound.push(j)
+        })
+      })
 
       // _.map(_.unzip(teamIdMap), _.sum); //; // _.zipWith(, _.add)
       teamIds = _.uniq([...teamIds, ...teamFound])
     }
+    const additionalField = fs.readFileSync(_pathFileAdditionField)
 
-    let { teams: teamsDetail } = await getAgentTeamMemberDetail(isAdmin, teamIds, req.user.id);
+    let { teams: teamsDetail } = await getAgentTeamMemberDetail(isAdmin, teamIds, req.user.id)
 
     return _render(req, res, 'recording/index', {
       title: titlePage,
       titlePage: titlePage,
       rules: user.rules,
-      headerDefault,
-      var1Tovar10,
+      headerDefault: _.mapHeaderDefault(headerDefault, JSON.parse(additionalField)),
+      additionalField: JSON.parse(additionalField),
       SOURCE_NAME,
       SYSTEM_RULE,
-      teamsDetail: _.uniqBy(teamsDetail, 'memberId'), // master data
-      teams: _.uniqBy(teamsDetail, 'teamId') || [],
-    });
+      teamsDetail: lodash.uniqBy(teamsDetail, 'memberId'), // master data
+      teams: lodash.uniqBy(teamsDetail, 'teamId') || [],
+    })
   } catch (error) {
-    console.log(`------- error ------- `);
-    console.log(error);
-    console.log(`------- error ------- `);
-    return next(error);
+    console.log(`------- error ------- `)
+    console.log(error)
+    console.log(`------- error ------- `)
+    return next(error)
   }
 }
 
@@ -110,135 +109,135 @@ exports.getRecording = async (req, res) => {
       var9,
       var10,
       sort // sort: {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
-    } = req.query;
-    let { limit } = req.query;
-    let { user } = req;
+    } = req.query
+    let { limit } = req.query
+    let { user } = req
 
-    if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE;
+    if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
 
     if (sort && !['ASC', 'DESC'].includes(sort.sort_type)) {
       return res.status(ERR_400.code).json({
         message: ERR_400.message_detail.sortTypeInValid
-      });
+      })
     }
 
-    limit = Number(limit);
+    limit = Number(limit)
 
-    const pageNumber = page ? Number(page) : 1;
-    const offset = (pageNumber * limit) - limit;
-    let userIdFilter = [];
-    let query = '';
-    let order = 'ORDER BY records.origTime DESC';
-    let isAdmin = false;
-    let limitTimeExpires;
+    const pageNumber = page ? Number(page) : 1
+    const offset = (pageNumber * limit) - limit
+    let userIdFilter = []
+    let query = ''
+    let order = 'ORDER BY records.origTime DESC'
+    let isAdmin = false
+    let limitTimeExpires
 
     // check quyền xem dữ liệu
     if (!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]) {
 
       return res.status(ERR_403.code).json({
         message: ERR_403.message_detail.notHaveAccessData
-      });
+      })
     } else {
       if (user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0) {
-        let _now = moment();
+        let _now = moment()
 
-        limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix(); // second times
+        limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix() // second times
       }
     }
     if (!startTime || startTime === '' || !endTime || endTime === '') {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
 
-    let startTimeMilisecond = Number(moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'));
-    let endTimeMilisecond = Number(moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'));
+    let startTimeMilisecond = Number(moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'))
+    let endTimeMilisecond = Number(moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'))
 
     if (startTimeMilisecond > endTimeMilisecond) {
       return res.status(ERR_400.code).json({
         message: ERR_400.message_detail.timeQueryInValid
-      });
+      })
     }
 
     if (endTimeMilisecond - startTimeMilisecond > Number(_config.limitSearchDayRecording) * 86400) {
       return res.status(ERR_400.code).json({
         message: ERR_400.message_detail.searchDayRecordingInValid(_config.limitSearchDayRecording)
-      });
+      })
     }
 
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
-      isAdmin = true;
+      isAdmin = true
     }
 
-    let { teamIds } = await checkLeader(req.user.id);
+    let { teamIds } = await checkLeader(req.user.id)
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
-      let userGroupTeam = await getTeamOfGroup(req.user.id);
-      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0);
+      let userGroupTeam = await getTeamOfGroup(req.user.id)
+      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0)
 
-      let teamFound = [];
+      let teamFound = []
       teamIdMap.forEach(i => {
         i.forEach(j => {
-          if (!teamFound.includes(j)) teamFound.push(j);
-        });
-      });
+          if (!teamFound.includes(j)) teamFound.push(j)
+        })
+      })
 
       // _.map(_.unzip(teamIdMap), _.sum); //; // _.zipWith(, _.add)
       teamIds = _.uniq([...teamIds, ...teamFound])
     }
 
     if (!isAdmin && (!teamIds || teamIds.length <= 0)) {
-      query += `AND records.agentId = ${req.user.id} `;
+      query += `AND records.agentId = ${req.user.id} `
     }
 
     if (!isAdmin && teamIds && teamIds.length > 0) {
-      query += `AND ( records.agentId = ${req.user.id} OR records.teamId IN (${teamIds.toString()}) ) `;
+      query += `AND ( records.agentId = ${req.user.id} OR records.teamId IN (${teamIds.toString()}) ) `
     }
 
-    if (caller) query += `AND records.caller LIKE '%${caller.toString()}%' `;
-    if (called) query += `AND records.called LIKE '%${called.toString()}%' `;
-    if (extension) query += `AND agent.extension LIKE '%${extension.toString()}%' `;
-    if (var1) query += `AND records.var1 LIKE '%${var1.toString()}%' `;
-    if (var2) query += `AND records.var2 LIKE '%${var2.toString()}%' `;
-    if (var3) query += `AND records.var3 LIKE '%${var3.toString()}%' `;
-    if (var4) query += `AND records.var4 LIKE '%${var4.toString()}%' `;
-    if (var5) query += `AND records.var5 LIKE '%${var5.toString()}%' `;
-    if (var6) query += `AND records.var6 LIKE '%${var6.toString()}%' `;
-    if (var7) query += `AND records.var7 LIKE '%${var7.toString()}%' `;
-    if (var8) query += `AND records.var8 LIKE '%${var8.toString()}%' `;
-    if (var9) query += `AND records.var9 LIKE '%${var9.toString()}%' `;
-    if (var10) query += `AND records.var10 LIKE '%${var10.toString()}%' `;
+    if (caller) query += `AND records.caller LIKE '%${caller.toString()}%' `
+    if (called) query += `AND records.called LIKE '%${called.toString()}%' `
+    if (extension) query += `AND agent.extension LIKE '%${extension.toString()}%' `
+    if (var1) query += `AND records.var1 LIKE '%${var1.toString()}%' `
+    if (var2) query += `AND records.var2 LIKE '%${var2.toString()}%' `
+    if (var3) query += `AND records.var3 LIKE '%${var3.toString()}%' `
+    if (var4) query += `AND records.var4 LIKE '%${var4.toString()}%' `
+    if (var5) query += `AND records.var5 LIKE '%${var5.toString()}%' `
+    if (var6) query += `AND records.var6 LIKE '%${var6.toString()}%' `
+    if (var7) query += `AND records.var7 LIKE '%${var7.toString()}%' `
+    if (var8) query += `AND records.var8 LIKE '%${var8.toString()}%' `
+    if (var9) query += `AND records.var9 LIKE '%${var9.toString()}%' `
+    if (var10) query += `AND records.var10 LIKE '%${var10.toString()}%' `
 
     // if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
     if (fullName) {
-      userIdFilter = _.concat(userIdFilter, fullName);
+      userIdFilter = _.concat(userIdFilter, fullName)
     }
     if (userName) {
-      userIdFilter = _.concat(userIdFilter, userName);
+      userIdFilter = _.concat(userIdFilter, userName)
     }
     if (userIdFilter.length > 0) {
-      userIdFilter = _.uniq(userIdFilter).map(i => Number(i));
+      userIdFilter = _.uniq(userIdFilter).map(i => Number(i))
 
-      query += `AND agent.id IN (${userIdFilter.join()}) `;
+      query += `AND agent.id IN (${userIdFilter.join()}) `
 
     }
 
-    if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `;
-    if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `;
-    if (teams) query += `AND team.id IN (${teams.toString()}) `;
-    if (callId) query += `AND records.callId LIKE '%${callId.toString()}%' `;
-    if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `;
+    if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `
+    if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `
+    if (teams) query += `AND team.id IN (${teams.toString()}) `
+    if (callId) query += `AND records.callId LIKE '%${callId.toString()}%' `
+    if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `
 
     // limit time by rule
-    if (limitTimeExpires > startTimeMilisecond) startTimeMilisecond = limitTimeExpires;
+    if (limitTimeExpires > startTimeMilisecond) startTimeMilisecond = limitTimeExpires
 
     // sort
     if (sort) {
       order = `ORDER BY records.${sort.sort_by} ${sort.sort_type}`
     }
 
-    const ConfigurationColums = await getConfigurationColums(req.user.id);
+    const ConfigurationColums = await getConfigurationColums(req.user.id)
     if (exportExcel && exportExcel == 1) {
-      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums);
+      return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums)
     }
 
     let queryData = `
@@ -288,7 +287,7 @@ exports.getRecording = async (req, res) => {
 	      ${query}
         ${order}
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
-    `;
+    `
 
     let queryCountData = `
       SELECT COUNT(*) AS total
@@ -307,82 +306,82 @@ exports.getRecording = async (req, res) => {
           )
         )
 	      ${query}
-    `;
+    `
 
     const [recordResult, totalData] = await Promise.all([
       await model.sequelize.query(queryData, { type: QueryTypes.SELECT }),
       await model.sequelize.query(queryCountData, { type: QueryTypes.SELECT }),
-    ]);
+    ])
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
       totalResult: totalData && totalData[0] && totalData[0].total || 0
-    });
+    })
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
       data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
       ConfigurationColums: ConfigurationColums,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
-    });
+    })
   } catch (error) {
-    console.log(`------- error ------- getRecording`);
-    console.log(error);
-    console.log(`------- error ------- getRecording`);
+    console.log(`------- error ------- getRecording`)
+    console.log(error)
+    console.log(`------- error ------- getRecording`)
 
-    return res.status(ERR_500.code).json({ message: error.message });
+    return res.status(ERR_500.code).json({ message: error.message })
   }
 }
 exports.SaveConfigurationColums = async (req, res) => {
-  let transaction;
+  let transaction
   try {
     const data = {}
-    data.userId = req.user.id;
-    data.configurationColums = JSON.stringify(req.body);
-    transaction = await model.sequelize.transaction();
+    data.userId = req.user.id
+    data.configurationColums = JSON.stringify(req.body)
+    transaction = await model.sequelize.transaction()
     const result = await ConfigurationColumsModel.update(
       { configurationColums: JSON.stringify(req.body) },
       { where: { userId: Number(req.user.id) } },
       { transaction: transaction }
-    );
+    )
     if (result[0] == 0) {
-      const _result = await ConfigurationColumsModel.create(data, { transaction: transaction });
+      const _result = await ConfigurationColumsModel.create(data, { transaction: transaction })
     }
-    await transaction.commit();
+    await transaction.commit()
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-    });
+    })
   } catch (error) {
-    console.log(`------- error ------- getRecording`);
-    console.log(error);
-    console.log(`------- error ------- getRecording`);
+    console.log(`------- error ------- getRecording`)
+    console.log(error)
+    console.log(`------- error ------- getRecording`)
 
-    return res.status(ERR_500.code).json({ message: error.message });
+    return res.status(ERR_500.code).json({ message: error.message })
   }
 }
 
 exports.deleteConfigurationColums = async (req, res) => {
-  let transaction;
+  let transaction
   try {
     const data = {}
-    data.userId = req.user.id;
-    transaction = await model.sequelize.transaction();
+    data.userId = req.user.id
+    transaction = await model.sequelize.transaction()
     const result = await model.ConfigurationColums.destroy(
       { where: { userId: Number(req.user.id) } },
       { transaction: transaction }
-    );
+    )
 
-    await transaction.commit();
+    await transaction.commit()
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-    });
+    })
   } catch (error) {
-    console.log(`------- error ------- deleteConfigurationColums`);
-    console.log(error);
-    console.log(`------- error ------- deleteConfigurationColums`);
+    console.log(`------- error ------- deleteConfigurationColums`)
+    console.log(error)
+    console.log(`------- error ------- deleteConfigurationColums`)
 
-    return res.status(ERR_500.code).json({ message: error.message });
+    return res.status(ERR_500.code).json({ message: error.message })
   }
 }
 
@@ -396,13 +395,13 @@ function getConfigurationColums(userId) {
         WHERE userId = ${userId}    
         `,
         { type: QueryTypes.SELECT }
-      );
+      )
       if (result && result[0] && result[0].configurationColums) {
         return resolve(JSON.parse(result[0].configurationColums))
       }
-      return resolve(null);
+      return resolve(null)
     } catch (error) {
-      return reject(error);
+      return reject(error)
     }
   })
 }
@@ -410,7 +409,7 @@ function getConfigurationColums(userId) {
 function checkLeader(userId) {
   return new Promise(async (resolve, reject) => {
     try {
-      let teamIds = [];
+      let teamIds = []
 
       const resulds = await model.sequelize.query(
         `
@@ -423,31 +422,31 @@ function checkLeader(userId) {
             AND AgentTeamMembers.role = 1
         `,
         { type: QueryTypes.SELECT }
-      );
+      )
 
-      teamIds = _.map(resulds, 'teamId');
+      teamIds = _.map(resulds, 'teamId')
 
-      return resolve({ teams: resulds, teamIds: teamIds });
+      return resolve({ teams: resulds, teamIds: teamIds })
     } catch (error) {
-      return reject(error);
+      return reject(error)
     }
-  });
+  })
 }
 
 function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
   return new Promise(async (resolve, reject) => {
     try {
-      let conditionQuery = '';
+      let conditionQuery = ''
       if (isAdmin == true) {
-        conditionQuery = `team.name <> 'Default'`;
+        conditionQuery = `team.name <> 'Default'`
       } else {
         // sup
         if (teamIds.length > 0) {
           conditionQuery = `team.id IN (${teamIds.join(',')}) and 
-          AgentTeamMembers.role =  ${USER_ROLE.agent.n}`;
+          AgentTeamMembers.role =  ${USER_ROLE.agent.n}`
         } else {
           // agent
-          conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`;
+          conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`
         }
 
       }
@@ -469,35 +468,35 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
 
         `,
         { type: QueryTypes.SELECT }
-      );
+      )
 
 
 
-      return resolve({ teams: result });
+      return resolve({ teams: result })
     } catch (error) {
-      return reject(error);
+      return reject(error)
     }
-  });
+  })
 }
 
 function handleData(data, privatePhoneNumber = false) {
-  let newData = [];
+  let newData = []
 
   newData = data.map((el) => {
     el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
-    el.duration = hms(el.duration);
-    el.recordingFileName = _config.pathRecording + el.recordingFileName;
+    el.duration = hms(el.duration)
+    el.recordingFileName = _config.pathRecording + el.recordingFileName
 
     // che số
     if (privatePhoneNumber) {
-      if (el.caller && el.caller.length >= 10) el.caller = cheSo(el.caller, 4);
-      if (el.called && el.called.length >= 10) el.called = cheSo(el.called, 4);
+      if (el.caller && el.caller.length >= 10) el.caller = cheSo(el.caller, 4)
+      if (el.called && el.called.length >= 10) el.called = cheSo(el.called, 4)
     }
 
-    return el;
-  });
+    return el
+  })
 
-  return newData;
+  return newData
 }
 
 async function exportExcelHandle(req, res, startTime, endTime, query, order, ConfigurationColums) {
@@ -542,15 +541,15 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
         )
 	      ${query}
         ${order}
-    `, { type: QueryTypes.SELECT });
+    `, { type: QueryTypes.SELECT })
 
-    const dataHandleResult = handleData(dataResult, _config.privatePhoneNumberExcel);
+    const dataHandleResult = handleData(dataResult, _config.privatePhoneNumberExcel)
 
-    const linkFile = await createExcelFile(startTime, endTime, dataHandleResult, ConfigurationColums);
+    const linkFile = await createExcelFile(startTime, endTime, dataHandleResult, ConfigurationColums)
 
-    return res.status(SUCCESS_200.code).json({ linkFile: linkFile });
+    return res.status(SUCCESS_200.code).json({ linkFile: linkFile })
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error)
   }
 }
 
@@ -558,39 +557,39 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
   return new Promise(async (resolve, reject) => {
     try {
 
-      let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY');
-      let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY');
+      let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY')
+      let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY')
 
-      let titleExcel = {};
-      let dataHeader = {};
+      let titleExcel = {}
+      let dataHeader = {}
 
       if (ConfigurationColums) {
         Object.keys(ConfigurationColums).forEach(i => {
 
-          if (i == 'audioHtml' || ConfigurationColums[i] == 'false') return; // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
+          if (i == 'audioHtml' || ConfigurationColums[i] == 'false') return // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
 
-          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i];
-          dataHeader[`TXT_${i.toUpperCase()}`] = i;
-        });
+          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i]
+          dataHeader[`TXT_${i.toUpperCase()}`] = i
+        })
       } else {
         Object.keys(keysTitleExcel).forEach(i => {
-          let nameField = keysTitleExcel[i];
-          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField];
-          dataHeader[`TXT_${nameField.toUpperCase()}`] = nameField;
-        });
+          let nameField = keysTitleExcel[i]
+          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField]
+          dataHeader[`TXT_${nameField.toUpperCase()}`] = nameField
+        })
       }
 
       let newData = data.map((item) => {
-        item.callId = item.callId || item.xmlCdrId;
+        item.callId = item.callId || item.xmlCdrId
 
-        agentName = item.fullName && `${item.fullName} (${item.userName})` || '';
+        agentName = item.fullName && `${item.fullName} (${item.userName})` || ''
 
         return {
           ...item,
           duration: item.duration || '',
           agentName: agentName
         }
-      });
+      })
 
       const linkFileExcel = await createExcelPromise({
         startTime: startTime,
@@ -602,32 +601,32 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
         opts: {
           valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
         }
-      });
-      return resolve(linkFileExcel);
+      })
+      return resolve(linkFileExcel)
     } catch (error) {
-      return reject(error);
+      return reject(error)
     }
   })
 }
 
 function hms(secs) {
-  if (isNaN(secs) || !secs || secs == 0) return '00:00:00';
+  if (isNaN(secs) || !secs || secs == 0) return '00:00:00'
 
-  let sec = 0;
-  let minutes = 0;
-  let hours = 0;
+  let sec = 0
+  let minutes = 0
+  let hours = 0
 
-  sec = Math.ceil(secs);
-  minutes = Math.floor(sec / 60);
-  sec = sec % 60;
+  sec = Math.ceil(secs)
+  minutes = Math.floor(sec / 60)
+  sec = sec % 60
   hours = Math.floor(minutes / 60)
-  minutes = minutes % 60;
+  minutes = minutes % 60
 
-  return `${hours}:${pad(minutes)}:${pad(sec)}`;
+  return `${hours}:${pad(minutes)}:${pad(sec)}`
 }
 
 function pad(num) {
-  return ('0' + num).slice(-2);
+  return ('0' + num).slice(-2)
 }
 
 async function getTeamOfGroup(userId) {
@@ -654,6 +653,6 @@ async function getTeamOfGroup(userId) {
     }],
     // raw: true,
     nest: true
-  });
+  })
 
 }

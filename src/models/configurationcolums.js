@@ -15,7 +15,7 @@ class configurationColums extends Model {
         },
         configurationColums: {
           type: DataTypes.TEXT
-        },
+        }
       },
       {
         sequelize,

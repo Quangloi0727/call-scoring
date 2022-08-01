@@ -10,8 +10,8 @@ const ruleDetailsRouter = require('./ruleDetailsRouter')
 const scoreScriptsRouter = require('./scoreScriptsRouter')
 const tenantRouter = require('./tenantRouter')
 const scoreMissionRouter = require('./scoreMissionRouter')
+const additionalFieldRouter = require('./additionalFieldRouter')
 const { isLoggedIn } = require('../libs/passport')
-
 const router = express.Router()
 
 router.use(authRouter)
@@ -25,4 +25,5 @@ router.use('/scoreScripts', isLoggedIn, scoreScriptsRouter)
 router.use('/tenant', isLoggedIn, tenantRouter)
 router.use('/scoreMission', isLoggedIn, scoreMissionRouter)
 
+router.use('/additional-field', isLoggedIn, additionalFieldRouter)
 module.exports = router
