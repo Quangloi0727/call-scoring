@@ -22,7 +22,7 @@ router.use('/groups', isLoggedIn, groupsRouter)
 router.use('/rules', isLoggedIn, rulesRouter)
 router.use('/ruleDetails', isLoggedIn, ruleDetailsRouter)
 router.use('/scoreScripts', isLoggedIn, scoreScriptsRouter)
-router.use('/tenant', isLoggedIn, tenantRouter)
+router.use('/tenant', tenantRouter)
 router.use('/scoreMission', isLoggedIn, scoreMissionRouter)
 
 router.use('/additional-field', isLoggedIn, additionalFieldRouter)
