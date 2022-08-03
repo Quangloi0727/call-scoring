@@ -33,7 +33,7 @@ exports.index = async (req, res, next) => {
 
 exports.getUsers = async (req, res, next) => {
   try {
-    const { page, extension, username, fullname } = req.query
+    const { page, extension, username, fullname, isActive } = req.query
     let { limit } = req.query
     if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
 
@@ -46,6 +46,7 @@ exports.getUsers = async (req, res, next) => {
     if (username) query.userName = { [Op.substring]: username }
     if (fullname) query.fullName = { [Op.substring]: fullname }
     if (extension) query.extension = { [Op.substring]: extension }
+    if (isActive) query.isActive = { [Op.substring]: isActive }
 
     const [recordResult, total] = await Promise.all([
       UserModel.findAll({

@@ -21,8 +21,11 @@ $(function () {
     })
     // bắt sự kiện click xóa file ảnh đang có
     $(document).on('click', 'i[class*="fa-trash"]', function () {
+        $(".custom-file-input").val(null)
         $('span[class*="name-file-logo"]').remove()
         $('.default-text').removeClass("d-none")
+        $('#previewImg-error').removeClass("d-none")
+        $('#previewImg').addClass("d-none")
         $('#my_image').attr('src', '')
     })
 
@@ -31,7 +34,18 @@ $(function () {
 
         var form = $('#fileUploadForm')[0]
         var data = new FormData(form)
-
+        if ($('.custom-file-input')[0].files.length == 0) {
+            toastr.success("Upload ảnh thàng công")
+            toastr.options = {
+                closeButton: true,
+                onCloseClick: () => {
+                    location.reload()
+                }
+            }
+            return setTimeout(() => {
+                location.reload()
+            }, 2500)
+        }
         data.append('mypic', $('.custom-file-input')[0].files[0])
         $.ajax({
             type: 'POST',
@@ -71,15 +85,19 @@ $(function () {
             },
         })
     })
-
+    $(document).on('click', "#btn-cancel-upload-logo", function () {
+        return location.reload()
+    })
     function readURL(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader()
 
             reader.onload = function (e) {
-                $('#previewImg').attr('src', e.target.result)
+                $('#previewImg img').attr('src', e.target.result)
+                $('#previewImg').addClass("d-none")
+                $('#previewImg-error').addClass("d-none")
+                $('#previewImg').removeClass("d-none")
             }
-
             reader.readAsDataURL(input.files[0])
         }
     }
