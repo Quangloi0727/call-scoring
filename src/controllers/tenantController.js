@@ -26,7 +26,7 @@ exports.index = async (req, res, next) => {
     }
 }
 
-exports.upload = async (req, res, next) => {
+exports.uploadLogo = async (req, res, next) => {
     try {
         const foundLogo = await fsPromises.readdir('public/dist/img/logo')
         if (foundLogo.length > 0) {

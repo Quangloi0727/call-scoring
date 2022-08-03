@@ -458,17 +458,39 @@ $(function () {
     if (isActive != 1) {
       html = `Tài khoản <strong>${userName}</strong> sẽ được mở khóa`
       title = `Mở khóa tài khoản người dùng`
-    }
 
+      // check xem extension đã của user bị block đã được sử dụng hay chua
+      let queryData = {}
+      queryData.extension = extension
+      queryData.isActive = 1
+      $.ajax({
+        type: 'GET',
+        url: '/users/getUsers?' + $.param(queryData),
+        cache: 'false',
+        success: function (result) {
+          if (result.data.length >= 1) {
+            $('#blockUser_extension').removeClass('d-none')
+            $("#blockUser_extension_input").val("")
+            $("#old_extension_User").text(extension)
+          } else {
+            $('#blockUser_extension_input').val(extension)
+          }
+
+        },
+        error: function (error) { console.log("tìm kiếm user theo extension lỗi", error) },
+      })
+    } else {
+      console.log("aaaaaaaaaaaa")
+      $('#blockUser_extension_input').val(extension)
+      $('#blockUser_extension').addClass("d-none")
+    }
     // render nội dung lên modal
-    $('#blockUser_extension_input').val(extension)
-    $('#blockUser_extension').addClass("d-none")
+    console.log(title)
     $('#body-noti-block').html(html)
     $('#btn-block-user').html(isActive == 1 ? 'Khóa tài khoản' : 'Mở khóa tài khoản')
     if (!userId || userId == '') return
     $('#btn-block-user').attr("data-id", userId)
     $('#btn-block-user').attr("data-blockUser", isActive)
-    console.log(title)
     $('#modalBlockUser h4.modal-title').text(title)
 
     $modalBlockUser.modal('show')
@@ -496,12 +518,8 @@ $(function () {
         }, 1500)
       },
       error: function (error) {
-
-        if (error.status == 400) $('#blockUser_extension').removeClass('d-none')
-        $("#blockUser_extension_input").val("")
-        $("#old_extension_User").text(JSON.parse(error.responseText).extension)
-
-        return toastr.error(JSON.parse(error.responseText).message)
+        if (error.status == 400)
+          return toastr.error(JSON.parse(error.responseText).message)
       },
     })
   })

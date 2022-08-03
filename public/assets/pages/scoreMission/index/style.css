@@ -1,0 +1,46 @@
+#create_user {
+  margin-top: 30px;
+  width: 120px !important;
+}
+
+
+
+.wrapper-table {
+  display: flex;
+  overflow: auto;
+}
+
+.table-left {
+  text-align: left;
+  left: 20px;
+  position: absolute;
+}
+
+.table-left td {
+  max-width: 200px;
+  min-width: 200px;
+  background: white;
+}
+
+.table-right {
+  margin-left: 400px;
+}
+
+
+.custom-table {
+  border: 1px solid #dee2e6;
+}
+
+.custom-table thead th {
+  padding: 15px 5px;
+  max-width: 200px;
+  min-width: 200px;
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  background-color: #FFFF;
+}
+
+.custom-table tr td {
+  border: 1px solid #dee2e6;
+  padding: 0.75rem !important;
+}
