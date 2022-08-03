@@ -48,13 +48,10 @@ var bindClick = function () {
             // off modal
             $('#edit_additionalField_Modal').modal('hide')
             //show notify
-            Swal.fire({
-                title: 'Thông báo!',
-                text: 'Lưu thành công !',
-                icon: 'success'
-            }).then(() => {
-                window.location.reload(true)
-            })
+            toastr.success('Lưu thành công !')
+            return setTimeout(() => {
+                location.reload()
+            }, 2500)
         })
 
     })

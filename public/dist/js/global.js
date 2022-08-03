@@ -194,7 +194,6 @@
   $.validator.addMethod(
     "le",
     function (value, element, param) {
-      // console.log(this.optional(element),  value,  $(param).val());
       return this.optional(element) || Number(value) <= Number($(param).val());
     },
     MESSAGE_ERROR["QA-011"]

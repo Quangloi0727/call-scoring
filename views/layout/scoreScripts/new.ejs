@@ -1,7 +1,7 @@
 <script>
   var OP_UNIT_DISPLAY = JSON.parse('<%- JSON.stringify(OP_UNIT_DISPLAY)%>');
 </script>
-<% let isEdit = scoreScript ? true : false%>
+<% let isEdit = scoreScript && scoreScript.CriteriaGroup.length > 0 ? true : false%>
 <div class="wrapper">
   <div>
     <section class="content-header">
@@ -17,8 +17,6 @@
             </ol>
           </div>
 
-
-
         </div>
 
         <div class="card">
@@ -31,7 +29,7 @@
                 <div class="form-group col-sm-3">
                   <% if (isEdit) { %>
                     <% } else { %> 
-                    <% } %> 
+                  <% } %> 
                   <input 
                   <%- isEdit ? 'value="' + scoreScript.name +'"' : '' %> 
 
