@@ -30,7 +30,7 @@ function initServer() {
   app.use(bodyParser.json())
 
   // for parsing multipart/form-data
-  // app.use(forms.array())
+  app.use(forms.array())
 
   app.set('view engine', 'ejs')
 
