@@ -1,7 +1,7 @@
 $(function () {
   const $formCreateUser = $('#form_input_user')
   const $formEditUser = $('#form_edit_user')
-
+  const $formBlockUser = $('#formBlockUser')
   const $modalCreateUser = $('#modalUser')
   const $loadingData = $('.page-loader')
   const $buttonSearchUser = $('#searchUser')
@@ -19,7 +19,7 @@ $(function () {
       if (value != '' && value != null) memo[el.name] = value
       return memo
     }, {}).value()
-
+    validator.form()
     $loadingData.show()
 
     $.ajax({
@@ -47,7 +47,7 @@ $(function () {
       return memo
     }, {}).value()
     $loadingData.show()
-
+    formEditUser_validator.form()
     $.ajax({
       type: 'POST',
       url: '/users/updateUser',
@@ -162,7 +162,7 @@ $(function () {
     },
     messages: {
       'edit-userName': {
-        required: "Không được để trống Họ và Tên đệm",
+        required: "Không được để trống Tên đăng nhập",
         maxlength: 'Độ dài không quá 30 kí tự'
       },
       'edit-lastName': {
@@ -170,7 +170,7 @@ $(function () {
         maxlength: 'Độ dài không quá 30 kí tự'
       },
       'edit-firstName': {
-        required: "Không được để trống Tên đăng nhập",
+        required: " Không được để trống Họ và Tên đệm",
         maxlength: 'Độ dài không quá 30 kí tự'
       },
       'edit-extension': {
@@ -191,6 +191,34 @@ $(function () {
       $(element).removeClass('is-invalid')
     }
   })
+
+  const formBlockUser_validator = $formBlockUser.validate({
+    rules: {
+      'blockUser_extension_input': {
+        required: true,
+        number: true
+      }
+    },
+    messages: {
+      'blockUser_extension_input': {
+        required: "Không được để trống extension",
+        number: "Chỉ nhập số"
+      }
+    },
+    ignore: ":hidden",
+    errorElement: 'span',
+    errorPlacement: function (error, element) {
+      error.addClass('invalid-feedback')
+      element.closest('.form-group').append(error)
+    },
+    highlight: function (element, errorClass, validClass) {
+      $(element).addClass('is-invalid')
+    },
+    unhighlight: function (element, errorClass, validClass) {
+      $(element).removeClass('is-invalid')
+    }
+  })
+
 
   //event phân trang 
   $(document).on('click', '.zpaging', function () {
@@ -494,16 +522,17 @@ $(function () {
     $('#modalBlockUser h4.modal-title').text(title)
 
     $modalBlockUser.modal('show')
+    formBlockUser_validator.resetForm()
   })
 
   $(document).on('click', '#btn-block-user', function () {
-
+    let isActive = $(this).attr("data-blockUser")
     let body = {}
-    body.blockUser = $(this).attr("data-blockUser") == '1' ? '0' : '1'
+    body.blockUser = (isActive == '1' ? '0' : '1')
     body.idUser = $(this).attr("data-id")
     body.adminPassword = $('#admin_password').val()
     body.extension = $('#blockUser_extension_input').val()
-
+    formBlockUser_validator.form()
     $.ajax({
       type: 'POST',
       url: '/users/blockUser',
@@ -512,14 +541,13 @@ $(function () {
       success: function () {
         $loadingData.hide()
 
-        toastr.success('Đã khóa người dùng thành công')
+        toastr.success(isActive == '1' ? 'Đã khóa người dùng thành công' : 'Đã mở khóa người dùng thành công')
         return setTimeout(() => {
           location.reload()
         }, 1500)
       },
       error: function (error) {
-        if (error.status == 400)
-          return toastr.error(JSON.parse(error.responseText).message)
+        return toastr.error(JSON.parse(error.responseText).message)
       },
     })
   })

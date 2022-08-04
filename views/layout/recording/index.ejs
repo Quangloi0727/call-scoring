@@ -246,12 +246,14 @@
             <% additionalField.forEach(function(el){ %>
               <div class="col-6">
                 <div class="form-group">
-                  <label><%- el.value %></label>
+                  <label>
+                    <%- el.value %>
+                  </label>
                   <input type="text" class="form-control input" id="val_<%- el.code %>" name="<%- el.code %>" />
                 </div>
               </div>
-            <% }) %>
-                
+              <% }) %>
+
           </div>
 
           <div class="modal-footer justify-content-between">

@@ -1,4 +1,6 @@
 $(function () {
+    let check_Input_Change_Value = false
+
     // bắt sự kiện khi chọn file
     $(".custom-file-input").on("change", function (e) {
         var fileName = $(this).val().split("\\").pop()
@@ -16,7 +18,7 @@ $(function () {
         `
         $(".custom-file-label").append(html)
         $('.default-text').addClass("d-none")
-
+        check_Input_Change_Value = true
         readURL(this)
     })
     // bắt sự kiện click xóa file ảnh đang có
@@ -34,7 +36,7 @@ $(function () {
 
         var form = $('#fileUploadForm')[0]
         var data = new FormData(form)
-        if ($('.custom-file-input')[0].files.length == 0) {
+        if (check_Input_Change_Value == false) {
             toastr.success("Upload ảnh thàng công")
             toastr.options = {
                 closeButton: true,

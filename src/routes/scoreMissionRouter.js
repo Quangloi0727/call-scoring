@@ -6,6 +6,6 @@ const libsPassport = require('../libs/passport')
 
 router.route('/')
     .get(scoreMissionController.index)
-// router.route('/uploadLogo')
-//     .post(scoreMissionController.upload)
+router.route('/getData')
+    .get(scoreMissionController.getScoreMission)
 module.exports = router
