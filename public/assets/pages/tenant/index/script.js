@@ -1,4 +1,6 @@
 $(function () {
+    let check_Input_Change_Value = false
+
     // bắt sự kiện khi chọn file
     $(".custom-file-input").on("change", function (e) {
         var fileName = $(this).val().split("\\").pop()
@@ -7,6 +9,13 @@ $(function () {
             var _extension = self.files[0].name.split('.').pop().trim()
             if (['png', 'jpeg', 'jpg'].indexOf(_extension) < 0) {
                 toastr.error('Tệp tin không hợp lệ !')
+                $(".custom-file-input").val(null)
+                $('span[class*="name-file-logo"]').remove()
+                $('.default-text').removeClass("d-none")
+                $('#previewImg-error').removeClass("d-none")
+                $('#previewImg').addClass("d-none")
+                $('#my_image').attr('src', '')
+                check_Input_Change_Value = true
                 return false
             }
         }
@@ -16,7 +25,6 @@ $(function () {
         `
         $(".custom-file-label").append(html)
         $('.default-text').addClass("d-none")
-
         readURL(this)
     })
     // bắt sự kiện click xóa file ảnh đang có
@@ -27,14 +35,15 @@ $(function () {
         $('#previewImg-error').removeClass("d-none")
         $('#previewImg').addClass("d-none")
         $('#my_image').attr('src', '')
+        check_Input_Change_Value = true
     })
 
     // btn upload ảnh
     $(document).on('click', '#btn-upload-logo', function () {
 
-        var form = $('#fileUploadForm')[0]
-        var data = new FormData(form)
-        if ($('.custom-file-input')[0].files.length == 0) {
+        var data = new FormData()
+        console.log(check_Input_Change_Value)
+        if (check_Input_Change_Value == false) {
             toastr.success("Upload ảnh thàng công")
             toastr.options = {
                 closeButton: true,
@@ -56,7 +65,6 @@ $(function () {
             contentType: false,
             cache: false,
             success: function (result) {
-
                 toastr.success(result.message)
                 toastr.options = {
                     closeButton: true,
@@ -70,7 +78,6 @@ $(function () {
 
             },
             error: function (error) {
-
                 toastr.error(error.responseJSON.message.message)
                 toastr.options = {
                     closeButton: true,
@@ -91,14 +98,15 @@ $(function () {
     function readURL(input) {
         if (input.files && input.files[0]) {
             var reader = new FileReader()
-
+            check_Input_Change_Value = true
             reader.onload = function (e) {
                 $('#previewImg img').attr('src', e.target.result)
                 $('#previewImg').addClass("d-none")
                 $('#previewImg-error').addClass("d-none")
                 $('#previewImg').removeClass("d-none")
             }
-            reader.readAsDataURL(input.files[0])
+            return reader.readAsDataURL(input.files[0])
         }
+        return check_Input_Change_Value = true
     }
 })

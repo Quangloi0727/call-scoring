@@ -32,7 +32,6 @@ $(function () {
         url: '/login',
         data: dataString,
         success: (result) => {
-          console.log(result)
           msgAlert
             .removeClass("d-none alert-danger")
             .addClass("alert-success")
