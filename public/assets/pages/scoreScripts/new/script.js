@@ -465,6 +465,7 @@ $(function () {
   })
 
   $(document).on("change", ".cb-is-active", function (e) {
+    
     let target = $(e.currentTarget)
     let card = target.closest(".card")
 
@@ -579,8 +580,7 @@ $(function () {
     _html = data
       .map((item) => {
         return htmlItemCriteriaGroup(item, totalScore)
-      })
-      .join("")
+      }).join("")
 
     _html = `<h3>Tổng điểm: ${totalScore}</h3> ${_html}`
     $("#data_preview").html(_html)
