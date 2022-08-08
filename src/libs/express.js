@@ -13,8 +13,8 @@ const { passport } = require('./passport')
 const { ERR_404 } = require("../helpers/constants")
 const globalErrHandler = require("../controllers/errorController")
 const ResError = require("../utils/resError")
-const multer = require('multer')
-const forms = multer()
+// const multer = require('multer')
+// const forms = multer()
 
 function initServer() {
   const app = new express()
@@ -29,8 +29,8 @@ function initServer() {
   // for parsing application/json
   app.use(bodyParser.json())
 
-  // for parsing multipart/form-data
-  app.use(forms.array())
+  // // for parsing multipart/form-data
+  // app.use(forms.array())
 
   app.set('view engine', 'ejs')
 
@@ -73,6 +73,8 @@ function initServer() {
 
   // Router
   app.use('/', router)
+
+
 
   app.use("*", (req, res, next) => {
     if (req.originalUrl.indexOf("style.css") >= 0 || req.originalUrl.indexOf("script.js") >= 0) return next(null, req, res, next)

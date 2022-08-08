@@ -1,4 +1,4 @@
-<% let isEdit = scoreScript ? true : false%>
+<% let isEdit = scoreScript && scoreScript.CriteriaGroup.length ? true : false%>
 <div class="tab-pane fade active show" id="tab-score-script-general" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
 
     <div class="form-group row">
@@ -11,17 +11,12 @@
     </div>
 
     <div class="form-group row">
-        <label for="description" class="col-sm-2 col-form-label">Điểm tổng hiển thị theo <span
-                class="text-danger">*</span></label>
+        <label for="description" class="col-sm-2 col-form-label">Điểm tổng hiển thị theo <span class="text-danger">*</span></label>
         <div class="col-sm-3">
-            <select class="form-control selectpicker input" name="scoreDisplayType" id="scoreDisplayType"
-                >
+            <select class="form-control selectpicker input" name="scoreDisplayType" id="scoreDisplayType">
                 <% Object.keys(OP_UNIT_DISPLAY).forEach((item)=> { %>
                     <% let selected = isEdit && scoreScript.scoreDisplayType == OP_UNIT_DISPLAY[item].n ? 'selected' : '' %> 
-                    <option 
-                        <%- selected %>
-                        value="<%= OP_UNIT_DISPLAY[item].n %>">
-
+                    <option <%- selected %> value="<%= OP_UNIT_DISPLAY[item].n %>">
                         <%= OP_UNIT_DISPLAY[item].t %>
                     </option>
                 <% }); %>
@@ -37,9 +32,7 @@
             <select class="form-control selectpicker input" name="criteriaDisplayType" id="criteriaDisplayType">
                 <% Object.keys(OP_UNIT_DISPLAY).forEach((item)=> { %>
                     <% let selected = isEdit && scoreScript.criteriaDisplayType == OP_UNIT_DISPLAY[item].n ? 'selected' : '' %> 
-                    <option 
-                        <%- selected %>
-                        value="<%= OP_UNIT_DISPLAY[item].n %>">
+                    <option <%- selected %> value="<%= OP_UNIT_DISPLAY[item].n %>">
                         <%= OP_UNIT_DISPLAY[item].t %>
                     </option>
                     <% }); %>
