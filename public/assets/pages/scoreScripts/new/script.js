@@ -57,19 +57,12 @@ $(function () {
         min: 1,
         max: 100,
       },
-      standardMin: {
-        // required: true,
-      },
       standardMax: {
         gte: "#standardMin",
         max: 100,
         number: true,
         required: true,
-      },
-      passStandardMin: {
-        // required: true,
-        // gte: "#standardMax"
-      },
+      }
     },
     messages: {
       standardMax: {
@@ -107,15 +100,17 @@ $(function () {
         data: filter,
         success: function () {
           $loadingData.hide()
-          return location.redirect('/scoreScripts')
+          toastr.success('Lưu thành công !')
+          return setTimeout(() => {
+            window.location.href = "/scoreScripts"
+          }, 2500)
         },
         error: function (error) {
           $loadingData.hide()
-
           return toastr.error(JSON.parse(error.responseText).message)
         },
       })
-    },
+    }
   })
 
   $buttonAddUser.on("click", function () {
@@ -228,11 +223,11 @@ $(function () {
     if (element.find(".name-criteria-group").length > 0)
       element
         .find(".name-criteria-group")
-        .rules("add", { required: true })
+        .rules("add", { required: true, maxlength: 500 })
     if (element.find(".name-criteria").length > 0)
       element
         .find(".name-criteria")
-        .rules("add", { required: true })
+        .rules("add", { required: true, maxlength: 150 })
     if (element.find(".score-max").length > 0)
       element
         .find(".score-max")
@@ -240,11 +235,11 @@ $(function () {
     if (element.find(".item-selection-criteria .name-selection-criteria").length > 0)
       element
         .find(".item-selection-criteria .name-selection-criteria")
-        .rules("add", { required: true })
+        .rules("add", { required: true, maxlength: 150 })
     if (element.find(".item-selection-criteria .score").length > 0)
       element
         .find(".item-selection-criteria .score")
-        .rules("add", { required: true, min: 0, le: `#scoreMax-${indexTarget}` })
+        .rules("add", { required: true, le: `#scoreMax-${indexTarget}` })
   }
 
   // như này thì html render sau mới nhận event click
@@ -324,7 +319,7 @@ $(function () {
       .rules("add", { required: true })
     newCard
       .find(".score")
-      .rules("add", { required: true, min: 0, le: `#scoreMax-${scoreMax}` })
+      .rules("add", { required: true, le: `#scoreMax-${scoreMax}` })
   })
 
   $(document).on("click", ".rm-criteria-group", function (e) {
@@ -338,6 +333,10 @@ $(function () {
     removeElementWithAnimation(
       $(e.currentTarget).closest(".item-selection-criteria")
     )
+  })
+
+  $(document).on("click", "#btn_cancel_scoreSripts", function (e) {
+    window.location.href = "/scoreScripts"
   })
 
   $("#tablist .nav-link").on("click", function (e) {
@@ -465,7 +464,7 @@ $(function () {
   })
 
   $(document).on("change", ".cb-is-active", function (e) {
-    
+
     let target = $(e.currentTarget)
     let card = target.closest(".card")
 
@@ -595,17 +594,17 @@ $(function () {
               <div class="row">
                 ${item.criterias.map((i) => {
                   const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-                  return `<div class="col-12">
-                              <div class="form-group">
-                                <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
-                                <select class="form-control">
-                                  ${i.selectionCriterias.map((j) => {
-                                    return `<option>${j.name}</option>`
-                                  }).join("")}
-                                </select>
-                              </div>
-                            </div>`
-                  }).join("")}
+                return `<div class="col-12">
+                          <div class="form-group">
+                            <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
+                            <select class="form-control">
+                              ${i.selectionCriterias.map((j) => {
+                                return `<option>${j.name}</option>`
+                              }).join("")}
+                            </select>
+                          </div>
+                        </div>`
+                }).join("")}
                 </div>
             </div>`
   }
