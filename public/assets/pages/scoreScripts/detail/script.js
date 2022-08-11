@@ -547,7 +547,7 @@ function updateValidationForm(element, indexTarget) {
   if (element.find(".item-selection-criteria .score").length > 0)
     element
       .find(".item-selection-criteria .score")
-      .rules("add", { required: true, min: 0, le: `#scoreMax-${indexTarget}` })
+      .rules("add", { required: true, le: `#scoreMax-${indexTarget}` })
 }
 
 function removeElementWithAnimation(element, timeout = 500) {
