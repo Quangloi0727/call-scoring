@@ -1,6 +1,5 @@
 $(function () {
   const $formEditGroup = $("#form_new_scoreSripts")
-  const $formDeleteGroup = $("#form_delete_group")
   const $inputName = $("#form_edit_group #name")
   const $inputLeader = $("#form_edit_group #leader")
   const $inputDescription = $("#form_edit_group #description")
@@ -8,18 +7,8 @@ $(function () {
   const $loadingData = $(".page-loader")
   const $buttonAddUser = $("#add_user")
   const $inputMember = $("#members")
-  const $containerUsers = $("#list_user")
-  const $inputSearchMember = $("#search_member")
-  const $buttonSearchMember = $("#btn_search_member")
 
   const $addCriteriaGroup = $(".add-criteria-group") // nút thêm nhóm tiêu chí
-  // const $addCriteria = $(".add-criteria"); // nút thêm tiêu chí
-  // const $addSelectionCriteria = $(".add-selection-criteria"); // nút thêm lựa chọn
-
-  // const $rmCriteriaGroup = $(".rm-criteria-group"); // nút xóa nhóm tiêu chí
-  // const $rmCriteria = $(".rm-criteria"); // nút xóa tiêu chí
-  // const $rmSelectionCriteria = $(".rm-selection-criteria"); // nút xóa lựa chọn
-
   const $scoreScript = $("#scoreScript") // wrapper danh sách nhóm tiêu chí
 
   // template wrapper
@@ -594,17 +583,17 @@ $(function () {
               <div class="row">
                 ${item.criterias.map((i) => {
                   const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-                return `<div class="col-12">
-                          <div class="form-group">
-                            <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
-                            <select class="form-control">
-                              ${i.selectionCriterias.map((j) => {
-                                return `<option>${j.name}</option>`
-                              }).join("")}
-                            </select>
-                          </div>
-                        </div>`
-                }).join("")}
+                  return `<div class="col-12">
+                            <div class="form-group">
+                              <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
+                              <select class="form-control">
+                                ${i.selectionCriterias.map((j) => {
+                                  return `<option>${j.name}</option>`
+                                }).join("")}
+                              </select>
+                            </div>
+                          </div>`
+                  }).join("")}
                 </div>
             </div>`
   }

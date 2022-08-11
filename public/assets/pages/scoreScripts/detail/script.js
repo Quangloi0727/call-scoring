@@ -294,6 +294,15 @@ var loadData = function () {
       loadCriteria(el2)
     })
   })
+
+  let criteriaDisplayType = $("#criteriaDisplayType").val()
+  if (criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+    updateInputAuto($('#needImproveMax').val(), 99)
+    updateInputPassStandardAuto($("#standardMax"), 99)
+  } else {
+    updateInputAuto($('#needImproveMax').val(), 99999)
+    updateInputPassStandardAuto($("#standardMax"), 99999)
+  }
 }
 
 function loadCriteria(el) {
@@ -569,7 +578,7 @@ function updateInputAuto(value, max) {
     $("#standardMax").rules("remove", "required")
     $("#standardMax").removeClass("is-invalid")
     $("#standardMax").prop("disabled", true)
-    $("#standardMax,#passStandardMin").val("")
+    $("#standardMax,#passStandardMin,#standardMin").val("")
   }
   $formEditGroup.valid()
 }
