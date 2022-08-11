@@ -1,7 +1,9 @@
 <script>
-  var scoreScript = JSON.parse('<%- JSON.stringify(scoreScript)%>');
+  var criteriaGroup = JSON.parse('<%- JSON.stringify(scoreScript.CriteriaGroup)%>');
   var OP_UNIT_DISPLAY = JSON.parse('<%- JSON.stringify(OP_UNIT_DISPLAY)%>');
+  var template = `<%- template %>`
 </script>
+
 <div class="wrapper">
   <div>
     <section class="content-header">
@@ -22,7 +24,7 @@
 
           <div class="card-body">
 
-            <form id="form_new_scoreSripts" onsubmit="return false">
+            <form id="form_detail_scoreSripts" onsubmit="return false">
 
               <div class="row">
                 <div class="form-group col-sm-3">
@@ -31,6 +33,7 @@
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
                   <button type="submit" id="btn_save_scoreSripts" class="btn btn-primary">Lưu</button>
+                  <input type="hidden" class="input" name="_id" id="_id" value="<%- scoreScript.id %>"/>
                 </div>
 
               </div>
@@ -60,7 +63,7 @@
                 <!-- end tab chung -->
 
                 <!-- tab kịch bản -->
-                  <%- include('./tab.script.ejs', { scoreScript, isEdit:true }) %>
+                  <%- include('./tab.script.ejs') %>
                 <!-- end tab kịch bản -->
 
                 <!-- tab Xem trước -->

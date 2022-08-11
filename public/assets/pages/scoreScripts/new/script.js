@@ -509,7 +509,7 @@ $(function () {
       $("#standardMax").rules("remove", "required")
       $("#standardMax").removeClass("is-invalid")
       $("#standardMax").prop("disabled", true)
-      $("#standardMax,#passStandardMin").val("")
+      $("#standardMax,#passStandardMin,#standardMin").val("")
     }
     $formEditGroup.valid()
   }

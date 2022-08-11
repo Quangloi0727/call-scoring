@@ -83,8 +83,8 @@ class ScoreScript extends Model {
         hooks: {
           beforeCreate: handleBeforeCreate,
         },
-        // If don't want updatedAt
-        updatedAt: false,
+        // // If don't want updatedAt
+        // updatedAt: false,
       }
     );
   }

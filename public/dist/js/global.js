@@ -223,8 +223,22 @@
     return timeRepeated === 1 || timeRepeated === 0
   }, "Tên nhóm tiêu chí đã tồn tại !")
 
+  $.validator.addMethod("name-criteria", function (value, element) {
+    var parentForm = $(element).closest('div>.card-body.wp-list-criteria')
+    var timeRepeated = 0
+    if (value != '') {
+      $(parentForm.find('.name-criteria')).each(function () {
+        if ($(this).val() === value) {
+          timeRepeated++
+        }
+      })
+    }
+    return timeRepeated === 1 || timeRepeated === 0
+  }, "Tên tiêu chí đã tồn tại !")
+
+
   $.validator.addMethod("name-selection-criteria", function (value, element) {
-    var parentForm = $(element).closest('div>.card.card-default')
+    var parentForm = $(element).closest('div>.row.wp-list-selection-criteria')
     var timeRepeated = 0
     if (value != '') {
       $(parentForm.find('.name-selection-criteria')).each(function () {

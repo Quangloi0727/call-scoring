@@ -15,7 +15,7 @@ router.route('/gets')
 router.route('/detail/:id')
   .get(libsPassport.isAdmin, scoreScriptsController.detail)
 
-router.route('/')
+router.route('/:id')
   .put(scoreScriptsController.update)
 
 module.exports = router

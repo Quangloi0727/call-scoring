@@ -1,15 +1,15 @@
-const $formEditGroup = $("#form_new_scoreSripts")
+const $formEditGroup = $("#form_detail_scoreSripts")
 const $inputName = $("#form_edit_group #name")
 const $inputLeader = $("#form_edit_group #leader")
 const $inputDescription = $("#form_edit_group #description")
 const $modelEditGroup = $("#modal_edit_group")
-const $loadingData = $(".page-loader")
 
 const $addCriteriaGroup = $(".add-criteria-group") // nút thêm nhóm tiêu chí
 const $scoreScript = $("#scoreScript") // wrapper danh sách nhóm tiêu chí
 
 // template wrapper
 const $tempCriteriaGroup = $("#tempCriteriaGroup") // Template nhóm tiêu chí
+const $tempCriteriaGroupDetail = $("#tempCriteriaGroupDetail") // Template nhóm tiêu chí detail
 const $tempCriteria = $("#tempCriteriaGroup #tempCriteria") // Template tiêu chí
 const $tempSelectionCriteria = $("#tempCriteriaGroup #tempSelectionCriteria") // Template lựa chọn
 
@@ -69,7 +69,7 @@ const validatorFormEdit = $formEditGroup.validate({
     $(element).removeClass("is-invalid")
   },
   submitHandler: function () {
-    let filter = _.chain($("#form_new_scoreSripts .input"))
+    let dataUpdate = _.chain($("#form_detail_scoreSripts .input"))
       .reduce(function (memo, el) {
         let value = $(el).val()
         if (value != "" && value != null) memo[el.name] = value
@@ -77,22 +77,14 @@ const validatorFormEdit = $formEditGroup.validate({
       }, {})
       .value()
 
-    filter = getDataSubmit(filter)
-    $loadingData.show()
+    dataUpdate = getDataSubmit(dataUpdate)
 
-    $.ajax({
-      type: "POST",
-      url: "/scoreScripts",
-      data: filter,
-      success: function () {
-        $loadingData.hide()
-        return location.redirect('/scoreScripts')
-      },
-      error: function (error) {
-        $loadingData.hide()
-
-        return toastr.error(JSON.parse(error.responseText).message)
-      },
+    _AjaxData('/scoreScripts/' + dataUpdate._id, 'PUT', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) return toastr.error(resp.message)
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        window.location.href = "/scoreScripts"
+      }, 2500)
     })
   },
 })
@@ -100,69 +92,9 @@ const validatorFormEdit = $formEditGroup.validate({
 var bindClick = function () {
 
   $addCriteriaGroup.on("click", function () {
-    const indexTarget = window.location.uuidv4()
-
-    let newTempCriteriaGroup = $("<div></div>").append(
-      $tempCriteriaGroup.html()
-    )
-
-    // button template
-    let newTempBtnAddCriteria = $("<div></div>").append(
-      $tempBtnAddCriteria.html()
-    )
-    let newTempBtnAddSelectionCriteria = $("<div></div>").append(
-      $tempBtnAddSelectionCriteria.html()
-    )
-
-    newTempCriteriaGroup.find("> div.card").attr("data-id", indexTarget)
-
-    newTempCriteriaGroup
-      .find(".wp-add-criteria")
-      .html(newTempBtnAddCriteria.html())
-
-    newTempCriteriaGroup
-      .find(".custom-switch input")
-      .attr("id", `customSwitches-${indexTarget}`)
-    newTempCriteriaGroup
-      .find(".custom-switch label")
-      .attr("for", `customSwitches-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find("#nameCriteriaGroup")
-      .attr("id", `nameCriteriaGroup-${indexTarget}`)
-      .attr("name", `nameCriteriaGroup-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find("#nameCriteria")
-      .attr("id", `nameCriteria-${indexTarget}`)
-      .attr("name", `nameCriteria-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find("#scoreMax")
-      .attr("id", `scoreMax-${indexTarget}`)
-      .attr("name", `scoreMax-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find("#nameSelectionCriteria")
-      .attr("id", `nameSelectionCriteria-${indexTarget}`)
-      .attr("name", `nameSelectionCriteria-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find("#score")
-      .attr("id", `score-${indexTarget}`)
-      .attr("name", `score-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find(".wp-add-selection-criteria")
-      .html(newTempBtnAddSelectionCriteria.html())
-
-    $scoreScript.append(newTempCriteriaGroup.html())
-    const newCard = $scoreScript.find(">div.card:last-child")
-
-    scrollToElement(newCard)
-    updateValidationForm(newCard, indexTarget)
-
+    loadCriteriaGroup()
   })
+
   // như này thì html render sau mới nhận event click
   $(document).on("click", ".add-criteria", function (e) {
     let newTempCriteria = $("<div></div>").append($tempCriteria.html())
@@ -213,6 +145,7 @@ var bindClick = function () {
   })
   // như này thì html render sau mới nhận event click
   $(document).on("click", ".add-selection-criteria", function (e) {
+    const valueMax= $(this).attr('data-id')
     let newTempSelectionCriteria = $("<div></div>").append(
       $tempSelectionCriteria.html()
     )
@@ -242,8 +175,7 @@ var bindClick = function () {
       })
     newCard.find(".score").rules("add", {
       required: true,
-      min: 0,
-      le: `#scoreMax-${indexTarget}`,
+      le: `#scoreMax-${valueMax ? valueMax : indexTarget}`,
     })
 
   })
@@ -270,45 +202,11 @@ var bindClick = function () {
       if (target.attr("href").includes("preview")) {
         renderDataPreview()
       }
-
       return true // next
     } else {
       return false // stop
     }
   })
-
-  // // event modal
-  // $modelEditGroup.on("hidden.bs.modal", function (e) {
-  //   $formEditGroup.trigger("reset")
-  //   validatorFormEdit.resetForm()
-
-  //   $("#name_length").html("0/50")
-  //   $("#name_length").removeClass("text-danger").addClass("text-muted")
-
-  //   $("#description_length").html("0/500")
-  //   $("#description_length").removeClass("text-danger").addClass("text-muted")
-  // })
-
-  // $modelEditGroup.on("shown.bs.modal", function (e) {
-  //   $formEditGroup.trigger("reset")
-  //   validatorFormEdit.resetForm()
-  //   $inputName.val(group.name)
-  //   $inputDescription.val(group.description)
-
-  //   const leaderIds = _.pluck(group.UserGroupMember, "userId")
-  //   $inputLeader.selectpicker("val", leaderIds)
-  //   return $inputLeader.selectpicker("refresh")
-  // })
-
-  // $("#form_edit_group #name").on("input", function () {
-  //   let value = $(this).val()
-  //   $("#name_length").html(`${value.length}/50`)
-  // })
-
-  // $("#form_edit_group #description").on("input", function () {
-  //   let value = $(this).val()
-  //   $("#description_length").html(`${value.length}/500`)
-  // })
 
   // event_change
 
@@ -390,74 +288,209 @@ var bindClick = function () {
 }
 
 var loadData = function () {
-  scoreScript.CriteriaGroup.forEach(el => {
-    const indexTarget = window.location.uuidv4()
-
-    let newTempCriteriaGroup = $("<div></div>").append(
-      $tempCriteriaGroup.html()
-    )
-
-    // button template
-    let newTempBtnAddCriteria = $("<div></div>").append(
-      $tempBtnAddCriteria.html()
-    )
-    let newTempBtnAddSelectionCriteria = $("<div></div>").append(
-      $tempBtnAddSelectionCriteria.html()
-    )
-
-    newTempCriteriaGroup.find("> div.card").attr("data-id", indexTarget)
-
-    newTempCriteriaGroup
-      .find(".wp-add-criteria")
-      .html(newTempBtnAddCriteria.html())
-
-    newTempCriteriaGroup
-      .find(".custom-switch input")
-      .attr("id", `customSwitches-${indexTarget}`)
-    newTempCriteriaGroup
-      .find(".custom-switch label")
-      .attr("for", `customSwitches-${indexTarget}`)
-
-    newTempCriteriaGroup
-      .find("#nameCriteriaGroup")
-      .attr("id", `nameCriteriaGroup-${indexTarget}`)
-      .attr("name", `nameCriteriaGroup-${indexTarget}`)
-      .attr("value", `${el.name}`)
-    
-console.log(1111,newTempCriteriaGroup);
-
-    // newTempCriteriaGroup
-    //   .find("#nameCriteria")
-    //   .attr("id", `nameCriteria-${indexTarget}`)
-    //   .attr("name", `nameCriteria-${indexTarget}`)
-
-    // newTempCriteriaGroup
-    //   .find("#scoreMax")
-    //   .attr("id", `scoreMax-${indexTarget}`)
-    //   .attr("name", `scoreMax-${indexTarget}`)
-
-    // newTempCriteriaGroup
-    //   .find("#nameSelectionCriteria")
-    //   .attr("id", `nameSelectionCriteria-${indexTarget}`)
-    //   .attr("name", `nameSelectionCriteria-${indexTarget}`)
-
-    // newTempCriteriaGroup
-    //   .find("#score")
-    //   .attr("id", `score-${indexTarget}`)
-    //   .attr("name", `score-${indexTarget}`)
-
-    // newTempCriteriaGroup
-    //   .find(".wp-add-selection-criteria")
-    //   .html(newTempBtnAddSelectionCriteria.html())
-    
-
-    
-    $scoreScript.append(newTempCriteriaGroup.html())
-    const newCard = $scoreScript.find(">div.card:last-child")
-
-    scrollToElement(newCard)
-    updateValidationForm(newCard, indexTarget)
+  criteriaGroup.forEach(el => {
+    loadCriteriaGroupDetail(el)
+    el.Criteria.forEach(el2 => {
+      loadCriteria(el2)
+    })
   })
+}
+
+function loadCriteria(el) {
+  let newTempCriteria = $("<div></div>").append(template)
+  const indexTarget = window.location.uuidv4()
+  let newTempBtnAddSelectionCriteria = $("<div></div>").append(
+    $tempBtnAddSelectionCriteria.html()
+  )
+  newTempCriteria
+    .find(".custom-switch")
+    .html(renderSwitchCustom(indexTarget, el.isActive))
+
+  newTempCriteria
+    .find(".wp-add-selection-criteria")
+    .html(newTempBtnAddSelectionCriteria.html())
+
+  newTempCriteria
+    .find("#nameCriteria")
+    .attr("id", `nameCriteria-${indexTarget}`)
+    .attr("name", `nameCriteria-${indexTarget}`)
+    .attr("value", `${el.name}`)
+
+  newTempCriteria
+    .find("#scoreMax")
+    .attr("id", `scoreMax-${indexTarget}`)
+    .attr("name", `scoreMax-${indexTarget}`)
+    .attr("value", `${el.scoreMax}`)
+
+  newTempCriteria
+    .find("#nameSelectionCriteria")
+    .attr("id", `nameSelectionCriteria-${indexTarget}`)
+    .attr("name", `nameSelectionCriteria-${indexTarget}`)
+
+  newTempCriteria
+    .find("#score")
+    .attr("id", `score-${indexTarget}`)
+    .attr("name", `score-${indexTarget}`)
+  
+  newTempCriteria
+    .find("#add-selection-criteria")
+    .attr("data-id", `${indexTarget}`)
+
+  $('.wp-list-criteria:last').append(newTempCriteria.html())
+
+  el.SelectionCriteria.forEach(el2 => {
+    loadSelectionCriteria(el2, indexTarget)
+  })
+}
+
+function loadSelectionCriteria(el, scoreMax) {
+
+  let newTempSelectionCriteria = $("<div></div>").append(
+    $tempSelectionCriteria.html()
+  )
+
+  const indexTarget = window.location.uuidv4()
+
+  newTempSelectionCriteria
+    .find("#nameSelectionCriteria")
+    .attr("id", `nameSelectionCriteria-${indexTarget}`)
+    .attr("name", `nameSelectionCriteria-${indexTarget}`)
+    .attr("value", `${el.name}`)
+
+  newTempSelectionCriteria
+    .find("#score")
+    .attr("id", `score-${indexTarget}`)
+    .attr("name", `score-${indexTarget}`)
+    .attr("value", `${el.score}`)
+
+  if (el.unScoreCriteriaGroup == true) {
+    newTempSelectionCriteria
+      .find("#unScoreCriteriaGroup")
+      .attr("id", `unScoreCriteriaGroup-${indexTarget}`)
+      .attr("name", `unScoreCriteriaGroup-${indexTarget}`)
+      .attr("checked", `true`)
+  }
+
+  if (el.unScoreScript == true) {
+    newTempSelectionCriteria
+      .find("#unScoreScript")
+      .attr("id", `unScoreScript-${indexTarget}`)
+      .attr("name", `unScoreScript-${indexTarget}`)
+      .attr("checked", `false`)
+  }
+
+  $('.wp-list-selection-criteria:last').append(newTempSelectionCriteria.html())
+  const newCard = $('.wp-list-selection-criteria:last').find(">div.item-selection-criteria:last-child")
+
+  newCard
+    .find(".name-selection-criteria")
+    .rules("add", {
+      required: true,
+    })
+  newCard.find(".score").rules("add", {
+    required: true,
+    le: `#scoreMax-${scoreMax}`,
+  })
+}
+
+function loadCriteriaGroup() {
+  const indexTarget = window.location.uuidv4()
+
+  let newTempCriteriaGroup = $("<div></div>").append(
+    $tempCriteriaGroup.html()
+  )
+
+  // button template
+  let newTempBtnAddCriteria = $("<div></div>").append(
+    $tempBtnAddCriteria.html()
+  )
+  let newTempBtnAddSelectionCriteria = $("<div></div>").append(
+    $tempBtnAddSelectionCriteria.html()
+  )
+
+  newTempCriteriaGroup.find("> div.card").attr("data-id", indexTarget)
+
+  newTempCriteriaGroup
+    .find(".wp-add-criteria")
+    .html(newTempBtnAddCriteria.html())
+
+  newTempCriteriaGroup
+    .find(".custom-switch input")
+    .attr("id", `customSwitches-${indexTarget}`)
+  newTempCriteriaGroup
+    .find(".custom-switch label")
+    .attr("for", `customSwitches-${indexTarget}`)
+
+  newTempCriteriaGroup
+    .find("#nameCriteriaGroup")
+    .attr("id", `nameCriteriaGroup-${indexTarget}`)
+    .attr("name", `nameCriteriaGroup-${indexTarget}`)
+
+  newTempCriteriaGroup
+    .find("#nameCriteria")
+    .attr("id", `nameCriteria-${indexTarget}`)
+    .attr("name", `nameCriteria-${indexTarget}`)
+
+  newTempCriteriaGroup
+    .find("#scoreMax")
+    .attr("id", `scoreMax-${indexTarget}`)
+    .attr("name", `scoreMax-${indexTarget}`)
+
+  newTempCriteriaGroup
+    .find("#nameSelectionCriteria")
+    .attr("id", `nameSelectionCriteria-${indexTarget}`)
+    .attr("name", `nameSelectionCriteria-${indexTarget}`)
+
+  newTempCriteriaGroup
+    .find("#score")
+    .attr("id", `score-${indexTarget}`)
+    .attr("name", `score-${indexTarget}`)
+
+  newTempCriteriaGroup
+    .find(".wp-add-selection-criteria")
+    .html(newTempBtnAddSelectionCriteria.html())
+
+  $scoreScript.append(newTempCriteriaGroup.html())
+  const newCard = $scoreScript.find(">div.card:last-child")
+
+  scrollToElement(newCard)
+  updateValidationForm(newCard, indexTarget)
+}
+
+function loadCriteriaGroupDetail(el) {
+  const indexTarget = window.location.uuidv4()
+
+  let newTempCriteriaGroup = $("<div></div>").append(
+    $tempCriteriaGroupDetail.html()
+  )
+  newTempCriteriaGroup.find("> div.card").attr("data-id", indexTarget)
+
+  // button template
+  let newTempBtnAddCriteria = $("<div></div>").append(
+    $tempBtnAddCriteria.html()
+  )
+  let newTempBtnAddSelectionCriteria = $("<div></div>").append(
+    $tempBtnAddSelectionCriteria.html()
+  )
+
+  newTempCriteriaGroup.find("> div.card").attr("data-id", indexTarget)
+
+  newTempCriteriaGroup
+    .find(".wp-add-criteria")
+    .html(newTempBtnAddCriteria.html())
+
+  newTempCriteriaGroup
+    .find("#nameCriteriaGroup")
+    .attr("id", `nameCriteriaGroup-${indexTarget}`)
+    .attr("name", `nameCriteriaGroup-${indexTarget}`)
+    .attr("value", `${el.name}`)
+
+  newTempCriteriaGroup
+    .find(".wp-add-selection-criteria")
+    .html(newTempBtnAddSelectionCriteria.html())
+
+  $scoreScript.append(newTempCriteriaGroup.html())
+
 }
 
 function updateValidationForm(element, indexTarget) {
@@ -499,11 +532,11 @@ function scrollToElement(element, topAppend = 0) {
     .animate({ scrollTop: element.offset().top - topAppend }, 800, "swing")
 }
 
-function renderSwitchCustom(id) {
-  return `<input type="checkbox" class="custom-control-input cb-is-active" id="customSwitches-${id}" checked>
-      <label class="custom-control-label" for="customSwitches-${id}" data-toggle="tooltip"
-        data-placement="right" title="Tiêu chí có sử dụng tính điểm không?" role="button">
-      </label>`
+function renderSwitchCustom(id, isActive) {
+  return `<input type="checkbox" class="custom-control-input cb-is-active" id="customSwitches-${id}" ${isActive ? 'checked' : ''}>
+          <label class="custom-control-label" for="customSwitches-${id}" data-toggle="tooltip"
+            data-placement="right" title="Tiêu chí có sử dụng tính điểm không?" role="button">
+          </label>`
 }
 
 function updateInputPassStandardAuto(value, max) {
@@ -604,8 +637,8 @@ function renderDataPreview() {
   const totalScore = data.reduce((s, f) => s + f.totalScore, 0)
 
   _html = data.map((item) => {
-      return htmlItemCriteriaGroup(item, totalScore)
-    }).join("")
+    return htmlItemCriteriaGroup(item, totalScore)
+  }).join("")
 
   _html = `<h3>Tổng điểm: ${totalScore}</h3> ${_html}`
   $("#data_preview").html(_html)
@@ -619,8 +652,8 @@ function htmlItemCriteriaGroup(item, totalScore) {
             <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
             <div class="row">
               ${item.criterias.map((i) => {
-              const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-              return `<div class="col-12">
+                const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
+                return `<div class="col-12">
                             <div class="form-group">
                               <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
                               <select class="form-control">
@@ -630,7 +663,7 @@ function htmlItemCriteriaGroup(item, totalScore) {
                               </select>
                             </div>
                           </div>`
-            }).join("")}
+              }).join("")}
             </div>
           </div>`
 }
