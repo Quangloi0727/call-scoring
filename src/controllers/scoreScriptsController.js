@@ -8,7 +8,7 @@ const { USER_ROLE, OP_UNIT_DISPLAY, STATUS_SCORE_SCRIPT, MESSAGE_ERROR } = requi
 const { getLengthField } = require('../helpers/functions')
 const titlePage = 'Kịch bản chấm điểm'
 const { template } = require('../../public/assets/pages/scoreScripts/detail/template.js')
-const { scoreScriptNotNull, criteriaNameNull, criteriaOptionNull, criteriaGroupNameNull, criteriaGroupCriteriaNull } = require('../helpers/constants/filedScoreScript')
+const { scoreScriptNotNull, criteriaNameNull, criteriaOptionNull, criteriaGroupNameNull, criteriaGroupCriteriaNull, scoreScriptNotFound, statusUpdateFail } = require('../helpers/constants/filedScoreScript')
 
 exports.index = async (req, res, next) => {
   try {
@@ -326,8 +326,9 @@ exports.update = async (req, res) => {
      * 7. --> Tạo lựa chọn mới
      */
     // check duplicate name
-    const findSS = await model.ScoreScript.findOne({ where: { name: name } })
+    const findSS = await model.ScoreScript.findOne({ where: { name: name, id: { [Op.ne]: _id } } })
     if (findSS) throw new Error(MESSAGE_ERROR['QA-002'])
+
     // 1. update kịch bản chung
     await model.ScoreScript.update(data, { where: { id: _id } }, { transaction: transaction })
 
@@ -393,6 +394,34 @@ exports.update = async (req, res) => {
     })
 
     await model.SelectionCriteria.bulkCreate(dataSelectionCriterias, { transaction: transaction })
+
+    await transaction.commit()
+
+    return res.json({ code: SUCCESS_200.code })
+
+  } catch (error) {
+    console.log(`------- error ------- `)
+    console.log(error)
+    console.log(`------- error ------- `)
+    if (transaction) await transaction.rollback()
+    return res.json({ message: error.message, code: ERR_500.code })
+  }
+}
+
+exports.updateStatus = async (req, res) => {
+  let transaction
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    const findDocUpdate = await model.ScoreScript.findOne({ where: { id: id } })
+
+    if (!findDocUpdate) throw new Error(scoreScriptNotFound)
+
+    if (findDocUpdate.status > status) throw new Error(statusUpdateFail)
+
+    transaction = await model.sequelize.transaction()
+    await model.ScoreScript.update({ status: status }, { where: { id: id } }, { transaction: transaction })
 
     await transaction.commit()
 

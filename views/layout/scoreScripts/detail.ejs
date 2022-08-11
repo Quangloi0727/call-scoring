@@ -2,6 +2,8 @@
   var criteriaGroup = JSON.parse('<%- JSON.stringify(scoreScript.CriteriaGroup)%>');
   var OP_UNIT_DISPLAY = JSON.parse('<%- JSON.stringify(OP_UNIT_DISPLAY)%>');
   var template = `<%- template %>`
+  var statusScoreScript = JSON.parse('<%- JSON.stringify(scoreScript.status)%>');
+  var STATUS_SCORE_SCRIPT = JSON.parse('<%- JSON.stringify(STATUS_SCORE_SCRIPT)%>');
 </script>
 
 <div class="wrapper">
@@ -68,7 +70,7 @@
                 <!-- end tab kịch bản -->
 
                 <!-- tab Xem trước -->
-                  <%- include('./tab.script.preview.ejs', { STATUS_SCORE_SCRIPT }) %>
+                  <%- include('./tab.script.preview.ejs', { STATUS_SCORE_SCRIPT, isEdit: true, scoreScript }) %>
                 <!-- end tab Xem trước -->
 
               </div>

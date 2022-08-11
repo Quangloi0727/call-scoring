@@ -18,4 +18,7 @@ router.route('/detail/:id')
 router.route('/:id')
   .put(scoreScriptsController.update)
 
+router.route('/:id/updateStatus')
+  .put(scoreScriptsController.updateStatus)
+
 module.exports = router

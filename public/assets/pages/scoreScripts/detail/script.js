@@ -94,8 +94,64 @@ const validatorFormEdit = $formEditGroup.validate({
 
 var bindClick = function () {
 
+  $(document).on("change", "#status", function (e) {
+    const id = $(this).find(':selected').data('id')
+    const val = $(this).val()
+    if (val == STATUS_SCORE_SCRIPT.hoatDong.n) {
+      $('#activeScoreScript').modal({ show: true })
+      $('#confirmActiveScoreScript').attr('data-id', id)
+      $('#confirmActiveScoreScript').attr('data-val', val)
+    }
+
+    if (val == STATUS_SCORE_SCRIPT.ngungHoatDong.n) {
+      $('#unActiveScoreScript').modal({ show: true })
+      $('#confirmUnActiveScoreScript').attr('data-id', id)
+      $('#confirmUnActiveScoreScript').attr('data-val', val)
+    }
+  })
+
   $(document).on("click", "#btn_cancel_scoreSripts", function (e) {
     window.location.href = "/scoreScripts"
+  })
+
+  $(document).on("click", "#confirmActiveScoreScript", function (e) {
+    const id = $(this).attr('data-id')
+    const val = $(this).attr('data-val')
+    _AjaxData('/scoreScripts/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        $('#activeScoreScript').modal('hide')
+        toastr.error(resp.message)
+        return setTimeout(() => {
+          location.reload()
+        }, 2500)
+      }
+
+      $('#activeScoreScript').modal('hide')
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        location.reload()
+      }, 2500)
+    })
+  })
+
+  $(document).on("click", "#confirmUnActiveScoreScript", function (e) {
+    const id = $(this).attr('data-id')
+    const val = $(this).attr('data-val')
+    _AjaxData('/scoreScripts/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        $('#unActiveScoreScript').modal('hide')
+        toastr.error(resp.message)
+        return setTimeout(() => {
+          location.reload()
+        }, 2500)
+      }
+
+      $('#unActiveScoreScript').modal('hide')
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        location.reload()
+      }, 2500)
+    })
   })
 
   $addCriteriaGroup.on("click", function () {
@@ -152,7 +208,7 @@ var bindClick = function () {
   })
   // như này thì html render sau mới nhận event click
   $(document).on("click", ".add-selection-criteria", function (e) {
-    const valueMax= $(this).attr('data-id')
+    const valueMax = $(this).attr('data-id')
     let newTempSelectionCriteria = $("<div></div>").append(
       $tempSelectionCriteria.html()
     )
@@ -180,10 +236,10 @@ var bindClick = function () {
       .rules("add", {
         required: true,
       })
-    
+
     newCard.find(".score").rules("add", {
       required: true,
-      le: valueMax ?  `#scoreMax-${valueMax}`: `#${$('.score-max:last')[0].id}`,
+      le: valueMax ? `#scoreMax-${valueMax}` : `#${$('.score-max:last')[0].id}`,
     })
 
   })
@@ -326,10 +382,12 @@ var loadData = function () {
     }
     $formEditGroup.valid()
   }
-
-  //enable status
-  $('.status').removeAttr("disabled");
-  $('.selectpicker').selectpicker('refresh')
+  //update status
+  if (statusScoreScript != STATUS_SCORE_SCRIPT.nhap.n) {
+    $('#btn_save_scoreSripts').attr('disabled', 'disabled')
+    if (statusScoreScript == STATUS_SCORE_SCRIPT.hoatDong.n) $('#hoatDong').attr('selected', 'selected')
+    if (statusScoreScript == STATUS_SCORE_SCRIPT.ngungHoatDong.n) $('#ngungHoatDong').attr('selected', 'selected')
+  }
 }
 
 function loadCriteria(el) {
@@ -367,7 +425,7 @@ function loadCriteria(el) {
     .find("#score")
     .attr("id", `score-${indexTarget}`)
     .attr("name", `score-${indexTarget}`)
-  
+
   newTempCriteria
     .find("#add-selection-criteria")
     .attr("data-id", `${indexTarget}`)
@@ -688,18 +746,18 @@ function htmlItemCriteriaGroup(item, totalScore) {
             <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
             <div class="row">
               ${item.criterias.map((i) => {
-                const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-                return `<div class="col-12">
+    const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
+    return `<div class="col-12">
                             <div class="form-group">
                               <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
                               <select class="form-control">
                                 ${i.selectionCriterias.map((j) => {
-                                return `<option>${j.name}</option>`
-                              }).join("")}
+      return `<option>${j.name}</option>`
+    }).join("")}
                               </select>
                             </div>
                           </div>`
-              }).join("")}
+  }).join("")}
             </div>
           </div>`
 }
