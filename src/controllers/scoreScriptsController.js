@@ -312,6 +312,10 @@ exports.update = async (req, res) => {
 
     data.updated = req.user.id
 
+    data.standardMin = data.standardMin || 0
+    data.standardMax = data.standardMax || 0
+    data.passStandardMin = data.passStandardMin || 0
+
     /**
      * 1. update kịch bản chung
      * 2. xóa nhóm tiêu chí cũ

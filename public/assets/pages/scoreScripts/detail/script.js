@@ -173,9 +173,10 @@ var bindClick = function () {
       .rules("add", {
         required: true,
       })
+    
     newCard.find(".score").rules("add", {
       required: true,
-      le: `#scoreMax-${valueMax ? valueMax : indexTarget}`,
+      le: valueMax ?  `#scoreMax-${valueMax}`: `#${$('.score-max:last')[0].id}`,
     })
 
   })
@@ -295,14 +296,33 @@ var loadData = function () {
     })
   })
 
-  let criteriaDisplayType = $("#criteriaDisplayType").val()
-  if (criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
-    updateInputAuto($('#needImproveMax').val(), 99)
-    updateInputPassStandardAuto($("#standardMax"), 99)
+  const value = $("#criteriaDisplayType option:selected").val()
+  const needImproveMax = Number($("#needImproveMax").val())
+
+  if (value == OP_UNIT_DISPLAY.phanTram.n) {
+    $("#needImproveMax").rules("add", { max: 100 })
+    $("#standardMax").rules("add", { max: 100 })
+    if (needImproveMax < 100) {
+      updateInputAuto(needImproveMax, 99)
+      updateInputPassStandardAuto(Number($("#standardMax").val()), 99)
+    } else {
+      $("#standardMax").rules("remove", "required")
+      $("#standardMax").prop("disabled", true)
+    }
+    $formEditGroup.valid()
   } else {
-    updateInputAuto($('#needImproveMax').val(), 99999)
-    updateInputPassStandardAuto($("#standardMax"), 99999)
+    $("#needImproveMax").rules("add", { max: 99999 })
+    $("#standardMax").rules("add", { max: 99999 })
+    if (needImproveMax < 99999) {
+      updateInputAuto(needImproveMax, 99999)
+      updateInputPassStandardAuto(Number($("#standardMax").val()), 99999)
+    }
+    $formEditGroup.valid()
   }
+
+  //enable status
+  $('.status').removeAttr("disabled");
+  $('.selectpicker').selectpicker('refresh')
 }
 
 function loadCriteria(el) {
@@ -550,8 +570,8 @@ function renderSwitchCustom(id, isActive) {
 
 function updateInputPassStandardAuto(value, max) {
   if (value && value <= max + 1) {
-    if (value == max + 1) return $("#passStandardMin").val("")
-    $("#passStandardMin").val(value + 1)
+    if (value == max + 1) $("#passStandardMin").val("")
+    else $("#passStandardMin").val(value + 1)
   } else {
     $("#passStandardMin").val("")
   }
