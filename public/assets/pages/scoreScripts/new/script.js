@@ -96,6 +96,9 @@ $(function () {
         },
         error: function (error) {
           $loadingData.hide()
+          if (JSON.parse(error.responseText).message == window.location.MESSAGE_ERROR["QA-002"]) return $("#duplicateName").text(window.location.MESSAGE_ERROR["QA-002"])
+          
+          $("#duplicateName").text("")
           return toastr.error(JSON.parse(error.responseText).message)
         },
       })

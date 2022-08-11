@@ -80,7 +80,10 @@ const validatorFormEdit = $formEditGroup.validate({
     dataUpdate = getDataSubmit(dataUpdate)
 
     _AjaxData('/scoreScripts/' + dataUpdate._id, 'PUT', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
-      if (resp.code != 200) return toastr.error(resp.message)
+      if (resp.code != 200) {
+        if (resp.message == window.location.MESSAGE_ERROR["QA-002"]) return $("#duplicateName").text(window.location.MESSAGE_ERROR["QA-002"])
+        return toastr.error(resp.message)
+      }
       toastr.success('Lưu thành công !')
       return setTimeout(() => {
         window.location.href = "/scoreScripts"
@@ -90,6 +93,10 @@ const validatorFormEdit = $formEditGroup.validate({
 })
 
 var bindClick = function () {
+
+  $(document).on("click", "#btn_cancel_scoreSripts", function (e) {
+    window.location.href = "/scoreScripts"
+  })
 
   $addCriteriaGroup.on("click", function () {
     loadCriteriaGroup()

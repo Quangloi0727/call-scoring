@@ -304,7 +304,7 @@ exports.update = async (req, res) => {
     // default
     data.needImproveMin = 0
 
-    const { scoreScripts, _id } = req.body
+    const { scoreScripts, _id, name } = req.body
 
     await validateScoreScript(req, res, scoreScripts)
 
@@ -325,6 +325,9 @@ exports.update = async (req, res) => {
      * 6. --> Xóa lựa chọn cũ
      * 7. --> Tạo lựa chọn mới
      */
+    // check duplicate name
+    const findSS = await model.ScoreScript.findOne({ where: { name: name } })
+    if (findSS) throw new Error(MESSAGE_ERROR['QA-002'])
     // 1. update kịch bản chung
     await model.ScoreScript.update(data, { where: { id: _id } }, { transaction: transaction })
 
