@@ -1,6 +1,5 @@
 $(function () {
   const $formEditGroup = $("#form_new_scoreSripts")
-  const $formDeleteGroup = $("#form_delete_group")
   const $inputName = $("#form_edit_group #name")
   const $inputLeader = $("#form_edit_group #leader")
   const $inputDescription = $("#form_edit_group #description")
@@ -8,18 +7,8 @@ $(function () {
   const $loadingData = $(".page-loader")
   const $buttonAddUser = $("#add_user")
   const $inputMember = $("#members")
-  const $containerUsers = $("#list_user")
-  const $inputSearchMember = $("#search_member")
-  const $buttonSearchMember = $("#btn_search_member")
 
   const $addCriteriaGroup = $(".add-criteria-group") // nút thêm nhóm tiêu chí
-  // const $addCriteria = $(".add-criteria"); // nút thêm tiêu chí
-  // const $addSelectionCriteria = $(".add-selection-criteria"); // nút thêm lựa chọn
-
-  // const $rmCriteriaGroup = $(".rm-criteria-group"); // nút xóa nhóm tiêu chí
-  // const $rmCriteria = $(".rm-criteria"); // nút xóa tiêu chí
-  // const $rmSelectionCriteria = $(".rm-selection-criteria"); // nút xóa lựa chọn
-
   const $scoreScript = $("#scoreScript") // wrapper danh sách nhóm tiêu chí
 
   // template wrapper
@@ -57,19 +46,12 @@ $(function () {
         min: 1,
         max: 100,
       },
-      standardMin: {
-        // required: true,
-      },
       standardMax: {
         gte: "#standardMin",
         max: 100,
         number: true,
         required: true,
-      },
-      passStandardMin: {
-        // required: true,
-        // gte: "#standardMax"
-      },
+      }
     },
     messages: {
       standardMax: {
@@ -107,15 +89,20 @@ $(function () {
         data: filter,
         success: function () {
           $loadingData.hide()
-          return location.redirect('/scoreScripts')
+          toastr.success('Lưu thành công !')
+          return setTimeout(() => {
+            window.location.href = "/scoreScripts"
+          }, 2500)
         },
         error: function (error) {
           $loadingData.hide()
-
+          if (JSON.parse(error.responseText).message == window.location.MESSAGE_ERROR["QA-002"]) return $("#duplicateName").text(window.location.MESSAGE_ERROR["QA-002"])
+          
+          $("#duplicateName").text("")
           return toastr.error(JSON.parse(error.responseText).message)
         },
       })
-    },
+    }
   })
 
   $buttonAddUser.on("click", function () {
@@ -228,11 +215,11 @@ $(function () {
     if (element.find(".name-criteria-group").length > 0)
       element
         .find(".name-criteria-group")
-        .rules("add", { required: true })
+        .rules("add", { required: true, maxlength: 500 })
     if (element.find(".name-criteria").length > 0)
       element
         .find(".name-criteria")
-        .rules("add", { required: true })
+        .rules("add", { required: true, maxlength: 150 })
     if (element.find(".score-max").length > 0)
       element
         .find(".score-max")
@@ -240,11 +227,11 @@ $(function () {
     if (element.find(".item-selection-criteria .name-selection-criteria").length > 0)
       element
         .find(".item-selection-criteria .name-selection-criteria")
-        .rules("add", { required: true })
+        .rules("add", { required: true, maxlength: 150 })
     if (element.find(".item-selection-criteria .score").length > 0)
       element
         .find(".item-selection-criteria .score")
-        .rules("add", { required: true, min: 0, le: `#scoreMax-${indexTarget}` })
+        .rules("add", { required: true, le: `#scoreMax-${indexTarget}` })
   }
 
   // như này thì html render sau mới nhận event click
@@ -324,7 +311,7 @@ $(function () {
       .rules("add", { required: true })
     newCard
       .find(".score")
-      .rules("add", { required: true, min: 0, le: `#scoreMax-${scoreMax}` })
+      .rules("add", { required: true, le: `#scoreMax-${scoreMax}` })
   })
 
   $(document).on("click", ".rm-criteria-group", function (e) {
@@ -338,6 +325,10 @@ $(function () {
     removeElementWithAnimation(
       $(e.currentTarget).closest(".item-selection-criteria")
     )
+  })
+
+  $(document).on("click", "#btn_cancel_scoreSripts", function (e) {
+    window.location.href = "/scoreScripts"
   })
 
   $("#tablist .nav-link").on("click", function (e) {
@@ -465,7 +456,7 @@ $(function () {
   })
 
   $(document).on("change", ".cb-is-active", function (e) {
-    
+
     let target = $(e.currentTarget)
     let card = target.closest(".card")
 
@@ -510,7 +501,7 @@ $(function () {
       $("#standardMax").rules("remove", "required")
       $("#standardMax").removeClass("is-invalid")
       $("#standardMax").prop("disabled", true)
-      $("#standardMax,#passStandardMin").val("")
+      $("#standardMax,#passStandardMin,#standardMin").val("")
     }
     $formEditGroup.valid()
   }
@@ -596,15 +587,15 @@ $(function () {
                 ${item.criterias.map((i) => {
                   const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
                   return `<div class="col-12">
-                              <div class="form-group">
-                                <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
-                                <select class="form-control">
-                                  ${i.selectionCriterias.map((j) => {
-                                    return `<option>${j.name}</option>`
-                                  }).join("")}
-                                </select>
-                              </div>
-                            </div>`
+                            <div class="form-group">
+                              <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
+                              <select class="form-control">
+                                ${i.selectionCriterias.map((j) => {
+                                  return `<option>${j.name}</option>`
+                                }).join("")}
+                              </select>
+                            </div>
+                          </div>`
                   }).join("")}
                 </div>
             </div>`

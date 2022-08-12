@@ -61,7 +61,7 @@
         </label>
         <div class="col-sm-1">
             <input 
-            <%- isEdit ? 'value="' + scoreScript.standardMin +'"' : '' %> 
+            <%- isEdit ? 'value="' + (scoreScript.standardMin != 0 ? scoreScript.standardMin: '') +'"' : '' %> 
             type="number" class="form-control input" id="standardMin" name="standardMin" placeholder="" disabled>
         </div>
         <div class="col-sm-1 d-flex align-items-center justify-content-center" style="">
@@ -69,7 +69,7 @@
         </div>
         <div class="col-sm-1">
             <input 
-            <%- isEdit ? 'value="' + scoreScript.standardMax+'"' : '' %> 
+            <%- isEdit ? 'value="' + (scoreScript.standardMax != 0 ? scoreScript.standardMax: '') +'"' : '' %> 
             type="number" class="form-control input" id="standardMax" name="standardMax" placeholder="">
         </div>
     </div>
@@ -78,7 +78,7 @@
         <label for="" class="col-sm-2 col-form-label">Vượt tiêu chuẩn từ </label>
         <div class="col-sm-1">
             <input 
-            <%- isEdit ? 'value="' + scoreScript.passStandardMin +'"' : '' %> 
+            <%- isEdit ? 'value="' + (scoreScript.passStandardMin != 0 ? scoreScript.passStandardMin: '') +'"' : '' %> 
             type="number" class="form-control input" id="passStandardMin" name="passStandardMin" placeholder="" disabled>
         </div>
     </div>

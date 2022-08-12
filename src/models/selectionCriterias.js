@@ -1,14 +1,14 @@
-const moment = require("moment");
-const { Model, DataTypes, Op } = require("sequelize");
+const moment = require("moment")
+const { Model, DataTypes, Op } = require("sequelize")
 
-const { MESSAGE_ERROR } = require("../helpers/constants");
-const { getLengthField } = require("../helpers/functions");
+const { MESSAGE_ERROR } = require("../helpers/constants")
+const { getLengthField } = require("../helpers/functions")
 class SelectionCriteria extends Model {
   static init(sequelize) {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING(getLengthField('name')),
+          type: DataTypes.STRING(65535),
           allowNull: false
         },
         score: {
@@ -43,7 +43,7 @@ class SelectionCriteria extends Model {
           get() {
             return moment(this.getDataValue("createdAt")).format(
               "HH:mm:ss DD/MM/YYYY"
-            );
+            )
           },
         },
         updatedAt: {
@@ -51,7 +51,7 @@ class SelectionCriteria extends Model {
           get() {
             return moment(this.getDataValue("updatedAt")).format(
               "HH:mm:ss DD/MM/YYYY"
-            );
+            )
           },
         },
       },
@@ -61,22 +61,22 @@ class SelectionCriteria extends Model {
         hooks: {
         },
       }
-    );
+    )
   }
 
   static associate(models) {
     models.SelectionCriteria.belongsTo(models.User, {
       foreignKey: "created",
       as: "userCreate",
-    });
+    })
 
     models.SelectionCriteria.belongsTo(models.Criteria, {
       foreignKey: "criteriaId",
       as: "Criteria",
-    });
+    })
 
   }
 }
 
 
-module.exports = SelectionCriteria;
+module.exports = SelectionCriteria

@@ -3,20 +3,12 @@ const UserModel = require('../models/user')
 const UserRoleModel = require('../models/userRole')
 const model = require('../models')
 const pagination = require('pagination')
-const {
-  SUCCESS_200,
-  ERR_500,
-  ERR_400
-} = require("../helpers/constants/statusCodeHTTP")
-const {
-  USER_ROLE,
-  OP_UNIT_DISPLAY,
-  STATUS_SCORE_SCRIPT,
-  MESSAGE_ERROR
-} = require("../helpers/constants/statusField")
+const { SUCCESS_200, ERR_500, ERR_400 } = require("../helpers/constants/statusCodeHTTP")
+const { USER_ROLE, OP_UNIT_DISPLAY, STATUS_SCORE_SCRIPT, MESSAGE_ERROR } = require("../helpers/constants/statusField")
 const { getLengthField } = require('../helpers/functions')
-
 const titlePage = 'Kịch bản chấm điểm'
+const { template } = require('../../public/assets/pages/scoreScripts/detail/template.js')
+const { scoreScriptNotNull, criteriaNameNull, criteriaOptionNull, criteriaGroupNameNull, criteriaGroupCriteriaNull, scoreScriptNotFound, statusUpdateFail } = require('../helpers/constants/filedScoreScript')
 
 exports.index = async (req, res, next) => {
   try {
@@ -95,7 +87,7 @@ exports.gets = async (req, res, next) => {
     FROM dbo.ScoreScripts ss
     LEFT JOIN dbo.Users userCreate -- nguoi tao
       ON ss.created = userCreate.id
-          LEFT JOIN dbo.Users userUpdate -- nguoi cap nhat
+    LEFT JOIN dbo.Users userUpdate -- nguoi cap nhat
       ON ss.updated = userUpdate.id
       ${query.length > 0 ? 'WHERE ' + query.join(' AND ') : ''}
 
@@ -144,37 +136,7 @@ exports.create = async (req, res) => {
 
     const { scoreScripts } = req.body
 
-    // convert to number
-    Object.keys(req.body).forEach(i => {
-      let listNumber = ['criteriaDisplayType', 'needImproveMax', 'passStandardMin', 'scoreDisplayType', 'standardMax', 'standardMin', 'status']
-      if (listNumber.includes(i) && req.body[i] != undefined) {
-        req.body[i] = Number(req.body[i])
-      }
-    })
-    // validate nhóm kịch bản
-    if (scoreScripts && scoreScripts.length > 0) {
-      // neu co nhom tieu chi ma ko co tieu chi --> bao loi
-      try {
-        for (let i = 0; i < scoreScripts.length; i++) {
-
-          const { criterias, nameCriteriaGroup, totalScore } = scoreScripts[i]
-          if (!nameCriteriaGroup) throw new Error('Nhóm tiêu chí có tên rỗng')
-          if (!criterias || criterias.length == 0) throw new Error('Nhóm tiêu chí có tiêu chí rỗng')
-
-          // có tiêu chí mà không có lựa chọn thì báo lỗi 
-          for (let i = 0; i < criterias.length; i++) {
-            const { nameCriteria, selectionCriterias } = criterias[i]
-
-            if (!nameCriteria) throw new Error('Tiêu chí có tên rỗng')
-            if (!selectionCriterias || selectionCriterias.length == 0) throw new Error('Tiêu chí có lựa chọn rỗng')
-          }
-
-        }
-      } catch (error) {
-        console.log('validate kịch bản lỗi: ', error)
-        return res.status(ERR_400.code).json({ message: MESSAGE_ERROR['QA-007'] })
-      }
-    }
+    await validateScoreScript(req, res, scoreScripts)
 
     transaction = await model.sequelize.transaction()
 
@@ -201,6 +163,8 @@ exports.create = async (req, res) => {
     // 1. tạo kịch bản chung
     const scoreScriptResult = await model.ScoreScript.create(data, { transaction: transaction })
     // 2. tạo nhóm tiêu chí 
+    if (!scoreScripts) throw new Error(scoreScriptNotNull)
+
     let dataCriteriaGroups = scoreScripts.map(i => {
       return {
         name: i.nameCriteriaGroup,
@@ -319,7 +283,8 @@ exports.detail = async (req, res, next) => {
       titlePage: null,
       scoreScript: scoreScriptInfo,
       OP_UNIT_DISPLAY,
-      STATUS_SCORE_SCRIPT
+      STATUS_SCORE_SCRIPT,
+      template
     })
   } catch (error) {
     console.log(`------- error ------- `)
@@ -333,56 +298,168 @@ exports.update = async (req, res) => {
   let transaction
 
   try {
-    const { description, name, id, leader } = req.body
+
+    const data = req.body
+
+    // default
+    data.needImproveMin = 0
+
+    const { scoreScripts, _id, name } = req.body
+
+    await validateScoreScript(req, res, scoreScripts)
 
     transaction = await model.sequelize.transaction()
 
-    if (!name || name.trim() == '') {
-      throw new Error('Tên nhóm không được để trống!')
-    }
+    data.updated = req.user.id
 
-    if (!leader || leader.length <= 0) {
-      throw new Error('Giát sát nhóm không được để trống!')
-    }
+    data.standardMin = data.standardMin || 0
+    data.standardMax = data.standardMax || 0
+    data.passStandardMin = data.passStandardMin || 0
 
-    let dataUpdate = {}
+    /**
+     * 1. update kịch bản chung
+     * 2. xóa nhóm tiêu chí cũ
+     * 3. tạo nhóm tiêu chí mới
+     * 4. xóa tiêu chí cũ
+     * 5. --> tạo tiêu chí mới
+     * 6. --> Xóa lựa chọn cũ
+     * 7. --> Tạo lựa chọn mới
+     */
+    // check duplicate name
+    const findSS = await model.ScoreScript.findOne({ where: { name: name, id: { [Op.ne]: _id } } })
+    if (findSS) throw new Error(MESSAGE_ERROR['QA-002'])
 
-    if (name) dataUpdate.name = name
-    if (description) dataUpdate.description = description
+    // 1. update kịch bản chung
+    await model.ScoreScript.update(data, { where: { id: _id } }, { transaction: transaction })
 
-    await model.Group.update(
-      dataUpdate,
-      { where: { id: Number(id) } },
-      { transaction: transaction }
-    )
+    // 2. xóa nhóm tiêu chí cũ
+    const criteriaGroupDelete = await model.CriteriaGroup.findOne({ where: { scoreScriptId: _id } }, { transaction: transaction })
+    await model.CriteriaGroup.destroy({ where: { scoreScriptId: _id } }, { transaction: transaction })
 
-    await model.UserGroupMember.destroy(
-      { where: { groupId: Number(id), role: USER_ROLE.groupmanager.n } },
-      { transaction: transaction }
-    )
+    // 3. tạo nhóm tiêu chí mới
+    if (!scoreScripts) throw new Error(scoreScriptNotNull)
 
-    let dataMember = leader.map(el => {
+    let dataCriteriaGroups = scoreScripts.map(i => {
       return {
-        groupId: id,
-        userId: el,
-        role: USER_ROLE.groupmanager.n
+        name: i.nameCriteriaGroup,
+        scoreScriptId: _id,
+        created: req.user.id
       }
     })
 
-    await model.UserGroupMember.bulkCreate(dataMember, { transaction: transaction })
+    const criteriaGroupResult = await model.CriteriaGroup.bulkCreate(dataCriteriaGroups, { transaction: transaction })
+
+    // 4. xóa tiêu chí cũ
+    let criteriaDelete
+    if (criteriaGroupDelete && criteriaGroupDelete.id) {
+      criteriaDelete = await model.Criteria.findOne({ where: { criteriaGroupId: criteriaGroupDelete.id } }, { transaction: transaction })
+      await model.Criteria.destroy({ where: { criteriaGroupId: criteriaGroupDelete.id } }, { transaction: transaction })
+    }
+
+    // 5. --> tạo tiêu chí mới
+    let dataCriterias = []
+    scoreScripts.forEach((i, index) => {
+      i.criterias.forEach(j => {
+        dataCriterias.push({
+          name: j.nameCriteria,
+          scoreMax: j.scoreMax,
+          isActive: j.isActive,
+          criteriaGroupId: criteriaGroupResult[index].id,
+          created: data.created,
+          selectionCriterias: j.selectionCriterias
+        })
+      })
+    })
+
+    const criteriaResult = await model.Criteria.bulkCreate(dataCriterias, { transaction: transaction })
+
+    //6. --> Xóa lựa chọn cũ
+    if (criteriaDelete && criteriaDelete.id) {
+      await model.SelectionCriteria.destroy({ where: { criteriaId: criteriaDelete.id } }, { transaction: transaction })
+    }
+
+    //7. --> Tạo lựa chọn mới
+    let dataSelectionCriterias = []
+    dataCriterias.forEach((i, index) => {
+      i.selectionCriterias.forEach(j => {
+        dataSelectionCriterias.push({
+          name: j.name,
+          score: Number(j.score),
+          unScoreCriteriaGroup: j.unScoreCriteriaGroup,
+          unScoreScript: j.unScoreScript,
+          criteriaId: criteriaResult[index].id,
+          created: data.created,
+        })
+      })
+    })
+
+    await model.SelectionCriteria.bulkCreate(dataSelectionCriterias, { transaction: transaction })
 
     await transaction.commit()
 
-    return res.status(SUCCESS_200.code).json({
-      message: 'Success!',
-    })
+    return res.json({ code: SUCCESS_200.code })
+
   } catch (error) {
     console.log(`------- error ------- `)
     console.log(error)
     console.log(`------- error ------- `)
-
     if (transaction) await transaction.rollback()
+    return res.json({ message: error.message, code: ERR_500.code })
+  }
+}
 
-    return res.status(ERR_500.code).json({ message: error.message })
+exports.updateStatus = async (req, res) => {
+  let transaction
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    const findDocUpdate = await model.ScoreScript.findOne({ where: { id: id } })
+
+    if (!findDocUpdate) throw new Error(scoreScriptNotFound)
+
+    if (findDocUpdate.status > status) throw new Error(statusUpdateFail)
+
+    transaction = await model.sequelize.transaction()
+    await model.ScoreScript.update({ status: status }, { where: { id: id } }, { transaction: transaction })
+
+    await transaction.commit()
+
+    return res.json({ code: SUCCESS_200.code })
+
+  } catch (error) {
+    console.log(`------- error ------- `)
+    console.log(error)
+    console.log(`------- error ------- `)
+    if (transaction) await transaction.rollback()
+    return res.json({ message: error.message, code: ERR_500.code })
+  }
+}
+
+async function validateScoreScript(req, res, scoreScripts) {
+  // convert to number
+  Object.keys(req.body).forEach(i => {
+    let listNumber = ['criteriaDisplayType', 'needImproveMax', 'passStandardMin', 'scoreDisplayType', 'standardMax', 'standardMin', 'status']
+    if (listNumber.includes(i) && req.body[i] != undefined) {
+      req.body[i] = Number(req.body[i])
+    }
+  })
+  // validate nhóm kịch bản
+  if (scoreScripts && scoreScripts.length > 0) {
+    // neu co nhom tieu chi ma ko co tieu chi --> bao loi
+    await Promise.all(scoreScripts.map(async el => {
+      const { criterias, nameCriteriaGroup } = el
+
+      if (!nameCriteriaGroup) throw new Error(criteriaGroupNameNull)
+      if (!criterias || criterias.length == 0) throw new Error(criteriaGroupCriteriaNull)
+
+      await Promise.all(criterias.map(el2 => {
+        const { nameCriteria, selectionCriterias } = el2
+
+        if (!nameCriteria) throw new Error(criteriaNameNull)
+        if (!selectionCriterias || selectionCriterias.length == 0) throw new Error(criteriaOptionNull)
+
+      }))
+    }))
   }
 }

@@ -1,14 +1,11 @@
-const moment = require("moment");
-const { Model, DataTypes, Op } = require("sequelize");
-
-const { MESSAGE_ERROR } = require("../helpers/constants");
-const { getLengthField } = require("../helpers/functions");
+const moment = require("moment")
+const { Model, DataTypes } = require("sequelize")
 class Criteria extends Model {
   static init(sequelize) {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING(getLengthField('name')),
+          type: DataTypes.STRING(65535),
           allowNull: false
         },
         scoreMax: {
@@ -39,7 +36,7 @@ class Criteria extends Model {
           get() {
             return moment(this.getDataValue("createdAt")).format(
               "HH:mm:ss DD/MM/YYYY"
-            );
+            )
           },
         },
         updatedAt: {
@@ -47,7 +44,7 @@ class Criteria extends Model {
           get() {
             return moment(this.getDataValue("updatedAt")).format(
               "HH:mm:ss DD/MM/YYYY"
-            );
+            )
           },
         },
       },
@@ -57,26 +54,26 @@ class Criteria extends Model {
         hooks: {
         },
       }
-    );
+    )
   }
 
   static associate(models) {
     models.Criteria.belongsTo(models.User, {
       foreignKey: "created",
       as: "userCreate",
-    });
+    })
 
     models.Criteria.hasMany(models.SelectionCriteria, {
       foreignKey: "criteriaId",
       as: "SelectionCriteria",
-    });
+    })
 
     models.Criteria.belongsTo(models.CriteriaGroup, {
       foreignKey: "criteriaGroupId",
       as: "CriteriaGroup",
-    });
+    })
 
   }
 }
 
-module.exports = Criteria;
+module.exports = Criteria

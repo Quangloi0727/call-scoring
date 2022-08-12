@@ -9,7 +9,7 @@
             <div class="form-group row">
                 <label for="description" class="col-sm-2 col-form-label">Nhóm tiêu chí <span class="text-danger">*</span> </label>
                 <div class="col-sm-9">
-                    <input type="text" class="form-control name-criteria-group" id="nameCriteriaGroup" name="nameCriteriaGroup" placeholder="Tên">
+                    <input type="text" class="form-control name-criteria-group unique-criteria-group" id="nameCriteriaGroup" name="nameCriteriaGroup" placeholder="Tên nhóm tiêu chí">
                 </div>
             </div>
         </h4>
@@ -18,7 +18,7 @@
     <div class="card-body wp-list-criteria" id="tempCriteria">
 
         <!-- template tiêu chí -->
-        <div class="card card-default">
+        <div class="card card-default wp-list-criteria-item">
             <div class="removeCard">
                 <%- include('./btn.rm.ejs', { BTN_TITLE: 'Xóa tiêu chí', BTN_CLASS_NAME : 'rm-criteria' }) %>
             </div>
@@ -34,14 +34,12 @@
                                 <label for="description" class="col-sm-12 col-form-label d-flex">Tiêu chí <span class="text-danger pl-2 pr-2">*</span>
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input cb-is-active" id="customSwitches" checked>
-                                        <label class="custom-control-label" for="customSwitches" data-toggle="tooltip"
-                                            data-placement="right" title="Tiêu chí có sử dụng tính điểm không?" role="button">
-                                        </label>
+                                        <label class="custom-control-label" for="customSwitches" data-toggle="tooltip" data-placement="right" title="Tiêu chí có sử dụng tính điểm không?" role="button"></label>
                                     </div>
                                 </label>
 
                                 <div class="col-sm-12">
-                                    <input type="text" class="form-control name-criteria" id="nameCriteria" name="nameCriteria" placeholder="Tên">
+                                    <input type="text" class="form-control name-criteria" id="nameCriteria" name="nameCriteria" placeholder="Tên tiêu chí">
                                 </div>
 
                             </div>
@@ -73,6 +71,7 @@
 
                 </div>
 
+            
                 <!-- body tieu chi, danh sách lựa chọn -->
 
 

@@ -1,14 +1,12 @@
 const moment = require("moment");
-const { Model, DataTypes, Op } = require("sequelize");
+const { Model, DataTypes } = require("sequelize");
 
-const { MESSAGE_ERROR } = require("../helpers/constants");
-const { getLengthField } = require("../helpers/functions");
 class CriteriaGroup extends Model {
   static init(sequelize) {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING(getLengthField('name')),
+          type: DataTypes.STRING(65535),
           allowNull: false
         },
         scoreScriptId: {

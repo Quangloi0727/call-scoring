@@ -1,7 +1,11 @@
 <script>
-  var scoreScript = JSON.parse('<%- JSON.stringify(scoreScript)%>');
+  var criteriaGroup = JSON.parse('<%- JSON.stringify(scoreScript.CriteriaGroup)%>');
   var OP_UNIT_DISPLAY = JSON.parse('<%- JSON.stringify(OP_UNIT_DISPLAY)%>');
+  var template = `<%- template %>`
+  var statusScoreScript = JSON.parse('<%- JSON.stringify(scoreScript.status)%>');
+  var STATUS_SCORE_SCRIPT = JSON.parse('<%- JSON.stringify(STATUS_SCORE_SCRIPT)%>');
 </script>
+
 <div class="wrapper">
   <div>
     <section class="content-header">
@@ -22,15 +26,17 @@
 
           <div class="card-body">
 
-            <form id="form_new_scoreSripts" onsubmit="return false">
+            <form id="form_detail_scoreSripts" onsubmit="return false">
 
               <div class="row">
                 <div class="form-group col-sm-3">
                   <input type="text" class="form-control input" id="name" name="name" placeholder="kịch bản" value="<%- scoreScript.name%>" />
+                  <label class="col-form-label"><span class="text-red" id="duplicateName"></span></label>
                 </div>
                 <div class="form-group col-sm-6 ml-auto text-right">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+                  <button type="button" id="btn_cancel_scoreSripts" class="btn btn-default" data-dismiss="modal">Hủy</button>
                   <button type="submit" id="btn_save_scoreSripts" class="btn btn-primary">Lưu</button>
+                  <input type="hidden" class="input" name="_id" id="_id" value="<%- scoreScript.id %>"/>
                 </div>
 
               </div>
@@ -60,11 +66,11 @@
                 <!-- end tab chung -->
 
                 <!-- tab kịch bản -->
-                  <%- include('./tab.script.ejs', { scoreScript, isEdit:true }) %>
+                  <%- include('./tab.script.ejs') %>
                 <!-- end tab kịch bản -->
 
                 <!-- tab Xem trước -->
-                  <%- include('./tab.script.preview.ejs', { STATUS_SCORE_SCRIPT }) %>
+                  <%- include('./tab.script.preview.ejs', { STATUS_SCORE_SCRIPT, isEdit: true, scoreScript }) %>
                 <!-- end tab Xem trước -->
 
               </div>

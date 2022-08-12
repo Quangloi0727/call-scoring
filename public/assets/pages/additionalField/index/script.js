@@ -37,6 +37,7 @@ var bindClick = function () {
         $("#additionalFieldValue").val(_value)
         $("#countValueLength").text(_value.length + "/20")
         $("#save_additionalField").attr("data-id", _id)
+        $("#duplicateValue").text('')
     })
 
     //process edit
