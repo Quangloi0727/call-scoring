@@ -25,14 +25,14 @@ $(function () {
     rules: {
       name: {
         required: true,
-        maxlength: 50,
+        maxlength: 100,
       },
       leader: {
         required: true,
       },
       description: {
         required: true,
-        maxlength: 150,
+        maxlength: 500,
       },
       scoreDisplayType: {
         required: true,
@@ -600,4 +600,18 @@ $(function () {
                 </div>
             </div>`
   }
+})
+
+// event uncut
+$(window).on('beforeunload', function () {
+  $(document).off('change', '.cb-is-active')
+  $(document).off('change', '#standardMax')
+  $(document).off('change', '#needImproveMax')
+  $(document).off('change', '#criteriaDisplayType')
+  $(document).off('click', '#tablist .nav-link')
+  $(document).off('click', '.rm-selection-criteria')
+  $(document).off('click', '.rm-criteria')
+  $(document).off('click', '.rm-criteria-group')
+  $(document).off('click', '.add-selection-criteria')
+  $(document).off('click', '.add-criteria')
 })

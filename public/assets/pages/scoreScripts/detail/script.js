@@ -22,14 +22,14 @@ const validatorFormEdit = $formEditGroup.validate({
   rules: {
     name: {
       required: true,
-      maxlength: 50,
+      maxlength: 100,
     },
     leader: {
       required: true,
     },
     description: {
       required: true,
-      maxlength: 150,
+      maxlength: 500,
     },
     scoreDisplayType: {
       required: true,
@@ -592,12 +592,12 @@ function updateValidationForm(element, indexTarget) {
   if (element.find(".name-criteria-group").length > 0)
     element
       .find(".name-criteria-group")
-      .rules("add", { required: true })
+      .rules("add", { required: true, maxlength: 500 })
 
   if (element.find(".name-criteria").length > 0)
     element
       .find(".name-criteria")
-      .rules("add", { required: true })
+      .rules("add", { required: true, maxlength: 150 })
 
   if (element.find(".score-max").length > 0)
     element
@@ -607,13 +607,14 @@ function updateValidationForm(element, indexTarget) {
   if (element.find(".item-selection-criteria .name-selection-criteria").length > 0)
     element
       .find(".item-selection-criteria .name-selection-criteria")
-      .rules("add", { required: true })
+      .rules("add", { required: true, maxlength: 150 })
 
   if (element.find(".item-selection-criteria .score").length > 0)
     element
       .find(".item-selection-criteria .score")
       .rules("add", { required: true, le: `#scoreMax-${indexTarget}` })
 }
+
 
 function removeElementWithAnimation(element, timeout = 500) {
   element.addClass("removed-item")
@@ -746,18 +747,18 @@ function htmlItemCriteriaGroup(item, totalScore) {
             <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
             <div class="row">
               ${item.criterias.map((i) => {
-    const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-    return `<div class="col-12">
-                            <div class="form-group">
-                              <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
-                              <select class="form-control">
-                                ${i.selectionCriterias.map((j) => {
-      return `<option>${j.name}</option>`
-    }).join("")}
-                              </select>
-                            </div>
-                          </div>`
-  }).join("")}
+                const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
+                return `<div class="col-12">
+                          <div class="form-group">
+                            <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
+                            <select class="form-control">
+                              ${i.selectionCriterias.map((j) => {
+                                return `<option>${j.name}</option>`
+                              }).join("")}
+                            </select>
+                          </div>
+                        </div>`
+                }).join("")}
             </div>
           </div>`
 }
@@ -765,4 +766,22 @@ function htmlItemCriteriaGroup(item, totalScore) {
 $(function () {
   bindClick()
   loadData()
+})
+
+// event uncut
+$(window).on('beforeunload', function () {
+  $(document).off('change', '.cb-is-active')
+  $(document).off('change', '#standardMax')
+  $(document).off('change', '#needImproveMax')
+  $(document).off('change', '#criteriaDisplayType')
+  $(document).off('click', '#tablist .nav-link')
+  $(document).off('click', '.rm-selection-criteria')
+  $(document).off('click', '.rm-criteria')
+  $(document).off('click', '.rm-criteria-group')
+  $(document).off('click', '.add-selection-criteria')
+  $(document).off('click', '.add-criteria')
+  $(document).off('click', '#confirmUnActiveScoreScript')
+  $(document).off('click', '#confirmActiveScoreScript')
+  $(document).off('click', '#status')
+  $(document).off('click', '#btn_cancel_scoreSripts')
 })
