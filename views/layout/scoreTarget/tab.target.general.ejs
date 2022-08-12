@@ -1,0 +1,149 @@
+<script>
+    console.log(CONST_RATING_BY);
+</script>
+<div class="tab-pane fade active show mt-3" id="tab-score-target-general" role="tabpanel"
+    aria-labelledby="custom-tabs-three-home-tab">
+
+    <div class="border-content p-2">
+        <div class="form-group row">
+            <label class="col-sm-3 col-form-label">Cấu hình mục tiêu</label>
+        </div>
+        <div class="form-group row">
+            <label for="scoreScriptId" class="col-sm-3 form-check-label">Kịch bản chấm điểm</label>
+            <div class="col-sm-6">
+                <select class="form-control selectpicker input" id="scoreScriptId" name="scoreScriptId"
+                    data-live-search="true">
+                    <% scoreScript.forEach((ele)=> { %>
+                        <option value="<%- ele.id %>">
+                            <%- ele.name %>
+                        </option>
+                        <% }) %>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="ratingBy" class="col-sm-3 form-check-label">Đánh giá theo đối tượng</label>
+            <div class="col-sm-6">
+                <select class="form-control selectpicker input" id="ratingBy" name="ratingBy" data-live-search="true">
+                    <% Object.keys(CONST_RATING_BY).forEach((ele, index)=> { %>
+                        <option value="<%- CONST_RATING_BY[ele].n %>">
+                            <%- CONST_RATING_BY[ele].t%>
+                        </option>
+                        <% }) %>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="callType" class="col-sm-3 form-check-label">Loại cuộc gọi</label>
+            <div class="col-sm-6">
+                <select class="form-control selectpicker input" id="callType" name="callType" data-live-search="true">
+                    <% for (const [key, value] of Object.entries(CONST_CALL_TYPE)) {%>
+                        <option value="<%- value %>">
+                            <%- key %>
+                        </option>
+                        <% } %>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="numberOfCall" class="col-sm-3 form-check-label">Số lượng cuộc gọi mỗi đối tượng</label>
+            <div class="col-sm-6">
+                <input class="form-control input" placeholder="VD: 1000" id="numberOfCall" name="numberOfCall"
+                    title="Nhập số lượng cuộc gọi"></input>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="callTime" class="col-sm-3 form-check-label">Áp dụng cho cuộc gọi trong</label>
+            <div class="col-sm-6 input-group">
+                <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
+                    title="Chọn khoảng thời gian" name="callTime">
+                <div class="input-group-append">
+                    <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="effectiveTime" class="col-sm-3 form-check-label">Thời gian hiệu lực</label>
+            <div class="col-sm-3">
+                <select class="form-control selectpicker input" id="effectiveTimeType" name="effectiveTimeType">
+                    <% for (const [key, value] of Object.entries(CONST_EFFECTIVE_TIME_TYPE)) {%>
+                        <option value="<%- value %>">
+                            <%- key %>
+                        </option>
+                        <% } %>
+                </select>
+            </div>
+            <div class="col-sm-3 effectiveTimeStart">
+                <input type="date" class="form-control input" name="effectiveTimeStart" title="Chọn thời gian bắt đầu">
+            </div>
+            <div class="col-sm-3 input-group effectiveTimeRange d-none">
+                <input type="text" value="" class="input form-control" name="effectiveTime"
+                    placeholder="VD: 08/10/2022 - 08/10/2022" title="Chọn khoảng thời gian">
+                <div class="input-group-append">
+                    <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="status" class="col-sm-3 form-check-label">Trạng thái</label>
+            <div class="col-sm-6">
+                <select class="form-control selectpicker input" name="status" disabled>
+                    <% for (const [key, value] of Object.entries(CONST_STATUS)) {%>
+                        <option value="<%- value %>">
+                            <%- key %>
+                        </option>
+                        <% } %>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="assignStart" class="col-sm-3 form-check-label">Phân công trong khoảng giờ</label>
+            <div class="col-sm-3">
+                <input type="time" class="form-control input" title="Giờ bắt đầu" name="assignStart" id="assignStart">
+            </div>
+            <div class="col-sm-3">
+                <input type="time" class="form-control input" title="Giờ kết thúc" name="assignEnd" id="assignEnd">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="description" class="col-sm-3 form-check-label">Mô tả</label>
+            <div class="col-sm-6 form-group">
+                <textarea class="form-control input" id="description" name="description"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="border-content mt-3 p-2">
+        <div class="form-group row">
+            <label for="scoreScripts" class="col-sm-3 col-form-label">Điều kiện</label>
+        </div>
+        <div class="form-group row">
+            <label for="scoreScripts" class="col-sm-3 form-check-label">Điều kiện lọc</label>
+            <div class="col-sm-6">
+                <select class="form-control selectpicker input" id="scoreScripts" name="scoreScripts"
+                    data-live-search="true">
+                    <option value="and">Và</option>
+                    <option value="or">Hoặc</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <label class="col-sm-3 form-check-label">Dữ liệu</label>
+            <label class="col-sm-3 form-check-label">Điều kiện</label>
+            <label class="col-sm-3 form-check-label">Giá trị</label>
+        </div>
+        <div class="row-conditions">
+        </div>
+
+        <button type="button" class="btn btn-primary" id="btn-add-conditions"><i class="fas fa-plus"></i> Thêm điều
+            kiện</button>
+    </div>
+</div>

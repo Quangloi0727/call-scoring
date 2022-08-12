@@ -1,8 +1,8 @@
-const moment = require("moment");
-const { Model, DataTypes, Op } = require("sequelize");
+const moment = require("moment")
+const { Model, DataTypes, Op } = require("sequelize")
 
-const { MESSAGE_ERROR } = require("../helpers/constants");
-const { getLengthField } = require("../helpers/functions");
+const { MESSAGE_ERROR } = require("../helpers/constants")
+const { getLengthField } = require("../helpers/functions")
 class ScoreScript extends Model {
   static init(sequelize) {
     return super.init(
@@ -65,7 +65,7 @@ class ScoreScript extends Model {
           get() {
             return moment(this.getDataValue("createdAt")).format(
               "HH:mm:ss DD/MM/YYYY"
-            );
+            )
           },
         },
         updatedAt: {
@@ -73,7 +73,7 @@ class ScoreScript extends Model {
           get() {
             return moment(this.getDataValue("updatedAt")).format(
               "HH:mm:ss DD/MM/YYYY"
-            );
+            )
           },
         },
       },
@@ -86,24 +86,29 @@ class ScoreScript extends Model {
         // If don't want updatedAt
         updatedAt: false,
       }
-    );
+    )
   }
 
   static associate(models) {
     models.ScoreScript.belongsTo(models.User, {
       foreignKey: "created",
       as: "userCreate",
-    });
-    
+    })
+
     models.ScoreScript.belongsTo(models.User, {
       foreignKey: "updated",
       as: "userUpdate",
-    });
+    })
 
     models.ScoreScript.hasMany(models.CriteriaGroup, {
       foreignKey: "scoreScriptId",
       as: "CriteriaGroup",
-    });
+    })
+
+    models.ScoreScript.hasMany(models.ScoreTarget, {
+      foreignKey: "scoreScriptId",
+      as: "scoreScript",
+    })
 
   }
 }
@@ -111,11 +116,11 @@ class ScoreScript extends Model {
 async function handleBeforeCreate(team, option) {
   const teamResult = await ScoreScript.findOne({
     where: { name: { [Op.eq]: team.name.toString() } },
-  });
+  })
 
   if (teamResult) {
-    throw new Error(MESSAGE_ERROR["QA-002"]);
+    throw new Error(MESSAGE_ERROR["QA-002"])
   }
 }
 
-module.exports = ScoreScript;
+module.exports = ScoreScript

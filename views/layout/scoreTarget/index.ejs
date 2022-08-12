@@ -1,0 +1,88 @@
+<script>
+  var CONST_STATUS = JSON.parse('<%- JSON.stringify(CONST_STATUS)%>')
+</script>
+<div class="wrapper">
+  <div>
+    <section class="content">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header row">
+                <div class="col-12 d-flex justify-content-between">
+                  <form class="col-12" id="form_search" onsubmit="return false">
+                    <div class="row">
+                      <div class="col-2">
+                        <div class="form-group">
+                          <label for="name">Tên mục tiêu</label>
+                          <input type="text" class="form-control input" id="name" name="name"
+                            placeholder="Tìm kiếm tên mục tiêu..." autocomplete="off" />
+                        </div>
+                      </div>
+                      <div class="col-2">
+                        <div class="form-group">
+                          <label for="status">Trạng thái</label>
+                          <select class="form-control selectpicker input" name="status" id="status">
+                            <option value="">Chọn...</option>
+                            <% for (const [key, value] of Object.entries(CONST_STATUS)) {%>
+                              <option value="<%- value %>">
+                                <%- key %>
+                              </option>
+                              <% } %>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-1">
+                        <div class="form-group">
+                          <label for="btn"></label>
+                          <button type="button" class="form-control btn btn-primary btn-circle col-6"
+                            style="margin-top:30px;" name="btn" id="search_group">
+                            <i class="fas fa-search p-0"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="col text-right">
+                        <a type="button" style="margin-top:30px;" class="btn btn-primary" href="/scoreTarget/newTarget">
+                          Thêm mới <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+              <!-- /.card-header -->
+              <div class="card-body">
+                <table id="example2" class="table table-bordered table-hover">
+                  <thead>
+                    <tr>
+                      <th class="text-center">Mục tiêu</th>
+                      <th class="text-center">Người đánh giá phụ trách</th>
+                      <th class="text-center">Trạng thái</th>
+                      <th class="text-center">Mô tả</th>
+                      <th class="text-center">Ngày tạo</th>
+                      <th class="text-center">Người tạo</th>
+                      <th class="text-center">Ngày cập nhật</th>
+                      <th class="text-center">Người cập nhật</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tableBody"></tbody>
+                </table>
+              </div>
+              <div class="card-footer text-center">
+                <div class="col-12 d-flex justify-content-center" id="paging_table">
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+            <!-- /.card -->
+          </div>
+          <!-- /.col -->
+        </div>
+        <!-- /.row -->
+      </div>
+      <!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>
