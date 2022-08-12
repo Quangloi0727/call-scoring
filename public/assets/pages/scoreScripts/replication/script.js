@@ -1,4 +1,5 @@
-const $formEditGroup = $("#form_detail_scoreScripts")
+const $formEditGroup = $("#form_replication_scoreScripts")
+const $loadingData = $(".page-loader")
 
 const $addCriteriaGroup = $(".add-criteria-group") // nút thêm nhóm tiêu chí
 const $scoreScript = $("#scoreScript") // wrapper danh sách nhóm tiêu chí
@@ -65,7 +66,7 @@ const validatorFormEdit = $formEditGroup.validate({
     $(element).removeClass("is-invalid")
   },
   submitHandler: function () {
-    let dataUpdate = _.chain($("#form_detail_scoreScripts .input"))
+    let dataReplication = _.chain($("#form_replication_scoreScripts .input"))
       .reduce(function (memo, el) {
         let value = $(el).val()
         if (value != "" && value != null) memo[el.name] = value
@@ -73,86 +74,36 @@ const validatorFormEdit = $formEditGroup.validate({
       }, {})
       .value()
 
-    dataUpdate = getDataSubmit(dataUpdate)
+    dataReplication = getDataSubmit(dataReplication)
 
-    _AjaxData('/scoreScripts/' + dataUpdate._id, 'PUT', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
-      if (resp.code != 200) {
-        if (resp.message == window.location.MESSAGE_ERROR["QA-002"]) return $("#duplicateName").text(window.location.MESSAGE_ERROR["QA-002"])
-        return toastr.error(resp.message)
-      }
-      toastr.success('Lưu thành công !')
-      return setTimeout(() => {
-        window.location.href = "/scoreScripts"
-      }, 2500)
+    $loadingData.show()
+
+    $.ajax({
+      type: "POST",
+      url: "/scoreScripts",
+      data: dataReplication,
+      success: function () {
+        $loadingData.hide()
+        toastr.success('Lưu thành công !')
+        return setTimeout(() => {
+          window.location.href = "/scoreScripts"
+        }, 2500)
+      },
+      error: function (error) {
+        $loadingData.hide()
+        if (JSON.parse(error.responseText).message == window.location.MESSAGE_ERROR["QA-002"]) return $("#duplicateName").text(window.location.MESSAGE_ERROR["QA-002"])
+        
+        $("#duplicateName").text("")
+        return toastr.error(JSON.parse(error.responseText).message)
+      },
     })
   },
 })
 
 var bindClick = function () {
 
-  $(document).on("change", "#status", function (e) {
-    const id = $(this).find(':selected').data('id')
-    const val = $(this).val()
-    if (val == STATUS_SCORE_SCRIPT.hoatDong.n) {
-      $('#activeScoreScript').modal({ show: true })
-      $('#confirmActiveScoreScript').attr('data-id', id)
-      $('#confirmActiveScoreScript').attr('data-val', val)
-    }
-
-    if (val == STATUS_SCORE_SCRIPT.ngungHoatDong.n) {
-      $('#unActiveScoreScript').modal({ show: true })
-      $('#confirmUnActiveScoreScript').attr('data-id', id)
-      $('#confirmUnActiveScoreScript').attr('data-val', val)
-    }
-  })
-
   $(document).on("click", "#btn_cancel_scoreScripts", function (e) {
     window.location.href = "/scoreScripts"
-  })
-
-  $(document).on("click", "#btn_replication_scoreScripts", function (e) {
-    const id = $(this).attr('data-id')
-    window.location.href = `/scoreScripts/${id}/replication`
-  })
-
-  $(document).on("click", "#confirmActiveScoreScript", function (e) {
-    const id = $(this).attr('data-id')
-    const val = $(this).attr('data-val')
-    _AjaxData('/scoreScripts/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
-      if (resp.code != 200) {
-        $('#activeScoreScript').modal('hide')
-        toastr.error(resp.message)
-        return setTimeout(() => {
-          location.reload()
-        }, 2500)
-      }
-
-      $('#activeScoreScript').modal('hide')
-      toastr.success('Lưu thành công !')
-      return setTimeout(() => {
-        location.reload()
-      }, 2500)
-    })
-  })
-
-  $(document).on("click", "#confirmUnActiveScoreScript", function (e) {
-    const id = $(this).attr('data-id')
-    const val = $(this).attr('data-val')
-    _AjaxData('/scoreScripts/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
-      if (resp.code != 200) {
-        $('#unActiveScoreScript').modal('hide')
-        toastr.error(resp.message)
-        return setTimeout(() => {
-          location.reload()
-        }, 2500)
-      }
-
-      $('#unActiveScoreScript').modal('hide')
-      toastr.success('Lưu thành công !')
-      return setTimeout(() => {
-        location.reload()
-      }, 2500)
-    })
   })
 
   $addCriteriaGroup.on("click", function () {
@@ -382,12 +333,6 @@ var loadData = function () {
       updateInputPassStandardAuto(Number($("#standardMax").val()), 99999)
     }
     $formEditGroup.valid()
-  }
-  //update status
-  if (statusScoreScript != STATUS_SCORE_SCRIPT.nhap.n) {
-    $('#btn_save_scoreScripts').attr('disabled', 'disabled')
-    if (statusScoreScript == STATUS_SCORE_SCRIPT.hoatDong.n) $('#hoatDong').attr('selected', 'selected')
-    if (statusScoreScript == STATUS_SCORE_SCRIPT.ngungHoatDong.n) $('#ngungHoatDong').attr('selected', 'selected')
   }
 }
 
@@ -781,9 +726,6 @@ $(window).on('beforeunload', function () {
   $(document).off('click', '.rm-criteria-group')
   $(document).off('click', '.add-selection-criteria')
   $(document).off('click', '.add-criteria')
-  $(document).off('click', '#confirmUnActiveScoreScript')
-  $(document).off('click', '#confirmActiveScoreScript')
-  $(document).off('click', '#status')
   $(document).off('click', '#btn_cancel_scoreScripts')
   $(document).off('click', '#btn_replication_scoreScripts')
 })

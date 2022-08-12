@@ -248,6 +248,52 @@ exports.new = async (req, res, next) => {
   }
 }
 
+exports.replication = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    if (!id || id == '') {
+      throw new Error('Nhóm không tồn tại!')
+    }
+
+    let [scoreScriptInfo] = await Promise.all([
+      model.ScoreScript.findOne({
+        where: { id: { [Op.eq]: Number(id) } },
+        include: [
+          { model: model.User, as: 'userCreate' },
+          {
+            model: model.CriteriaGroup,
+            as: 'CriteriaGroup',
+            include: {
+              model: model.Criteria,
+              as: 'Criteria',
+              include: {
+                model: model.SelectionCriteria,
+                as: 'SelectionCriteria'
+              },
+            },
+          },
+        ],
+        nest: true
+      })
+    ])
+
+
+    return _render(req, res, 'scoreScripts/replication', {
+      titlePage: null,
+      scoreScript: scoreScriptInfo,
+      OP_UNIT_DISPLAY,
+      STATUS_SCORE_SCRIPT,
+      template
+    })
+  } catch (error) {
+    console.log(`------- error ------- `)
+    console.log(error)
+    console.log(`------- error ------- `)
+    return next(error)
+  }
+}
+
 exports.detail = async (req, res, next) => {
   try {
     const { id } = req.params

@@ -1,12 +1,6 @@
 $(function () {
-  const $formEditGroup = $("#form_new_scoreSripts")
-  const $inputName = $("#form_edit_group #name")
-  const $inputLeader = $("#form_edit_group #leader")
-  const $inputDescription = $("#form_edit_group #description")
-  const $modelEditGroup = $("#modal_edit_group")
+  const $formEditGroup = $("#form_new_scoreScripts")
   const $loadingData = $(".page-loader")
-  const $buttonAddUser = $("#add_user")
-  const $inputMember = $("#members")
 
   const $addCriteriaGroup = $(".add-criteria-group") // nút thêm nhóm tiêu chí
   const $scoreScript = $("#scoreScript") // wrapper danh sách nhóm tiêu chí
@@ -21,7 +15,7 @@ $(function () {
   const $tempBtnAddSelectionCriteria = $("#tempBtnAddSelectionCriteria") // Template nút thêm lựa chọn
 
   // validate form edit group
-  const validatorFormEdit = $formEditGroup.validate({
+  $formEditGroup.validate({
     rules: {
       name: {
         required: true,
@@ -72,7 +66,7 @@ $(function () {
       $(element).removeClass("is-invalid")
     },
     submitHandler: function () {
-      let filter = _.chain($("#form_new_scoreSripts .input"))
+      let filter = _.chain($("#form_new_scoreScripts .input"))
         .reduce(function (memo, el) {
           let value = $(el).val()
           if (value != "" && value != null) memo[el.name] = value
@@ -103,44 +97,6 @@ $(function () {
         },
       })
     }
-  })
-
-  $buttonAddUser.on("click", function () {
-    const member = $inputMember.val()
-    let data = {}
-
-    if (!member || member == "") return
-
-    data.teamIds = member
-    data.groupId = group.id
-
-    $.ajax({
-      type: "POST",
-      url: "/groups/add-team",
-      data: data,
-      dataType: "text",
-      success: function () {
-        toastr.success("Đã thêm người dùng vào nhóm")
-        // cache new element vi ko reload lai trang
-        const cacheTeamGroup = member.map((i, index) => {
-          return {
-            id:
-              group.TeamGroup.length > 0
-                ? group.TeamGroup[group.TeamGroup.length - 1].id + 1 + index
-                : 1 + index,
-            teamId: i,
-            groupId: group.id,
-          }
-        })
-
-        group.TeamGroup = [...group.TeamGroup, ...cacheTeamGroup]
-      },
-      error: function (error) {
-        const errorParse = JSON.parse(error.responseText)
-
-        return toastr.error(errorParse.message)
-      },
-    })
   })
 
   $addCriteriaGroup.on("click", function () {
@@ -327,7 +283,7 @@ $(function () {
     )
   })
 
-  $(document).on("click", "#btn_cancel_scoreSripts", function (e) {
+  $(document).on("click", "#btn_cancel_scoreScripts", function (e) {
     window.location.href = "/scoreScripts"
   })
 
@@ -364,29 +320,6 @@ $(function () {
         <label class="custom-control-label" for="customSwitches-${id}" data-toggle="tooltip" data-placement="right" title="Tiêu chí có sử dụng tính điểm không?" role="button">
         </label>`
   }
-
-  // event modal
-  $modelEditGroup.on("hidden.bs.modal", function (e) {
-    $formEditGroup.trigger("reset")
-    validatorFormEdit.resetForm()
-
-    $("#name_length").html("0/50")
-    $("#name_length").removeClass("text-danger").addClass("text-muted")
-
-    $("#description_length").html("0/500")
-    $("#description_length").removeClass("text-danger").addClass("text-muted")
-  })
-
-  $modelEditGroup.on("shown.bs.modal", function (e) {
-    $formEditGroup.trigger("reset")
-    validatorFormEdit.resetForm()
-    $inputName.val(group.name)
-    $inputDescription.val(group.description)
-
-    const leaderIds = _.pluck(group.UserGroupMember, "userId")
-    $inputLeader.selectpicker("val", leaderIds)
-    return $inputLeader.selectpicker("refresh")
-  })
 
   $("#form_edit_group #name").on("input", function () {
     let value = $(this).val()

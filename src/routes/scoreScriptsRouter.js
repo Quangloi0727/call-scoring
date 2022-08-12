@@ -6,8 +6,12 @@ const libsPassport = require('../libs/passport')
 router.route('/')
   .get(libsPassport.isAdmin, scoreScriptsController.index)
   .post(scoreScriptsController.create)
+
 router.route('/new')
   .get(libsPassport.isAdmin, scoreScriptsController.new)
+
+router.route('/:id/replication')
+  .get(libsPassport.isAdmin, scoreScriptsController.replication)
 
 router.route('/gets')
   .get(scoreScriptsController.gets)
