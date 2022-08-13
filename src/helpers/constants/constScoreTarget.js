@@ -63,6 +63,11 @@ const CONST_DATA = {
     n: 5,
     t: "Tên điện thoại viên",
     disable: "true"
+  },
+  duration: {
+    n: 6,
+    t: "Thời lượng",
+    disable: "false"
   }
 }
 

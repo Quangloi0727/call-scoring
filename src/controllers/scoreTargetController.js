@@ -28,7 +28,7 @@ const {
   CONST_EFFECTIVE_TIME_TYPE,
   CONST_STATUS,
   CONST_DATA,
-  CONST_COND } = require('../helpers/constants/index')
+  CONST_COND, MESSAGE_ERROR } = require('../helpers/constants/index')
 exports.index = async (req, res, next) => {
   try {
     return _render(req, res, 'scoreTarget/index', {
@@ -53,15 +53,24 @@ exports.new = async (req, res, next) => {
       raw: true,
       nest: true
     })
+
+    let users = await model.User.findAll({ where: { isActive: 1 } })
+    let teams = await model.Team.findAll({})
+    let groups = await model.Group.findAll({})
+
     return _render(req, res, 'scoreTarget/target', {
       titlePage: null,
+      ScoreTarget: [],
       scoreScript: scoreScript.length > 0 ? scoreScript : [],
       CONST_RATING_BY,
       CONST_CALL_TYPE,
       CONST_EFFECTIVE_TIME_TYPE,
       CONST_STATUS,
       CONST_DATA,
-      CONST_COND
+      CONST_COND,
+      users,
+      teams,
+      groups
     })
 
   } catch (error) {
@@ -97,7 +106,9 @@ exports.detail = async (req, res, next) => {
         raw: true,
       })
     ])
-
+    let users = await model.User.findAll({ where: { isActive: 1 } })
+    let teams = await model.Team.findAll({})
+    let groups = await model.Group.findAll({})
     return _render(req, res, 'scoreTarget/target', {
       titlePage: null,
       scoreScript: scoreScript.length > 0 ? scoreScript : [],
@@ -107,7 +118,10 @@ exports.detail = async (req, res, next) => {
       CONST_EFFECTIVE_TIME_TYPE,
       CONST_STATUS,
       CONST_DATA,
-      CONST_COND
+      CONST_COND,
+      users,
+      teams,
+      groups
     })
   } catch (error) {
     console.log(`------- error ------- `)
@@ -238,21 +252,23 @@ exports.update = async (req, res, next) => {
     data.updated = req.user.id
     data.updatedAt = new Date()
 
-    let _data = await model.ScoreTarget.update(
+    await model.ScoreTarget.update(
       data,
       { where: { id: Number(data['edit-id']) } },
       { transaction: transaction })
 
-    // if (_data && _data.id) {
-    //   let arrCond = data.arrCond
-    //   arrCond.map((el) => {
-    //     el.scoreTargetId = _data.id
-    //   })
-    //   let conditions = await model.ScoreTargetCond.bulkCreate(arrCond, { transaction: transaction })
-    //   console.log(conditions)
-    // }
+
+    await model.ScoreTargetCond.destroy({ where: { scoreTargetId: Number(data['edit-id']) } })
+
+    let arrCond = data.arrCond
+    arrCond.map((el) => {
+      el.scoreTargetId = Number(data['edit-id'])
+    })
+    let conditions = await model.ScoreTargetCond.bulkCreate(arrCond, { transaction: transaction })
+    console.log(conditions)
+
     await transaction.commit()
-    return res.status(SUCCESS_200.code).json({ message: _data })
+    return res.status(SUCCESS_200.code).json({ message: MESSAGE_ERROR['QA-006'] })
   } catch (error) {
     console.log('Tạo mục tiêu bị lỗi', error)
     if (transaction) await transaction.rollback()

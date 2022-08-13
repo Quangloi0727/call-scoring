@@ -59,10 +59,17 @@ function bindClick() {
 
     if (check && CONST_DATA[$(this).val()].disable == 'true') {
       console.log($(`#conditionsLogic-${uuidv4[1]}`).val())
+      // disabled ô chọn điều kiện
       $(`#conditionsLogic-${uuidv4[1]}`).prop('disabled', true)
       $(`#conditionsLogic-${uuidv4[1]}`).val("")
-      return $('.selectpicker').selectpicker('refresh')
+
+      // render o input nhập giá trị (value) cho phù hợp với kiểu dữ liệu
+      let conditionsData = $(this).val()
+      renderConditionValue(conditionsData, uuidv4[1])
+      return
     }
+    $(`#select-conditionsValue-${uuidv4[1]}`).selectpicker('hide')
+    $(`#conditionsValue-${uuidv4[1]}`).removeClass('d-none')
 
     $(`#conditionsLogic-${uuidv4[1]}`).prop('disabled', false)
     return $('.selectpicker').selectpicker('refresh')
@@ -72,6 +79,11 @@ function bindClick() {
     e.stopImmediatePropagation()
     console.log($(this).val())
     return
+  })
+  $(document).on('change', '.select-conditionsValue', function (e) {
+    e.stopImmediatePropagation()
+    let uuidv4 = e.target.id.split("select-")
+    return $(`#${uuidv4[1]}`).val($(this).val())
   })
 
   $(document).on('click', '#btn-add-keyword-set', function (e) {
@@ -117,16 +129,16 @@ function getFormData(formId) {
   return data
 }
 
-function renOption(isSelected) {
+function renOption(data) {
   let dataOption = ``
   let option2 = ``
-
+  console.log(data)
   for (const [key, value] of Object.entries(CONST_DATA)) {
-    dataOption += `<option value="${key}" ${(isSelected && isSelected == isSelected.data) ? 'selected' : ''}>${value.t}</option>`
+    dataOption += `<option value="${key}" ${(data && data == data.data) ? 'selected' : ''}>${value.t}</option>`
   }
 
   for (const [key, value] of Object.entries(CONST_COND)) {
-    option2 += `<option value="${key}" ${(isSelected && isSelected == isSelected.cond) ? 'selected' : ''}>${value.t}</option>`
+    option2 += `<option value="${key}" ${(data && data == data.cond) ? 'selected' : ''}>${value.t}</option>`
   }
 
   const indexTarget = window.location.uuidv4()
@@ -145,8 +157,12 @@ function renOption(isSelected) {
         </select>
     </div>
     <div class="col-sm-3">
+        <select class="form-control selectpicker select-conditionsValue" id="select-conditionsValue-${indexTarget}" 
+          name="conditionsValue" data-live-search="true">
+          ${option2}
+        </select>
         <input class="form-control conditionsValue input" id="conditionsValue-${indexTarget}" 
-        value="${(isSelected && isSelected.value) ? isSelected.value : ''}" name="conditionsValue">
+        value="${(data && data.value) ? data.value : ''}" name="conditionsValue">
     </div>
     <div class="col-sm-3">
       <a type="button" class="btn-remove-row text-danger">
@@ -157,6 +173,7 @@ function renOption(isSelected) {
 
   $('.row-conditions').append(html)
   $('.selectpicker').selectpicker('refresh')
+  $(`#select-conditionsValue-${indexTarget}`).selectpicker('hide')
   return html
 }
 
@@ -170,6 +187,39 @@ function renKeywordSet() {
 
   $('.row-keyword-set').append(input)
   return input
+}
+
+function renderConditionValue(conditionsData, uuidv4) {
+  let option = ``
+  if (conditionsData == 'agent') {
+    _users.map((el) => {
+      option += `
+        <option value="${el.id}">${el.firstName + '' + el.lastName}</option>
+      `
+    })
+  } else if (conditionsData == 'team') {
+    _teams.map((el) => {
+      option += `
+        <option value="${el.id}">${el.name}</option>
+      `
+    })
+  } else if (conditionsData == 'direction') {
+    option = `
+      <option value="inbound" ${data == 'outbound' ? '' : 'selected'}>inbound</option>
+      <option value="outbound" ${data == 'outbound' ? 'selected' : ''}>outbound</option>
+    `
+  } else if (conditionsData == 'group') {
+    _groups.map((el) => {
+      option += `
+        <option value="${el.id}">${el.name}</option>
+      `
+    })
+  }
+
+  $(`#select-conditionsValue-${uuidv4}`).html(option)
+  $('.selectpicker').selectpicker('refresh')
+  $(`#select-conditionsValue-${uuidv4}`).selectpicker('show')
+  $(`#conditionsValue-${uuidv4}`).addClass('d-none')
 }
 
 function checkConditionData(element, ratingBy) {
@@ -270,21 +320,17 @@ $(function () {
       cancelLabel: 'Clear'
     }
   })
-  console.log(ScoreTarget)
-  // if (ScoreTarget) {
-  //   _.chain($(`#form_target_general .input`)).reduce(function (memo, el) {
-  //     $(`#form_target_general .input name['${el.name}']`).val(ScoreTarget[`${el.name}`])
 
-  //     // console.log(ScoreTarget[`${memo[el.name]}`])
-  //   })
-  // }
-  for (const [key, value] of Object.entries(ScoreTarget[0])) {
-    $(`#${key}`).val(value)
 
+  if (ScoreTarget && ScoreTarget.length > 0) {
+    for (const [key, value] of Object.entries(ScoreTarget[0])) {
+      $(`#${key}`).val(value)
+
+    }
+    ScoreTarget.map((el) => {
+      renOption(el.ScoreTargetCond)
+    })
   }
-  ScoreTarget.map((el) => {
-    renOption(el.ScoreTargetCond)
-  })
 
   bindClick()
   // $form_target_general.valid()
