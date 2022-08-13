@@ -248,12 +248,8 @@ exports.update = async (req, res, next) => {
       data.effectiveTimeEnd = moment(string[1]).endOf('day')
     } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
 
-    if (name) {
-      let foundUser = await model.ScoreTarget.findOne({ where: { name: name.toLowerCase(), status: 1 } })
-      if (foundUser && data['edit-id'] != foundUser.id) return res.status(ERR_400.code).json({
-        message: 'Tên mục tiêu đã được sử dụng!',
-      })
-    }
+    const findSS = await model.ScoreTarget.findOne({ where: { name: name, id: { [Op.ne]: data['edit-id'] } } })
+    if (findSS) throw new Error(MESSAGE_ERROR['QA-002'])
 
     data.updated = req.user.id
 
