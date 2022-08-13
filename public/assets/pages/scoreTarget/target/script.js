@@ -3,11 +3,11 @@ const $form_target_general = $('#form_target_general')
 
 function bindClick() {
   // xử lí sự kiện khi clich để chọn thời gian áp dụng cho cuộc gọi
-  $('input[name="timeFor"]').on('apply.daterangepicker', function (ev, picker) {
+  $('input[name="callTime"]').on('apply.daterangepicker', function (ev, picker) {
     $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'))
   })
 
-  $('input[name="timeFor"]').on('cancel.daterangepicker', function (ev, picker) {
+  $('input[name="callTime"]').on('cancel.daterangepicker', function (ev, picker) {
     $(this).val('')
   })
 
@@ -25,7 +25,6 @@ function bindClick() {
     let data = $(this).val()
     console.log(data)
     if (data == 4) {
-      console.log("aaaaaaaaa")
       $('.effectiveTimeRange').removeClass('d-none')
       $('.effectiveTimeStart').addClass('d-none')
       return
@@ -294,7 +293,6 @@ const form_target_general = $form_target_general.validate({
     })
     console.log(arr)
     formData.arrCond = arr
-    console.log($('#btn_save_scoreTarget').attr('data-id'))
     if ($('#btn_save_scoreTarget').attr('data-id')) {
       formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
       saveData(formData, 'PUT')
@@ -307,6 +305,13 @@ const form_target_general = $form_target_general.validate({
 
 $(function () {
   // set giá trị mặc định cho các input date
+  $('input[name="callTime"]').daterangepicker({
+    autoUpdateInput: false,
+    locale: {
+      cancelLabel: 'Clear'
+    }
+  })
+
   $('input[name="timeFor"]').daterangepicker({
     autoUpdateInput: false,
     locale: {
@@ -325,8 +330,18 @@ $(function () {
   if (ScoreTarget && ScoreTarget.length > 0) {
     for (const [key, value] of Object.entries(ScoreTarget[0])) {
       $(`#${key}`).val(value)
-
+      if (ScoreTarget[0].effectiveTimeStart && ScoreTarget[0].effectiveTimeType != 4) {
+        $(`#effectiveTimeStart`).val(moment(ScoreTarget[0].effectiveTimeStart).format('YYYY-MM-DD'))
+      } else if (ScoreTarget[0].effectiveTimeType == 4) {
+        $('.effectiveTimeRange').removeClass('d-none')
+        $('.effectiveTimeStart').addClass('d-none')
+        $('#effectiveTime').daterangepicker({ startDate: moment(ScoreTarget[0].effectiveTimeStart).format('MM/DD/YYYY'), endDate: moment(ScoreTarget[0].effectiveTimeEnd).format('MM/DD/YYYY') })
+      }
+      if (ScoreTarget[0].callEndTime && ScoreTarget[0].callStartTime) {
+        $('#callTime').daterangepicker({ startDate: moment(ScoreTarget[0].callEndTime).format('MM/DD/YYYY'), endDate: moment(ScoreTarget[0].callEndTime).format('MM/DD/YYYY') })
+      }
     }
+    console.log(ScoreTarget)
     ScoreTarget.map((el) => {
       renOption(el.ScoreTargetCond)
     })

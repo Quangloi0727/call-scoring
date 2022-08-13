@@ -60,7 +60,7 @@
             <label for="callTime" class="col-sm-3 form-check-label">Áp dụng cho cuộc gọi trong</label>
             <div class="col-sm-6 input-group">
                 <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
-                    title="Chọn khoảng thời gian" name="callTime">
+                    title="Chọn khoảng thời gian" id="callTime" name="callTime">
                 <div class="input-group-append">
                     <div class="input-group-text"><i class="far fa-calendar"></i></div>
                 </div>
@@ -79,10 +79,11 @@
                 </select>
             </div>
             <div class="col-sm-3 effectiveTimeStart">
-                <input type="date" class="form-control input" name="effectiveTimeStart" title="Chọn thời gian bắt đầu">
+                <input type="date" class="form-control input" id="effectiveTimeStart" name="effectiveTimeStart"
+                    title="Chọn thời gian bắt đầu">
             </div>
             <div class="col-sm-3 input-group effectiveTimeRange d-none">
-                <input type="text" value="" class="input form-control" name="effectiveTime"
+                <input type="text" value="" class="input form-control" name="effectiveTime" id="effectiveTime"
                     placeholder="VD: 08/10/2022 - 08/10/2022" title="Chọn khoảng thời gian">
                 <div class="input-group-append">
                     <div class="input-group-text"><i class="far fa-calendar"></i></div>

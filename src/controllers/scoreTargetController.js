@@ -1,6 +1,6 @@
 const { Op, QueryTypes } = require('sequelize')
 const pagination = require('pagination')
-
+const moment = require('moment')
 const titlePage = 'Mục tiêu chấm điểm'
 const {
   SUCCESS_200,
@@ -8,19 +8,9 @@ const {
   ERR_400,
   ERR_403
 } = require("../helpers/constants/statusCodeHTTP")
-const SOURCE_NAME = {
-  oreka: {
-    code: 'ORK',
-    text: 'Orec'
-  },
-  fs: {
-    code: 'FS',
-    text: 'Freeswitch'
-  },
-}
 
 const model = require('../models')
-const moment = require('moment')
+
 const {
   headerDefault,
   CONST_RATING_BY,
@@ -38,8 +28,8 @@ exports.index = async (req, res, next) => {
       headerDefault: headerDefault
     })
   } catch (error) {
-    console.log(`------- error scoreTargetController index ------- `)
-    console.log(error)
+    _logger.error(`------- error scoreTargetController index ------- `)
+    _logger.error(error)
     return next(error)
   }
 }
@@ -74,9 +64,8 @@ exports.new = async (req, res, next) => {
     })
 
   } catch (error) {
-    console.log(`------- error ------- `)
-    console.log(error)
-    console.log(`------- error ------- `)
+    _logger.error(`------- error ------- `)
+    _logger.error("render ds mục tiêu chấm điểm lỗi", error)
     return next(error)
   }
 }
@@ -124,9 +113,8 @@ exports.detail = async (req, res, next) => {
       groups
     })
   } catch (error) {
-    console.log(`------- error ------- `)
-    console.log(error)
-    console.log(`------- error ------- `)
+    _logger.error(`------- error ------- `)
+    _logger.error(error)
     return next(error)
   }
 }
@@ -174,41 +162,50 @@ exports.gets = async (req, res, next) => {
       rowsPerPage: limit,
       totalResult: count,
     })
-
-    return res.status(SUCCESS_200.code).json({
-      message: 'Success!',
-      data: rows || [],
-      paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
+    return res.json({
+      code: SUCCESS_200.code, data: rows || [],
+      paginator: {
+        ...paginator.getPaginationData(),
+        rowsPerPage: limit
+      }
     })
   } catch (error) {
-    console.log(`------- error ------- `)
-    console.log(error)
-    console.log(`------- error ------- `)
-    return res.status(ERR_500.code).json({ message: error.message })
+    _logger.error("Lấy danh sách Mục tiêu  chấm điểm lỗi", error)
+    return res.json({ code: ERR_500.code, message: error.message })
   }
 }
 
 exports.create = async (req, res, next) => {
-  console.log(req)
   let transaction
 
   try {
 
-    const data = req.body
+    let data = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart } = req.body
     transaction = await model.sequelize.transaction()
 
-    if (data.callTime) {
-      let string = data.callTime.split('-')
+    if (callTime) {
+      let string = callTime.split(' - ')
+
+      data.callStartTime = moment(string[0]).startOf('day')
+      data.callEndTime = moment(string[1]).endOf('day')
     }
-    if (data.name) {
-      let foundUser = await model.ScoreTarget.findOne({ where: { name: data.name.toLowerCase(), status: 1 }, raw: true, })
+    if (effectiveTime && effectiveTimeType == "4") {
+      let string = effectiveTime.split(' - ')
+
+      data.effectiveTimeStart = moment(string[0]).startOf('day')
+      data.effectiveTimeEnd = moment(string[1]).endOf('day')
+    } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
+
+
+    if (name) {
+      let foundUser = await model.ScoreTarget.findOne({ where: { name: name.toLowerCase(), status: 1 }, raw: true, })
       if (foundUser) return res.status(ERR_400.code).json({
         message: 'Tên mục tiêu đã được sử dụng!',
       })
     }
 
     data.created = req.user.id
-    data.createdAt = new Date()
 
     let _data = await model.ScoreTarget.create(data, { transaction: transaction })
 
@@ -218,39 +215,47 @@ exports.create = async (req, res, next) => {
         el.scoreTargetId = _data.id
       })
       let conditions = await model.ScoreTargetCond.bulkCreate(arrCond, { transaction: transaction })
-      console.log(conditions)
+      _logger.info(conditions)
     }
     await transaction.commit()
     return res.status(SUCCESS_200.code).json({ message: _data })
   } catch (error) {
-    console.log('Tạo mục tiêu bị lỗi', error)
+    _logger.error('Tạo mục tiêu bị lỗi', error)
     if (transaction) await transaction.rollback()
     return res.status(ERR_500.code).json({ message: error.message })
   }
 }
 
 exports.update = async (req, res, next) => {
-  console.log(req)
   let transaction
 
   try {
 
-    const data = req.body
-
+    let data = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart } = req.body
     transaction = await model.sequelize.transaction()
 
-    if (data.callTime) {
-      let string = data.callTime.split('-')
+    if (callTime) {
+      let string = callTime.split(' - ')
+
+      data.callStartTime = moment(string[0]).startOf('day')
+      data.callEndTime = moment(string[1]).endOf('day')
     }
-    if (data.name) {
-      let foundUser = await model.ScoreTarget.findOne({ where: { name: data.name.toLowerCase(), status: 1 } })
+    if (effectiveTime && effectiveTimeType == "4") {
+      let string = effectiveTime.split(' - ')
+
+      data.effectiveTimeStart = moment(string[0]).startOf('day')
+      data.effectiveTimeEnd = moment(string[1]).endOf('day')
+    } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
+
+    if (name) {
+      let foundUser = await model.ScoreTarget.findOne({ where: { name: name.toLowerCase(), status: 1 } })
       if (foundUser && data['edit-id'] != foundUser.id) return res.status(ERR_400.code).json({
         message: 'Tên mục tiêu đã được sử dụng!',
       })
     }
 
     data.updated = req.user.id
-    data.updatedAt = new Date()
 
     await model.ScoreTarget.update(
       data,
@@ -265,12 +270,11 @@ exports.update = async (req, res, next) => {
       el.scoreTargetId = Number(data['edit-id'])
     })
     let conditions = await model.ScoreTargetCond.bulkCreate(arrCond, { transaction: transaction })
-    console.log(conditions)
-
+    _logger.info(conditions)
     await transaction.commit()
     return res.status(SUCCESS_200.code).json({ message: MESSAGE_ERROR['QA-006'] })
   } catch (error) {
-    console.log('Tạo mục tiêu bị lỗi', error)
+    _logger.error('Tạo mục tiêu bị lỗi', error)
     if (transaction) await transaction.rollback()
     return res.status(ERR_500.code).json({ message: error.message })
   }

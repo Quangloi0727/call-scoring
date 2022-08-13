@@ -13,21 +13,14 @@ function findData(page, formQuery) {
   queryData.limit = $('.sl-limit-page').val() || 10
   $loadingData.show()
 
-  $.ajax({
-    type: 'GET',
-    url: '/scoreTarget/gets?' + $.param(queryData),
-    cache: 'false',
-    success: function (result) {
-      $loadingData.hide()
-      console.log(result.data)
-      createTable(result.data)
-      return $('#paging_table').html(window.location.CreatePaging(result.paginator))
-    },
-    error: function (error) {
-      $loadingData.hide()
+  _AjaxGetData('scoreTarget/gets?' + $.param(queryData), 'GET', function (resp) {
+    console.log(resp)
+    if (resp.code != 200) {
+      return toastr.error(resp.message)
+    }
 
-      return toastr.error(JSON.parse(error.responseText).message)
-    },
+    createTable(resp.data)
+    return $('#paging_table').html(window.location.CreatePaging(resp.paginator))
   })
 }
 
@@ -43,7 +36,7 @@ function createTable(data) {
         <td class="text-center"></td>
         <td class="text-center">${renStatus(item.status)}</td>
         <td class="text-center">${item.description || ''}</td>
-        <td class="text-center">${item.createdAt || ''}</td>
+        <td class="text-center">${moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY') || ''}</td>
         <td class="text-center">${item.userCreate.userName || ''}</td>
         <td class="text-center">${item.updated || ''}</td>
         <td class="text-center">${item.userUpdate.userName || ''}</td>
