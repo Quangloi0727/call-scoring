@@ -37,8 +37,7 @@ function bindClick() {
 
   //btn thêm điều kiện ở tap chung
   $(document).on('click', '#btn-add-conditions', function () {
-    renOption()
-    return
+    return renOption()
   })
 
   // remove nội dung của row
@@ -46,6 +45,7 @@ function bindClick() {
     $(this).parent().parent().remove()
   })
 
+  // validate ô input Dữ liệu của bộ  điều kiện lọc
   $(document).on('change', '.conditionsData', function (e) {
     e.stopImmediatePropagation()
 
@@ -72,6 +72,10 @@ function bindClick() {
     e.stopImmediatePropagation()
     console.log($(this).val())
     return
+  })
+
+  $(document).on('click', '#btn-add-keyword-set', function (e) {
+    return renKeywordSet()
   })
 
 }
@@ -154,6 +158,18 @@ function renOption(isSelected) {
   $('.row-conditions').append(html)
   $('.selectpicker').selectpicker('refresh')
   return html
+}
+
+function renKeywordSet() {
+  let input = ` <div class="col-12">
+    <label style=" font-weight: normal;"> Bộ từ khóa
+      <span class="text-danger">(*)</span>
+    </label>
+    <input type="text" class="form-control input" id="nameTargetAuto" name="nameTargetAuto">
+  </div>`
+
+  $('.row-keyword-set').append(input)
+  return input
 }
 
 function checkConditionData(element, ratingBy) {
@@ -285,5 +301,6 @@ $(window).on('beforeunload', function () {
   $(document).off('change', '.conditionsData')
   $(document).off('change', '.conditionsLogic')
   $(document).off('click', '.conditionsData .dropdown-toggle')
+  $(document).off('click', '#btn-add-keyword-set')
 
 })
