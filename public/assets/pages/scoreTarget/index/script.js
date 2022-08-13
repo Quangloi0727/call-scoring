@@ -1,6 +1,5 @@
 const $formSearch = $('#form_search')
-const $buttonSearchGroup = $('#search_group')
-const $btnAddScoreScript = $('#btnAddScoreScript')
+const $buttonSearch = $('#search_group')
 const $loadingData = $('.page-loader')
 
 function findData(page, formQuery) {
@@ -39,7 +38,7 @@ function createTable(data) {
     html += `
       <tr>
         <td class="text-center">
-          <a href=/scorescripts/detail/${item.id}>${item.name}</a>
+          <a href=/scoreTarget/detail/${item.id}>${item.name}</a>
         </td>
         <td class="text-center"></td>
         <td class="text-center">${renStatus(item.status)}</td>
@@ -79,7 +78,7 @@ $(function () {
   })
 
   //event tìm kiếm
-  $buttonSearchGroup.on('click', function () {
+  $buttonSearch.on('click', function () {
     const pageNumber = 1
     let formQuery = _.chain($(`#form_search .input`)).reduce(function (memo, el) {
       let value = $(el).val()
@@ -89,9 +88,6 @@ $(function () {
     return findData(pageNumber, formQuery)
   })
 
-  $btnAddScoreScript.on('click', function () {
-    window.location.replace('/scoreScripts/new')
-  })
 
   $('#input_search').keypress(function (e) {
     let key = e.which
@@ -106,19 +102,6 @@ $(function () {
       return memo
     }, {}).value()
     return findData(pageNumber, formQuery)
-  })
-
-  $('#form_input_group #name').on('input', function () {
-    let value = $(this).val()
-
-    $('#name_length').html(`${value.length}/50`)
-  })
-
-  $('#form_input_group #description').on('input', function () {
-    let value = $(this).val()
-
-    $('#description_length').html(`${value.length}/500`)
-
   })
 
   $(document).on('change', '.sl-limit-page', function () {

@@ -25,7 +25,7 @@ router.use('/ruleDetails', isLoggedIn, ruleDetailsRouter)
 router.use('/scoreScripts', isLoggedIn, scoreScriptsRouter)
 router.use('/tenant', tenantRouter)
 router.use('/scoreMission', isLoggedIn, scoreMissionRouter)
-router.use('/scoreTarget', isLoggedIn, scoreTargetRouter)
+router.use('/scoreTarget', scoreTargetRouter)
 
 router.use('/additional-field', isLoggedIn, additionalFieldRouter)
 module.exports = router

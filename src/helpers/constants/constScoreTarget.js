@@ -36,12 +36,12 @@ const CONST_STATUS = {
 const CONST_DATA = {
   caller: {
     n: 0,
-    t: "Số gọi đến",
+    t: "Số gọi đi",
     disable: "false"
   },
   called: {
     n: 1,
-    t: "Số gọi ",
+    t: "Số gọi đến",
     disable: "false"
   },
   group: {
@@ -50,17 +50,17 @@ const CONST_DATA = {
     disable: "true"
   },
   team: {
-    n: 0,
+    n: 3,
     t: "Đội ngũ",
     disable: "true"
   },
   direction: {
-    n: 1,
+    n: 4,
     t: "Hướng gọi",
     disable: "true"
   },
   agent: {
-    n: 2,
+    n: 5,
     t: "Tên điện thoại viên",
     disable: "true"
   }

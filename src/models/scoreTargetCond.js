@@ -14,14 +14,17 @@ class ScoreTargetCond extends Model {
           },
           allowNull: false
         },
+        conditionSearch: {
+          type: DataTypes.STRING,   //
+        },
         data: {
-          type: DataTypes.INTEGER,   // đối tượng được đánh giá  0:Điện thoại viên 1:Đội ngũ       5:Toàn hệ thống
+          type: DataTypes.STRING,   //
         },
         cond: {
-          type: DataTypes.INTEGER,   //Điểm liệt của chấm điểm tự động
+          type: DataTypes.STRING,   //
         },
         value: {
-          type: DataTypes.INTEGER,  // số lượng cuộc gọi mỗi đối tượng obj
+          type: DataTypes.STRING,  // 
         }
       },
       {

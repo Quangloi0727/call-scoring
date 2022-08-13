@@ -5,6 +5,8 @@
   var CONST_STATUS = JSON.parse('<%- JSON.stringify(CONST_STATUS)%>')
   var CONST_DATA = JSON.parse('<%- JSON.stringify(CONST_DATA)%>')
   var CONST_COND = JSON.parse('<%- JSON.stringify(CONST_COND)%>')
+  var ScoreTarget = JSON.parse('<%- JSON.stringify(ScoreTarget)%>')
+
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -43,7 +45,9 @@
 
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-                  <button type="submit" id="btn_save_scoreTarget" class="btn btn-primary">Lưu</button>
+                  <button type="submit" id="btn_save_scoreTarget"
+                    data-id="<%- ScoreTarget[0] ? ScoreTarget[0].id : 'isCreate' %>" class="btn
+                    btn-primary">Lưu</button>
                 </div>
 
               </div>

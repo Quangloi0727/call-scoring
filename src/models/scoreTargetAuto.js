@@ -22,8 +22,8 @@ class ScoreTargetAuto extends Model {
           type: DataTypes.BOOLEAN,
           defaultValue: false  //Điểm liệt của chấm điểm tự động
         },
-        numberOfCall: {
-          type: DataTypes.INTEGER,  // số lượng cuộc gọi mỗi đối tượng obj
+        nameTargetAuto: {
+          type: DataTypes.STRING,  // 
         }
       },
       {
