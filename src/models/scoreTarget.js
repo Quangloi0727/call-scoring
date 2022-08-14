@@ -114,7 +114,7 @@ class ScoreTarget extends Model {
           beforeCreate: handleBeforeCreate,
         },
         // If don't want updatedAt
-        updatedAt: false,
+        updatedAt: true,
       }
     )
   }
