@@ -1,11 +1,12 @@
 const moment = require("moment")
 const { Model, DataTypes } = require("sequelize")
+const { getLengthField } = require("../helpers/functions");
 class Criteria extends Model {
   static init(sequelize) {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING(65535),
+          type: DataTypes.STRING(getLengthField('name')),
           allowNull: false
         },
         scoreMax: {
