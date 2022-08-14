@@ -18,5 +18,7 @@ router.route('/detail/:id')
 router.route('/gets')
   .get(scoreTargetController.gets)
 
+router.route('/:id/updateStatus')
+  .put(scoreTargetController.updateStatus)
 
 module.exports = router

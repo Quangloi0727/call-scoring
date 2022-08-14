@@ -129,7 +129,7 @@ const STATUS_SCORE_SCRIPT = {
 
 const FIELD_CONFIG = {
   name: {
-    default: 100
+    default: 500
   },
   description: {
     default: 500

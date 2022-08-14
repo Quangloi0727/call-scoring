@@ -119,8 +119,12 @@ const CONST_COND = {
   }
 }
 
+const scoreTargetNotFound = 'Không tìm thấy mục tiêu chấm điểm vui lòng thử lại sau !'
+const statusUpdateFail = 'Trạng thái chuyển không hợp lệ !'
 
 module.exports = {
+  scoreTargetNotFound,
+  statusUpdateFail,
   CONST_RATING_BY,
   CONST_CALL_TYPE,
   CONST_EFFECTIVE_TIME_TYPE,

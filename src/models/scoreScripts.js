@@ -8,7 +8,7 @@ class ScoreScript extends Model {
     return super.init(
       {
         name: {
-          type: DataTypes.STRING(65535),
+          type: DataTypes.STRING(getLengthField('name')),
           allowNull: false
         },
         description: {
