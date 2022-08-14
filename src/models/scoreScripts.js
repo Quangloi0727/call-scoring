@@ -83,8 +83,8 @@ class ScoreScript extends Model {
         hooks: {
           beforeCreate: handleBeforeCreate,
         },
-        // // If don't want updatedAt
-        // updatedAt: false,
+        // If don't want updatedAt
+        updatedAt: false,
       }
     )
   }
@@ -103,6 +103,11 @@ class ScoreScript extends Model {
     models.ScoreScript.hasMany(models.CriteriaGroup, {
       foreignKey: "scoreScriptId",
       as: "CriteriaGroup",
+    })
+
+    models.ScoreScript.hasMany(models.ScoreTarget, {
+      foreignKey: "scoreScriptId",
+      as: "scoreScript",
     })
 
   }

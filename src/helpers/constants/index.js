@@ -6,4 +6,5 @@ module.exports = {
     ...require("./statusField"),
     ...require("./special.character"),
     ...require("./fieldRecording"),
+    ...require("./constScoreTarget"),
 }

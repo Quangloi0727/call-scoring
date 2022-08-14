@@ -1,0 +1,93 @@
+<script>
+  var scoreScript = JSON.parse('<%- JSON.stringify(scoreScript)%>')
+  var CONST_RATING_BY = JSON.parse('<%- JSON.stringify(CONST_RATING_BY)%>')
+  var CONST_CALL_TYPE = JSON.parse('<%- JSON.stringify(CONST_CALL_TYPE)%>')
+  var CONST_STATUS = JSON.parse('<%- JSON.stringify(CONST_STATUS)%>')
+  var CONST_DATA = JSON.parse('<%- JSON.stringify(CONST_DATA)%>')
+  var CONST_COND = JSON.parse('<%- JSON.stringify(CONST_COND)%>')
+  var ScoreTarget = JSON.parse('<%- JSON.stringify(ScoreTarget)%>')
+  var _users = JSON.parse('<%- JSON.stringify(users)%>')
+  var _teams = JSON.parse('<%- JSON.stringify(teams)%>')
+  var _groups = JSON.parse('<%- JSON.stringify(groups)%>')
+
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+<div class="wrapper">
+  <div>
+    <section class="content-header">
+      <div class="container-fluid">
+        <div class="row mb-2">
+          <div class="col-sm-6">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="/scoreTarget">
+                  <h5>&lsaquo; Quản lí mục tiêu</h5>
+                </a>
+              </li>
+            </ol>
+          </div>
+
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <form id="form_target_general" onsubmit="return false">
+              <div class="row">
+
+                <div class="form-group col-sm-3">
+                  <input type="text" class="form-control input" id="name" name="name" placeholder="Mục tiêu" />
+                </div>
+
+                <div class="form-group col-sm-3 ml-auto text-left">
+                  <button type="button"
+                    class="btn btn-primary <%- ScoreTarget[0] &&  ScoreTarget[0].status != '0' ? 'd-none' : '' %>"
+                    data-dismiss="modal">Phân công</button>
+                  <button type="button"
+                    class="btn btn-primary <%- ScoreTarget[0] &&  ScoreTarget[0].status != '0' ? 'd-none' : '' %>">Nhân
+                    bản</button>
+                </div>
+
+                <div class="form-group col-sm-6 ml-auto text-right">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+                  <button type="submit" id="btn_save_scoreTarget"
+                    data-id="<%- ScoreTarget[0] ? ScoreTarget[0].id : '' %>" class="btn btn-primary">Lưu</button>
+                </div>
+
+              </div>
+
+              <ul class="nav" id="tablist" role="tablist">
+                <li class="nav-item">
+                  <a class="nav-link active" id="tab-score-script-general-tab" data-toggle="pill"
+                    href="#tab-score-target-general" role="tab" aria-controls="tab-score-script-general"
+                    aria-selected="true">Chung</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link " id="tab-score-target-auto-tab" data-toggle="pill" href="#tab-score-target-auto"
+                    role="tab" aria-controls="tab-score-script-script" aria-selected="false">Chấm tự động</a>
+                </li>
+              </ul>
+
+              <div class="tab-content" id="tab-score-script-tabContent">
+
+                <!-- tab chung -->
+                <%- include('./tab.target.general.ejs', { scoreScript , CONST_RATING_BY , CONST_CALL_TYPE,
+                  CONST_STATUS}) %>
+                  <!-- end tab chung -->
+
+                  <!-- tab auto -->
+                  <%- include('./tap.target.auto.ejs') %>
+                    <!-- end tab auto -->
+
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>

@@ -1,4 +1,4 @@
-const { Model, DataTypes, Op } = require('sequelize');
+const { Model, DataTypes, Op } = require('sequelize')
 
 class User extends Model {
   static init(sequelize) {
@@ -45,29 +45,33 @@ class User extends Model {
           beforeCreate: handleBeforeCreate
         }
       }
-    );
+    )
   }
 
   static associate(models) {
-    models.User.hasMany(models.Team, { foreignKey: 'created' });
+    models.User.hasMany(models.Team, { foreignKey: 'created' })
 
-    models.User.hasMany(models.UserRole, { foreignKey: 'userId', as: 'roles' });
+    models.User.hasMany(models.UserRole, { foreignKey: 'userId', as: 'roles' })
 
-    models.User.hasMany(models.User, { foreignKey: 'created' });
-    models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' });
+    models.User.hasMany(models.User, { foreignKey: 'created' })
+    models.User.belongsTo(models.User, { as: 'userCreate', foreignKey: 'created' })
 
-    models.User.hasMany(models.AgentTeamMember, { foreignKey: 'userId', as: 'team' });
-    models.User.hasMany(models.UserGroupMember, { foreignKey: 'userId', as: 'UserGroupMember' });
+    models.User.hasMany(models.AgentTeamMember, { foreignKey: 'userId', as: 'team' })
+    models.User.hasMany(models.UserGroupMember, { foreignKey: 'userId', as: 'UserGroupMember' })
+
+    models.User.hasMany(models.ScoreTarget, { foreignKey: 'created', as: 'UserCreated' })
+    models.User.hasMany(models.ScoreTarget, { foreignKey: 'updated', as: 'UserUpdated' })
+
   }
 }
 
 async function handleBeforeCreate(user, option) {
   const userNameFound = await User.findOne({
     where: { userName: { [Op.eq]: user.userName.toString() } }
-  });
+  })
 
   if (userNameFound) {
-    throw new Error('Tên đăng nhập đã được sử dụng!');
+    throw new Error('Tên đăng nhập đã được sử dụng!')
   }
 
   const extensionFound = await User.findOne({
@@ -77,11 +81,11 @@ async function handleBeforeCreate(user, option) {
         { isActive: { [Op.eq]: 1 } }
       ]
     }
-  });
+  })
 
   if (extensionFound) {
     throw new Error('Extension đã được sử dụng!')
   }
 }
 
-module.exports = User;
+module.exports = User

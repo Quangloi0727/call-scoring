@@ -43,6 +43,7 @@
   <!-- Dropzone -->
   <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
   <!-- Style global -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
   <link rel="stylesheet" href="/dist/css/style.css">
   <!-- Style current page -->
   <link href="/assets/pages/<%- page %>/style.css" class="dynamic" rel="stylesheet">
@@ -58,52 +59,52 @@
 
       <!-- Sidebar (Begin) -->
       <%- include('../partials/sidebar') %>
-    <!-- Sidebar (End) -->
+        <!-- Sidebar (End) -->
 
 
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
 
-      <!-- Content Header (Begin) -->
-      <div class="content-header <%= titlePage ? '' :'d-none' %>">
-        <div class="container-fluid">
-          <div class="row mb-2">
-            <div class="col-sm-6">
-              <h1 class="m-0">
-                <%= titlePage ? titlePage :'' %>
-              </h1>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Content Header (End) -->
-
-      <!-- Main content (Begin) -->
-      <section class="content">
-        <div class="container-fluid">
-
-          <%- include('../layout/' + page) %>
-
-            <div class="page-loader">
-              <div class="preloader pls-blue">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="sr-only">Loading...</span>
+          <!-- Content Header (Begin) -->
+          <div class="content-header <%= titlePage ? '' :'d-none' %>">
+            <div class="container-fluid">
+              <div class="row mb-2">
+                <div class="col-sm-6">
+                  <h1 class="m-0">
+                    <%= titlePage ? titlePage :'' %>
+                  </h1>
                 </div>
               </div>
             </div>
+          </div>
+          <!-- Content Header (End) -->
+
+          <!-- Main content (Begin) -->
+          <section class="content">
+            <div class="container-fluid">
+
+              <%- include('../layout/' + page) %>
+
+                <div class="page-loader">
+                  <div class="preloader pls-blue">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="sr-only">Loading...</span>
+                    </div>
+                  </div>
+                </div>
+
+            </div>
+          </section>
+          <!-- Main content (End) -->
 
         </div>
-      </section>
-      <!-- Main content (End) -->
+        <!-- /.content-wrapper -->
 
-    </div>
-    <!-- /.content-wrapper -->
-
-    <!-- Control Sidebar -->
-    <aside class="control-sidebar control-sidebar-dark">
-      <!-- Control sidebar content goes here -->
-    </aside>
-    <!-- /.control-sidebar -->
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar control-sidebar-dark">
+          <!-- Control sidebar content goes here -->
+        </aside>
+        <!-- /.control-sidebar -->
   </div>
   <!-- ./wrapper -->
 
@@ -129,7 +130,6 @@
   <!-- <script src="/plugins/bootstrap-switch/js/bootstrap4-toggle.min.js"></script> -->
   <!-- AdminLTE App -->
   <script src="/dist/js/adminlte.js"></script>
-
   <!-- jquery-validation -->
   <!-- <script src="/public/plugins/jquery-validation/jquery.validate.min.js"></script>
   <script src="/public/plugins/jquery-validation/additional-methods.min.js"></script> -->
@@ -152,7 +152,7 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
 
 
-<!-- <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+  <!-- <script src="/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
 <script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
 <script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
@@ -168,7 +168,6 @@
   <!--  global function common -->
   <script src="/dist/js/global.js"></script>
   <script type="text/javascript" src="/assets/js/global.js"></script>
-
   <script src="/assets/pages/<%- page %>/script.js"></script>
 
 </body>
