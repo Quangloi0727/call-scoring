@@ -21,7 +21,7 @@ const {
   CONST_STATUS,
   CONST_DATA,
   CONST_COND, MESSAGE_ERROR } = require('../helpers/constants/index')
-  
+
 exports.index = async (req, res, next) => {
   try {
     return _render(req, res, 'scoreTarget/index', {
@@ -65,7 +65,8 @@ exports.new = async (req, res, next) => {
       CONST_COND,
       users,
       teams,
-      groups
+      groups,
+      isEdit: false
     })
 
   } catch (error) {
@@ -129,7 +130,8 @@ exports.detail = async (req, res, next) => {
       CONST_COND,
       users,
       teams,
-      groups
+      groups,
+      isEdit: true
     })
   } catch (error) {
     _logger.error(`------- error ------- `)
