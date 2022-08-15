@@ -80,7 +80,6 @@ function bindClick() {
   // chọn loại thời gian hiệu lực, show các input tương ứng
   $(document).on('change', '#effectiveTimeType', function () {
     let data = $(this).val()
-    console.log(data)
     if (data == 4) {
       $('.effectiveTimeRange').removeClass('d-none')
       $('.effectiveTimeStart').addClass('d-none')
@@ -93,7 +92,10 @@ function bindClick() {
 
   //btn thêm điều kiện ở tap chung
   $(document).on('click', '#btn-add-conditions', function () {
-    return renOption()
+    let dataDefault = {}
+    dataDefault.data = 'caller'
+    dataDefault.cond = 'contains'
+    return renOption(dataDefault)
   })
 
   // remove nội dung của row
@@ -101,30 +103,35 @@ function bindClick() {
     $(this).parent().parent().remove()
   })
 
-  // validate ô input Dữ liệu của bộ  điều kiện lọc
+  // validate ô input "Dữ liệu"
   $(document).on('change', '.conditionsData', function (e) {
     e.stopImmediatePropagation()
 
-    // check giá trị của field Đánh giá theo đối tượng để show thông báo
+    // check giá trị của field "Đánh giá theo đối tượng" để show thông báo
     let ratingBy = $('#ratingBy').val()
     checkConditionData($(this), ratingBy)
 
+    let conditionsData = $(this).val()
 
-    let check = Object.keys(CONST_DATA).find(key => key == $(this).val())
+    let check = Object.keys(CONST_DATA).find(key => key == conditionsData)
     let uuidv4 = e.target.id.split("conditionsData-")
 
     if (check && CONST_DATA[$(this).val()].disable == 'true') {
-      console.log($(`#conditionsLogic-${uuidv4[1]}`).val())
+
       // disabled ô chọn điều kiện
       $(`#conditionsLogic-${uuidv4[1]}`).prop('disabled', true)
       $(`#conditionsLogic-${uuidv4[1]}`).val("")
 
-      // render o input nhập giá trị (value) cho phù hợp với kiểu dữ liệu
-      let conditionsData = $(this).val()
-      renderConditionValue(conditionsData, uuidv4[1])
-      return
+      // render o input "Giá trị" (value) cho phù hợp với ô input "Dữ liệu"
+      let option = optionConditionValue(conditionsData)
+      $(`#select-conditionsValue-${uuidv4[1]}`).html(option)
+      $(`#select-conditionsValue-${uuidv4[1]}`).selectpicker('show')
+      $(`#conditionsValue-${uuidv4[1]}`).addClass('d-none')
+      return $('.selectpicker').selectpicker('refresh')
+
     }
     $(`#select-conditionsValue-${uuidv4[1]}`).selectpicker('hide')
+    $(`#conditionsValue-${uuidv4[1]}`).val("")
     $(`#conditionsValue-${uuidv4[1]}`).removeClass('d-none')
 
     $(`#conditionsLogic-${uuidv4[1]}`).prop('disabled', false)
@@ -173,6 +180,7 @@ function saveData(formData, method) {
   })
 }
 
+//hàm lấy dữ liệu theo ID form
 function getFormData(formId) {
   let data = {}
 
@@ -185,38 +193,109 @@ function getFormData(formId) {
   return data
 }
 
+// hàm lấy dữ liệu Điều kiện ở tap chung
+function getArrCond(conditionSearch) {
+
+  let conditionsLogic = []
+  $("select[name='conditionsLogic']").each(function (i) {
+    conditionsLogic.push($(this).val())
+  })
+
+  let conditionsData = []
+  $("select[name='conditionsData']").each(function () {
+    conditionsData.push($(this).val())
+  })
+
+  let conditionsValue = []
+  $("input[name='conditionsValue']").each(function () {
+    conditionsValue.push($(this).val())
+  })
+  // map các dữ liệu thành mảng
+  let arr = []
+  conditionsLogic.map((el, i) => {
+    arr.push({
+      conditionSearch: conditionSearch,
+      data: conditionsData[i],
+      cond: el,
+      value: conditionsValue[i]
+    })
+  })
+  return arr
+}
+
+// hàm lấy dữ liệu ở tap tự độngs
+function getTargetAutoData() {
+  // handle dữ liệu cho tap mục tiêu tự động
+  let nameTargetAuto = []
+  let uuidv4 = []
+  $("input[name='nameTargetAuto']").each(function () {
+    nameTargetAuto.push($(this).val())
+    uuidv4.push($(this).attr('uuidv4'))
+  })
+
+  let point = []
+  $("input[name='point']").each(function () {
+    point.push($(this).val())
+  })
+
+  let falsePoint = []
+  $("input[name='falsePoint']").each(function () {
+    falsePoint.push($(this).is(":checked"))
+  })
+  //map các arr thành bản ghi để dễ dàng khi lưu
+  let arr = []
+  nameTargetAuto.map((el, i) => {
+    let keyword = []
+    $(`input[uuidv4='${uuidv4[i]}'][name="keyword"]`).each(function () {
+      keyword.push({ keyword: $(this).val() })
+    })
+    arr.push({
+      nameTargetAuto: el,
+      point: point[i],
+      falsePoint: falsePoint[i],
+      keyword: keyword
+    })
+  })
+  return arr
+}
+
+// render các option ở tap chung
 function renOption(data) {
   let dataOption = ``
-  let option2 = ``
+  let logicOption = ``
   for (const [key, value] of Object.entries(CONST_DATA)) {
-    dataOption += `<option value="${key}" ${(data && data == data.data) ? 'selected' : ''}>${value.t}</option>`
+    dataOption += `<option value="${key}" ${(data && key == data.data) ? 'selected' : ''}>${value.t}</option>`
   }
 
   for (const [key, value] of Object.entries(CONST_COND)) {
-    option2 += `<option value="${key}" ${(data && data == data.cond) ? 'selected' : ''}>${value.t}</option>`
+    logicOption += `<option value="${key}" ${(data && key == data.cond) ? 'selected' : ''}>${value.t}</option>`
   }
 
   const indexTarget = window.location.uuidv4()
+  let valueOption = ``
+  if (data) {
+    valueOption = optionConditionValue(data.data, indexTarget)
+  }
   let html = `
   <div class="form-group row">
     <div class="col-sm-3">
-        <select class="form-control input selectpicker conditionsData" id="conditionsData-${indexTarget}" 
+        <select class="form-control input selectpicker conditionsData" title="Chọn" id="conditionsData-${indexTarget}" 
         name="conditionsData" data-live-search="true">
           ${dataOption}
         </select>
     </div>
     <div class="col-sm-3 column">
-        <select class="form-control input selectpicker conditionsLogic" id="conditionsLogic-${indexTarget}" 
+        <select class="form-control input selectpicker conditionsLogic" title="Chọn" id="conditionsLogic-${indexTarget}" 
             name="conditionsLogic" data-live-search="true">
-            ${option2}
+            ${logicOption}
         </select>
     </div>
     <div class="col-sm-3">
-        <select class="form-control selectpicker select-conditionsValue" id="select-conditionsValue-${indexTarget}" 
+        <select class="form-control selectpicker select-conditionsValue" title="Chọn" id="select-conditionsValue-${indexTarget}" 
           name="conditionsValue" data-live-search="true">
-          ${option2}
+          ${valueOption}
         </select>
-        <input class="form-control conditionsValue input" id="conditionsValue-${indexTarget}" 
+        <input class="form-control conditionsValue input ${valueOption ? 'd-none' : ''}" id="conditionsValue-${indexTarget}" 
         value="${(data && data.value) ? data.value : ''}" name="conditionsValue">
     </div>
     <div class="col-sm-3">
@@ -228,23 +307,23 @@ function renOption(data) {
 
   $('.row-conditions').append(html)
   $('.selectpicker').selectpicker('refresh')
-  $(`#select-conditionsValue-${indexTarget}`).selectpicker('hide')
+
+  // check xem select "Giá trị" có render option hay ko nếu có thì ẩn ô input giá trị đi
+  // và ngược lại
+  if (!valueOption) {
+    $(`#select-conditionsValue-${indexTarget}`).selectpicker('hide')
+  }
+  if (data && data.value && valueOption) {
+    // disabled ô chọn điều kiện
+    $(`#conditionsLogic-${indexTarget}`).prop('disabled', true)
+    $(`#conditionsLogic-${indexTarget}`).val("")
+    $(`#select-conditionsValue-${indexTarget}`).val(data.value)
+  }
+  $('.selectpicker').selectpicker('refresh')
   return html
 }
 
-function renKeywordSet() {
-  let input = ` <div class="col-12">
-    <label style=" font-weight: normal;"> Bộ từ khóa
-      <span class="text-danger">(*)</span>
-    </label>
-    <input type="text" class="form-control input" id="nameTargetAuto" name="nameTargetAuto">
-  </div>`
-
-  $('.row-keyword-set').append(input)
-  return input
-}
-
-function renderConditionValue(conditionsData, uuidv4) {
+function optionConditionValue(conditionsData, uuidv4) {
   let option = ``
   if (conditionsData == 'agent') {
     _users.map((el) => {
@@ -259,9 +338,9 @@ function renderConditionValue(conditionsData, uuidv4) {
       `
     })
   } else if (conditionsData == 'direction') {
-    option = `
-      <option value="inbound" ${data == 'outbound' ? '' : 'selected'}>inbound</option>
-      <option value="outbound" ${data == 'outbound' ? 'selected' : ''}>outbound</option>
+    option += `
+      <option value="inbound">inbound</option>
+      <option value="outbound">outbound</option>
     `
   } else if (conditionsData == 'group') {
     _groups.map((el) => {
@@ -270,11 +349,7 @@ function renderConditionValue(conditionsData, uuidv4) {
       `
     })
   }
-
-  $(`#select-conditionsValue-${uuidv4}`).html(option)
-  $('.selectpicker').selectpicker('refresh')
-  $(`#select-conditionsValue-${uuidv4}`).selectpicker('show')
-  $(`#conditionsValue-${uuidv4}`).addClass('d-none')
+  return option
 }
 
 function checkConditionData(element, ratingBy) {
@@ -298,6 +373,19 @@ const form_target_general = $form_target_general.validate({
     },
     description: {
       maxlength: 500
+    },
+    nameTargetAuto: {
+      required: true,
+      maxlength: 100
+    },
+    point: {
+      required: true,
+      maxlength: 5,
+      digits: true
+    },
+    keyword: {
+      required: true,
+      maxlength: 1000,
     }
   },
   messages: {
@@ -307,7 +395,20 @@ const form_target_general = $form_target_general.validate({
     name: {
       required: "Không được bỏ trống",
       maxlength: "Độ dài không được quá 100 kí tự"
-    }
+    },
+    nameTargetAuto: {
+      required: "Không được bỏ trống",
+      maxlength: "Độ dài không được quá 100 kí tự"
+    },
+    point: {
+      required: "Không được bỏ trống",
+      maxlength: "Giá trị tối đa là 99999",
+      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+    },
+    keyword: {
+      required: "Không được bỏ trống",
+      maxlength: "Độ dài không được quá 1000 kí tự",
+    },
   },
   ignore: ":hidden",
   errorElement: 'span',
@@ -322,33 +423,17 @@ const form_target_general = $form_target_general.validate({
     $(element).removeClass('is-invalid')
   },
   submitHandler: function (form) {
+    // lấy giá trị cho tap chung
     let formData = getFormData('form_target_general')
 
-    let conditionsLogic = []
-    $("select[name='conditionsLogic']").each(function (i) {
-      conditionsLogic.push($(this).val())
-    })
+    // lấy dữ liệu Điều kiện ở tap chung
+    let arrCond = getArrCond(formData.conditionSearch)
+    formData.arrCond = arrCond
 
-    let conditionsData = []
-    $("select[name='conditionsData']").each(function () {
-      conditionsData.push($(this).val())
-    })
+    let arrTargetAuto = getTargetAutoData()
+    formData.arrTargetAuto = arrTargetAuto
 
-    let conditionsValue = []
-    $("input[name='conditionsValue']").each(function () {
-      conditionsValue.push($(this).val())
-    })
-    let arr = []
-    conditionsLogic.map((el, i) => {
-      arr.push({
-        conditionSearch: formData.conditionSearch,
-        data: conditionsData[i],
-        cond: el,
-        value: conditionsValue[i]
-      })
-    })
-    console.log(arr)
-    formData.arrCond = arr
+    console.log(formData)
     if ($('#btn_save_scoreTarget').attr('data-id')) {
       formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
       saveData(formData, 'PUT')
@@ -382,25 +467,30 @@ $(function () {
     }
   })
 
-
-  if (ScoreTarget && ScoreTarget.length > 0) {
-    for (const [key, value] of Object.entries(ScoreTarget[0])) {
+  // render data khi ấn xem detail của từng tiêu chí
+  // render của tap chung 
+  if (ScoreTarget) {
+    for (const [key, value] of Object.entries(ScoreTarget)) {
       $(`#${key}`).val(value)
-      if (ScoreTarget[0].effectiveTimeStart && ScoreTarget[0].effectiveTimeType != 4) {
-        $(`#effectiveTimeStart`).val(moment(ScoreTarget[0].effectiveTimeStart).format('YYYY-MM-DD'))
-      } else if (ScoreTarget[0].effectiveTimeType == 4) {
+      if (ScoreTarget.effectiveTimeStart && ScoreTarget.effectiveTimeType != 4) {
+        $(`#effectiveTimeStart`).val(moment(ScoreTarget.effectiveTimeStart).format('YYYY-MM-DD'))
+      } else if (ScoreTarget.effectiveTimeType == 4) {
         $('.effectiveTimeRange').removeClass('d-none')
         $('.effectiveTimeStart').addClass('d-none')
-        $('#effectiveTime').daterangepicker({ startDate: moment(ScoreTarget[0].effectiveTimeStart).format('MM/DD/YYYY'), endDate: moment(ScoreTarget[0].effectiveTimeEnd).format('MM/DD/YYYY') })
+        $('#effectiveTime').daterangepicker({ startDate: moment(ScoreTarget.effectiveTimeStart).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.effectiveTimeEnd).format('MM/DD/YYYY') })
       }
-      if (ScoreTarget[0].callEndTime && ScoreTarget[0].callStartTime) {
-        $('#callTime').daterangepicker({ startDate: moment(ScoreTarget[0].callEndTime).format('MM/DD/YYYY'), endDate: moment(ScoreTarget[0].callEndTime).format('MM/DD/YYYY') })
+      if (ScoreTarget.callEndTime && ScoreTarget.callStartTime) {
+        $('#callTime').daterangepicker({ startDate: moment(ScoreTarget.callEndTime).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.callEndTime).format('MM/DD/YYYY') })
       }
     }
-    console.log(ScoreTarget)
-    ScoreTarget.map((el) => {
-      renOption(el.ScoreTargetCond)
-    })
+
+
+    //render data của phần "Điều kiện"
+    if (ScoreTargetCond && ScoreTargetCond.length > 0) {
+      ScoreTargetCond.map((el) => {
+        renOption(el)
+      })
+    }
   }
 
   bindClick()
