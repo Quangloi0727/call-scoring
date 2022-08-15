@@ -1,3 +1,6 @@
+<script>
+    console.log(CONST_RATING_BY);
+</script>
 <div class="tab-pane fade active show mt-3" id="tab-score-target-general" role="tabpanel"
     aria-labelledby="custom-tabs-three-home-tab">
 
@@ -91,7 +94,7 @@
         <div class="form-group row">
             <label for="status" class="col-sm-3 form-check-label">Trạng thái</label>
             <div class="col-sm-6">
-                <select class="form-control selectpicker input" id="status" name="status" <%- ScoreTarget[0] ? ""
+                <select class="form-control selectpicker input" id="status" name="status" <%- ScoreTarget ? ""
                     : 'disabled' %>>
                     <% for (const [key, value] of Object.entries(CONST_STATUS)) {%>
                         <option value="<%- value %>">
@@ -144,39 +147,5 @@
 
         <button type="button" class="btn btn-primary" id="btn-add-conditions"><i class="fas fa-plus"></i> Thêm điều
             kiện</button>
-    </div>
-</div>
-
-<div class="modal fade" id="activeScoreTarget" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Trạng thái</h5>
-            </div>
-            <div class="modal-body">
-                Mục tiêu sẽ chuyển trạng thái hoạt động và không được sửa các thông tin đã cấu hình.Xác nhận ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="confirmActiveScoreTarget" data-id="<%- ScoreTarget[0].id %>">Xác nhận</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="unActiveScoreTarget" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Trạng thái</h5>
-            </div>
-            <div class="modal-body">
-                Mục tiêu sẽ ngừng hoạt động vĩnh viễn.Xác nhận ?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmUnActiveScoreTarget" data-id="<%- ScoreTarget[0].id %>" >Xác nhận</button>
-            </div>
-        </div>
     </div>
 </div>

@@ -40,18 +40,9 @@ class ScoreTargetAuto extends Model {
 
     models.ScoreTargetAuto.hasMany(models.ScoreTargetKeywordSet, {
       foreignKey: "targetAutoId",
+      as: "KeywordSet",
     })
 
-  }
-}
-
-async function handleBeforeCreate(team, option) {
-  const teamResult = await ScoreScript.findOne({
-    where: { name: { [Op.eq]: team.name.toString() } },
-  })
-
-  if (teamResult) {
-    throw new Error(MESSAGE_ERROR["QA-002"])
   }
 }
 
