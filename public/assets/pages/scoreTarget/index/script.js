@@ -38,7 +38,7 @@ function createTable(data) {
         <td class="text-center">${item.description || ''}</td>
         <td class="text-center">${moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY') || ''}</td>
         <td class="text-center">${item.userCreate.userName || ''}</td>
-        <td class="text-center">${item.updated || ''}</td>
+        <td class="text-center">${moment(item.updatedAt).format('HH:mm:ss DD/MM/YYYY') || ''}</td>
         <td class="text-center">${item.userUpdate.userName || ''}</td>
       </tr>
     `

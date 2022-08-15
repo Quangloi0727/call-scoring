@@ -6,6 +6,9 @@
   var CONST_DATA = JSON.parse('<%- JSON.stringify(CONST_DATA)%>')
   var CONST_COND = JSON.parse('<%- JSON.stringify(CONST_COND)%>')
   var ScoreTarget = JSON.parse('<%- JSON.stringify(ScoreTarget)%>')
+  var ScoreTargetAuto = JSON.parse('<%- JSON.stringify(ScoreTargetAuto)%>')
+  var ScoreTargetCond = JSON.parse('<%- JSON.stringify(ScoreTargetCond)%>')
+
   var _users = JSON.parse('<%- JSON.stringify(users)%>')
   var _teams = JSON.parse('<%- JSON.stringify(teams)%>')
   var _groups = JSON.parse('<%- JSON.stringify(groups)%>')
@@ -43,17 +46,17 @@
 
                 <div class="form-group col-sm-3 ml-auto text-left">
                   <button type="button"
-                    class="btn btn-primary <%- ScoreTarget[0] &&  ScoreTarget[0].status != '0' ? 'd-none' : '' %>"
+                    class="btn btn-primary <%- ScoreTarget &&  ScoreTarget.status != '0' ? 'd-none' : '' %>"
                     data-dismiss="modal">Phân công</button>
                   <button type="button"
-                    class="btn btn-primary <%- ScoreTarget[0] &&  ScoreTarget[0].status != '0' ? 'd-none' : '' %>">Nhân
+                    class="btn btn-primary <%- ScoreTarget &&  ScoreTarget.status != '0' ? 'd-none' : '' %>">Nhân
                     bản</button>
                 </div>
 
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-                  <button type="submit" id="btn_save_scoreTarget"
-                    data-id="<%- ScoreTarget[0] ? ScoreTarget[0].id : '' %>" class="btn btn-primary">Lưu</button>
+                  <button type="submit" id="btn_save_scoreTarget" data-id="<%- ScoreTarget ? ScoreTarget.id : '' %>"
+                    class="btn btn-primary">Lưu</button>
                 </div>
 
               </div>
@@ -80,7 +83,8 @@
                   <!-- tab auto -->
                   <%- include('./tap.target.auto.ejs') %>
                     <!-- end tab auto -->
-
+                    <script type="text/javascript" src="/assets/pages/scoreTarget/tapTargetAuto/script.js"
+                      defer></script>
               </div>
 
             </form>
