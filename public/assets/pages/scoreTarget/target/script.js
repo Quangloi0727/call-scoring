@@ -2,6 +2,63 @@
 const $form_target_general = $('#form_target_general')
 
 function bindClick() {
+
+  $(document).on("click", "#btn_cancel_scoreTarget", function (e) {
+    window.location.href = "/scoreTarget"
+  })
+
+  $(document).on("change", "#status", function (e) {
+    const val = $(this).val()
+    if (val == 1) {
+      $('#activeScoreTarget').modal({ show: true })
+      $('#confirmActiveScoreTarget').attr('data-val', val)
+    }
+    if (val == 2) {
+      $('#unActiveScoreTarget').modal({ show: true })
+      $('#confirmUnActiveScoreTarget').attr('data-val', val)
+    }
+  })
+
+  $(document).on("click", "#confirmActiveScoreTarget", function (e) {
+    const id = $(this).attr('data-id')
+    const val = $(this).attr('data-val')
+    _AjaxData('/scoreTarget/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        $('#activeScoreTarget').modal('hide')
+        toastr.error(resp.message)
+        return setTimeout(() => {
+          location.reload()
+        }, 2500)
+      }
+
+      $('#activeScoreTarget').modal('hide')
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        location.reload()
+      }, 2500)
+    })
+  })
+
+  $(document).on("click", "#confirmUnActiveScoreTarget", function (e) {
+    const id = $(this).attr('data-id')
+    const val = $(this).attr('data-val')
+    _AjaxData('/scoreTarget/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        $('#unActiveScoreTarget').modal('hide')
+        toastr.error(resp.message)
+        return setTimeout(() => {
+          location.reload()
+        }, 2500)
+      }
+
+      $('#unActiveScoreTarget').modal('hide')
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        location.reload()
+      }, 2500)
+    })
+  })
+
   // xử lí sự kiện khi clich để chọn thời gian áp dụng cho cuộc gọi
   $('input[name="callTime"]').on('apply.daterangepicker', function (ev, picker) {
     $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'))
@@ -452,5 +509,8 @@ $(window).on('beforeunload', function () {
   $(document).off('change', '.conditionsLogic')
   $(document).off('click', '.conditionsData .dropdown-toggle')
   $(document).off('click', '#btn-add-keyword-set')
-
+  $(document).off('click', '#btn_cancel_scoreTarget')
+  $(document).off('change', '#status')
+  $(document).off('click', '#confirmActiveScoreTarget')
+  $(document).off('click', '#confirmUnActiveScoreTarget')
 })

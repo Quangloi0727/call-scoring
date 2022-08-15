@@ -12,6 +12,8 @@ const {
 const model = require('../models')
 
 const {
+  scoreTargetNotFound,
+  statusUpdateFail,
   headerDefault,
   CONST_RATING_BY,
   CONST_CALL_TYPE,
@@ -19,6 +21,7 @@ const {
   CONST_STATUS,
   CONST_DATA,
   CONST_COND, MESSAGE_ERROR } = require('../helpers/constants/index')
+  
 exports.index = async (req, res, next) => {
   try {
     return _render(req, res, 'scoreTarget/index', {
@@ -370,5 +373,33 @@ exports.update = async (req, res, next) => {
     _logger.error('Update mục tiêu bị lỗi', error)
     if (transaction) await transaction.rollback()
     return res.status(ERR_500.code).json({ message: error.message })
+  }
+}
+
+exports.updateStatus = async (req, res) => {
+  let transaction
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    const findDocUpdate = await model.ScoreTarget.findOne({ where: { id: id } })
+
+    if (!findDocUpdate) throw new Error(scoreTargetNotFound)
+
+    if (findDocUpdate.status > status) throw new Error(statusUpdateFail)
+
+    transaction = await model.sequelize.transaction()
+    await model.ScoreTarget.update({ status: status }, { where: { id: id } }, { transaction: transaction })
+
+    await transaction.commit()
+
+    return res.json({ code: SUCCESS_200.code })
+
+  } catch (error) {
+    console.log(`------- error ------- `)
+    console.log(error)
+    console.log(`------- error ------- `)
+    if (transaction) await transaction.rollback()
+    return res.json({ message: error.message, code: ERR_500.code })
   }
 }

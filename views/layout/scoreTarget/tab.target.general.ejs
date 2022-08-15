@@ -146,3 +146,37 @@
             kiện</button>
     </div>
 </div>
+
+<div class="modal fade" id="activeScoreTarget" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Trạng thái</h5>
+            </div>
+            <div class="modal-body">
+                Mục tiêu sẽ chuyển trạng thái hoạt động và không được sửa các thông tin đã cấu hình.Xác nhận ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="confirmActiveScoreTarget" data-id="<%- ScoreTarget[0].id %>">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="unActiveScoreTarget" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Trạng thái</h5>
+            </div>
+            <div class="modal-body">
+                Mục tiêu sẽ ngừng hoạt động vĩnh viễn.Xác nhận ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmUnActiveScoreTarget" data-id="<%- ScoreTarget[0].id %>" >Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
