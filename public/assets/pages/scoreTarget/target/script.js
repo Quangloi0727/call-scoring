@@ -504,6 +504,7 @@ function setConfigView() {
   } else {
     if (ScoreTarget.status == 1) {
       disableOrEnableButton()
+      $("#status").attr("disabled", false)
     }
     if (ScoreTarget.status == 2) {
       disableOrEnableButton()
@@ -518,7 +519,6 @@ function disableOrEnableButton() {
   $("#effectiveTime").prop("disabled", true)
   $('select').prop('disabled', true)
   $("#scoreScriptId").prop("disabled", false)
-  $("#status").attr("disabled", false)
 
   $("#btn-add-conditions").remove()
   $(".btn-add-row-target-auto").html('')
