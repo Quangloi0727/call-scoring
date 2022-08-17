@@ -14,6 +14,9 @@
   var _teams = JSON.parse('<%- JSON.stringify(teams)%>')
   var _groups = JSON.parse('<%- JSON.stringify(groups)%>')
 
+  var _userAssigned = JSON.parse('<%- JSON.stringify(userAssigned)%>')
+  var _isEdit = <%- isEdit %>
+
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -43,15 +46,12 @@
 
                 <div class="form-group col-sm-3">
                   <input type="text" class="form-control input" id="name" name="name" placeholder="Mục tiêu" />
-                  <span class="d-none duplicateNameScoreTarget"
-                    style="width: 100%;margin-top: 0.25rem;font-size: 80%; color: #dc3545;">Tên mục
-                    tiêu đã được sử
-                    dụng</span>
+                  <span class="d-none duplicateNameScoreTarget">Tên mục tiêu đã được sử dụng</span>
                 </div>
 
                 <div class="form-group col-sm-3 ml-auto text-left">
                   <button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_assignment_scoreTarget">Phân công</button>
-                  <button type="button" class="btn btn-primary">Nhân bản</button>
+                  <button type="button" class="btn btn-primary" id="btn_duplicate_scoreTarget">Nhân bản</button>
                 </div>
 
                 <div class="form-group col-sm-6 ml-auto text-right">
@@ -103,21 +103,17 @@
           <div class="modal-body">
             <div>
               <select id="listBoxAssignment" multiple="multiple">
-                <option val="1">Option1</option>
-                <option val="2">Option2</option>
-                <option val="3">Option3</option>
-                <option val="4">Option4</option>
-                <option val="5">Option5</option>
-                <option val="6">Option6</option>
-                <option val="7">Option7</option>
-                <option val="8">Option8</option>
-                <option val="9">Option9</option>
+                <%
+                  listUserAssignment.forEach(el =>{ %>
+                    <option value="<%- el.id %>"><%- el.fullName + ' (' + el.userName +  ')' %></option>
+                  <%}) 
+                %>
               </select>
             </div>
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-              <button type="button" class="btn btn-danger" id="confirmAssignmentScoreTarget" data-id="<%- ScoreTarget.id %>" >Xác nhận</button>
+              <button type="button" class="btn btn-success" id="confirmAssignmentScoreTarget" data-id="<%- ScoreTarget.id %>">Xác nhận</button>
           </div>
       </div>
   </div>

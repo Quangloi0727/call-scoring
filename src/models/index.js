@@ -21,6 +21,7 @@ const ScoreTargetAutoModel = require('./scoreTargetAuto')
 const ScoreTargetCondModel = require('./scoreTargetCond')
 const ScoreTargetKeywordSetModel = require('./scoreTargetKeywordSet')
 const ScoreTarget_ScoreScriptModel = require('./scoreTarget_scoreScript')
+const ScoreTargetAssignmentModel = require('./scoreTargetAssignment')
 
 const CriteriaGroupsModel = require('./criteriaGroups')
 const CriteriasModel = require('./criterias')
@@ -55,6 +56,7 @@ const models = {
   ScoreTargetCond: ScoreTargetCondModel.init(sequelize),
   ScoreTargetKeywordSet: ScoreTargetKeywordSetModel.init(sequelize),
   ScoreTarget_ScoreScript: ScoreTarget_ScoreScriptModel.init(sequelize),
+  ScoreTargetAssignment: ScoreTargetAssignmentModel.init(sequelize),
 
   CriteriaGroup: CriteriaGroupsModel.init(sequelize),
   Criteria: CriteriasModel.init(sequelize),

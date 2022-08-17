@@ -3,6 +3,92 @@ const $form_target_general = $('#form_target_general')
 
 function bindClick() {
 
+  const form_target_general = $form_target_general.validate({
+
+    rules: {
+      description: {
+        maxlength: 500
+      },
+      name: {
+        required: true,
+        maxlength: 100
+      },
+      numberOfCall: {
+        digits: true
+      },
+      nameTargetAuto: {
+        required: true,
+        maxlength: 500
+      },
+      point: {
+        required: true,
+        maxlength: 5,
+        digits: true
+      },
+      keyword: {
+        required: true,
+        maxlength: 1000,
+      }
+    },
+    messages: {
+      description: {
+        maxlength: 'Độ dài không quá 500 kí tự'
+      },
+      name: {
+        required: "Không được bỏ trống",
+        maxlength: "Độ dài không được quá 100 kí tự"
+      },
+      numberOfCall: {
+        digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+      },
+      nameTargetAuto: {
+        required: "Không được bỏ trống",
+        maxlength: "Độ dài không được quá 500 kí tự"
+      },
+      point: {
+        required: "Không được bỏ trống",
+        maxlength: "Giá trị tối đa là 99999",
+        digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+      },
+      keyword: {
+        required: "Không được bỏ trống",
+        maxlength: "Độ dài không được quá 1000 kí tự",
+      },
+    },
+    ignore: ":hidden",
+    errorElement: 'span',
+    errorPlacement: function (error, element) {
+      error.addClass('invalid-feedback')
+      element.closest('.form-group').append(error)
+    },
+    highlight: function (element, errorClass, validClass) {
+      $(element).addClass('is-invalid')
+    },
+    unhighlight: function (element, errorClass, validClass) {
+      $(element).removeClass('is-invalid')
+    },
+    submitHandler: function (form) {
+
+      // lấy giá trị cho tap chung
+      let formData = getFormData('form_target_general')
+
+      // lấy dữ liệu Điều kiện ở tap chung
+      let arrCond = getArrCond(formData.conditionSearch)
+      formData.arrCond = arrCond
+
+      let arrTargetAuto = getTargetAutoData()
+      formData.arrTargetAuto = arrTargetAuto
+
+      console.log(formData)
+      if ($('#btn_save_scoreTarget').attr('data-id')) {
+        formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
+        saveData(formData, 'PUT')
+        return console.log($('#btn_save_scoreTarget').attr('data-id'))
+      }
+      return saveData(formData, 'POST')
+    }
+  })
+
   $(document).on("click", "#btn_cancel_scoreTarget", function (e) {
     window.location.href = "/scoreTarget"
   })
@@ -31,6 +117,28 @@ function bindClick() {
     const id = $(this).attr('data-id')
     const val = $(this).attr('data-val')
     _AjaxData('/scoreTarget/' + id + '/updateStatus', 'PUT', JSON.stringify({ status: val }), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        $('#activeScoreTarget').modal('hide')
+        toastr.error(resp.message)
+        return setTimeout(() => {
+          location.reload()
+        }, 2500)
+      }
+
+      $('#activeScoreTarget').modal('hide')
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        location.reload()
+      }, 2500)
+    })
+  })
+
+  $(document).on("click", "#confirmAssignmentScoreTarget", function (e) {
+    const id = $(this).attr('data-id')
+    const val = $("#listBoxAssignment").val()
+
+    _AjaxData('/scoreTarget/' + id + '/assignment', 'PUT', JSON.stringify({ assignment: val }), { contentType: "application/json" }, function (resp) {
+
       if (resp.code != 200) {
         $('#activeScoreTarget').modal('hide')
         toastr.error(resp.message)
@@ -148,7 +256,6 @@ function bindClick() {
 
   $(document).on('change', '.conditionsLogic', function (e) {
     e.stopImmediatePropagation()
-    console.log($(this).val())
     return
   })
   $(document).on('change', '.select-conditionsValue', function (e) {
@@ -389,92 +496,35 @@ function checkConditionData(element, ratingBy) {
   return $('.selectpicker').selectpicker('refresh')
 }
 
-const form_target_general = $form_target_general.validate({
-
-  rules: {
-    description: {
-      maxlength: 500
-    },
-    name: {
-      required: true,
-      maxlength: 100
-    },
-    numberOfCall: {
-      digits: true
-    },
-    nameTargetAuto: {
-      required: true,
-      maxlength: 500
-    },
-    point: {
-      required: true,
-      maxlength: 5,
-      digits: true
-    },
-    keyword: {
-      required: true,
-      maxlength: 1000,
+function setConfigView() {
+  if (_isEdit == false) {
+    $("#btn_assignment_scoreTarget").attr('disabled', 'disabled')
+    $("#btn_duplicate_scoreTarget").attr('disabled', 'disabled')
+    $("#status").attr("disabled", "disabled")
+  } else {
+    if (ScoreTarget.status == 1) {
+      disableOrEnableButton()
     }
-  },
-  messages: {
-    description: {
-      maxlength: 'Độ dài không quá 500 kí tự'
-    },
-    name: {
-      required: "Không được bỏ trống",
-      maxlength: "Độ dài không được quá 100 kí tự"
-    },
-    numberOfCall: {
-      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-    },
-    nameTargetAuto: {
-      required: "Không được bỏ trống",
-      maxlength: "Độ dài không được quá 500 kí tự"
-    },
-    point: {
-      required: "Không được bỏ trống",
-      maxlength: "Giá trị tối đa là 99999",
-      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-    },
-    keyword: {
-      required: "Không được bỏ trống",
-      maxlength: "Độ dài không được quá 1000 kí tự",
-    },
-  },
-  ignore: ":hidden",
-  errorElement: 'span',
-  errorPlacement: function (error, element) {
-    error.addClass('invalid-feedback')
-    element.closest('.form-group').append(error)
-  },
-  highlight: function (element, errorClass, validClass) {
-    $(element).addClass('is-invalid')
-  },
-  unhighlight: function (element, errorClass, validClass) {
-    $(element).removeClass('is-invalid')
-  },
-  submitHandler: function (form) {
-
-    // lấy giá trị cho tap chung
-    let formData = getFormData('form_target_general')
-
-    // lấy dữ liệu Điều kiện ở tap chung
-    let arrCond = getArrCond(formData.conditionSearch)
-    formData.arrCond = arrCond
-
-    let arrTargetAuto = getTargetAutoData()
-    formData.arrTargetAuto = arrTargetAuto
-
-    console.log(formData)
-    if ($('#btn_save_scoreTarget').attr('data-id')) {
-      formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
-      saveData(formData, 'PUT')
-      return console.log($('#btn_save_scoreTarget').attr('data-id'))
+    if (ScoreTarget.status == 2) {
+      disableOrEnableButton()
+      $("#btn_assignment_scoreTarget").prop("disabled", true)
+      $("#btn_save_scoreTarget").prop("disabled", true)
     }
-    return saveData(formData, 'POST')
   }
+}
 
-})
+function disableOrEnableButton() {
+  $("#form_target_general :input").prop("readonly", true)
+  $("#effectiveTime").prop("disabled", true)
+  $('select').prop('disabled', true)
+  $("#scoreScriptId").prop("disabled", false)
+
+  $("#btn-add-conditions").remove()
+  $(".btn-add-row-target-auto").html('')
+  $(".btn-remove-row").html('')
+  $(".btn-remove-row-set-keyWord").html('')
+  $(".btn-add-keyword-set").html('')
+}
 
 $(function () {
   // set giá trị mặc định cho các input date
@@ -503,7 +553,6 @@ $(function () {
   // render data khi ấn xem detail của từng tiêu chí
   // render của tap chung 
   if (ScoreTarget) {
-    console.log(ScoreTarget)
     for (const [key, value] of Object.entries(ScoreTarget)) {
       $(`#${key}`).val(value)
       if (ScoreTarget.effectiveTimeStart && ScoreTarget.effectiveTimeType != 4) {
@@ -536,9 +585,17 @@ $(function () {
     }
   }
 
+  //set selected value
+  if (_userAssigned && _userAssigned.length > 0) {
+    _userAssigned.forEach(el => {
+      $(`#listBoxAssignment option[value=${el.userId}]`).attr('selected', 'selected')
+      $(`#listBoxAssignment option[value=${el.userId}]`).attr('disabled', 'disabled')
+    })
+  }
+
   bindClick()
-  // $form_target_general.valid()
   resetAssignTime()
+  setConfigView()
 })
 
 $(window).on('beforeunload', function () {
@@ -556,4 +613,5 @@ $(window).on('beforeunload', function () {
   $(document).off('change', '#status')
   $(document).off('click', '#confirmActiveScoreTarget')
   $(document).off('click', '#confirmUnActiveScoreTarget')
+  $(document).off('click', '#confirmAssignmentScoreTarget')
 })

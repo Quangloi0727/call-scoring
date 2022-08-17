@@ -38,6 +38,9 @@
   width: 650px;
 }
 
-.info_title{
-  font-size: 15px !important;
+.duplicateNameScoreTarget {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
 }

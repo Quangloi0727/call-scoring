@@ -4,14 +4,14 @@ const moment = require('moment')
 const titlePage = 'Mục tiêu chấm điểm'
 const {
   SUCCESS_200,
-  ERR_500,
-  ERR_400,
-  ERR_403
+  ERR_500
 } = require("../helpers/constants/statusCodeHTTP")
 
 const model = require('../models')
+const UserRoleModel = require('../models/userRole')
 
 const {
+  assignmentListEmpty,
   scoreTargetNotFound,
   statusUpdateFail,
   headerDefault,
@@ -20,7 +20,8 @@ const {
   CONST_EFFECTIVE_TIME_TYPE,
   CONST_STATUS,
   CONST_DATA,
-  CONST_COND, MESSAGE_ERROR } = require('../helpers/constants/index')
+  CONST_COND, MESSAGE_ERROR,
+  USER_ROLE } = require('../helpers/constants/index')
 
 exports.index = async (req, res, next) => {
   try {
@@ -67,7 +68,9 @@ exports.new = async (req, res, next) => {
       users,
       teams,
       groups,
-      isEdit: false
+      isEdit: false,
+      listUserAssignment: [],
+      userAssigned: []
     })
 
   } catch (error) {
@@ -98,7 +101,7 @@ exports.detail = async (req, res, next) => {
       raw: true,
     })
 
-    let [ScoreTargetAuto, ScoreTargetCond, ScoreTarget_ScoreScript, users, teams, groups] = await Promise.all([
+    let [ScoreTargetAuto, ScoreTargetCond, ScoreTarget_ScoreScript, users, teams, groups, listUserAssignment, userAssigned] = await Promise.all([
       model.ScoreTargetAuto.findAll({
         where: { scoreTargetId: { [Op.eq]: Number(id) } },
         include: [
@@ -113,7 +116,9 @@ exports.detail = async (req, res, next) => {
       model.ScoreTarget_ScoreScript.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
       model.User.findAll({ where: { isActive: 1 } }),
       model.Team.findAll({}),
-      model.Group.findAll({})
+      model.Group.findAll({}),
+      getListUserAssignment(),
+      model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: id } }),
     ])
 
     return _render(req, res, 'scoreTarget/target', {
@@ -132,7 +137,9 @@ exports.detail = async (req, res, next) => {
       users,
       teams,
       groups,
-      isEdit: true
+      isEdit: true,
+      listUserAssignment,
+      userAssigned
     })
   } catch (error) {
     _logger.error(`------- error ------- `)
@@ -374,7 +381,7 @@ exports.update = async (req, res, next) => {
       scoreScriptId.map((el) => {
         arr.push({
           scoreScriptId: el,
-          scoreTargetId: _data.id
+          scoreTargetId: data.id
         })
       })
       await model.ScoreTarget_ScoreScript.bulkCreate(arr, { transaction: transaction })
@@ -414,4 +421,46 @@ exports.updateStatus = async (req, res) => {
     if (transaction) await transaction.rollback()
     return res.json({ message: error.message, code: ERR_500.code })
   }
+}
+
+exports.assignment = async (req, res) => {
+  let transaction
+  try {
+    const { id } = req.params
+    const { assignment } = req.body
+
+    if (assignment && assignment.length == 0) throw new Error(assignmentListEmpty)
+
+    Promise.all(assignment.map(async el => {
+      const findAssignment = await model.ScoreTargetAssignment.findOne({ where: { userId: el, scoreTargetId: id } })
+      if (findAssignment) return
+      transaction = await model.sequelize.transaction()
+      await model.ScoreTargetAssignment.create({ userId: el, scoreTargetId: id }, { transaction: transaction })
+      await transaction.commit()
+    }))
+
+    return res.json({ code: SUCCESS_200.code })
+
+  } catch (error) {
+    console.log(`------- error ------- `)
+    console.log(error)
+    console.log(`------- error ------- `)
+    if (transaction) await transaction.rollback()
+    return res.json({ message: error.message, code: ERR_500.code })
+  }
+}
+
+function getListUserAssignment() {
+  return model.User.findAll({
+    where: { isActive: 1 },
+    attributes: ['id', 'fullName', 'userName'],
+    include: [{
+      model: UserRoleModel,
+      as: 'roles',
+      where: {
+        role: USER_ROLE.evaluator.n
+      },
+      attributes: ['id', 'userId']
+    }]
+  })
 }
