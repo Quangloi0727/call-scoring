@@ -7,6 +7,14 @@ function bindClick() {
     window.location.href = "/scoreTarget"
   })
 
+  $(document).on("click", "#btn_assignment_scoreTarget", function (e) {
+    $('#modal_assignment_scoreTarget').modal({ show: true })
+    $('#listBoxAssignment').bootstrapDualListbox({
+      moveOnSelect: false,
+    })
+    CustomizeDuallistbox('listBoxAssignment')
+  })
+
   $(document).on("change", "#status", function (e) {
     const val = $(this).val()
     if (val == 1) {
@@ -153,6 +161,19 @@ function bindClick() {
     return renKeywordSet()
   })
 
+}
+
+function CustomizeDuallistbox(listboxID) {
+  var customSettings = $('#' + listboxID).bootstrapDualListbox('getContainer')
+  var buttons = customSettings.find('.btn.moveall, .btn.move, .btn.remove, .btn.removeall')
+
+  if (customSettings.find('.customButtonBox').length == 0) {
+    customSettings.find('.box1, .box2').removeClass('col-md-6').addClass('col-md-5')
+    customSettings.find('.box1').after('<div class="customButtonBox col-md-2 text-center"></div>')
+    customSettings.find('.customButtonBox').append(buttons)
+  }
+
+  customSettings.find('.btn-group.buttons').remove()
 }
 
 function resetAssignTime() {

@@ -45,18 +45,13 @@
                 </div>
 
                 <div class="form-group col-sm-3 ml-auto text-left">
-                  <button type="button"
-                    class="btn btn-primary <%- ScoreTarget &&  ScoreTarget.status != '0' ? 'd-none' : '' %>"
-                    data-dismiss="modal">Phân công</button>
-                  <button type="button"
-                    class="btn btn-primary <%- ScoreTarget &&  ScoreTarget.status != '0' ? 'd-none' : '' %>">Nhân bản</button>
+                  <button type="button" class="btn btn-primary" data-dismiss="modal" id="btn_assignment_scoreTarget">Phân công</button>
+                  <button type="button" class="btn btn-primary">Nhân bản</button>
                 </div>
 
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal" id="btn_cancel_scoreTarget">Hủy</button>
-                  <button type="submit" id="btn_save_scoreTarget"
-                    data-id="<%- ScoreTarget ? ScoreTarget.id : '' %>" 
-                    class="btn btn-primary <%- ScoreTarget && ScoreTarget.status !=0 && isEdit == true ? 'd-none' : '' %>">Lưu</button>
+                  <button type="submit" id="btn_save_scoreTarget" data-id="<%- ScoreTarget ? ScoreTarget.id : '' %>" class="btn btn-primary">Lưu</button>
                 </div>
 
               </div>
@@ -76,15 +71,13 @@
               <div class="tab-content" id="tab-score-script-tabContent">
 
                 <!-- tab chung -->
-                <%- include('./tab.target.general.ejs', { scoreScript , CONST_RATING_BY , CONST_CALL_TYPE,
-                  CONST_STATUS}) %>
+                <%- include('./tab.target.general.ejs', { scoreScript , CONST_RATING_BY , CONST_CALL_TYPE, CONST_STATUS}) %>
                   <!-- end tab chung -->
 
                   <!-- tab auto -->
                   <%- include('./tap.target.auto.ejs') %>
                     <!-- end tab auto -->
-                    <script type="text/javascript" src="/assets/pages/scoreTarget/tapTargetAuto/script.js"
-                      defer></script>
+                  <script type="text/javascript" src="/assets/pages/scoreTarget/tapTargetAuto/script.js" defer></script>
               </div>
 
             </form>
@@ -93,5 +86,34 @@
       </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+  </div>
+</div>
+
+<div class="modal fade" id="modal_assignment_scoreTarget" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+      <div class="modal-content" id="modal_content_assignment_scoreTarget">
+          <div class="modal-header">
+              <h5 class="modal-title">Phân công</h5>
+          </div>
+          <div class="modal-body">
+            <div>
+              <select id="listBoxAssignment" multiple="multiple">
+                <option val="1">Option1</option>
+                <option val="2">Option2</option>
+                <option val="3">Option3</option>
+                <option val="4">Option4</option>
+                <option val="5">Option5</option>
+                <option val="6">Option6</option>
+                <option val="7">Option7</option>
+                <option val="8">Option8</option>
+                <option val="9">Option9</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+              <button type="button" class="btn btn-danger" id="confirmAssignmentScoreTarget" data-id="<%- ScoreTarget.id %>" >Xác nhận</button>
+          </div>
+      </div>
   </div>
 </div>
