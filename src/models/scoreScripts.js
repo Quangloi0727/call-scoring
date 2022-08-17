@@ -105,11 +105,6 @@ class ScoreScript extends Model {
       as: "CriteriaGroup",
     })
 
-    models.ScoreScript.hasMany(models.ScoreTarget, {
-      foreignKey: "scoreScriptId",
-      as: "scoreScript",
-    })
-
   }
 }
 

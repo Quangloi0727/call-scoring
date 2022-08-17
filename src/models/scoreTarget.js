@@ -11,13 +11,6 @@ class ScoreTarget extends Model {
         name: {
           type: DataTypes.STRING(),
         },
-        scoreScriptId: {
-          type: DataTypes.INTEGER,
-          references: {
-            model: "ScoreScripts",
-            key: "id",
-          },
-        },
         ratingBy: {
           type: DataTypes.INTEGER,   // đối tượng được đánh giá  0:Điện thoại viên 1:Đội ngũ       5:Toàn hệ thống
         },
@@ -130,11 +123,6 @@ class ScoreTarget extends Model {
       as: "userUpdate",
     })
 
-    models.ScoreTarget.belongsTo(models.ScoreScript, {
-      foreignKey: "scoreScriptId",
-      as: 'scoreScript'
-    })
-
     models.ScoreTarget.hasMany(models.ScoreTargetAuto, {
       foreignKey: "scoreTargetId",
       as: 'ScoreTargetAuto'
@@ -145,6 +133,10 @@ class ScoreTarget extends Model {
       as: 'ScoreTargetCond'
     })
 
+    models.ScoreTarget.hasMany(models.ScoreTarget_ScoreScript, {
+      foreignKey: "scoreTargetId",
+      as: 'ScoreTarget_ScoreScript'
+    })
   }
 }
 

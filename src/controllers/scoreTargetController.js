@@ -56,6 +56,7 @@ exports.new = async (req, res, next) => {
       ScoreTarget: {},
       ScoreTargetAuto: {},
       ScoreTargetCond: [],
+      ScoreTarget_ScoreScript: [],
       scoreScript: scoreScript.length > 0 ? scoreScript : [],
       CONST_RATING_BY,
       CONST_CALL_TYPE,
@@ -93,13 +94,11 @@ exports.detail = async (req, res, next) => {
 
     let detail = await model.ScoreTarget.findOne({
       where: { id: { [Op.eq]: Number(id) } },
-      include: [
-        { model: model.ScoreScript, as: 'scoreScript' },
-      ],
       nest: true,
       raw: true,
     })
-    let [ScoreTargetAuto, ScoreTargetCond, users, teams, groups] = await Promise.all([
+
+    let [ScoreTargetAuto, ScoreTargetCond, ScoreTarget_ScoreScript, users, teams, groups] = await Promise.all([
       model.ScoreTargetAuto.findAll({
         where: { scoreTargetId: { [Op.eq]: Number(id) } },
         include: [
@@ -111,6 +110,7 @@ exports.detail = async (req, res, next) => {
         nest: true,
       }),
       model.ScoreTargetCond.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
+      model.ScoreTarget_ScoreScript.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
       model.User.findAll({ where: { isActive: 1 } }),
       model.Team.findAll({}),
       model.Group.findAll({})
@@ -122,6 +122,7 @@ exports.detail = async (req, res, next) => {
       ScoreTarget: detail,
       ScoreTargetAuto: ScoreTargetAuto,
       ScoreTargetCond: ScoreTargetCond,
+      ScoreTarget_ScoreScript: ScoreTarget_ScoreScript,
       CONST_RATING_BY,
       CONST_CALL_TYPE,
       CONST_EFFECTIVE_TIME_TYPE,
@@ -154,7 +155,7 @@ exports.gets = async (req, res, next) => {
 
     if (name) {
       query.name = {
-        [Op.like]: name + '%'
+        [Op.like]: '%' + name + '%'
       }
     }
     if (status || status == "0") {
@@ -169,7 +170,7 @@ exports.gets = async (req, res, next) => {
       include: [
         { model: model.User, as: 'userCreate' },
         { model: model.User, as: 'userUpdate' },
-        { model: model.ScoreScript, as: 'scoreScript' },
+        { model: model.ScoreTarget_ScoreScript, as: 'ScoreTarget_ScoreScript' },
       ],
       required: false,
       offset: offset,
@@ -202,7 +203,7 @@ exports.create = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond, scoreScriptId } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -218,13 +219,9 @@ exports.create = async (req, res, next) => {
       data.effectiveTimeEnd = moment(string[1]).endOf('day')
     } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
 
-
-    if (name) {
-      let foundUser = await model.ScoreTarget.findOne({ where: { name: name.toLowerCase(), status: 1 }, raw: true, })
-      if (foundUser) return res.status(ERR_400.code).json({
-        message: 'Tên mục tiêu đã được sử dụng!',
-      })
-    }
+    // check tồn tại của tên mục tiêu
+    const foundScoreTargetName = await model.ScoreTarget.findOne({ where: { name: name } })
+    if (foundScoreTargetName) throw new Error(MESSAGE_ERROR['QA-002'])
 
     data.created = req.user.id
 
@@ -232,6 +229,7 @@ exports.create = async (req, res, next) => {
 
     if (_data && _data.id) {
       data.scoreTargetId = _data.id
+
       if (arrCond) {
         arrCond.map((el) => {
           // let check = Object.keys(CONST_COND).find(key => key == el.cond)
@@ -246,16 +244,11 @@ exports.create = async (req, res, next) => {
 
       if (arrTargetAuto && arrTargetAuto.length > 0) {
 
-        var temp = []
         let p = []
         arrTargetAuto.forEach(function (el, index) {
           el.scoreTargetId = _data.id
           p.push(model.ScoreTargetAuto.create(
             el, { transaction: transaction }))
-          temp.push(el.nameTargetAuto)
-          const found = temp.filter(element => element == el.nameTargetAuto)
-          // check trùng tên của bảng mục tiêu chấm tự động
-          if (found.length >= 2) throw new Error(MESSAGE_ERROR['QA-002'])
         })
 
         let result = await Promise.all(p)
@@ -271,6 +264,17 @@ exports.create = async (req, res, next) => {
           }
         })
         await Promise.all(_p)
+      }
+
+      if (scoreScriptId && scoreScriptId.length > 0) {
+        let arr = []
+        scoreScriptId.map((el) => {
+          arr.push({
+            scoreScriptId: el,
+            scoreTargetId: _data.id
+          })
+        })
+        await model.ScoreTarget_ScoreScript.bulkCreate(arr, { transaction: transaction })
       }
     }
     await transaction.commit()
@@ -288,7 +292,7 @@ exports.update = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -341,16 +345,12 @@ exports.update = async (req, res, next) => {
     }
 
     if (arrTargetAuto && arrTargetAuto.length > 0) {
-      var temp = []
+      // var temp = []
       let p = []
       arrTargetAuto.forEach(function (el, index) {
         el.scoreTargetId = Number(data['edit-id'])
         p.push(model.ScoreTargetAuto.create(
           el, { transaction: transaction }))
-        temp.push(el.nameTargetAuto)
-        const found = temp.filter(element => element == el.nameTargetAuto)
-        // check trùng tên của bảng mục tiêu chấm tự động
-        if (found.length >= 2) throw new Error(MESSAGE_ERROR['QA-002'])
       })
 
       let result = await Promise.all(p)
@@ -369,6 +369,16 @@ exports.update = async (req, res, next) => {
     }
 
 
+    if (scoreScriptId && scoreScriptId.length > 0) {
+      let arr = []
+      scoreScriptId.map((el) => {
+        arr.push({
+          scoreScriptId: el,
+          scoreTargetId: _data.id
+        })
+      })
+      await model.ScoreTarget_ScoreScript.bulkCreate(arr, { transaction: transaction })
+    }
     await transaction.commit()
     return res.status(SUCCESS_200.code).json({ message: MESSAGE_ERROR['QA-006'] })
   } catch (error) {
