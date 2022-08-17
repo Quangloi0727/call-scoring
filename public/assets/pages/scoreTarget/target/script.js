@@ -518,6 +518,7 @@ function disableOrEnableButton() {
   $("#effectiveTime").prop("disabled", true)
   $('select').prop('disabled', true)
   $("#scoreScriptId").prop("disabled", false)
+  $("#status").attr("disabled", false)
 
   $("#btn-add-conditions").remove()
   $(".btn-add-row-target-auto").html('')
