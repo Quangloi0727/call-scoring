@@ -160,6 +160,11 @@ function bindClick() {
   $(document).on('click', '#btn-add-keyword-set', function (e) {
     return renKeywordSet()
   })
+  $(document).on('click', '.nav-link', function (e) {
+    if ($(this).attr('id') == 'tab-score-target-auto-tab') {
+      $('.btn-add-row-target-auto').removeClass('d-none')
+    } else $('.btn-add-row-target-auto').addClass('d-none')
+  })
 
 }
 
@@ -194,8 +199,7 @@ function saveData(formData, method) {
       }, 2500)
     },
     error: function (error) {
-
-      console.log(error)
+      if (error.responseJSON.message == window.location.MESSAGE_ERROR["QA-002"]) return $(".duplicateNameScoreTarget").removeClass('d-none')
       return toastr.error(error.responseJSON.message)
     },
   })
@@ -388,16 +392,19 @@ function checkConditionData(element, ratingBy) {
 const form_target_general = $form_target_general.validate({
 
   rules: {
+    description: {
+      maxlength: 500
+    },
     name: {
       required: true,
       maxlength: 100
     },
-    description: {
-      maxlength: 500
+    numberOfCall: {
+      digits: true
     },
     nameTargetAuto: {
       required: true,
-      maxlength: 100
+      maxlength: 500
     },
     point: {
       required: true,
@@ -417,9 +424,12 @@ const form_target_general = $form_target_general.validate({
       required: "Không được bỏ trống",
       maxlength: "Độ dài không được quá 100 kí tự"
     },
+    numberOfCall: {
+      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+    },
     nameTargetAuto: {
       required: "Không được bỏ trống",
-      maxlength: "Độ dài không được quá 100 kí tự"
+      maxlength: "Độ dài không được quá 500 kí tự"
     },
     point: {
       required: "Không được bỏ trống",
@@ -444,6 +454,7 @@ const form_target_general = $form_target_general.validate({
     $(element).removeClass('is-invalid')
   },
   submitHandler: function (form) {
+
     // lấy giá trị cho tap chung
     let formData = getFormData('form_target_general')
 
@@ -488,9 +499,11 @@ $(function () {
     }
   })
 
+
   // render data khi ấn xem detail của từng tiêu chí
   // render của tap chung 
   if (ScoreTarget) {
+    console.log(ScoreTarget)
     for (const [key, value] of Object.entries(ScoreTarget)) {
       $(`#${key}`).val(value)
       if (ScoreTarget.effectiveTimeStart && ScoreTarget.effectiveTimeType != 4) {
@@ -501,10 +514,19 @@ $(function () {
         $('#effectiveTime').daterangepicker({ startDate: moment(ScoreTarget.effectiveTimeStart).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.effectiveTimeEnd).format('MM/DD/YYYY') })
       }
       if (ScoreTarget.callEndTime && ScoreTarget.callStartTime) {
-        $('#callTime').daterangepicker({ startDate: moment(ScoreTarget.callEndTime).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.callEndTime).format('MM/DD/YYYY') })
+        $('#callTime').daterangepicker({ startDate: moment(ScoreTarget.callStartTime).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.callEndTime).format('MM/DD/YYYY') })
       }
     }
 
+    //
+    if (ScoreTarget_ScoreScript && ScoreTarget_ScoreScript.length > 0) {
+      console.log(ScoreTarget_ScoreScript)
+      let arr = []
+      ScoreTarget_ScoreScript.map((el) => {
+        arr.push(el.scoreScriptId)
+      })
+      $('#scoreScriptId').val(arr)
+    }
 
     //render data của phần "Điều kiện"
     if (ScoreTargetCond && ScoreTargetCond.length > 0) {

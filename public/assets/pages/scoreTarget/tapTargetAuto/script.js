@@ -61,7 +61,7 @@ function renHTMLScoreTargetAuto(uuidv4, data) {
           <label style=" font-weight: normal;"> Tiêu chí chấm
             <span class="text-danger">(*)</span>
           </label>
-          <input type="text" class="form-control input" value="${data ? data.nameTargetAuto : ''}" uuidv4="${uuidv4}" name="nameTargetAuto">
+          <input type="text" class="form-control input nameTargetAuto" value="${data ? data.nameTargetAuto : ''}" uuidv4="${uuidv4}" name="nameTargetAuto">
         </div>
         <div class="col-6 form-group">
           <label style=" font-weight: normal;"> Điểm của tiêu chí

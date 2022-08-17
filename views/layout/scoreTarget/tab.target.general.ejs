@@ -8,7 +8,8 @@
         <div class="form-group row">
             <label for="scoreScriptId" class="col-sm-3 form-check-label">Kịch bản chấm điểm</label>
             <div class="col-sm-6">
-                <select class="form-control selectpicker input" id="scoreScriptId" name="scoreScriptId"
+                <select class="form-control selectpicker input" multiple data-actions-box="true id=" id="scoreScriptId"
+                    data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả" name="scoreScriptId"
                     data-live-search="true">
                     <% scoreScript.forEach((ele)=> { %>
                         <option value="<%- ele.id %>">
@@ -142,7 +143,8 @@
         <div class="row-conditions">
         </div>
 
-        <button type="button" class="btn btn-primary" id="btn-add-conditions"><i class="fas fa-plus"></i> Thêm điều kiện</button>
+        <button type="button" class="btn btn-primary" id="btn-add-conditions"><i class="fas fa-plus"></i> Thêm điều
+            kiện</button>
     </div>
 </div>
 
@@ -157,7 +159,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary" id="confirmActiveScoreTarget" data-id="<%- ScoreTarget.id %>">Xác nhận</button>
+                <button type="button" class="btn btn-primary" id="confirmActiveScoreTarget"
+                    data-id="<%- ScoreTarget.id %>">Xác nhận</button>
             </div>
         </div>
     </div>
@@ -174,7 +177,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-danger" id="confirmUnActiveScoreTarget" data-id="<%- ScoreTarget.id %>" >Xác nhận</button>
+                <button type="button" class="btn btn-danger" id="confirmUnActiveScoreTarget"
+                    data-id="<%- ScoreTarget.id %>">Xác nhận</button>
             </div>
         </div>
     </div>
