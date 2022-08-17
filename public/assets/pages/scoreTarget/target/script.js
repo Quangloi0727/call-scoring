@@ -93,6 +93,10 @@ function bindClick() {
     window.location.href = "/scoreTarget"
   })
 
+  $(document).on("click", "#cancelModalAssignment", function (e) {
+    location.reload()
+  })
+
   $(document).on("click", "#btn_assignment_scoreTarget", function (e) {
     $('#modal_assignment_scoreTarget').modal({ show: true })
     $('#listBoxAssignment').bootstrapDualListbox({
@@ -590,7 +594,6 @@ $(function () {
   if (_userAssigned && _userAssigned.length > 0) {
     _userAssigned.forEach(el => {
       $(`#listBoxAssignment option[value=${el.userId}]`).attr('selected', 'selected')
-      $(`#listBoxAssignment option[value=${el.userId}]`).attr('disabled', 'disabled')
     })
   }
 
@@ -615,4 +618,5 @@ $(window).on('beforeunload', function () {
   $(document).off('click', '#confirmActiveScoreTarget')
   $(document).off('click', '#confirmUnActiveScoreTarget')
   $(document).off('click', '#confirmAssignmentScoreTarget')
+  $(document).off('click', '#cancelModalAssignment')
 })
