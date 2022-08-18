@@ -121,8 +121,10 @@ const CONST_COND = {
 
 const scoreTargetNotFound = 'Không tìm thấy mục tiêu chấm điểm vui lòng thử lại sau !'
 const statusUpdateFail = 'Trạng thái chuyển không hợp lệ !'
+const assignmentListEmpty = 'Danh sách phân công không được để trống !'
 
 module.exports = {
+  assignmentListEmpty,
   scoreTargetNotFound,
   statusUpdateFail,
   CONST_RATING_BY,

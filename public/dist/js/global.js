@@ -250,4 +250,17 @@
     return timeRepeated === 1 || timeRepeated === 0
   }, "Tên lựa chọn đã tồn tại !")
 
+
+  $.validator.addMethod("nameTargetAuto", function (value, element) {
+    var timeRepeated = 0
+    if (value != '') {
+      $($(element).find('input>.nameTargetAuto')).each(function () {
+        if ($(this).val() === value) {
+          timeRepeated++
+        }
+      })
+    }
+    return timeRepeated === 1 || timeRepeated === 0
+  }, "Tên tiêu chí đã tồn tại !")
+
 })

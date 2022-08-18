@@ -20,6 +20,8 @@ const ScoreTargetModel = require('./scoreTarget')
 const ScoreTargetAutoModel = require('./scoreTargetAuto')
 const ScoreTargetCondModel = require('./scoreTargetCond')
 const ScoreTargetKeywordSetModel = require('./scoreTargetKeywordSet')
+const ScoreTarget_ScoreScriptModel = require('./scoreTarget_scoreScript')
+const ScoreTargetAssignmentModel = require('./scoreTargetAssignment')
 
 const CriteriaGroupsModel = require('./criteriaGroups')
 const CriteriasModel = require('./criterias')
@@ -36,7 +38,7 @@ if (config.use_env_variable) {
 
 const models = {
   User: UserModel.init(sequelize),
-  Team: TeamModel.init(sequelize),
+  Team: TeamModel.Team.init(sequelize),
   AgentTeamMember: AgentTeamMemberModel.init(sequelize),
   CallDetailRecords: CallDetailRecordsModel.init(sequelize),
   UserRole: UserRoleModel.init(sequelize),
@@ -53,6 +55,8 @@ const models = {
   ScoreTargetAuto: ScoreTargetAutoModel.init(sequelize),
   ScoreTargetCond: ScoreTargetCondModel.init(sequelize),
   ScoreTargetKeywordSet: ScoreTargetKeywordSetModel.init(sequelize),
+  ScoreTarget_ScoreScript: ScoreTarget_ScoreScriptModel.init(sequelize),
+  ScoreTargetAssignment: ScoreTargetAssignmentModel.init(sequelize),
 
   CriteriaGroup: CriteriaGroupsModel.init(sequelize),
   Criteria: CriteriasModel.init(sequelize),

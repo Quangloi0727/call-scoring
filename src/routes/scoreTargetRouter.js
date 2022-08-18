@@ -21,4 +21,7 @@ router.route('/gets')
 router.route('/:id/updateStatus')
   .put(scoreTargetController.updateStatus)
 
+router.route('/:id/assignment')
+  .put(scoreTargetController.assignment)
+
 module.exports = router

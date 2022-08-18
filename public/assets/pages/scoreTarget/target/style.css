@@ -5,17 +5,42 @@
 
 .border-content {
   /* background-color: red !important; */
-  border: solid 2px rgba(0, 0, 0, .125);
+  border: solid 2px rgba(0, 0, 0, 0.125);
 }
 
 #assignStart:before {
-  content: 'Hour:';
-  margin-right: .6em;
+  content: "Hour:";
+  margin-right: 0.6em;
   color: #9d9d9d;
 }
 
 #assignEnd:before {
-  content: 'Hour:';
-  margin-right: .6em;
+  content: "Hour:";
+  margin-right: 0.6em;
   color: #9d9d9d;
+}
+
+.bootstrap-duallistbox-container select {
+  height: 300px !important;
+}
+
+.bootstrap-duallistbox-container .customButtonBox {
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-top: 105px;
+}
+
+.bootstrap-duallistbox-container .customButtonBox button {
+  margin-bottom: 15px;
+}
+
+#modal_content_assignment_scoreTarget {
+  width: 650px;
+}
+
+.duplicateNameScoreTarget {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
 }

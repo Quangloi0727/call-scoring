@@ -348,7 +348,7 @@ $(function () {
       Object.keys(USER_ROLE).forEach((ele, index) => {
         // USER_ROLE[ele].n == 
         if (item.roles.length > 0) {
-          let found = item.roles.find(element => element.role = USER_ROLE[ele].n)
+          let found = item.roles.find(element => element.role === USER_ROLE[ele].n)
           if (found) {
             rolesHtml += (`${USER_ROLE[ele].t}` + ',')
           }

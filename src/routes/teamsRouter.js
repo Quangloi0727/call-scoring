@@ -1,40 +1,43 @@
-const express = require('express');
-const teamsController = require('../controllers/teamsController');
-const router = express.Router();
-const libsPassport = require('../libs/passport');
+const express = require('express')
+const teamsController = require('../controllers/teamsController')
+const router = express.Router()
+const libsPassport = require('../libs/passport')
 
 
 router.route('/')
-  .get(libsPassport.isAdmin, teamsController.index);
+  .get(libsPassport.isAdmin, teamsController.index)
 
 router.route('/insert')
-  .post(teamsController.createGroup);
+  .post(teamsController.createGroup)
 
 router.route('/getTeams')
-  .get(teamsController.getTeams);
+  .get(teamsController.getTeams)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin, teamsController.detail);
+  .get(libsPassport.isAdmin, teamsController.detail)
 
 router.route('/')
-  .put(teamsController.update);
+  .put(teamsController.update)
 
 // router.route('/')
 //   .delete(teamsController.delete);
 
 router.route('/search')
-  .get(teamsController.search);
+  .get(teamsController.search)
 
 router.route('/add-user')
-  .post(teamsController.addUser);
+  .post(teamsController.addUser)
 
 router.route('/remove-user')
-  .delete(teamsController.removeUser);
+  .delete(teamsController.removeUser)
 
 router.route('/user-of-team')
-  .get(teamsController.userOfTeam);
+  .get(teamsController.userOfTeam)
 
-  router.route('/get-user-available')
-  .get(teamsController.getUserAvailable);
+router.route('/get-user-available')
+  .get(teamsController.getUserAvailable)
 
-module.exports = router;
+router.route('/:id/updateStatus')
+  .put(teamsController.updateStatus)
+
+module.exports = router
