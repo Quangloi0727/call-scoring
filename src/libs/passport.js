@@ -138,7 +138,7 @@ passport.use(new BasicStrategy(
           [Op.and]: [{ userName: userName }, { password: password }]
         }
       })
-      
+
       if (!user) {
         const error = new Error()
         error.message = "Tài khoản hoặc mật khẩu không đúng!"
@@ -175,7 +175,7 @@ exports.isLoggedIn = (req, res, next) => {
 
 exports.isAdmin = (req, res, next) => {
   let { user } = req
-  if (user.roles.find(i => i.role == USER_ROLE.admin.n)) {
+  if (user && user.roles.find(i => i.role == USER_ROLE.admin.n)) {
     return next()
   }
   return next(new Error('Không có quyền truy cập'))

@@ -28,15 +28,6 @@ let searchType = DEFAULT_SEARCH
 let CACHE_CONFIG_COLUMN = null
 
 function bindClick() {
-
-  // // const socket = io("http://localhost:6868",{ transports: ["websocket"] });
-  // const socket = io("http://f88.lab.local/chat-server",{ transports: ["websocket"] });
-  // // const socket = io("http://172.16.88.127:3000",{ transports: ["websocket"] });
-
-  // socket.on("connect", () => {
-  //   console.log('socket.disconnected', socket.disconnected); // false
-  // });
-
   $buttonSearch.on('click', function (e) {
     let page = 1
     let formData = getFormData('form_search')
@@ -486,15 +477,21 @@ function createTable(data, ConfigurationColums, queryData) {
 
       let tdTable = ''
       Object.keys(headerDefault).forEach((key) => {
-        // const ele = headerDefault[key];
         if (key == 'audioHtml') {
-          console.log(key, audioHtml)
           tdTable += `<td class="text-center audioHtml">${audioHtml}</td>`
         }
         else if (key == 'agentName') {
           tdTable += ` <td class="text-center agentName">${agentName}</td>`
         } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
-          tdTable += ` <th class="text-center callId fix"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+          tdTable += ` <th class="text-center callId"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+        } else if (key == 'action') {
+          tdTable += ` <th class="text-center ${key}">
+                          <i class="fas fa-check mr-2" title="Chấm điểm"></i>
+                          <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
+                          <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
+                          <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
+                          <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
+                        </th>`
         }
         else {
           tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>`
@@ -505,20 +502,6 @@ function createTable(data, ConfigurationColums, queryData) {
       <tr data-ele="${element}">
         ${tdTable}
       </tr>`
-
-      // html += `
-      //   <tr data-ele="${element}">
-      //     <td class="text-center direction">${item.direction || ''}</td>
-      //     <td class="text-center agentName">${agentName}</td>
-      //     <td class="text-center teamName">${item.teamName || ''}</td>
-      //     <td class="text-center caller">${item.caller}</td>
-      //     <td class="text-center called">${item.called}</td>
-      //     <td class="text-center origTime">${item.origTime}</td>
-      //     <td class="text-center duration">${item.duration}</td>
-      //     <td class="text-center audioHtml">${audioHtml}</td>
-      //   </tr>
-      // `;
-
     })
 
     $tableData.html(html)

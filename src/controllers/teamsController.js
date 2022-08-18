@@ -6,7 +6,7 @@ const UserRoleModel = require('../models/userRole')
 const TeamModel = require('../models/team').Team
 const AgentTeamMemberModel = require('../models/agentTeamMember')
 const model = require('../models')
-const TeamStatus = require('../models/team').TeamStatus
+const { TeamStatus } = require('../models/team')
 const {
   SUCCESS_200,
   ERR_500
@@ -500,7 +500,7 @@ exports.updateStatus = async (req, res) => {
   try {
     const { id } = req.params
     const { type } = req.body
-    
+
     switch (type) {
       case 'lockTeam':
         transaction = await model.sequelize.transaction()
@@ -517,7 +517,7 @@ exports.updateStatus = async (req, res) => {
         await transaction.commit()
 
         return res.json({ code: SUCCESS_200.code })
-      
+
       default:
         break
     }
