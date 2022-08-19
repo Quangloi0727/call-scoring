@@ -1,64 +1,100 @@
 <div class="modal fade" id="popupCallScore" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title">Chấm điểm cuộc gọi</h5>
-              <div class="justify-content-between">
-                <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-outline-primary" id="">Xác nhận</button>
-              </div>
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chấm điểm cuộc gọi</h5>
+        <div class="justify-content-between">
+          <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-outline-primary" id="">Xác nhận</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="formBlockUser" autocomplete="off">
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailScoreScript" role="button">
+              <i class="far fa-angle-down"></i> Kịch bản chấm điểm
+            </a>
           </div>
-          <div class="modal-body">
-              <form id="formBlockUser" autocomplete="off">
-                <p>
-                  <a class="detailScoreScript"  role="button" >
-                    <i class="far fa-angle-down"></i> Kịch bản chấm điểm
-                  </a>
-                </p>
-                <div class="collapse" id="collapseScoreScript">
-                  <div class="card card-body">
-                    <div class="row border-content">
-                      <div class="col-sm-4">
-                          <span class="nameScoreScript">Tên kịch bản chấm điểm nhóm 1</span>
-                          <span class="nameScoreScript">Tổng điểm 0/20 - 0%</span>
-                      </div>
-                      <div class="col-sm-8">
-                        <span class="nameScoreScript">tên nhóm tiêu chí</span>
-                        <span class="nameScoreScript">0/20 - 0% (100%)</span>
-                      </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3">
-                          <span>[Tên nhóm tiêu chí]</span>
-                          <ul class="nav nav-scorescript">
-                            <li class="nav-item">
-                              <a class="nav-link active" href="#">Active</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link" href="#">Link</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link" href="#">Link</a>
-                            </li>
-                            <li class="nav-item">
-                              <a class="nav-link disabled" href="#">Disabled</a>
-                            </li>
-                          </ul>
-                        </div>
-                        <div class="col-sm-8"></div>
-                    </div>
-                  </div>
+            <div class="">
+              <div class="row border-bottom">
+                <div class="col-sm-4 border-right">
+                  <span class="nameScoreScript">Tên kịch bản chấm điểm nhóm 1</span>
+                  <span class="nameScoreScript">Tổng điểm 0/20 - 0%</span>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-8">
+                  <span class="nameScoreScript">tên nhóm tiêu chí</span>
+                  <span class="nameScoreScript">0/20 - 0% (100%)</span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 border-right">
+                  <ul class="nav nav-scorescript nav-pills mb-3" id="tablist" role="tablist">
+                  </ul>
+                </div>
+                <div class="col-sm-8 tab-content">
 
                 </div>
-                <div class="col-sm-8"></div>
-              </form>
-            
+              </div>
+            </div>
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailNoteScore" role="button">
+              <i class="far fa-angle-down"></i> Ghi chú chấm điểm
+            </a>
           </div>
-          <div class="modal-footer">
- 
+
+          <div class="col-sm-1"></div>
+          <div class="form-group row mt-1">
+            <div class="col-sm-1"></div>
+            <label for="noteScore" class="col-sm-3 form-check-label">Ghi chú cho</label>
+            <div class="row col-sm-8">
+             
+                <select class="form-control col-sm-6 selectpicker input pl-2" name="noteScore" id="noteScore">
+                  <option value="">test</option>
+                </select>
+             
+              
+                <select class="form-control col-sm-6 selectpicker input pl-2">
+                  <option value="">test</option>
+                </select>
+             
+            </div>
           </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-1"></div>
+              <label for="description" class="col-sm-3 form-check-label">Nội dung ghi chú</label>
+            </div>
+            <div class="row">
+              <div class="col-sm-1"></div>
+              <div class="col-sm-10">
+                <div class="form-group">
+                  <textarea class="form-control input" id="description" name="description"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row mt-3">
+            <div class="col-sm-1"></div>
+            <label for="timeNote" class="col-sm-3 form-check-label">Thời điểm ghi chú</label>
+            <div class="row col-sm-8">
+                <div class="col-sm-6">
+                  <input type="number" class="form-control input " name="timeNote" id="timeNote"></input>
+                </div>
+                <div class="col-sm-6">
+                  <input type="number" class="form-control input "></input>
+                </div>
+          
+            </div>
+          </div>
+        </form>
+
       </div>
+      <div class="modal-footer">
+      </div>
+    </div>
   </div>
+</div>
+
+<div class="nav-content-criteria">
+
 </div>

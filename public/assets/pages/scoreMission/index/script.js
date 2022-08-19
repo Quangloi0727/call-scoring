@@ -47,8 +47,50 @@ function bindClick() {
             if (resp.code != 200) {
                 return toastr.error(resp.message)
             }
-            if(resp.data.length > 0){
-                
+            if (resp.data.CriteriaGroup.length > 0) {
+                let navHTML = `
+                <li class="nav-item border-bottom" disable>
+                    <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
+                </li>`
+
+                resp.data.CriteriaGroup.map((CriteriaGroup) => {
+                    let uuidv4 = window.location.uuidv4()
+                    navHTML += `
+                    <li class="nav-item border-bottom">
+                        <a class="nav-link" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+                        aria-controls="tab-score-script-script" aria-selected="false">${CriteriaGroup.name}</a>
+                    </li>`
+
+                    let navTabContent
+                    if (CriteriaGroup.Criteria && CriteriaGroup.Criteria.length > 0) {
+                        let criteria = ``
+                        CriteriaGroup.Criteria.map((SelectionCriteria) => {
+                            let htmlSelectionCriteria = ``
+                            if (SelectionCriteria.SelectionCriteria.length > 0) {
+                                SelectionCriteria.SelectionCriteria.map((el) => {
+                                    htmlSelectionCriteria += `<option value="${el.id}">${el.name}</option>`
+                                })
+
+                            }
+                            criteria += `<label for="timeNote" class="col-sm-3 form-check-label mt-4">${CriteriaGroup.name}</label>
+                            <select class="form-control selectpicker input pl-2">
+                                ${htmlSelectionCriteria}
+                            </select>`
+                        })
+
+                        navTabContent = `
+                        <div class="tab-pane fade mb-4" id="tab-criteria-group-${uuidv4}" role="tabpanel"
+                            aria-labelledby="custom-tabs-three-home-tab">
+                            ${criteria}
+                        </div>
+                        `
+                    }
+
+                    $('.tab-content').append(navTabContent)
+
+                })
+                $('.selectpicker').selectpicker('refresh')
+                $('.nav-scorescript').html(navHTML)
             }
         })
         $('#popupCallScore').modal('show')
@@ -56,6 +98,9 @@ function bindClick() {
 
     $(document).on('click', '.detailScoreScript', function () {
         $('#collapseScoreScript').show()
+    })
+    $(document).on('click', '.detailNoteScore', function () {
+        $('#collapseNoteScore').show()
     })
 
 }
