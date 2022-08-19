@@ -37,6 +37,46 @@ function bindClick() {
         // reset tick
         renderPopupCustomColumn(headerDefault, true)
     })
+
+    $(document).on('click', '.fa-play-circle', function () {
+        $("#formDetailRecord").html('')
+        $('#showDetailRecord').modal('show')
+        var wavesurfer = WaveSurfer.create({
+            container: '#formDetailRecord',
+            scrollParent: true,
+            waveColor: '#A8DBA8',
+            progressColor: '#3B8686',
+            backend: 'MediaElement',
+            plugins: [
+                WaveSurfer.regions.create({})
+            ]
+        })
+        wavesurfer.load('https://qa.metechvn.com/static/trainghiem.metechvn.com/archive/2022/Aug/19/fad8699a-1f92-11ed-8fe1-95f7e31f94c6.wav')
+        wavesurfer.on('ready', function () {
+            wavesurfer.play()
+            console.log(1111111,wavesurfer.getDuration());
+            
+        })
+        $('.controls .btn').on('click', function(){
+            var action = $(this).data('action');
+            console.log(action);
+            switch (action) {
+              case 'play':
+                wavesurfer.playPause();
+                break;
+              case 'back':
+                wavesurfer.skipBackward();
+                break;
+              case 'forward':
+                wavesurfer.skipForward();
+                break;
+              case 'mute':
+                wavesurfer.toggleMute();
+                break;
+            }
+        });
+
+    })
 }
 
 function getFormData(formId) {
