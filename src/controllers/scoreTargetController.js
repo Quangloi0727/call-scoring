@@ -428,19 +428,17 @@ exports.updateStatus = async (req, res) => {
 }
 
 exports.assignment = async (req, res) => {
-  let transaction
   try {
     const { id } = req.params
     const { assignment } = req.body
 
-    if (assignment && assignment.length == 0) throw new Error(assignmentListEmpty)
+    //if (assignment && assignment.length == 0) throw new Error(assignmentListEmpty)
+
+    //xóa các user đã được phân công trước đó
+    await model.ScoreTargetAssignment.destroy({ where: { scoreTargetId: id } })
 
     Promise.all(assignment.map(async el => {
-      const findAssignment = await model.ScoreTargetAssignment.findOne({ where: { userId: el, scoreTargetId: id } })
-      if (findAssignment) return
-      transaction = await model.sequelize.transaction()
-      await model.ScoreTargetAssignment.create({ userId: el, scoreTargetId: id }, { transaction: transaction })
-      await transaction.commit()
+      await model.ScoreTargetAssignment.create({ userId: el, scoreTargetId: id })
     }))
 
     return res.json({ code: SUCCESS_200.code })
@@ -449,7 +447,6 @@ exports.assignment = async (req, res) => {
     console.log(`------- error ------- `)
     console.log(error)
     console.log(`------- error ------- `)
-    if (transaction) await transaction.rollback()
     return res.json({ message: error.message, code: ERR_500.code })
   }
 }

@@ -3,7 +3,7 @@ const env = process.env.NODE_ENV || 'development'
 const config = require(__dirname + '/../database/database.json')[env]
 
 const UserModel = require('../models/user')
-const TeamModel = require('./team')
+const TeamModel = require('./team').Team
 const AgentTeamMemberModel = require('./agentTeamMember')
 const CallDetailRecordsModel = require('./call_detail_records')
 const UserRoleModel = require('./userRole')

@@ -142,7 +142,6 @@ $(function () {
         });
       },
     });
-    console.log('aa: ', value);
   });
 
   function findData(page) {
@@ -185,6 +184,7 @@ $(function () {
       let leaderHtml = '';
       let totalMember = item.member.filter((user) => user.role == 0);
       let leaders = item.member.filter((user) => user.role == 1);
+      let statusHtml = `<span class="badge ${item.status == 1 ? 'badge-success' : 'badge-danger'}">${item.status == 1 ? 'Đang hoạt động' : 'Đã khóa'}</span>`
       let htmlLeader = '';
 
       console.log('leaders: ', leaders)
@@ -222,6 +222,7 @@ $(function () {
             ${htmlLeader}            
           </td>
           <td class="text-center">${totalMember.length}</td>
+          <td class="text-center">${statusHtml}</td>
           <td class="text-center">${item.description || ''}</td>
           <td class="text-center">${item.createdAt}</td>
           <td class="text-center">${item.createdName}</td>

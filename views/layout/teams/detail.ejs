@@ -30,6 +30,17 @@
             <!-- <button type="button" class="btn btn-danger ml-2" data-toggle="modal" data-target="#modal_del_group">
               <i class="fa fa-trash p-0 mr-2" aria-hidden="true"></i>Xóa
             </button> -->
+            <%
+              if(team.status == 1){%>
+                <button type="button" class="btn btn-danger ml-2" data-toggle="modal" data-target="#modal_lock_group">
+                  <i class="fas fa-lock p-0 mr-2" aria-hidden="true"></i>Khóa
+                </button>
+              <%}else{%>
+                <button type="button" class="btn btn-success ml-2" data-toggle="modal" data-target="#modal_unlock_group">
+                  <i class="fas fa-unlock p-0 mr-2" aria-hidden="true"></i>Mở khóa
+                </button>
+              <%}
+            %>
           </div>
         </div>
         <div class="row mb-2 border-bottom border-dark">
@@ -45,6 +56,11 @@
             <span class="text-muted">Người tạo:</span>
             <p id="created">
               <%= team.userCreate.fullName %> (<%= team.userCreate.userName %>)
+            </p>
+
+            <span class="text-muted">Trạng thái:</span>
+            <p id="status">
+              <span class="badge <%- team.status == 1 ? 'badge-success' : 'badge-danger' %>"> <%- team.status == 1 ? 'Đang hoạt động' : 'Đã khóa' %></span>
             </p>
 
             <span class="text-muted">Ngày tạo:</span>
@@ -202,3 +218,38 @@
   <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
+
+
+<div class="modal fade" id="modal_lock_group" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Khóa nhóm</h5>
+      </div>
+      <div class="modal-body">
+        Nhóm sẽ bị khóa.Xác nhận ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-danger" id="confirmLockTeam" data-id="<%- team.id %>">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal_unlock_group" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Khóa nhóm</h5>
+      </div>
+      <div class="modal-body">
+        Nhóm sẽ được mở khóa.Xác nhận ?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-danger" id="confirmUnLockTeam" data-id="<%- team.id %>">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+</div>
