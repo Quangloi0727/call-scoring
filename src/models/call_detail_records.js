@@ -1,5 +1,5 @@
-"use strict";
-const { Model, DataTypes } = require("sequelize");
+"use strict"
+const { Model, DataTypes } = require("sequelize")
 
 class CallDetailRecords extends Model {
   /**
@@ -10,7 +10,7 @@ class CallDetailRecords extends Model {
   static init(sequelize) {
     return super.init(
       {
-        id:  {
+        id: {
           allowNull: false,
           autoIncrement: false,
           primaryKey: true,
@@ -54,17 +54,19 @@ class CallDetailRecords extends Model {
         timestamps: false,
         modelName: "call_detail_records",
       }
-    );
+    )
   }
 
   static associate(models) {
     // define association here
     models.CallDetailRecords.belongsTo(models.User, {
       foreignKey: "agentId",
-    });
+      as: "agent",
+    })
     models.CallDetailRecords.belongsTo(models.Team, {
       foreignKey: "teamId",
-    });
+      as: "team"
+    })
   }
 }
 

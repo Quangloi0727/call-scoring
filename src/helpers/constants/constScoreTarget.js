@@ -103,12 +103,12 @@ const CONST_COND = {
     p: 'only number'
   },
   'greaterThanOrEqual': {
-    n: '>=',
+    n: 'gt',
     t: "Lớn hơn hoặc bằng",
     p: 'only number'
   },
   'lessThanOrEqual': {
-    n: '<=',
+    n: 'lt',
     t: "Nhỏ hơn hoặc bằng",
     p: 'only number'
   },

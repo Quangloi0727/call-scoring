@@ -10,8 +10,12 @@
                         <div class="card">
                             <div class="card-header col-12 row">
                                 <div class="col-6 d-flex justify-content-start">
-                                    <select class="col-4 selectpicker input" name="status" id="status">
-                                        <option value="">Cuộc gọi có thời lượng > 2p</option>
+                                    <select class="col-4 selectpicker input" name="scoreTargetId" id="scoreTargetId">
+                                        <% scoreTarget.forEach((ele)=> { %>
+                                            <option value="<%- ele.id %>">
+                                                <%- ele.name %>
+                                            </option>
+                                            <% }) %>
                                     </select>
                                 </div>
                                 <div class="col-6 d-flex justify-content-end">
@@ -126,6 +130,9 @@
         </div>
     </div>
 </div>
+
+
+<%- include('./popupCallScore.ejs') %>
 
 
 <div class="modal fade" id="modal_general_setting">

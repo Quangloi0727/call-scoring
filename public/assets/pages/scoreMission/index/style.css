@@ -44,3 +44,15 @@
   border: 1px solid #dee2e6;
   padding: 0.75rem !important;
 }
+
+.dropdown-toggle::after{
+  display: none;
+}
+
+.border-content {
+  /* background-color: red !important; */
+  border: solid 2px rgba(0, 0, 0, 0.125);
+}
+.nav-scorescript {
+  display: initial
+}

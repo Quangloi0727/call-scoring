@@ -2,8 +2,7 @@
 const $form_target_general = $('#form_target_general')
 
 function bindClick() {
-
-  const form_target_general = $form_target_general.validate({
+  $form_target_general.validate({
 
     rules: {
       description: {
@@ -15,19 +14,6 @@ function bindClick() {
       },
       numberOfCall: {
         digits: true
-      },
-      nameTargetAuto: {
-        required: true,
-        maxlength: 500
-      },
-      point: {
-        required: true,
-        maxlength: 5,
-        digits: true
-      },
-      keyword: {
-        required: true,
-        maxlength: 1000,
       }
     },
     messages: {
@@ -40,20 +26,7 @@ function bindClick() {
       },
       numberOfCall: {
         digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-      },
-      nameTargetAuto: {
-        required: "Không được bỏ trống",
-        maxlength: "Độ dài không được quá 500 kí tự"
-      },
-      point: {
-        required: "Không được bỏ trống",
-        maxlength: "Giá trị tối đa là 99999",
-        digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-      },
-      keyword: {
-        required: "Không được bỏ trống",
-        maxlength: "Độ dài không được quá 1000 kí tự",
-      },
+      }
     },
     ignore: ":hidden",
     errorElement: 'span',
@@ -66,29 +39,48 @@ function bindClick() {
     },
     unhighlight: function (element, errorClass, validClass) {
       $(element).removeClass('is-invalid')
-    },
-    submitHandler: function (form) {
-
-      // lấy giá trị cho tap chung
-      let formData = getFormData('form_target_general')
-
-      // lấy dữ liệu Điều kiện ở tap chung
-      let arrCond = getArrCond(formData.conditionSearch)
-      formData.arrCond = arrCond
-
-      let arrTargetAuto = getTargetAutoData()
-      formData.arrTargetAuto = arrTargetAuto
-
-      console.log(formData)
-      if ($('#btn_save_scoreTarget').attr('data-id')) {
-        formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
-        saveData(formData, 'PUT')
-        return console.log($('#btn_save_scoreTarget').attr('data-id'))
-      }
-      return saveData(formData, 'POST')
     }
   })
 
+  $(document).on("click", "#btn_save_scoreTarget", function (e) {
+    // check valid cho form
+    if (!$form_target_general.valid()) return
+
+    // lấy giá trị cho tap chung
+    let formData = getFormData('form_target_general')
+
+    // lấy dữ liệu Điều kiện ở tap chung
+    let arrCond = getArrCond(formData.conditionSearch)
+    formData.arrCond = arrCond
+
+    let arrTargetAuto = getTargetAutoData()
+    formData.arrTargetAuto = arrTargetAuto
+
+    console.log(formData)
+
+    // check trùng Tiêu chí chấm 
+    let temp = []
+    let check = true
+    arrTargetAuto.map((el) => {
+      temp.push(el.nameTargetAuto)
+      const found = temp.filter(element => element == el.nameTargetAuto)
+      console.log(found)
+      if (found.length >= 2) check = false
+    })
+    console.log(temp)
+    console.log(check)
+    if (check == false) {
+      return $('.duplicateNameTarget').removeClass('d-none')
+    }
+
+    if ($('#btn_save_scoreTarget').attr('data-id')) {
+      formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
+      saveData(formData, 'PUT')
+      return console.log($('#btn_save_scoreTarget').attr('data-id'))
+    }
+    return saveData(formData, 'POST')
+
+  })
   $(document).on("click", "#btn_cancel_scoreTarget", function (e) {
     window.location.href = "/scoreTarget"
   })
@@ -360,13 +352,13 @@ function getTargetAutoData() {
   // handle dữ liệu cho tap mục tiêu tự động
   let nameTargetAuto = []
   let uuidv4 = []
-  $("input[name='nameTargetAuto']").each(function () {
+  $("input[true_name='nameTargetAuto']").each(function () {
     nameTargetAuto.push($(this).val())
     uuidv4.push($(this).attr('uuidv4'))
   })
 
   let point = []
-  $("input[name='point']").each(function () {
+  $("input[true_name='point']").each(function () {
     point.push($(this).val())
   })
 
@@ -378,7 +370,7 @@ function getTargetAutoData() {
   let arr = []
   nameTargetAuto.map((el, i) => {
     let keyword = []
-    $(`input[uuidv4='${uuidv4[i]}'][name="keyword"]`).each(function () {
+    $(`input[uuidv4='${uuidv4[i]}'][true_name="keyword"]`).each(function () {
       keyword.push({ keyword: $(this).val() })
     })
     arr.push({
@@ -600,7 +592,7 @@ $(function () {
 
 $(window).on('beforeunload', function () {
 
-  $(document).off('click', 'input[name="timeFor"]')
+  $(document).off('click', 'input[name="callTime"]')
   $(document).off('click', 'input:text[name="effectiveTime"]')
   $(document).off('change', '#effectiveTimeType')
   $(document).off('click', '#btn-add-conditions')
@@ -614,4 +606,5 @@ $(window).on('beforeunload', function () {
   $(document).off('click', '#confirmActiveScoreTarget')
   $(document).off('click', '#confirmUnActiveScoreTarget')
   $(document).off('click', '#confirmAssignmentScoreTarget')
+
 })
