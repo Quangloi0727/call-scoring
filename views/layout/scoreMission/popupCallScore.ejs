@@ -9,26 +9,28 @@
         </div>
       </div>
       <div class="modal-body">
-        <form id="formBlockUser" autocomplete="off">
+        <form id="formCallScore" autocomplete="off">
           <div class="row p-2 col-sm-12 bg-light">
             <a class="detailScoreScript" role="button">
-              <i class="far fa-angle-down"></i> Kịch bản chấm điểm
+              <label for=""><i class="far fa-angle-down"></i> Kịch bản chấm điểm</label>
             </a>
           </div>
             <div class="">
               <div class="row border-bottom">
-                <div class="col-sm-4 border-right">
-                  <span class="nameScoreScript">Tên kịch bản chấm điểm nhóm 1</span>
-                  <span class="nameScoreScript">Tổng điểm 0/20 - 0%</span>
+                <div class="col-sm-4 border-right p-2">
+                  <label class="nameScoreScript"></label>
+                  <br>
+                  <label class="scoreScript"></label>
                 </div>
-                <div class="col-sm-8">
-                  <span class="nameScoreScript">tên nhóm tiêu chí</span>
-                  <span class="nameScoreScript">0/20 - 0% (100%)</span>
+                <div class="col-sm-8  p-2">
+                  <label class="nameCriteriaGroup"></label>
+                  <br>
+                  <label class="scoreCriteria"></label>
                 </div>
               </div>
               <div class="row">
                 <div class="col-sm-4 border-right">
-                  <ul class="nav nav-scorescript nav-pills mb-3" id="tablist" role="tablist">
+                  <ul class="nav nav-scoreScript flex-column mb-3" id="tablist" role="tablist">
                   </ul>
                 </div>
                 <div class="col-sm-8 tab-content">
@@ -38,25 +40,22 @@
             </div>
           <div class="row p-2 col-sm-12 bg-light">
             <a class="detailNoteScore" role="button">
-              <i class="far fa-angle-down"></i> Ghi chú chấm điểm
+             <Label><i class="far fa-angle-down"></i> Ghi chú chấm điểm</Label>
             </a>
           </div>
 
           <div class="col-sm-1"></div>
           <div class="form-group row mt-1">
             <div class="col-sm-1"></div>
-            <label for="noteScore" class="col-sm-3 form-check-label">Ghi chú cho</label>
-            <div class="row col-sm-8">
-             
-                <select class="form-control col-sm-6 selectpicker input pl-2" name="noteScore" id="noteScore">
-                  <option value="">test</option>
+            <label for="noteCriteriaGroup" class="col-sm-3 normal-label col-form-label">Ghi chú cho</label>
+            <div class="row col-sm-8">  
+
+                <select class="form-control col-sm-6 selectpicker input pl-2" name="noteCriteriaGroup" id="noteCriteriaGroup"> 
+                  <option value="default" selected>Toàn bộ kịch bản</option>
                 </select>
-             
-              
-                <select class="form-control col-sm-6 selectpicker input pl-2">
-                  <option value="">test</option>
-                </select>
-             
+
+                <select class="form-control col-sm-6 selectpicker input pl-2" name="noteCriteria" id="noteCriteria" disabled> </select>
+
             </div>
           </div>
           <div class="form-group">
@@ -75,15 +74,20 @@
           </div>
           <div class="form-group row mt-3">
             <div class="col-sm-1"></div>
-            <label for="timeNote" class="col-sm-3 form-check-label">Thời điểm ghi chú</label>
-            <div class="row col-sm-8">
-                <div class="col-sm-6">
-                  <input type="number" class="form-control input " name="timeNote" id="timeNote"></input>
+            <label for="timeNote" class="col-sm-3 normal-label col-form-label">Thời điểm ghi chú</label>
+            <div class="row form-group col-sm-8">
+                <div class="col-sm-3">
+                  <input type="number" placeholder="00" class="form-control input" name="timeNoteMinutes" id="timeNoteMinutes"></input>
                 </div>
-                <div class="col-sm-6">
-                  <input type="number" class="form-control input "></input>
+                <div class="col-sm-3">
+                  <label class="col-form-label" for="timeNoteMinutes">Phút</label>
                 </div>
-          
+                <div class="col-sm-3">
+                  <input type="number" placeholder="00" class="form-control input"  name="timeNoteSecond" id="timeNoteSecond"></input>
+                </div>
+                <div class="col-sm-3">
+                  <label class="col-form-label" for="timeNoteSecond ">Giây</label>
+                </div>
             </div>
           </div>
         </form>

@@ -171,6 +171,7 @@ exports.getDetailScoreScript = async (req, res, next) => {
         return res.json({ code: ERR_500.code, message: error.message })
     }
 }
+
 function handleData(data, privatePhoneNumber = false) {
     let newData = []
 

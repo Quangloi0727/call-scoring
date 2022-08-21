@@ -73,3 +73,7 @@
   margin-right: 0;
   margin-left: 0;
 }
+
+.normal-label{
+  font-weight: normal !important;
+}

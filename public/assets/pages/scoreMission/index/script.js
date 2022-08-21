@@ -5,7 +5,7 @@ const $rightTable = $('.content-table-right')
 const $resetColumnCustom = $('#resetColumnCustom')
 const $modal_customs_table = $("#modal_customs_table")
 const $selectAll = $("#select-all")
-
+let _criteriaGroups = {}
 
 // WARNING
 // CACHE
@@ -33,6 +33,7 @@ function bindClick() {
             })
         }
     })
+
     $resetColumnCustom.on('click', async () => {
         // reset tick
         renderPopupCustomColumn(headerDefault, true)
@@ -48,49 +49,9 @@ function bindClick() {
                 return toastr.error(resp.message)
             }
             if (resp.data.CriteriaGroup.length > 0) {
-                let navHTML = `
-                <li class="nav-item border-bottom" disable>
-                    <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
-                </li>`
-
-                resp.data.CriteriaGroup.map((CriteriaGroup) => {
-                    let uuidv4 = window.location.uuidv4()
-                    navHTML += `
-                    <li class="nav-item border-bottom">
-                        <a class="nav-link" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
-                        aria-controls="tab-score-script-script" aria-selected="false">${CriteriaGroup.name}</a>
-                    </li>`
-
-                    let navTabContent
-                    if (CriteriaGroup.Criteria && CriteriaGroup.Criteria.length > 0) {
-                        let criteria = ``
-                        CriteriaGroup.Criteria.map((SelectionCriteria) => {
-                            let htmlSelectionCriteria = ``
-                            if (SelectionCriteria.SelectionCriteria.length > 0) {
-                                SelectionCriteria.SelectionCriteria.map((el) => {
-                                    htmlSelectionCriteria += `<option value="${el.id}">${el.name}</option>`
-                                })
-
-                            }
-                            criteria += `<label for="timeNote" class="col-sm-3 form-check-label mt-4">${CriteriaGroup.name}</label>
-                            <select class="form-control selectpicker input pl-2">
-                                ${htmlSelectionCriteria}
-                            </select>`
-                        })
-
-                        navTabContent = `
-                        <div class="tab-pane fade mb-4" id="tab-criteria-group-${uuidv4}" role="tabpanel"
-                            aria-labelledby="custom-tabs-three-home-tab">
-                            ${criteria}
-                        </div>
-                        `
-                    }
-
-                    $('.tab-content').append(navTabContent)
-
-                })
-                $('.selectpicker').selectpicker('refresh')
-                $('.nav-scorescript').html(navHTML)
+                $('.nameScoreScript').text(resp.data.name)
+                _criteriaGroups = resp.data.CriteriaGroup
+                return popupScore(resp.data.CriteriaGroup)
             }
         })
         $('#popupCallScore').modal('show')
@@ -99,10 +60,35 @@ function bindClick() {
     $(document).on('click', '.detailScoreScript', function () {
         $('#collapseScoreScript').show()
     })
+
     $(document).on('click', '.detailNoteScore', function () {
         $('#collapseNoteScore').show()
     })
 
+    $(document).on('click', '.nav-link.nav-criteria-group', function () {
+        $('.nameCriteriaGroup').text($(this).text())
+        $('.scoreCriteria').text(`Tổng điển: 0/${$(this).attr('data-point')} - 0%`)
+    })
+
+    $(document).on('change', '#noteCriteriaGroup', function () {
+        let html = ``
+        if (_criteriaGroups && _criteriaGroups.length > 0) {
+            _criteriaGroups.map((criteriaGroup) => {
+
+                if (criteriaGroup.id == parseInt($(this).val())) {
+                    if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
+                        criteriaGroup.Criteria.map((el) => {
+                            html += `<option value="${el.id}">${el.name}</option>`
+                        })
+                    }
+                }
+            })
+            $('#noteCriteria').html(html)
+            $('.selectpicker').selectpicker('refresh')
+            $('#noteCriteria').prop("disabled", html ? false : true)
+            $('.selectpicker').selectpicker('refresh')
+        }
+    })
 }
 
 function getFormData(formId) {
@@ -205,7 +191,7 @@ function itemColumn(key, title, value) {
 }
 
 function createTable(data, scoreScripts) {
-    console.log(scoreScripts)
+
     let dropdown = ''
     if (scoreScripts.length > 0) {
         scoreScripts.map((el) => {
@@ -254,6 +240,65 @@ function createTable(data, scoreScripts) {
 
 }
 
+function popupScore(criteriaGroup) {
+    let navHTML = `
+    <li class="nav-item border-bottom" disable>
+        <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
+    </li>`
+    $('#formCallScore')[0].reset()
+    $('.tab-content').html('')
+    let optionNoteCriteriaGroup = `<option value="default">Toàn bộ kịch bản</option>`
+    let totalPoint = 0
+    criteriaGroup.map((criteriaGroup) => {
+        let uuidv4 = window.location.uuidv4()
+        let pointCriteria = 0
+        let navTabContent
+        if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
+            let criteriaHtml = ``
+            criteriaGroup.Criteria.map((criteria) => {
+                let htmlSelectionCriteria = ``
+                if (criteria.SelectionCriteria.length > 0) {
+                    criteria.SelectionCriteria.map((el) => {
+                        htmlSelectionCriteria += `<option value="${el.id}">${el.name + ': ' + (el.score)}</option>`
+                    })
+
+                }
+                criteriaHtml += `<label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
+                <select class="form-control selectpicker input pl-2">
+                    ${htmlSelectionCriteria}
+                </select>`
+                pointCriteria += parseInt(criteria.scoreMax)
+                totalPoint += parseInt(criteria.scoreMax)
+            })
+            // giao diện từng tiêu chí của mỗi Nhóm tiêu chí
+            navTabContent = `
+            <div class="tab-pane fade mb-4" id="tab-criteria-group-${uuidv4}" role="tabpanel"
+                aria-labelledby="custom-tabs-three-home-tab">
+                ${criteriaHtml}
+            </div>
+            `
+        }
+        // tạo thanh nav cho Nhóm tiêu chí
+        navHTML += `
+        <li class="nav-item border-bottom">
+            <a class="nav-link nav-criteria-group" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+            aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
+        </li>`
+        optionNoteCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
+        $('.tab-content').append(navTabContent)
+
+    })
+
+    $('.scoreScript').text(`Tổng điển: 0/${totalPoint} - 0%`)
+    $('#noteCriteriaGroup').html(optionNoteCriteriaGroup)
+    $('#noteCriteria').val("")
+    $('#noteCriteria').prop("disabled", true)
+    $('.selectpicker').selectpicker('refresh')
+    $('#noteCriteriaGroup').val('default')
+    $('.selectpicker').selectpicker('refresh')
+    $('.nav-scoreScript').html(navHTML)
+}
+
 $(function () {
 
 
@@ -280,4 +325,11 @@ $(window).on('beforeunload', function () {
 
     $(document).off('click', '.sorting')
     $(document).off('click', '.zpaging')
+    $(document).off('click', '#select-all')
+    $(document).off('click', '#modal_customs_table')
+    $(document).off('click', '.showCallScore')
+    $(document).off('click', '.detailScoreScript')
+    $(document).off('click', '.detailNoteScore')
+    $(document).off('click', '.nav-link.nav-criteria-group')
+    $(document).off('change', '#noteCriteriaGroup')
 })
