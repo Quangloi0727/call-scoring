@@ -69,8 +69,10 @@ exports.getScoreMission = async (req, res, next) => {
         const pageNumber = page ? Number(page) : 1
         const offset = (pageNumber * limit) - limit
         let query = {
-            caller: { [Op.ne]: null },
-            called: { [Op.ne]: null }
+            [Op.and]: [
+                { caller: { [Op.ne]: null } },
+                { called: { [Op.ne]: null } }
+            ],
         }
         if (scoreTargetId) {
             let data = await model.ScoreTargetCond.findAll({
@@ -80,9 +82,9 @@ exports.getScoreMission = async (req, res, next) => {
             })
             if (data.length > 0) {
                 data.map((el) => {
-                    query[`${el.data}`] = {
-                        [Op[`${CONST_COND[el.cond].n}`]]: Number(el.value)
-                    }
+                    let _data = {}
+                    _data[`${el.data}`] = { [Op[`${CONST_COND[el.cond].n}`]]: Number(el.value), }
+                    query[Op[data[0].conditionSearch]].push(_data)
                 })
             }
         }
