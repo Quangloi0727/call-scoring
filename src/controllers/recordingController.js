@@ -339,6 +339,7 @@ exports.SaveConfigurationColums = async (req, res) => {
     const data = {}
     data.userId = req.user.id
     data.configurationColums = JSON.stringify(req.body)
+    data.nameTable = "recordingTable"
     transaction = await model.sequelize.transaction()
     const result = await ConfigurationColumsModel.update(
       { configurationColums: JSON.stringify(req.body) },
@@ -368,7 +369,7 @@ exports.deleteConfigurationColums = async (req, res) => {
     data.userId = req.user.id
     transaction = await model.sequelize.transaction()
     const result = await model.ConfigurationColums.destroy(
-      { where: { userId: Number(req.user.id) } },
+      { where: { userId: Number(req.user.id), nameTable: "recordingTable" } },
       { transaction: transaction }
     )
 

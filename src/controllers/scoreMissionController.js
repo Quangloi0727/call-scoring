@@ -10,21 +10,13 @@ const {
     ERR_400,
     ERR_403
 } = require("../helpers/constants/statusCodeHTTP")
-const SOURCE_NAME = {
-    oreka: {
-        code: 'ORK',
-        text: 'Orec'
-    },
-    fs: {
-        code: 'FS',
-        text: 'Freeswitch'
-    },
-}
+
 const {
-    headerDefault,
     CONST_COND,
     CONST_DATA,
     CONST_STATUS } = require('../helpers/constants/index')
+
+const { headerDefault } = require('../helpers/constants/fieldScoreMission')
 
 const { cheSo } = require("../helpers/functions")
 
@@ -45,7 +37,7 @@ exports.index = async (req, res, next) => {
             title: titlePage,
             titlePage: titlePage,
             headerDefault: headerDefault
-        })
+        })    
     } catch (error) {
         console.log(`------- error ------- `)
         console.log(error)

@@ -225,7 +225,7 @@ function createTable(data, scoreScripts) {
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <a type="button" class="callScore"><i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i></a>
+                <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
