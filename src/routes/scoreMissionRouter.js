@@ -8,4 +8,9 @@ router.route('/')
     .get(scoreMissionController.index)
 router.route('/getData')
     .get(scoreMissionController.getScoreMission)
+
+router.route('/getScoreScript')
+    .get(scoreMissionController.getDetailScoreScript)
+
+
 module.exports = router

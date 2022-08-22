@@ -29,7 +29,7 @@
 }
 
 .custom-table thead th {
-  padding: 15px 5px;
+  margin: 15px 5px;
   max-width: 200px;
   min-width: 200px;
   border: 1px solid #dee2e6;
@@ -48,4 +48,36 @@
 
 #showDetailRecord .modal-dialog {
   width: 80%;
+}
+.dropdown-toggle::after{
+  display: none;
+}
+
+.border-content {
+  /* background-color: red !important; */
+  border-top: solid 2px rgba(0, 0, 0, 0.125);
+}
+.nav-scorescript {
+  display: initial
+}
+.modal-body{
+  padding: 0px;
+}
+
+.row.p-2.col-sm-12.bg-light {
+  margin: 0px;    
+}
+
+.form-control.textarea {
+  margin-right: 7.5px;
+  margin-left: 7.5px;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.normal-label{
+  font-weight: normal !important;
 }
