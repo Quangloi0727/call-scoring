@@ -1,6 +1,7 @@
 // cấu hình bảng mặc định
 const headerDefault = {
     callId: "ID cuộc gọi",
+    action: "Thao tác",
     direction: "Hướng gọi",
     agentName: "Điện thoại viên",
     teamName: "Đội ngũ",

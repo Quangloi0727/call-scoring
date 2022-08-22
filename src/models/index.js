@@ -3,7 +3,7 @@ const env = process.env.NODE_ENV || 'development'
 const config = require(__dirname + '/../database/database.json')[env]
 
 const UserModel = require('../models/user')
-const TeamModel = require('./team').Team
+const TeamModel = require('./team')
 const AgentTeamMemberModel = require('./agentTeamMember')
 const CallDetailRecordsModel = require('./call_detail_records')
 const UserRoleModel = require('./userRole')
@@ -38,7 +38,7 @@ if (config.use_env_variable) {
 
 const models = {
   User: UserModel.init(sequelize),
-  Team: TeamModel.init(sequelize),
+  Team: TeamModel.Team.init(sequelize),
   AgentTeamMember: AgentTeamMemberModel.init(sequelize),
   CallDetailRecords: CallDetailRecordsModel.init(sequelize),
   UserRole: UserRoleModel.init(sequelize),
