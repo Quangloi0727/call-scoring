@@ -41,7 +41,7 @@
 
         <div class="card">
           <div class="card-body">
-            <form id="form_target_general" onsubmit="return false">
+            <form id="form_target_general">
               <div class="row">
 
                 <div class="form-group col-sm-3">
@@ -56,7 +56,7 @@
 
                 <div class="form-group col-sm-6 ml-auto text-right">
                   <button type="button" class="btn btn-default" data-dismiss="modal" id="btn_cancel_scoreTarget">Hủy</button>
-                  <button type="submit" id="btn_save_scoreTarget" data-id="<%- ScoreTarget ? ScoreTarget.id : '' %>" class="btn btn-primary">Lưu</button>
+                  <button type="button" id="btn_save_scoreTarget" data-id="<%- ScoreTarget ? ScoreTarget.id : '' %>" class="btn btn-primary">Lưu</button>
                 </div>
 
               </div>
@@ -82,6 +82,7 @@
                   <!-- tab auto -->
                   <%- include('./tap.target.auto.ejs') %>
                     <!-- end tab auto -->
+                  <link href="/assets/pages/scoreTarget/tapTargetAuto/style.css" rel="stylesheet">
                   <script type="text/javascript" src="/assets/pages/scoreTarget/tapTargetAuto/script.js" defer></script>
               </div>
 

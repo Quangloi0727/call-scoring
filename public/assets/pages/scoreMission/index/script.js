@@ -5,7 +5,7 @@ const $rightTable = $('.content-table-right')
 const $resetColumnCustom = $('#resetColumnCustom')
 const $modal_customs_table = $("#modal_customs_table")
 const $selectAll = $("#select-all")
-
+let _criteriaGroups = {}
 
 // WARNING
 // CACHE
@@ -33,9 +33,61 @@ function bindClick() {
             })
         }
     })
+
     $resetColumnCustom.on('click', async () => {
         // reset tick
         renderPopupCustomColumn(headerDefault, true)
+    })
+
+    $(document).on('click', '.showCallScore', function () {
+        console.log($(this).attr('data-id'))
+        let queryData = {}
+        queryData.id = $(this).attr('data-id')
+        _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
+            console.log(resp)
+            if (resp.code != 200) {
+                return toastr.error(resp.message)
+            }
+            if (resp.data.CriteriaGroup.length > 0) {
+                $('.nameScoreScript').text(resp.data.name)
+                _criteriaGroups = resp.data.CriteriaGroup
+                return popupScore(resp.data.CriteriaGroup)
+            }
+        })
+        $('#popupCallScore').modal('show')
+    })
+
+    $(document).on('click', '.detailScoreScript', function () {
+        $('#collapseScoreScript').show()
+    })
+
+    $(document).on('click', '.detailNoteScore', function () {
+        $('#collapseNoteScore').show()
+    })
+
+    $(document).on('click', '.nav-link.nav-criteria-group', function () {
+        $('.nameCriteriaGroup').text($(this).text())
+        $('.scoreCriteria').text(`Tổng điển: 0/${$(this).attr('data-point')} - 0%`)
+    })
+
+    $(document).on('change', '#noteCriteriaGroup', function () {
+        let html = ``
+        if (_criteriaGroups && _criteriaGroups.length > 0) {
+            _criteriaGroups.map((criteriaGroup) => {
+
+                if (criteriaGroup.id == parseInt($(this).val())) {
+                    if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
+                        criteriaGroup.Criteria.map((el) => {
+                            html += `<option value="${el.id}">${el.name}</option>`
+                        })
+                    }
+                }
+            })
+            $('#noteCriteria').html(html)
+            $('.selectpicker').selectpicker('refresh')
+            $('#noteCriteria').prop("disabled", html ? false : true)
+            $('.selectpicker').selectpicker('refresh')
+        }
     })
 }
 
@@ -54,6 +106,7 @@ function getFormData(formId) {
 function findData(page) {
     let queryData = {}
     if (page) queryData.page = page
+    queryData.scoreTargetId = $('#scoreTargetId').val()
     queryData.limit = $('.sl-limit-page').val() || 10
     console.log(page)
     $('.page-loader').show()
@@ -67,7 +120,7 @@ function findData(page) {
 
             $('.page-loader').hide()
             // debugger
-            createTable(result.data, result.ConfigurationColums, queryData)
+            createTable(result.data, result.scoreScripts)
             return $('#paging_table').html(window.location.CreatePaging(result.paginator))
 
         },
@@ -137,7 +190,16 @@ function itemColumn(key, title, value) {
   </li>`
 }
 
-function createTable(data) {
+function createTable(data, scoreScripts) {
+
+    let dropdown = ''
+    if (scoreScripts.length > 0) {
+        scoreScripts.map((el) => {
+            dropdown += `<a class="dropdown-item showCallScore"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+        })
+    }
+
+    let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
     data.forEach((item, element) => {
@@ -158,9 +220,12 @@ function createTable(data) {
         `
         leftTable += ` <tr class="text-center">
             <td class="text-center callId">${item.callId || ''}</td>
-            <td class="text-center">
-                <i class="fas fa-check mr-2" title="Chấm điểm"></i>
-                <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
+            <td class="text-center">    
+                <i class="fas fa-check mr-2 dropdown-toggle" id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
+                <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
+                    ${dropdown}
+                </div>
+                <a type="button" class="callScore"><i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i></a>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
@@ -173,6 +238,65 @@ function createTable(data) {
     // handleAudio();
     return
 
+}
+
+function popupScore(criteriaGroup) {
+    let navHTML = `
+    <li class="nav-item border-bottom" disable>
+        <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
+    </li>`
+    $('#formCallScore')[0].reset()
+    $('.tab-content').html('')
+    let optionNoteCriteriaGroup = `<option value="default">Toàn bộ kịch bản</option>`
+    let totalPoint = 0
+    criteriaGroup.map((criteriaGroup) => {
+        let uuidv4 = window.location.uuidv4()
+        let pointCriteria = 0
+        let navTabContent
+        if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
+            let criteriaHtml = ``
+            criteriaGroup.Criteria.map((criteria) => {
+                let htmlSelectionCriteria = ``
+                if (criteria.SelectionCriteria.length > 0) {
+                    criteria.SelectionCriteria.map((el) => {
+                        htmlSelectionCriteria += `<option value="${el.id}">${el.name + ': ' + (el.score)}</option>`
+                    })
+
+                }
+                criteriaHtml += `<label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
+                <select class="form-control selectpicker input pl-2">
+                    ${htmlSelectionCriteria}
+                </select>`
+                pointCriteria += parseInt(criteria.scoreMax)
+                totalPoint += parseInt(criteria.scoreMax)
+            })
+            // giao diện từng tiêu chí của mỗi Nhóm tiêu chí
+            navTabContent = `
+            <div class="tab-pane fade mb-4" id="tab-criteria-group-${uuidv4}" role="tabpanel"
+                aria-labelledby="custom-tabs-three-home-tab">
+                ${criteriaHtml}
+            </div>
+            `
+        }
+        // tạo thanh nav cho Nhóm tiêu chí
+        navHTML += `
+        <li class="nav-item border-bottom">
+            <a class="nav-link nav-criteria-group" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+            aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
+        </li>`
+        optionNoteCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
+        $('.tab-content').append(navTabContent)
+
+    })
+
+    $('.scoreScript').text(`Tổng điển: 0/${totalPoint} - 0%`)
+    $('#noteCriteriaGroup').html(optionNoteCriteriaGroup)
+    $('#noteCriteria').val("")
+    $('#noteCriteria').prop("disabled", true)
+    $('.selectpicker').selectpicker('refresh')
+    $('#noteCriteriaGroup').val('default')
+    $('.selectpicker').selectpicker('refresh')
+    $('.nav-scoreScript').html(navHTML)
 }
 
 $(function () {
@@ -201,4 +325,11 @@ $(window).on('beforeunload', function () {
 
     $(document).off('click', '.sorting')
     $(document).off('click', '.zpaging')
+    $(document).off('click', '#select-all')
+    $(document).off('click', '#modal_customs_table')
+    $(document).off('click', '.showCallScore')
+    $(document).off('click', '.detailScoreScript')
+    $(document).off('click', '.detailNoteScore')
+    $(document).off('click', '.nav-link.nav-criteria-group')
+    $(document).off('change', '#noteCriteriaGroup')
 })

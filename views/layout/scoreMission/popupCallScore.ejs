@@ -1,0 +1,104 @@
+<div class="modal fade" id="popupCallScore" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chấm điểm cuộc gọi</h5>
+        <div class="justify-content-between">
+          <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-outline-primary" id="">Xác nhận</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="formCallScore" autocomplete="off">
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailScoreScript" role="button">
+              <label for=""><i class="far fa-angle-down"></i> Kịch bản chấm điểm</label>
+            </a>
+          </div>
+            <div class="">
+              <div class="row border-bottom">
+                <div class="col-sm-4 border-right p-2">
+                  <label class="nameScoreScript"></label>
+                  <br>
+                  <label class="scoreScript"></label>
+                </div>
+                <div class="col-sm-8  p-2">
+                  <label class="nameCriteriaGroup"></label>
+                  <br>
+                  <label class="scoreCriteria"></label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm-4 border-right">
+                  <ul class="nav nav-scoreScript flex-column mb-3" id="tablist" role="tablist">
+                  </ul>
+                </div>
+                <div class="col-sm-8 tab-content">
+
+                </div>
+              </div>
+            </div>
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailNoteScore" role="button">
+             <Label><i class="far fa-angle-down"></i> Ghi chú chấm điểm</Label>
+            </a>
+          </div>
+
+          <div class="col-sm-1"></div>
+          <div class="form-group row mt-1">
+            <div class="col-sm-1"></div>
+            <label for="noteCriteriaGroup" class="col-sm-3 normal-label col-form-label">Ghi chú cho</label>
+            <div class="row col-sm-8">  
+
+                <select class="form-control col-sm-6 selectpicker input pl-2" name="noteCriteriaGroup" id="noteCriteriaGroup"> 
+                  <option value="default" selected>Toàn bộ kịch bản</option>
+                </select>
+
+                <select class="form-control col-sm-6 selectpicker input pl-2" name="noteCriteria" id="noteCriteria" disabled> </select>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-1"></div>
+              <label for="description" class="col-sm-3 form-check-label">Nội dung ghi chú</label>
+            </div>
+            <div class="row">
+              <div class="col-sm-1"></div>
+              <div class="col-sm-10">
+                <div class="form-group">
+                  <textarea class="form-control input" id="description" name="description"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row mt-3">
+            <div class="col-sm-1"></div>
+            <label for="timeNote" class="col-sm-3 normal-label col-form-label">Thời điểm ghi chú</label>
+            <div class="row form-group col-sm-8">
+                <div class="col-sm-3">
+                  <input type="number" placeholder="00" class="form-control input" name="timeNoteMinutes" id="timeNoteMinutes"></input>
+                </div>
+                <div class="col-sm-3">
+                  <label class="col-form-label" for="timeNoteMinutes">Phút</label>
+                </div>
+                <div class="col-sm-3">
+                  <input type="number" placeholder="00" class="form-control input"  name="timeNoteSecond" id="timeNoteSecond"></input>
+                </div>
+                <div class="col-sm-3">
+                  <label class="col-form-label" for="timeNoteSecond ">Giây</label>
+                </div>
+            </div>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-content-criteria">
+
+</div>

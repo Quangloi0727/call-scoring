@@ -20,15 +20,28 @@ const SOURCE_NAME = {
         text: 'Freeswitch'
     },
 }
+const {
+    headerDefault,
+    CONST_COND,
+    CONST_DATA,
+    CONST_STATUS } = require('../helpers/constants/index')
+
 const { cheSo } = require("../helpers/functions")
+
 const model = require('../models')
 const moment = require('moment')
-const { headerDefault } = require('../helpers/constants/fieldScoreMission')
+
 exports.index = async (req, res, next) => {
     try {
 
-
+        const scoreTarget = await model.ScoreTarget.findAll({
+            where: { status: CONST_STATUS['Hoạt động'] },
+            attributes: ['name', 'id'],
+            raw: true,
+            nest: true
+        })
         return _render(req, res, 'scoreMission/index', {
+            scoreTarget: scoreTarget,
             title: titlePage,
             titlePage: titlePage,
             headerDefault: headerDefault
@@ -43,11 +56,11 @@ exports.index = async (req, res, next) => {
 
 exports.getScoreMission = async (req, res, next) => {
     try {
-        const {
-            page
+        let {
+            page,
+            limit,
+            scoreTargetId
         } = req.query
-        let { limit } = req.query
-        let { user } = req
 
         if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
 
@@ -55,93 +68,111 @@ exports.getScoreMission = async (req, res, next) => {
 
         const pageNumber = page ? Number(page) : 1
         const offset = (pageNumber * limit) - limit
+        let query = {
+            [Op.and]: [
+                { caller: { [Op.ne]: null } },
+                { called: { [Op.ne]: null } }
+            ],
+        }
+        if (scoreTargetId) {
+            let data = await model.ScoreTargetCond.findAll({
+                where: { scoreTargetId: { [Op.eq]: Number(scoreTargetId) } },
+                raw: true,
+                nest: true
+            })
+            if (data.length > 0) {
+                data.map((el) => {
+                    let _data = {}
+                    _data[`${el.data}`] = { [Op[`${CONST_COND[el.cond].n}`]]: Number(el.value), }
+                    query[Op[data[0].conditionSearch]].push(_data)
+                })
+            }
+        }
+        const { count, rows } = await model.CallDetailRecords.findAndCountAll({
+            where: query,
+            order: [
+                ['id', 'DESC'],
+            ],
+            include: [
+                { model: model.User, as: 'agent' },
+                { model: model.Team, as: 'team' },
+            ],
+            offset: offset,
+            limit: limit,
+            raw: true,
+            nest: true
+        })
 
-        let query = ''
-        let order = 'ORDER BY records.origTime DESC'
-
-        let queryData = `
-          DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
-    
-          SELECT
-            records.callId AS callId,
-            records.xmlCdrId AS xmlCdrId,
-            records.caller AS caller,
-            records.called AS called,
-            records.origTime AS origTime,
-            records.duration AS duration,
-            records.recordingFileName AS recordingFileName,
-            -- case 
-            --   when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
-            --   else records.recordingFileName
-            -- end as recordingFileName,
-            records.direction AS direction,
-            records.sourceName AS sourceName,
-            agent.fullName AS fullName,
-            agent.userName AS userName,
-            team.name AS teamName
-          FROM dbo.call_detail_records records 
-          LEFT JOIN dbo.Users agent ON records.agentId = agent.id
-          LEFT JOIN dbo.Teams team ON records.teamId = team.id
-          WHERE records.origTime >= 1657990800    
-            AND records.origTime <= 1659632399
-            AND (
-              records.sourceName = '${SOURCE_NAME.oreka.code}'
-              or
-              (
-                records.sourceName = '${SOURCE_NAME.fs.code}'
-                and records.caller is not null
-                and records.called is not null
-              )
-            )
-              ${query}
-            ${order}
-          OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
-        `
-
-        let queryCountData = `
-          SELECT COUNT(*) AS total
-          FROM dbo.call_detail_records records 
-          LEFT JOIN dbo.Users agent ON records.agentId = agent.id
-          LEFT JOIN dbo.Teams team ON records.teamId = team.id
-          WHERE records.origTime >= 1657990800      
-            AND records.origTime <= 1659632399
-            AND (
-              records.sourceName = '${SOURCE_NAME.oreka.code}'
-              or
-              (
-                records.sourceName = '${SOURCE_NAME.fs.code}'
-                and records.caller is not null
-                and records.called is not null
-              )
-            )
-              ${query}
-        `
-
-        const [recordResult, totalData] = await Promise.all([
-            await model.sequelize.query(queryData, { type: QueryTypes.SELECT }),
-            await model.sequelize.query(queryCountData, { type: QueryTypes.SELECT }),
-        ])
+        const scoreScripts = await model.ScoreTarget_ScoreScript.findAll({
+            where: {
+                scoreTargetId: { [Op.eq]: Number(scoreTargetId) },
+            },
+            include: [
+                {
+                    model: model.ScoreScript,
+                    as: 'ScoreScripts',
+                    where: { status: 1 },
+                }
+            ],
+            nest: true
+        })
 
         let paginator = new pagination.SearchPaginator({
             current: pageNumber,
             rowsPerPage: limit,
-            totalResult: totalData && totalData[0] && totalData[0].total || 0
+            totalResult: count
         })
 
         return res.status(SUCCESS_200.code).json({
             message: 'Success!',
-            data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
+            data: handleData(rows, _config.privatePhoneNumberWebView) || [],
+            scoreScripts: scoreScripts,
             paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
         })
     } catch (error) {
-        console.log(`------- error ------- getRecording`)
-        console.log(error)
-        console.log(`------- error ------- getRecording`)
-
+        _logger.error("Lấy danh sách Nhiệm vụ chấm điểm lỗi", error)
         return res.status(ERR_500.code).json({ message: error.message })
     }
 }
 
+exports.getDetailScoreScript = async (req, res, next) => {
+    try {
+        const { id } = req.query
+
+        if (!id || id == '') {
+            throw new Error('Nhóm không tồn tại!')
+        }
+
+        let [scoreScriptInfo] = await Promise.all([
+            model.ScoreScript.findOne({
+                where: { id: { [Op.eq]: Number(id) } },
+                include: [
+                    { model: model.User, as: 'userCreate' },
+                    {
+                        model: model.CriteriaGroup,
+                        as: 'CriteriaGroup',
+                        include: {
+                            model: model.Criteria,
+                            as: 'Criteria',
+                            include: {
+                                model: model.SelectionCriteria,
+                                as: 'SelectionCriteria'
+                            },
+                        },
+                    },
+                ],
+                nest: true
+            })
+        ])
+
+        return res.json({
+            code: SUCCESS_200.code,
+            data: scoreScriptInfo || [],
+        })
+    } catch (error) {
+        return res.json({ code: ERR_500.code, message: error.message })
+    }
+}
 
 function handleData(data, privatePhoneNumber = false) {
     let newData = []

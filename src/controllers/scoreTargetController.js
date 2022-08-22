@@ -20,7 +20,8 @@ const {
   CONST_EFFECTIVE_TIME_TYPE,
   CONST_STATUS,
   CONST_DATA,
-  CONST_COND, MESSAGE_ERROR,
+  CONST_COND,
+  MESSAGE_ERROR,
   USER_ROLE } = require('../helpers/constants/index')
 
 exports.index = async (req, res, next) => {
@@ -42,7 +43,7 @@ exports.new = async (req, res, next) => {
   try {
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: 1 },
+      where: { status: CONST_STATUS['Hoạt động'] },
       attributes: ['name', 'id'],
       raw: true,
       nest: true
@@ -89,7 +90,7 @@ exports.detail = async (req, res, next) => {
     }
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: 1 },
+      where: { status: CONST_STATUS['Hoạt động'] },
       attributes: ['name', 'id'],
       raw: true,
       nest: true
@@ -177,7 +178,6 @@ exports.gets = async (req, res, next) => {
       include: [
         { model: model.User, as: 'userCreate' },
         { model: model.User, as: 'userUpdate' },
-        { model: model.ScoreTarget_ScoreScript, as: 'ScoreTarget_ScoreScript' },
       ],
       required: false,
       offset: offset,
@@ -210,7 +210,7 @@ exports.create = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond, scoreScriptId } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond, scoreScriptId, numberOfCall } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -225,7 +225,9 @@ exports.create = async (req, res, next) => {
       data.effectiveTimeStart = moment(string[0]).startOf('day')
       data.effectiveTimeEnd = moment(string[1]).endOf('day')
     } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
-
+    if (numberOfCall) {
+      data.numberOfCall = Math.abs(numberOfCall)
+    }
     // check tồn tại của tên mục tiêu
     const foundScoreTargetName = await model.ScoreTarget.findOne({ where: { name: name } })
     if (foundScoreTargetName) throw new Error(MESSAGE_ERROR['QA-002'])
@@ -299,7 +301,7 @@ exports.update = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId, numberOfCall } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -320,7 +322,9 @@ exports.update = async (req, res, next) => {
     // check trùng tên mục tiêu
     const foundScoreTargetName = await model.ScoreTarget.findOne({ where: { name: name, id: { [Op.ne]: data['edit-id'] } } })
     if (foundScoreTargetName) throw new Error(MESSAGE_ERROR['QA-002'])
-
+    if (numberOfCall) {
+      data.numberOfCall = Math.abs(numberOfCall)
+    }
     data.updated = req.user.id
 
     // update tiêu chí
@@ -381,7 +385,7 @@ exports.update = async (req, res, next) => {
       scoreScriptId.map((el) => {
         arr.push({
           scoreScriptId: el,
-          scoreTargetId: data.id
+          scoreTargetId: data['edit-id']
         })
       })
       await model.ScoreTarget_ScoreScript.bulkCreate(arr, { transaction: transaction })
