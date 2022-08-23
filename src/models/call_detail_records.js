@@ -16,7 +16,13 @@ class CallDetailRecords extends Model {
           primaryKey: true,
           type: 'UNIQUEIDENTIFIER'
         },
-        callId: DataTypes.BIGINT,
+        callId: {
+          type: DataTypes.BIGINT,
+          references: {
+            model: "Users",
+            key: "id",
+          },
+        },
         called: DataTypes.STRING(25),
         caller: DataTypes.STRING(25),
         connectTime: DataTypes.BIGINT,
@@ -66,6 +72,16 @@ class CallDetailRecords extends Model {
     models.CallDetailRecords.belongsTo(models.Team, {
       foreignKey: "teamId",
       as: "team"
+    })
+
+    models.CallDetailRecords.belongsTo(models.CallRating, {
+      foreignKey: "callId",
+      as: "callRating",
+    })
+
+    models.CallDetailRecords.belongsTo(models.CallRatingNote, {
+      foreignKey: "callId",
+      as: "callRatingNote",
     })
   }
 }

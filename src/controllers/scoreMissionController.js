@@ -88,10 +88,12 @@ exports.getScoreMission = async (req, res, next) => {
             include: [
                 { model: model.User, as: 'agent' },
                 { model: model.Team, as: 'team' },
+
+                { model: model.CallRatingNote, as: 'callRatingNote' },
             ],
             offset: offset,
             limit: limit,
-            raw: true,
+
             nest: true
         })
 
@@ -114,7 +116,7 @@ exports.getScoreMission = async (req, res, next) => {
             rowsPerPage: limit,
             totalResult: count
         })
-        
+
         let configurationColums = await getConfigurationColums(req.user.id)
         return res.status(SUCCESS_200.code).json({
             message: 'Success!',
@@ -216,6 +218,33 @@ exports.deleteConfigurationColums = async (req, res) => {
     }
 }
 
+exports.saveCallRating = async (req, res) => {
+    let transaction
+    try {
+        const data = req.body
+        data.userId = req.user.id
+        transaction = await model.sequelize.transaction()
+
+        if (data.resultCriteria && data.resultCriteria.length > 0) {
+            //xóa các các kết quả trước đó của mục tiêu
+            await model.CallRating.destroy({ where: { callId: data.resultCriteria[0].callId } })
+            await model.CallRating.bulkCreate(data.resultCriteria, { transaction: transaction })
+        }
+
+        if (data.note) {
+            await model.CallRatingNote.create(data.note, { transaction: transaction })
+        }
+        await transaction.commit()
+        return res.json({
+            code: SUCCESS_200.code,
+            message: 'Success!',
+        })
+    } catch (error) {
+        _logger.error("Xoá tùy chỉnh bảng bị lỗi: ", error)
+        return res.status(ERR_500.code).json({ message: error.message })
+    }
+}
+
 function getConfigurationColums(userId) {
     return new Promise(async (resolve, reject) => {
         try {
@@ -269,3 +298,4 @@ function hms(secs) {
 function pad(num) {
     return ('0' + num).slice(-2)
 }
+
