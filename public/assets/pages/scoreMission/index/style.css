@@ -86,3 +86,7 @@
   max-width: 40% !important;
   height: 100%;
 }
+
+.wavesurfer-handle {
+  background-color: red !important;
+}

@@ -70,7 +70,6 @@ exports.getgroups = async (req, res, next) => {
               FROM dbo.UserGroupMembers 
               LEFT JOIN dbo.Users Users -- leader info
                 ON UserGroupMembers.userId = Users.id
-                
               where role =  ${USER_ROLE.groupmanager.n}
               group by UserGroupMembers.groupId) UserGroupMembers1 -- leader
 				ON t_group.id = UserGroupMembers1.groupId
@@ -78,6 +77,9 @@ exports.getgroups = async (req, res, next) => {
         TeamGroups.groupId,
         count(TeamGroups.groupId) as counts
               FROM dbo.TeamGroups
+              LEFT JOIN dbo.Teams team
+              ON TeamGroups.teamId = team.id
+			        where team.status = ${TeamStatus.ON}
               group by TeamGroups.groupId) teamGroup1 -- member
         ON teamGroup1.groupId = t_group.id
       ${query}

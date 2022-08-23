@@ -44,8 +44,8 @@ function bindClick() {
         $("#formDetailRecord").html('')
         $('#showDetailRecord').modal('show')
         $("#defaultPlaySpeed").text("Chuẩn")
-        //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
-        $("#downloadFile").attr("url-record", urlRecord)
+        $("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+        //$("#downloadFile").attr("url-record", urlRecord)
         var wavesurfer = WaveSurfer.create({
             container: '#formDetailRecord',
             scrollParent: true,
@@ -54,12 +54,21 @@ function bindClick() {
             backend: 'MediaElement',
             plugins: [
                 WaveSurfer.regions.create({
-
+                    regions: [
+                        {
+                            start: 1,
+                            loop: false,
+                            color: 'hsla(9, 100%, 64%, 1)',
+                            attributes: {
+                                title:"Xin chào các bạn\nXin chào các bạn"
+                            }
+                        }
+                    ],
                 })
             ]
         })
-        //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
-        wavesurfer.load(urlRecord)
+        wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+        //wavesurfer.load(urlRecord)
 
         wavesurfer.on('ready', function (e) {
             wavesurfer.play()
@@ -96,6 +105,11 @@ function bindClick() {
             wavesurfer.setPlaybackRate(val)
             $("#defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
         })
+
+        //event change title wavesufer to notes
+        wavesurfer.on('region-mouseenter', function (region, e) {
+            region.element.title = region.attributes.title
+        });
     })
 
     $("#showDetailRecord").on("hidden.bs.modal", function () {
