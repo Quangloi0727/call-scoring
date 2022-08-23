@@ -40,8 +40,12 @@ function bindClick() {
     })
 
     $(document).on('click', '.fa-play-circle', function () {
+        const urlRecord = $(this).attr('url-record')
         $("#formDetailRecord").html('')
         $('#showDetailRecord').modal('show')
+        $("#defaultPlaySpeed").text("Chuẩn")
+        //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+        $("#downloadFile").attr("url-record", urlRecord)
         var wavesurfer = WaveSurfer.create({
             container: '#formDetailRecord',
             scrollParent: true,
@@ -49,34 +53,53 @@ function bindClick() {
             progressColor: '#3B8686',
             backend: 'MediaElement',
             plugins: [
-                WaveSurfer.regions.create({})
+                WaveSurfer.regions.create({
+
+                })
             ]
         })
-        wavesurfer.load('https://qa.metechvn.com/static/trainghiem.metechvn.com/archive/2022/Aug/19/fad8699a-1f92-11ed-8fe1-95f7e31f94c6.wav')
-        wavesurfer.on('ready', function () {
-            wavesurfer.play()
-            console.log(1111111, wavesurfer.getDuration())
+        //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+        wavesurfer.load(urlRecord)
 
+        wavesurfer.on('ready', function (e) {
+            wavesurfer.play()
+            updateTimer(wavesurfer)
+            const totalTime = secondsToTimestamp(wavesurfer.getDuration())
+            $('#waveform-time-indicator .totalTime').text(totalTime)
+        })
+
+        wavesurfer.on('audioprocess', function (e) {
+            updateTimer(wavesurfer)
+        })
+
+        $('.controls .btn').on('click', function () {
+            var action = $(this).data('action')
+            console.log("action", action)
+            switch (action) {
+                case 'play':
+                    wavesurfer.playPause()
+                    break
+                case 'back':
+                    wavesurfer.skipBackward(10)
+                    updateTimer(wavesurfer)
+                    break
+                case 'forward':
+                    wavesurfer.skipForward(10)
+                    updateTimer(wavesurfer)
+                    break
+            }
+        })
+
+        $('.dropdown-item').on('click', function () {
+            var val = $(this).attr("data-val")
+            console.log("value play speed", val)
+            wavesurfer.setPlaybackRate(val)
+            $("#defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
         })
     })
 
-    $('.controls .btn').on('click', function () {
-        var action = $(this).data('action')
-        console.log(action)
-        switch (action) {
-            case 'play':
-                wavesurfer.playPause()
-                break
-            case 'back':
-                wavesurfer.skipBackward()
-                break
-            case 'forward':
-                wavesurfer.skipForward()
-                break
-            case 'mute':
-                wavesurfer.toggleMute()
-                break
-        }
+    $("#showDetailRecord").on("hidden.bs.modal", function () {
+        location.reload()
     })
 
     $(document).on('click', '.showCallScore', function () {
@@ -154,6 +177,11 @@ function bindClick() {
         }
     })
 
+    $(document).on('click', '#downloadFile', function () {
+        let src_file = $(this).attr("url-record")
+        window.location = src_file
+    })
+
 }
 
 function SaveConfigurationColums(dataUpdate) {
@@ -166,6 +194,23 @@ function SaveConfigurationColums(dataUpdate) {
             window.location.href = "/scoreMission"
         }, 2500)
     })
+}
+
+function updateTimer(wavesurfer) {
+    var formattedTime = secondsToTimestamp(wavesurfer.getCurrentTime())
+    $('#waveform-time-indicator .time').text(formattedTime)
+}
+
+function secondsToTimestamp(seconds) {
+    seconds = Math.floor(seconds)
+    var h = Math.floor(seconds / 3600)
+    var m = Math.floor((seconds - (h * 3600)) / 60)
+    var s = seconds - (h * 3600) - (m * 60)
+
+    h = h < 10 ? '0' + h : h
+    m = m < 10 ? '0' + m : m
+    s = s < 10 ? '0' + s : s
+    return h + ':' + m + ':' + s
 }
 
 function getFormData(formId) {
@@ -211,39 +256,7 @@ function findData(page) {
     })
 }
 
-function handleAudio() {
-    setTimeout(() => {
-        $(".audio-element").on({
-            play: function () { // the audio is playing!
-                // $(".audio-element").pause();
-                // _.each($('.audio-element'), function (el) {
-                //   var __audio = $(el)[0];
-                //   __audio.pause();
-                //   // if (__audio != audio && !__audio.paused) {
-
-                //         // $(el).closest('td').find('.zmdi-play').show();
-                //         // $(el).closest('td').find('.zmdi-pause').hide();
-                //     // }
-                // });
-
-                // let _audio = $(this)[0];
-                // _audio.play();
-
-                console.log('play')
-            },
-            pause: function () { // the audio is paused!
-                console.log('páue', this)
-            },
-        })
-    }, 50)
-}
-
-/**
- *  
- * @param {*} ConfigurationColums 
- * @param {*} init nếu là true: lần khởi tạo đầu tiên nếu không có column
- */
-function renderPopupCustomColumn(ConfigurationColums) {
+function renderPopupCustomColumn(ConfigurationColums, init = false) {
 
     let popupHtml = ''
     popupHtml += `<div class="mb-3 border-bottom">
@@ -316,14 +329,13 @@ function createTable(data, scoreScripts, ConfigurationColums) {
                 <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
-                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
+                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName}></i>
             </td>
         </tr>`
     })
 
     $leftTable.html(leftTable)
     $rightTable.html(rightTable)
-    handleAudio()
     return
 
 }
