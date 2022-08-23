@@ -37,7 +37,7 @@ exports.index = async (req, res, next) => {
             title: titlePage,
             titlePage: titlePage,
             headerDefault: headerDefault
-        })    
+        })
     } catch (error) {
         console.log(`------- error ------- `)
         console.log(error)
@@ -114,11 +114,13 @@ exports.getScoreMission = async (req, res, next) => {
             rowsPerPage: limit,
             totalResult: count
         })
-
+        
+        let configurationColums = await getConfigurationColums(req.user.id)
         return res.status(SUCCESS_200.code).json({
             message: 'Success!',
             data: handleData(rows, _config.privatePhoneNumberWebView) || [],
             scoreScripts: scoreScripts,
+            configurationColums: configurationColums,
             paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
         })
     } catch (error) {
@@ -164,6 +166,68 @@ exports.getDetailScoreScript = async (req, res, next) => {
     } catch (error) {
         return res.json({ code: ERR_500.code, message: error.message })
     }
+}
+
+exports.SaveConfigurationColums = async (req, res) => {
+    let transaction
+    try {
+        const data = {}
+        data.userId = req.user.id
+        data.configurationColums = JSON.stringify(req.body)
+        data.nameTable = titlePage
+
+        transaction = await model.sequelize.transaction()
+        const result = await model.ConfigurationColums.update(
+            data,
+            { where: { userId: Number(req.user.id), nameTable: titlePage } },
+            { transaction: transaction }
+        )
+        if (result[0] == 0) {
+            await model.ConfigurationColums.create(data, { transaction: transaction })
+        }
+        await transaction.commit()
+        return res.status(SUCCESS_200.code).json({
+            message: 'Success!',
+        })
+    } catch (error) {
+        _logger.error("Lưu tùy chỉnh bảng lỗi: ", error)
+        return res.status(ERR_500.code).json({ message: error.message })
+    }
+}
+
+exports.deleteConfigurationColums = async (req, res) => {
+    let transaction
+    try {
+        const data = {}
+        data.userId = req.user.id
+        transaction = await model.sequelize.transaction()
+        const result = await model.ConfigurationColums.destroy(
+            { where: { userId: Number(req.user.id), nameTable: titlePage } },
+            { transaction: transaction }
+        )
+
+        await transaction.commit()
+        return res.status(SUCCESS_200.code).json({
+            message: 'Success!',
+        })
+    } catch (error) {
+        _logger.error("Xoá tùy chỉnh bảng bị lỗi: ", error)
+        return res.status(ERR_500.code).json({ message: error.message })
+    }
+}
+
+function getConfigurationColums(userId) {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const result = await model.ConfigurationColums.findAll({ where: { userId: userId, nameTable: titlePage } })
+            if (result && result[0] && result[0].configurationColums) {
+                return resolve(JSON.parse(result[0].configurationColums))
+            }
+            return resolve(null)
+        } catch (error) {
+            return reject(error)
+        }
+    })
 }
 
 function handleData(data, privatePhoneNumber = false) {

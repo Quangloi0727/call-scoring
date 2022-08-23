@@ -12,5 +12,11 @@ router.route('/getData')
 router.route('/getScoreScript')
     .get(scoreMissionController.getDetailScoreScript)
 
+router.route('/configurationColums')
+    .post(scoreMissionController.SaveConfigurationColums)
+    .delete(scoreMissionController.deleteConfigurationColums)
+
+
+
 
 module.exports = router

@@ -4,7 +4,7 @@ module.exports = {
     return queryInterface.sequelize.transaction(t => {
       return Promise.all([
         queryInterface.addColumn('configurationColums', 'nameTable', {
-          type: Sequelize.DataTypes.STRING
+          type: Sequelize.STRING(500)
         }, { transaction: t })
       ])
     })
