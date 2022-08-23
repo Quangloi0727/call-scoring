@@ -5,6 +5,8 @@ const $rightTable = $('.content-table-right')
 const $resetColumnCustom = $('#resetColumnCustom')
 const $modal_customs_table = $("#modal_customs_table")
 const $selectAll = $("#select-all")
+
+// Lưu tạm dữ liệu của nhóm tiêu chí từ kịch bản chấm điểm
 let _criteriaGroups = {}
 
 // WARNING
@@ -103,21 +105,11 @@ function bindClick() {
     })
 
     $(document).on('click', '.showCallScore', function () {
-        console.log($(this).attr('data-id'))
-        let queryData = {}
-        queryData.id = $(this).attr('data-id')
-        _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
-            console.log(resp)
-            if (resp.code != 200) {
-                return toastr.error(resp.message)
-            }
-            if (resp.data.CriteriaGroup.length > 0) {
-                $('.nameScoreScript').text(resp.data.name)
-                _criteriaGroups = resp.data.CriteriaGroup
-                return popupScore(resp.data.CriteriaGroup)
-            }
-        })
-        $('#popupCallScore').modal('show')
+        let callId = $(this).attr('data-callId')
+        let idScoreScript = $(this).attr('data-id')
+        $('#btn-save-modal').attr('data-callId', callId)
+        $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
+        return getDetailScoreScript(idScoreScript)
     })
 
     $(document).on('click', '.detailScoreScript', function () {
@@ -133,7 +125,8 @@ function bindClick() {
         $('.scoreCriteria').text(`Tổng điển: 0/${$(this).attr('data-point')} - 0%`)
     })
 
-    $(document).on('change', '#noteCriteriaGroup', function () {
+    // xử lí chọn option ghi chú của mục tiêu
+    $(document).on('change', '#idCriteriaGroup', function () {
         let html = ``
         if (_criteriaGroups && _criteriaGroups.length > 0) {
             _criteriaGroups.map((criteriaGroup) => {
@@ -146,13 +139,14 @@ function bindClick() {
                     }
                 }
             })
-            $('#noteCriteria').html(html)
+            $('#idCriteria').html(html)
             $('.selectpicker').selectpicker('refresh')
-            $('#noteCriteria').prop("disabled", html ? false : true)
+            $('#idCriteria').prop("disabled", html ? false : true)
             $('.selectpicker').selectpicker('refresh')
         }
     })
 
+    // button lưu tùy chỉnh bảng
     $(document).on('click', '#btn_save_customs', function () {
         let listCheck = []
         let obj = {}
@@ -167,9 +161,8 @@ function bindClick() {
         SaveConfigurationColums(obj)
     })
 
+    // hiển thị data sau khi tủy chỉnh bảng
     $modal_customs_table.on('show.bs.modal', function (event) {
-        // debugger
-        console.log('show.bs.modal')
         if (CACHE_CONFIG_COLUMN) {
             renderPopupCustomColumn(CACHE_CONFIG_COLUMN)
         } else {
@@ -180,6 +173,35 @@ function bindClick() {
     $(document).on('click', '#downloadFile', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
+    })
+
+    $(document).on('click', '#btn-save-modal', function () {
+        let data = {}
+        let callId = $(this).attr('data-callId')
+        let idScoreScript = $(this).attr('data-idScoreScript')
+        let arr = []
+        $(".selectpicker.criteria").each(function () {
+            arr.push({
+                idSelectionCriteria: $(this).val(),
+                idCriteria: $(this).attr('data-criteriaId'),
+                callId: callId
+            })
+        })
+        data.note = getFormData('formCallScore')
+        data.note.callId = callId
+        data.note.idScoreScript = idScoreScript
+        data.resultCriteria = arr
+        console.log(data)
+
+        _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+            if (resp.code != 200) {
+                return toastr.error(resp.message)
+            }
+            toastr.success('Lưu thành công !')
+            return setTimeout(() => {
+                window.location.href = "/scoreMission"
+            }, 2500)
+        })
     })
 
 }
@@ -256,6 +278,8 @@ function findData(page) {
     })
 }
 
+// xử lí data cho chức năng tùy chỉnh bảng
+/// *****_Start_*****
 function renderPopupCustomColumn(ConfigurationColums, init = false) {
 
     let popupHtml = ''
@@ -283,7 +307,6 @@ function renderHeaderTable(ConfigurationColums) {
     return $('.table-right.custom-table thead tr').html(headerTable)
 }
 
-
 function itemColumn(key, title, value) {
     // debugger;
     return `<li class="mb-3 border-bottom">
@@ -295,25 +318,24 @@ function itemColumn(key, title, value) {
         </span>
   </li>`
 }
-
+///***** __end__*****
 function createTable(data, scoreScripts, ConfigurationColums) {
-
+    console.log(data)
     let objColums = { ...ConfigurationColums }
     renderPopupCustomColumn(ConfigurationColums)
     renderHeaderTable(ConfigurationColums)
-
-    let dropdown = ''
-    if (scoreScripts.length > 0) {
-        scoreScripts.map((el) => {
-            dropdown += `<a class="dropdown-item showCallScore"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
-        })
-    }
 
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
 
     data.forEach((item, element) => {
+        let dropdown = ''
+        if (scoreScripts.length > 0) {
+            scoreScripts.map((el) => {
+                dropdown += `<a class="dropdown-item showCallScore" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+            })
+        }
         let tdTable = ''
         for (const [key, value] of Object.entries(objColums)) {
             tdTable += ` <td class="text-center ${key} ${value.status == 1 ? '' : 'd-none'}">${item[key] || ''}</td>`
@@ -340,6 +362,27 @@ function createTable(data, scoreScripts, ConfigurationColums) {
 
 }
 
+// lấy thông tin chi tiết của kịch bản chấm điểm
+function getDetailScoreScript(idScoreScript) {
+    let queryData = {}
+    queryData.id = idScoreScript
+    _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
+        console.log(resp)
+        if (resp.code != 200) {
+            return toastr.error(resp.message)
+        }
+        if (resp.data.CriteriaGroup.length > 0) {
+            $('.nameScoreScript').text(resp.data.name)
+            _criteriaGroups = resp.data.CriteriaGroup
+            //render dữ liệu ra popup
+
+            return popupScore(resp.data.CriteriaGroup)
+        }
+    })
+    $('#popupCallScore').modal('show')
+}
+
+// xử lí dữ liệu ra popup
 function popupScore(criteriaGroup) {
     let navHTML = `
     <li class="nav-item border-bottom" disable>
@@ -347,7 +390,7 @@ function popupScore(criteriaGroup) {
     </li>`
     $('#formCallScore')[0].reset()
     $('.tab-content').html('')
-    let optionNoteCriteriaGroup = `<option value="default">Toàn bộ kịch bản</option>`
+    let optionidCriteriaGroup = `<option value="default">Toàn bộ kịch bản</option>`
     let totalPoint = 0
     criteriaGroup.map((criteriaGroup) => {
         let uuidv4 = window.location.uuidv4()
@@ -364,7 +407,7 @@ function popupScore(criteriaGroup) {
 
                 }
                 criteriaHtml += `<label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
-                <select class="form-control selectpicker input pl-2">
+                <select class="form-control selectpicker pl-2 criteria" data-criteriaId="${criteria.id}">
                     ${htmlSelectionCriteria}
                 </select>`
                 pointCriteria += parseInt(criteria.scoreMax)
@@ -384,17 +427,17 @@ function popupScore(criteriaGroup) {
             <a class="nav-link nav-criteria-group" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
             aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
         </li>`
-        optionNoteCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
+        optionidCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
         $('.tab-content').append(navTabContent)
 
     })
 
     $('.scoreScript').text(`Tổng điển: 0/${totalPoint} - 0%`)
-    $('#noteCriteriaGroup').html(optionNoteCriteriaGroup)
-    $('#noteCriteria').val("")
-    $('#noteCriteria').prop("disabled", true)
+    $('#idCriteriaGroup').html(optionidCriteriaGroup)
+    $('#idCriteria').val("")
+    $('#idCriteria').prop("disabled", true)
     $('.selectpicker').selectpicker('refresh')
-    $('#noteCriteriaGroup').val('default')
+    $('#idCriteriaGroup').val('default')
     $('.selectpicker').selectpicker('refresh')
     $('.nav-scoreScript').html(navHTML)
 }
@@ -431,5 +474,6 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '.detailScoreScript')
     $(document).off('click', '.detailNoteScore')
     $(document).off('click', '.nav-link.nav-criteria-group')
-    $(document).off('change', '#noteCriteriaGroup')
+    $(document).off('change', '#idCriteriaGroup')
+    $(document).off('click', '#downloadFile')
 })

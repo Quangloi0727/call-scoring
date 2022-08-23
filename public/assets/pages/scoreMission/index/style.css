@@ -49,6 +49,7 @@
 #showDetailRecord .modal-dialog {
   width: 80%;
 }
+
 .dropdown-toggle::after {
   display: none;
 }
@@ -57,9 +58,11 @@
   /* background-color: red !important; */
   border-top: solid 2px rgba(0, 0, 0, 0.125);
 }
+
 .nav-scorescript {
   display: initial;
 }
+
 .modal-body {
   padding: 0px;
 }
@@ -82,7 +85,7 @@
   font-weight: normal !important;
 }
 
-.modal-dialog {
+.modal-dialog.showDetailRecord {
   max-width: 40% !important;
   height: 100%;
 }
