@@ -33,7 +33,19 @@ const keysTitleExcel = [
     "var10",
 ]
 
+const SOURCE_NAME = {
+    oreka: {
+        code: 'ORK',
+        text: 'Orec'
+    },
+    fs: {
+        code: 'FS',
+        text: 'Freeswitch'
+    }
+}
+
 module.exports = {
     headerDefault,
-    keysTitleExcel
+    keysTitleExcel,
+    SOURCE_NAME
 }

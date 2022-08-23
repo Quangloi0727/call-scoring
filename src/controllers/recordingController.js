@@ -1,6 +1,6 @@
-
+const titlePage = 'Danh sách cuộc gọi'
 const pagination = require('pagination')
-const { QueryTypes } = require('sequelize')
+const { Op, QueryTypes } = require('sequelize')
 const lodash = require('lodash')
 const moment = require('moment')
 const { createExcelPromise } = require('../common/createExcel')
@@ -19,19 +19,9 @@ const { cheSo } = require("../helpers/functions")
 
 const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
-const titlePage = 'Danh sách cuộc gọi'
-const SOURCE_NAME = {
-  oreka: {
-    code: 'ORK',
-    text: 'Orec'
-  },
-  fs: {
-    code: 'FS',
-    text: 'Freeswitch'
-  },
-}
-
-const { headerDefault, keysTitleExcel } = require('../helpers/constants/fieldRecording')
+const { headerDefault, keysTitleExcel, SOURCE_NAME } = require('../helpers/constants/fieldRecording')
+const { TeamStatus } = require('../models/team')
+const { Team } = require('../models/team')
 
 exports.index = async (req, res, next) => {
   try {
@@ -54,8 +44,6 @@ exports.index = async (req, res, next) => {
           if (!teamFound.includes(j)) teamFound.push(j)
         })
       })
-
-      // _.map(_.unzip(teamIdMap), _.sum); //; // _.zipWith(, _.add)
       teamIds = _.uniq([...teamIds, ...teamFound])
     }
     const additionalField = fs.readFileSync(_pathFileAdditionField)
@@ -132,18 +120,13 @@ exports.getRecording = async (req, res) => {
     let limitTimeExpires
 
     // check quyền xem dữ liệu
-    if (!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]) {
+    if (!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]) return res.status(ERR_403.code).json({ message: ERR_403.message_detail.notHaveAccessData })
 
-      return res.status(ERR_403.code).json({
-        message: ERR_403.message_detail.notHaveAccessData
-      })
-    } else {
-      if (user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0) {
-        let _now = moment()
-
-        limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix() // second times
-      }
+    if (user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0) {
+      let _now = moment()
+      limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix() // second times
     }
+
     if (!startTime || startTime === '' || !endTime || endTime === '') {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
@@ -163,12 +146,29 @@ exports.getRecording = async (req, res) => {
       })
     }
 
-
     if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
       isAdmin = true
     }
 
     let { teamIds } = await checkLeader(req.user.id)
+
+    if (req.user.roles.find((item) => item.role == USER_ROLE.supervisor.n)) {
+      const getTeamDisable = await model.AgentTeamMember.findAll({ where: { userId: req.user.id, role: USER_ROLE.supervisor.n } })
+      const arrTeamId = _.pluck(getTeamDisable, 'teamId')
+      const getAgentOfTeam = await model.AgentTeamMember.findAll({
+        where: { teamId: { [Op.in]: arrTeamId }, role: USER_ROLE.agent.n },
+        include: [{
+          model: Team,
+          as: 'teams',
+          where: {
+            status: { [Op.eq]: TeamStatus.OFF }
+          }
+        }]
+      })
+      const userOfTeamOff = _.pluck(getAgentOfTeam, 'userId')
+      if (userOfTeamOff.length > 0) query += `AND records.agentId not in (${userOfTeamOff.join(',')}) `
+
+    }
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
       let userGroupTeam = await getTeamOfGroup(req.user.id)
@@ -180,8 +180,6 @@ exports.getRecording = async (req, res) => {
           if (!teamFound.includes(j)) teamFound.push(j)
         })
       })
-
-      // _.map(_.unzip(teamIdMap), _.sum); //; // _.zipWith(, _.add)
       teamIds = _.uniq([...teamIds, ...teamFound])
     }
 
@@ -207,7 +205,6 @@ exports.getRecording = async (req, res) => {
     if (var9) query += `AND records.var9 LIKE '%${var9.toString()}%' `
     if (var10) query += `AND records.var10 LIKE '%${var10.toString()}%' `
 
-    // if (fullName) query += `AND agent.fullName LIKE '%${fullName.toString()}%' `;
     if (fullName) {
       userIdFilter = _.concat(userIdFilter, fullName)
     }
@@ -445,28 +442,25 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
         }
 
       }
+      conditionQuery += `and team.status = ${TeamStatus.ON}` //get team active
       const result = await model.sequelize.query(
         `
             SELECT
-        team.id AS teamId,
-        team.name AS teamName,
-        memberOfTeam.id AS memberId,
-        memberOfTeam.fullName AS memberFullName,
-        memberOfTeam.userName AS memberUserName
-      FROM dbo.Teams team
-      LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
-      LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
-      
-      WHERE ${conditionQuery}
+              team.id AS teamId,
+              team.name AS teamName,
+              memberOfTeam.id AS memberId,
+              memberOfTeam.fullName AS memberFullName,
+              memberOfTeam.userName AS memberUserName
+            FROM dbo.Teams team
+            LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
+            LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
+            
+            WHERE ${conditionQuery}
 
-      GROUP BY team.id, team.name, memberOfTeam.id, memberOfTeam.fullName, memberOfTeam.userName
-
+            GROUP BY team.id, team.name, memberOfTeam.id, memberOfTeam.fullName, memberOfTeam.userName
         `,
         { type: QueryTypes.SELECT }
       )
-
-
-
       return resolve({ teams: result })
     } catch (error) {
       return reject(error)
