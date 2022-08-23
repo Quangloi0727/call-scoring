@@ -339,10 +339,12 @@ exports.SaveConfigurationColums = async (req, res) => {
     const data = {}
     data.userId = req.user.id
     data.configurationColums = JSON.stringify(req.body)
+    data.nameTable = titlePage
+
     transaction = await model.sequelize.transaction()
     const result = await ConfigurationColumsModel.update(
-      { configurationColums: JSON.stringify(req.body) },
-      { where: { userId: Number(req.user.id) } },
+      data,
+      { where: { userId: Number(req.user.id), nameTable: titlePage } },
       { transaction: transaction }
     )
     if (result[0] == 0) {
@@ -368,7 +370,7 @@ exports.deleteConfigurationColums = async (req, res) => {
     data.userId = req.user.id
     transaction = await model.sequelize.transaction()
     const result = await model.ConfigurationColums.destroy(
-      { where: { userId: Number(req.user.id) } },
+      { where: { userId: Number(req.user.id), nameTable: titlePage } },
       { transaction: transaction }
     )
 
@@ -388,14 +390,7 @@ exports.deleteConfigurationColums = async (req, res) => {
 function getConfigurationColums(userId) {
   return new Promise(async (resolve, reject) => {
     try {
-      const result = await model.sequelize.query(
-        `
-        SELECT *
-        FROM dbo.configurationColums  
-        WHERE userId = ${userId}    
-        `,
-        { type: QueryTypes.SELECT }
-      )
+      const result = await model.ConfigurationColums.findAll({ where: { userId: userId, nameTable: titlePage } })
       if (result && result[0] && result[0].configurationColums) {
         return resolve(JSON.parse(result[0].configurationColums))
       }

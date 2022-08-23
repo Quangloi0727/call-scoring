@@ -129,6 +129,43 @@ function bindClick() {
             $('.selectpicker').selectpicker('refresh')
         }
     })
+
+    $(document).on('click', '#btn_save_customs', function () {
+        let listCheck = []
+        let obj = {}
+        $("#sortable input:checkbox").each(function (index) {
+            // gán dữ liệu
+            let key = $(this).attr("name")
+            let value = $(this).is(":checked")
+            obj[key] = value
+        })
+        console.log(obj)
+        // debugger;
+        SaveConfigurationColums(obj)
+    })
+
+    $modal_customs_table.on('show.bs.modal', function (event) {
+        // debugger
+        console.log('show.bs.modal')
+        if (CACHE_CONFIG_COLUMN) {
+            renderPopupCustomColumn(CACHE_CONFIG_COLUMN)
+        } else {
+            renderPopupCustomColumn(headerDefault, true)
+        }
+    })
+
+}
+
+function SaveConfigurationColums(dataUpdate) {
+    return _AjaxData('/scoreMission/configurationColums', 'POST', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
+        if (resp.code != 200) {
+            return toastr.error(resp.message)
+        }
+        toastr.success('Lưu thành công !')
+        return setTimeout(() => {
+            window.location.href = "/scoreMission"
+        }, 2500)
+    })
 }
 
 function getFormData(formId) {
@@ -160,7 +197,9 @@ function findData(page) {
 
             $('.page-loader').hide()
             // debugger
-            createTable(result.data, result.scoreScripts)
+            CACHE_CONFIG_COLUMN = result.ConfigurationColums ? result.ConfigurationColums : headerDefault
+            console.log(CACHE_CONFIG_COLUMN)
+            createTable(result.data, result.scoreScripts, CACHE_CONFIG_COLUMN ? CACHE_CONFIG_COLUMN : headerDefault)
             return $('#paging_table').html(window.location.CreatePaging(result.paginator))
 
         },
@@ -199,7 +238,12 @@ function handleAudio() {
     }, 50)
 }
 
-function renderPopupCustomColumn(ConfigurationColums, init = false) {
+/**
+ *  
+ * @param {*} ConfigurationColums 
+ * @param {*} init nếu là true: lần khởi tạo đầu tiên nếu không có column
+ */
+function renderPopupCustomColumn(ConfigurationColums) {
 
     let popupHtml = ''
     popupHtml += `<div class="mb-3 border-bottom">
@@ -207,7 +251,7 @@ function renderPopupCustomColumn(ConfigurationColums, init = false) {
         <ul>Thao tác</ul>
     </div>`
     for (const [key, value] of Object.entries(ConfigurationColums)) {
-        popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true' : value)
+        popupHtml += itemColumn(key, headerDefault[key], value)
     }
     let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(ConfigurationColums))
     columnNotTick.forEach(i => {
@@ -217,8 +261,17 @@ function renderPopupCustomColumn(ConfigurationColums, init = false) {
 
 }
 
+function renderHeaderTable(ConfigurationColums) {
+    let headerTable = ''
+    // debugger
+    for (const [key, value] of Object.entries(ConfigurationColums)) {
+        headerTable += `<th class="text-center ${key} ${value.status == 1 ? '' : 'd-none'}">${value.name}</th>`
+    }
+    return $('.table-right.custom-table thead tr').html(headerTable)
+}
+
+
 function itemColumn(key, title, value) {
-    console.log(key, title, value)
     // debugger;
     return `<li class="mb-3 border-bottom">
         <input class="form-check-input" type="checkbox" name="${key}"
@@ -230,7 +283,11 @@ function itemColumn(key, title, value) {
   </li>`
 }
 
-function createTable(data, scoreScripts) {
+function createTable(data, scoreScripts, ConfigurationColums) {
+
+    let objColums = { ...ConfigurationColums }
+    renderPopupCustomColumn(ConfigurationColums)
+    renderHeaderTable(ConfigurationColums)
 
     let dropdown = ''
     if (scoreScripts.length > 0) {
@@ -242,22 +299,13 @@ function createTable(data, scoreScripts) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
+
     data.forEach((item, element) => {
-        rightTable += `
-          <tr>
-            <td class="text-center"></td>
-            <td class="text-center"></td>
-            <td class="text-center"></td>
-            <td class="text-center direction">${item.direction}</td>
-            <td class="text-center agentName">${item.agentName}</td>
-            <td class="text-center teamName">${item.teamName}</td>
-            <td class="text-center groupName">${item.groupName}</td>
-            <td class="text-center caller">${item.caller}</td>
-            <td class="text-center called">${item.called}</td>
-            <td class="text-center origTime">${item.origTime}</td>
-            <td class="text-center duration">${item.duration}</td>
-          </tr>
-        `
+        let tdTable = ''
+        for (const [key, value] of Object.entries(objColums)) {
+            tdTable += ` <td class="text-center ${key} ${value.status == 1 ? '' : 'd-none'}">${item[key] || ''}</td>`
+        }
+        rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
             <td class="text-center callId">${item.callId || ''}</td>
             <td class="text-center">    
@@ -265,7 +313,7 @@ function createTable(data, scoreScripts) {
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <a type="button" class="callScore"><i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i></a>
+                <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
@@ -275,7 +323,7 @@ function createTable(data, scoreScripts) {
 
     $leftTable.html(leftTable)
     $rightTable.html(rightTable)
-    // handleAudio();
+    handleAudio()
     return
 
 }
