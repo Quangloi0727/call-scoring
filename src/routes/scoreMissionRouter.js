@@ -16,7 +16,7 @@ router.route('/configurationColums')
     .post(scoreMissionController.SaveConfigurationColums)
     .delete(scoreMissionController.deleteConfigurationColums)
 
-
-
+router.route('/saveCallRating')
+    .post(scoreMissionController.saveCallRating)
 
 module.exports = router
