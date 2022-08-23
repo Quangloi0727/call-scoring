@@ -33,25 +33,6 @@ exports.index = async (req, res, next) => {
   }
 }
 
-async function getUserByRole(_model, role) {
-  if (!role) throw new Error('role is required!')
-
-  return await _model.findAll({
-    where: {
-      [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
-    },
-    include: [{
-      model: UserRoleModel,
-      as: 'roles',
-      where: {
-        role: { [Op.eq]: role }
-      }
-    }],
-    raw: true,
-    nest: true
-  })
-}
-
 exports.getgroups = async (req, res, next) => {
   try {
     const { page, name } = req.query
@@ -152,39 +133,6 @@ exports.getgroups = async (req, res, next) => {
   }
 }
 
-async function handleResult(ids, groups) {
-  try {
-    if (!ids || ids.length <= 0) return groups
-
-    let queryString = `
-      SELECT 
-        UserGroupMembers.groupId AS groupId,
-        UserGroupMembers.role AS role,
-        Users.id As userId,
-        Users.userName AS userName,
-        Users.fullName AS fullName
-      FROM dbo.UserGroupMembers
-      LEFT JOIN dbo.Users ON UserGroupMembers.userId = Users.id
-      WHERE UserGroupMembers.groupId IN ( ${ids.toString()} )
-    `
-
-    const userMembers = await model.sequelize.query(queryString, { type: QueryTypes.SELECT })
-
-    const dataResult = groups.map((item) => {
-      const result = userMembers.filter((itemMember) => itemMember.groupId == item.groupId)
-      return {
-        ...item,
-        member: result,
-        createdAt: moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')
-      }
-    })
-
-    return dataResult
-  } catch (error) {
-    throw new Error(error)
-  }
-}
-
 exports.createGroup = async (req, res) => {
   let transaction
 
@@ -264,15 +212,12 @@ exports.detail = async (req, res, next) => {
           {
             model: model.TeamGroup,
             as: 'TeamGroup',
-            // include: { model: model.User, as: 'user' },
-            // where : {
-            //   role: USER_ROLE.groupmanager.n
-            // }
           }
         ],
         nest: true
       })
     ])
+
     return _render(req, res, 'groups/detail', {
       titlePage: null,
       group: groupInfo,
@@ -493,12 +438,10 @@ exports.teamOfGroup = async (req, res) => {
       include: [{
         model: model.Team,
         as: 'Team',
-        // required: false,
-        // where: {
-
-        // }
+        where: {
+          status: { [Op.eq]: TeamStatus.ON }
+        }
       }],
-      // raw: true,
       nest: true
     })
 
@@ -547,5 +490,57 @@ exports.getTeamAvailable = async (req, res) => {
     console.log(`------- error ------- `)
 
     return res.status(ERR_500.code).json({ message: error.message })
+  }
+}
+
+async function getUserByRole(_model, role) {
+  if (!role) throw new Error('role is required!')
+
+  return await _model.findAll({
+    where: {
+      [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
+    },
+    include: [{
+      model: UserRoleModel,
+      as: 'roles',
+      where: {
+        role: { [Op.eq]: role }
+      }
+    }],
+    raw: true,
+    nest: true
+  })
+}
+
+async function handleResult(ids, groups) {
+  try {
+    if (!ids || ids.length <= 0) return groups
+
+    let queryString = `
+      SELECT 
+        UserGroupMembers.groupId AS groupId,
+        UserGroupMembers.role AS role,
+        Users.id As userId,
+        Users.userName AS userName,
+        Users.fullName AS fullName
+      FROM dbo.UserGroupMembers
+      LEFT JOIN dbo.Users ON UserGroupMembers.userId = Users.id
+      WHERE UserGroupMembers.groupId IN ( ${ids.toString()} )
+    `
+
+    const userMembers = await model.sequelize.query(queryString, { type: QueryTypes.SELECT })
+
+    const dataResult = groups.map((item) => {
+      const result = userMembers.filter((itemMember) => itemMember.groupId == item.groupId)
+      return {
+        ...item,
+        member: result,
+        createdAt: moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY')
+      }
+    })
+
+    return dataResult
+  } catch (error) {
+    throw new Error(error)
   }
 }
