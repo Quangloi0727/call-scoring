@@ -25,6 +25,21 @@ class CallRatingNote extends Model {
         },
         timeNoteSecond: {
           type: DataTypes.INTEGER
+        },
+        created: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          references: {
+            model: "Users",
+            key: "id",
+          },
+        },
+        updated: {
+          type: DataTypes.INTEGER,
+          references: {
+            model: "Users",
+            key: "id",
+          },
         }
       },
       {
@@ -39,6 +54,15 @@ class CallRatingNote extends Model {
     models.CallRatingNote.belongsTo(models.CallDetailRecords, {
       foreignKey: "callId",
       as: "rateNotes",
+    })
+    models.CallRatingNote.belongsTo(models.User, {
+      foreignKey: "created",
+      as: "userCreate",
+    })
+
+    models.CallRatingNote.belongsTo(models.User, {
+      foreignKey: "updated",
+      as: "userUpdate",
     })
   }
 
