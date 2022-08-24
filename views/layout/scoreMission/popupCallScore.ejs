@@ -9,10 +9,59 @@
         </div>
       </div>
       <div class="modal-body">
-        <form id="formCallScore" autocomplete="off">
-          <div class="modal-body" id="recordCallScore">
+        <div id="elmRecordCallScore">
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailNoteScore" role="button">
+              <Label><i class="far fa-angle-down"></i>File ghi âm cuộc gọi</Label>
+            </a>
+          </div>
+          <div class="ml-sm-2 waveform-time-indicator">
+            <span class="time">00:00:00</span> / <span class="totalTime">00:00:00</span>
+          </div>
+          <div class="modal-body justify-content-center" id="recordCallScore">
 
           </div>
+          <div class="row controls mt-sm-3 mb-sm-3">
+            <div class="col-md-1"></div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" data-action="play">Phát / Tạm dừng</button>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" data-action="back"><i class="fas fa-fast-backward"></i>
+                10s
+                trước</button>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" data-action="forward"><i class="fas fa-fast-forward"></i>
+                10s
+                sau</button>
+            </div>
+            <div class="col-md-2">
+              <div class="dropdown show">
+                <a class="btn btn-primary btn-sm btn-block dropdown-toggle" role="button" id="dropdownMenuLink"
+                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Tốc độ phát / <span id="defaultPlaySpeed"></span><i class="fa fa-caret-down" aria-hidden="true"></i>
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                  <a class="dropdown-item" role="button" data-val="0.25">0.25</a>
+                  <a class="dropdown-item" role="button" data-val="0.5">0.5</a>
+                  <a class="dropdown-item" role="button" data-val="0.75">0.75</a>
+                  <a class="dropdown-item" role="button" data-val="1">Chuẩn</a>
+                  <a class="dropdown-item" role="button" data-val="1.25">1.25</a>
+                  <a class="dropdown-item" role="button" data-val="1.5">1.5</a>
+                  <a class="dropdown-item" role="button" data-val="1.75">1.75</a>
+                  <a class="dropdown-item" role="button" data-val="2">2</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" id="downloadFile">Tải về</button>
+            </div>
+          </div>
+        </div>
+        <form id="formCallScore" autocomplete="off">
+
           <div class="row p-2 col-sm-12 bg-light">
             <a class="detailScoreScript" role="button">
               <label for=""><i class="far fa-angle-down"></i> Kịch bản chấm điểm</label>
