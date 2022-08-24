@@ -263,8 +263,6 @@ exports.saveCallRating = async (req, res) => {
 
         if (data.note) {
             data.note.created = req.user.id
-            // let idCriteriaGroup = data.note.idCriteriaGroup
-            // if (idCriteriaGroup == 'default') data.note.idCriteriaGroup = 0
             await model.CallRatingNote.destroy({ where: { callId: data.resultCriteria[0].callId } })
             await model.CallRatingNote.create(data.note, { transaction: transaction })
         }

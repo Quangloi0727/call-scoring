@@ -91,7 +91,18 @@ function bindClick() {
 
     $(document).on('click', '.nav-link.nav-criteria-group', function () {
         $('.nameCriteriaGroup').text($(this).text())
-        $('.scoreCriteria').text(`Tổng điển: 0/${$(this).attr('data-point')} - 0%`)
+        if ($(this).attr('resultPointCriteriaGroup') || $(this).attr('resultPointCriteriaGroup') == 0) {
+            let point = $(this).attr('resultPointCriteriaGroup')
+
+            let total = $(this).attr('data-point')
+            var perc = ((point / total) * 100).toFixed(0)
+            let html = `
+            <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+            aria-valuemax="100">Hoàn thành ${perc}%</div>`
+            $('#progress-scoreCriteria').html(html)
+            $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
+
+        } else $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
     })
 
     // xử lí chọn option ghi chú của mục tiêu
@@ -170,8 +181,8 @@ function configWaveSurfer(arrRegion, urlRecord, container) {
         ]
     })
     wavesurfer.empty()
-    wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
-    // wavesurfer.load(urlRecord)
+    // wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+    wavesurfer.load(urlRecord)
 
     wavesurfer.on('ready', function (e) {
         wavesurfer.play()
@@ -410,16 +421,16 @@ function getDetailScoreScript(idScoreScript, callId) {
 }
 
 // xử lí dữ liệu ra popup
-function popupScore(criteriaGroup, resultCallRatingNote, resultCallRating) {
+function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     let navHTML = `
     <li class="nav-item border-bottom" disable>
         <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
     </li>`
     $('#formCallScore')[0].reset()
     $('.tab-content').html('')
-    let optionidCriteriaGroup = `<option value="0">Toàn bộ kịch bản</option>`
+    let optionIdCriteriaGroup = `<option value="0">Toàn bộ kịch bản</option>`
     let totalPoint = 0
-    criteriaGroup.map((criteriaGroup) => {
+    criteriaGroups.map((criteriaGroup) => {
         let uuidv4 = window.location.uuidv4()
         let pointCriteria = 0
         let navTabContent
@@ -429,13 +440,13 @@ function popupScore(criteriaGroup, resultCallRatingNote, resultCallRating) {
                 let htmlSelectionCriteria = ``
                 if (criteria.SelectionCriteria.length > 0) {
                     criteria.SelectionCriteria.map((el) => {
-                        htmlSelectionCriteria += `<option value="${el.id}">${el.name + ': ' + (el.score)}</option>`
+                        htmlSelectionCriteria += `<option data-point="${el.score}" value="${el.id}">${el.name + ': ' + (el.score)}</option>`
                     })
 
                 }
                 criteriaHtml += `
                 <label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
-                <select class="form-control selectpicker pl-2 criteria" data-criteriaId="${criteria.id}">
+                <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" data-criteriaId="${criteria.id}">
                     ${htmlSelectionCriteria}
                 </select>`
                 pointCriteria += parseInt(criteria.scoreMax)
@@ -452,17 +463,17 @@ function popupScore(criteriaGroup, resultCallRatingNote, resultCallRating) {
         // tạo thanh nav cho Nhóm tiêu chí
         navHTML += `
         <li class="nav-item border-bottom">
-            <a class="nav-link nav-criteria-group" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+            <a class="nav-link nav-criteria-group group-${criteriaGroup.id}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
             aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
         </li>`
-        optionidCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
+        optionIdCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
         $('.tab-content').append(navTabContent)
 
     })
 
-    $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
-    $('#idCriteriaGroup').html(optionidCriteriaGroup)
+    $('#idCriteriaGroup').html(optionIdCriteriaGroup)
 
+    // xử lí dữ liệu cho phần ghi chú chấm điểm
     if (resultCallRatingNote && resultCallRatingNote.length > 0 && resultCallRatingNote[0].idCriteriaGroup != 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
         $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
@@ -471,23 +482,45 @@ function popupScore(criteriaGroup, resultCallRatingNote, resultCallRating) {
         $('#description').val(resultCallRatingNote[0].description)
         $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
         $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
-        timeNoteMinutes
     } else {
         $('#idCriteria').val("")
         $('#idCriteria').prop("disabled", true)
         $('#idCriteriaGroup').val('0')
+        $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
     }
 
+    // xử lí dữ liệu cho phần kịch bản và tính tổng điểm
     $('.selectpicker').selectpicker('refresh')
     $('.nav-scoreScript').html(navHTML)
-
+    let resultPointCriteria = 0
     if (resultCallRating && resultCallRatingNote.length > 0) {
         resultCallRating.map((el) => {
-            console.log(`select[class="criteria"][data-criteriaId=${el.idCriteria}]`)
-            console.log(el.idSelectionCriteria)
+            // tìm các mục tiêu có id tương ứng và cộng điểm
+            resultPointCriteria += parseInt($(`.selectpicker.criteria option[value="${el.idSelectionCriteria}"]`).attr('data-point'))
+            //gán giá trị cho ô select
             $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria)
         })
+
+        criteriaGroups.map((criteriaGroup) => {
+            let resultPointCriteriaGroup = 0
+            resultCallRating.map((el) => {
+                let point = $(`.selectpicker.criteriaGroup-${criteriaGroup.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
+                resultPointCriteriaGroup += point ? parseInt(point) : 0
+            })
+            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
+        })
+
+
+        // phần trăm điểm
+        var perc = ((resultPointCriteria / totalPoint) * 100).toFixed(0)
+        // gán phần trăm điểm
+        let html = `
+        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+        aria-valuemax="100">Hoàn thành ${perc}%</div>`
+        $('#progress-scoreScript').html(html)
+        $('.scoreScript').text(`Tổng điểm: ${resultPointCriteria}/${totalPoint} - ${perc}%`)
     }
+
     $('.selectpicker').selectpicker('refresh')
 }
 
