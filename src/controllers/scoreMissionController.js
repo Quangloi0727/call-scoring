@@ -153,37 +153,48 @@ exports.getCallRatingNotes = async (req, res, next) => {
 
 exports.getDetailScoreScript = async (req, res, next) => {
     try {
-        const { id } = req.query
+        const { idScoreScript, callId } = req.query
 
-        if (!id || id == '') {
-            throw new Error('Nhóm không tồn tại!')
+        if (!idScoreScript || idScoreScript == '') {
+            throw new Error('Chưa có id kịch bản!')
         }
-
-        let [scoreScriptInfo] = await Promise.all([
-            model.ScoreScript.findOne({
-                where: { id: { [Op.eq]: Number(id) } },
-                include: [
-                    { model: model.User, as: 'userCreate' },
-                    {
-                        model: model.CriteriaGroup,
-                        as: 'CriteriaGroup',
+        let p = []
+        p.push(model.ScoreScript.findOne({
+            where: { id: { [Op.eq]: Number(idScoreScript) } },
+            include: [
+                { model: model.User, as: 'userCreate' },
+                {
+                    model: model.CriteriaGroup,
+                    as: 'CriteriaGroup',
+                    include: {
+                        model: model.Criteria,
+                        as: 'Criteria',
                         include: {
-                            model: model.Criteria,
-                            as: 'Criteria',
-                            include: {
-                                model: model.SelectionCriteria,
-                                as: 'SelectionCriteria'
-                            },
+                            model: model.SelectionCriteria,
+                            as: 'SelectionCriteria'
                         },
                     },
-                ],
-                nest: true
-            })
-        ])
+                },
+            ],
+            nest: true
+        }))
+
+        if (callId) {
+            p.push(model.CallRating.findAll({
+                where: { callId: { [Op.eq]: callId } }
+            }))
+            p.push(model.CallRatingNote.findAll({
+                where: { callId: { [Op.eq]: callId } }
+            }))
+        }
+
+        let [scoreScriptInfo, resultCallRating, resultCallRatingNote] = await Promise.all(p)
 
         return res.json({
             code: SUCCESS_200.code,
             data: scoreScriptInfo || [],
+            resultCallRating: resultCallRating,
+            resultCallRatingNote: resultCallRatingNote
         })
     } catch (error) {
         return res.json({ code: ERR_500.code, message: error.message })
@@ -252,8 +263,7 @@ exports.saveCallRating = async (req, res) => {
 
         if (data.note) {
             data.note.created = req.user.id
-            let idCriteriaGroup = data.note.idCriteriaGroup
-            if (idCriteriaGroup == 'default') data.note.idCriteriaGroup = 0
+            await model.CallRatingNote.destroy({ where: { callId: data.resultCriteria[0].callId } })
             await model.CallRatingNote.create(data.note, { transaction: transaction })
         }
         await transaction.commit()
