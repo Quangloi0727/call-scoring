@@ -343,10 +343,17 @@ function createTable(data, scoreScripts, ConfigurationColums) {
     let leftTable = ``
 
     data.forEach((item, element) => {
+        let check = false
+        let idScoreScript
+        if (item.callRatingNote && item.callRatingNote.length > 0) {
+            check = true
+            idScoreScript = item.callRatingNote[0].idScoreScript
+        }
+        console.log(idScoreScript)
         let dropdown = ''
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+                dropdown += `<a class="dropdown-item showCallScore disabled" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
             })
         }
         let tdTable = ''
@@ -357,11 +364,11 @@ function createTable(data, scoreScripts, ConfigurationColums) {
         leftTable += ` <tr class="text-center">
             <td class="text-center callId" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
             <td class="text-center">    
-                <i class="fas fa-check mr-2 dropdown-toggle" id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
+                <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" data-id="${idScoreScript}" title="Sửa chấm điểm"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
