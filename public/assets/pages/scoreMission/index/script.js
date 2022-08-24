@@ -71,9 +71,9 @@ function bindClick() {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-id')
 
-        // let url = $(this).attr('url-record')
-        // $("#downloadFile").attr("url-record", url)
-        let url = "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav"
+        let url = $(this).attr('url-record')
+        $("#downloadFile-popupCallScore").attr("url-record", url)
+        // let url = "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav"
         configWaveSurfer([], url, '#recordCallScore')
 
         $('#btn-save-modal').attr('data-callId', callId)
@@ -135,6 +135,11 @@ function bindClick() {
     })
 
     $(document).on('click', '#downloadFile', function () {
+        let src_file = $(this).attr("url-record")
+        window.location = src_file
+    })
+
+    $(document).on('click', '#downloadFile-popupCallScore', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
@@ -405,15 +410,17 @@ function getDetailScoreScript(idScoreScript, callId) {
     queryData.idScoreScript = idScoreScript
     queryData.callId = callId
     _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
-        console.log(resp)
+        console.log("data kịch bản chấm điểm", resp)
         if (resp.code != 200) {
             return toastr.error(resp.message)
         }
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
+
+            // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
+
             //render dữ liệu ra popup
-            console.log(resp)
             return popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
         }
     })
@@ -577,4 +584,6 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '.nav-link.nav-criteria-group')
     $(document).off('change', '#idCriteriaGroup')
     $(document).off('click', '#downloadFile')
+    $(document).off('click', '#downloadFile-popupCallScore')
+
 })
