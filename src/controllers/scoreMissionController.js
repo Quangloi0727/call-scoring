@@ -191,29 +191,26 @@ exports.getDetailScoreScript = async (req, res, next) => {
 }
 
 exports.SaveConfigurationColums = async (req, res) => {
-    let transaction
     try {
         const data = {}
         data.userId = req.user.id
         data.configurationColums = JSON.stringify(req.body)
         data.nameTable = titlePage
 
-        transaction = await model.sequelize.transaction()
-        const result = await model.ConfigurationColums.update(
-            data,
-            { where: { userId: Number(req.user.id), nameTable: titlePage } },
-            { transaction: transaction }
+        const findConfig = await model.ConfigurationColums.findOne(
+            { where: { userId: Number(req.user.id), nameTable: titlePage } }
         )
-        if (result[0] == 0) {
-            await model.ConfigurationColums.create(data, { transaction: transaction })
+
+        if (findConfig) {
+            await findConfig.update(data)
+        } else {
+            await model.ConfigurationColums.create(data)
         }
-        await transaction.commit()
-        return res.status(SUCCESS_200.code).json({
-            message: 'Success!',
-        })
+        return res.json({ message: 'Success !', code: SUCCESS_200.code })
+
     } catch (error) {
         _logger.error("Lưu tùy chỉnh bảng lỗi: ", error)
-        return res.status(ERR_500.code).json({ message: error.message })
+        return res.json({ message: error.message, code: ERR_500.code })
     }
 }
 
@@ -229,12 +226,10 @@ exports.deleteConfigurationColums = async (req, res) => {
         )
 
         await transaction.commit()
-        return res.status(SUCCESS_200.code).json({
-            message: 'Success!',
-        })
+        return res.json({ message: 'Success !', code: SUCCESS_200.code })
     } catch (error) {
         _logger.error("Xoá tùy chỉnh bảng bị lỗi: ", error)
-        return res.status(ERR_500.code).json({ message: error.message })
+        return res.json({ message: error.message, code: ERR_500.code })
     }
 }
 

@@ -37,8 +37,17 @@ function bindClick() {
     })
 
     $resetColumnCustom.on('click', async () => {
-        // reset tick
-        renderPopupCustomColumn(headerDefault, true)
+        _AjaxData('/scoreMission/configurationColums', 'DELETE', null, null, function (resp) {
+            if (resp.code == 200) {
+                // reset tick
+                renderPopupCustomColumn(headerDefault, true)
+                // xóa cache
+                CACHE_CONFIG_COLUMN = null
+                location.reload()
+            } else {
+                return toastr.error(resp.message)
+            }
+        })
     })
 
     $(document).on('click', '.fa-play-circle', function () {
@@ -115,7 +124,6 @@ function bindClick() {
             let value = $(this).is(":checked")
             obj[key] = value
         })
-        console.log(obj)
         // debugger;
         SaveConfigurationColums(obj)
     })
@@ -150,7 +158,6 @@ function bindClick() {
         data.note.callId = callId
         data.note.idScoreScript = idScoreScript
         data.resultCriteria = arr
-        console.log(data)
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -265,23 +272,16 @@ function findData(page) {
     if (page) queryData.page = page
     queryData.scoreTargetId = $('#scoreTargetId').val()
     queryData.limit = $('.sl-limit-page').val() || 10
-    console.log(page)
     $('.page-loader').show()
-
     $.ajax({
         type: 'GET',
         url: '/scoreMission/getData?' + $.param(queryData),
         cache: 'false',
         success: function (result) {
-            console.log('result: ', result)
-
             $('.page-loader').hide()
-            // debugger
-            CACHE_CONFIG_COLUMN = result.ConfigurationColums ? result.ConfigurationColums : headerDefault
-            console.log(CACHE_CONFIG_COLUMN)
-            createTable(result.data, result.scoreScripts, CACHE_CONFIG_COLUMN ? CACHE_CONFIG_COLUMN : headerDefault)
+            CACHE_CONFIG_COLUMN = result.configurationColums
+            createTable(result.data, result.scoreScripts, result.configurationColums ? result.configurationColums : headerDefault, result.configurationColums ? false : true)
             return $('#paging_table').html(window.location.CreatePaging(result.paginator))
-
         },
         error: function (error) {
             $('.page-loader').hide()
@@ -294,49 +294,52 @@ function findData(page) {
 // xử lí data cho chức năng tùy chỉnh bảng
 /// *****_Start_*****
 function renderPopupCustomColumn(ConfigurationColums, init = false) {
-
     let popupHtml = ''
     popupHtml += `<div class="mb-3 border-bottom">
-        <ul>Mã cuộc gọi</ul>
-        <ul>Thao tác</ul>
-    </div>`
-    for (const [key, value] of Object.entries(ConfigurationColums)) {
-        popupHtml += itemColumn(key, headerDefault[key], value)
+                    <ul class='p-0'>Mã cuộc gọi</ul>
+                    <ul class='p-0'>Thao tác</ul>
+                </div>`
+    if (CACHE_CONFIG_COLUMN) {
+        for (const [key, value] of Object.entries(ConfigurationColums)) {
+            popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true' : value)
+        }
+        let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(ConfigurationColums))
+        columnNotTick.forEach(i => {
+            popupHtml += itemColumn(i, headerDefault[i], false)
+        })
+    } else {
+        for (const [key, value] of Object.entries(ConfigurationColums)) {
+            popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true' : value)
+        }
     }
-    let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(ConfigurationColums))
-    columnNotTick.forEach(i => {
-        popupHtml += itemColumn(i, headerDefault[i], false)
-    })
-    $('#sortable').html(popupHtml)
 
+    $('#sortable').html(popupHtml)
 }
 
-function renderHeaderTable(ConfigurationColums) {
-    let headerTable = ''
-    // debugger
-    for (const [key, value] of Object.entries(ConfigurationColums)) {
-        headerTable += `<th class="text-center ${key} ${value.status == 1 ? '' : 'd-none'}">${value.name}</th>`
-    }
+
+function renderHeaderTable(ConfigurationColums, configDefault) {
+    const headerTable = checkConfigDefaultHeader(ConfigurationColums, configDefault)
     return $('.table-right.custom-table thead tr').html(headerTable)
 }
 
 function itemColumn(key, title, value) {
     // debugger;
     return `<li class="mb-3 border-bottom">
-        <input class="form-check-input" type="checkbox" name="${key}"
-        ${title.status == 1 ? 'checked' : ''} />
-        ${title.name}
-        <span style="float: right;">
-        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
-        </span>
-  </li>`
+                <div class="row">
+                    <div class = "col-md-11">
+                        <input class="form-check-input" type="checkbox" name="${key}" ${value == true || value == 'true' ? 'checked' : ''} /> ${title.name}
+                    </div>
+                    <div class = "col-md-1">
+                        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+                    </div>
+                </div>
+            </li>`
 }
 ///***** __end__*****
-function createTable(data, scoreScripts, ConfigurationColums) {
-    console.log(data)
+function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let objColums = { ...ConfigurationColums }
     renderPopupCustomColumn(ConfigurationColums)
-    renderHeaderTable(ConfigurationColums)
+    renderHeaderTable(ConfigurationColums, configDefault)
 
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
@@ -349,17 +352,15 @@ function createTable(data, scoreScripts, ConfigurationColums) {
             check = true
             idScoreScript = item.callRatingNote[0].idScoreScript
         }
-        console.log(idScoreScript)
         let dropdown = ''
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
                 dropdown += `<a class="dropdown-item showCallScore disabled" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
             })
         }
-        let tdTable = ''
-        for (const [key, value] of Object.entries(objColums)) {
-            tdTable += ` <td class="text-center ${key} ${value.status == 1 ? '' : 'd-none'}">${item[key] || ''}</td>`
-        }
+
+        let tdTable = checkConfigDefaultBody(objColums, configDefault, item)
+
         rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
             <td class="text-center callId" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
@@ -380,6 +381,35 @@ function createTable(data, scoreScripts, ConfigurationColums) {
     $rightTable.html(rightTable)
     return
 
+}
+
+
+function checkConfigDefaultHeader(dataConfig, configDefault) {
+    let htmlString = ``
+    if (configDefault) {
+        for (const [key] of Object.entries(dataConfig)) {
+            htmlString += ` <th class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${headerDefault[key].name || ''}</th>`
+        }
+    } else {
+        for (const [key, value] of Object.entries(dataConfig)) {
+            htmlString += `<th class="text-center  ${key} ${value == true ? '' : 'd-none'}" >${headerDefault[key].name}</th>`
+        }
+    }
+    return htmlString
+}
+
+function checkConfigDefaultBody(dataConfig, configDefault, item) {
+    let htmlString = ``
+    if (configDefault) {
+        for (const [key] of Object.entries(dataConfig)) {
+            htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+        }
+    } else {
+        for (const [key, value] of Object.entries(dataConfig)) {
+            htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+        }
+    }
+    return htmlString
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm
@@ -424,7 +454,6 @@ function popupScore(criteriaGroup) {
                     criteria.SelectionCriteria.map((el) => {
                         htmlSelectionCriteria += `<option value="${el.id}">${el.name + ': ' + (el.score)}</option>`
                     })
-
                 }
                 criteriaHtml += `<label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
                 <select class="form-control selectpicker pl-2 criteria" data-criteriaId="${criteria.id}">

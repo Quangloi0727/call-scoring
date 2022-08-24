@@ -83,6 +83,7 @@
                 </button>
             </div>
             <div class="modal-body">
+                <p id="title_config_column">Danh sách nhiệm vụ chấm điểm</p>
                 <ul>
                     <li class="mb-3 border-bottom">
                         <input class="form-check-input" type="checkbox" name="" id="select-all" />
@@ -90,20 +91,7 @@
                     </li>
                 </ul>
                 <ul id="sortable">
-                    <div class="">
-                        <ul class="mb-3 ">Mã cuộc gọi</ul>
-                        <ul class="mb-3 border-bottom">Thao tác</ul>
-                    </div>
-                    <% Object.keys(headerDefault).forEach((i)=> { %>
-                        <li class="mb-3 border-bottom">
-                            <input class="form-check-input" type="checkbox" name="<%= i %>"
-                                <%=headerDefault[i].status==1 ? 'checked' :'' %> />
-                                <%= headerDefault[i].name%>
-                                <span style="float: right;">
-                                    <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
-                                </span>
-                        </li>
-                        <% }) %>
+                    
                 </ul>
 
                 <div class="modal-footer justify-content-between">
@@ -191,7 +179,7 @@
             </div>
             <div class="col-md-3">
                 <div class="dropdown show">
-                    <a class="btn btn-primary dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="btn btn-primary" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       Tốc độ phát / <span id="defaultPlaySpeed"></span><i class="fa fa-caret-down" aria-hidden="true"></i>
                     </a>
 

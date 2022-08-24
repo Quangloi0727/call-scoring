@@ -18,9 +18,9 @@
   max-width: 200px;
   min-width: 200px;
   background: white;
-  white-space:nowrap;
+  white-space: nowrap;
   text-overflow: ellipsis;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .table-right {
@@ -95,4 +95,13 @@
 
 .wavesurfer-handle {
   background-color: red !important;
+}
+
+#title_config_column {
+  font-size: 20px;
+  margin: 17px;
+}
+
+li{
+  list-style-type: none;
 }

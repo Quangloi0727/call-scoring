@@ -30,19 +30,19 @@ const headerDefault = {
     },
     caller: {
         name: "Số gọi đi",
-        status: 0
+        status: 1
     },
     called: {
         name: "Số gọi đến",
-        status: 0
+        status: 1
     },
     origTime: {
         name: "Ngày giờ gọi",
-        status: 0
+        status: 1
     },
     duration: {
         name: "Thời lượng",
-        status: 0
+        status: 1
     }
 }
 
