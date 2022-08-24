@@ -46,6 +46,9 @@ const headerDefault = {
     }
 }
 
+const idCallNotFound = "Id cuộc gọi không tồn tại !"
+
 module.exports = {
-    headerDefault,
+    idCallNotFound,
+    headerDefault
 }

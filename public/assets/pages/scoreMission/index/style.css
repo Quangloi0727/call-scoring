@@ -18,6 +18,9 @@
   max-width: 200px;
   min-width: 200px;
   background: white;
+  white-space:nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden; 
 }
 
 .table-right {
@@ -88,4 +91,8 @@
 .modal-dialog.showDetailRecord {
   max-width: 40% !important;
   height: 100%;
+}
+
+.wavesurfer-handle {
+  background-color: red !important;
 }

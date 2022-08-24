@@ -19,4 +19,7 @@ router.route('/configurationColums')
 router.route('/saveCallRating')
     .post(scoreMissionController.saveCallRating)
 
+router.route('/:id/getCallRatingNotes')
+    .get(scoreMissionController.getCallRatingNotes)
+
 module.exports = router

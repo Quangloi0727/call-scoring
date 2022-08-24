@@ -16,7 +16,7 @@ const {
     CONST_DATA,
     CONST_STATUS } = require('../helpers/constants/index')
 
-const { headerDefault } = require('../helpers/constants/fieldScoreMission')
+const { headerDefault, idCallNotFound } = require('../helpers/constants/fieldScoreMission')
 
 const { cheSo } = require("../helpers/functions")
 
@@ -131,6 +131,26 @@ exports.getScoreMission = async (req, res, next) => {
     }
 }
 
+exports.getCallRatingNotes = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        if (!id || id == 'null' || id == '') throw new Error(idCallNotFound)
+        const result = await model.CallRatingNote.findAll({
+            where: { callId: id },
+            include: [
+                {
+                    model: model.User,
+                    as: 'userCreate'
+                }
+            ]
+        })
+        return res.json({ code: 200, result: result })
+    } catch (error) {
+        _logger.error("get list notes errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
 exports.getDetailScoreScript = async (req, res, next) => {
     try {
         const { id } = req.query
@@ -231,8 +251,9 @@ exports.saveCallRating = async (req, res) => {
         }
 
         if (data.note) {
+            data.note.created = req.user.id
             let idCriteriaGroup = data.note.idCriteriaGroup
-            if (idCriteriaGroup == 'default') data.note = 0
+            if (idCriteriaGroup == 'default') data.note.idCriteriaGroup = 0
             await model.CallRatingNote.create(data.note, { transaction: transaction })
         }
         await transaction.commit()

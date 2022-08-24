@@ -43,60 +43,19 @@ function bindClick() {
 
     $(document).on('click', '.fa-play-circle', function () {
         const urlRecord = $(this).attr('url-record')
+        const callId = $(this).attr('data-callId')
         $("#formDetailRecord").html('')
         $('#showDetailRecord').modal('show')
         $("#defaultPlaySpeed").text("Chuẩn")
         //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
         $("#downloadFile").attr("url-record", urlRecord)
-        var wavesurfer = WaveSurfer.create({
-            container: '#formDetailRecord',
-            scrollParent: true,
-            waveColor: '#A8DBA8',
-            progressColor: '#3B8686',
-            backend: 'MediaElement',
-            plugins: [
-                WaveSurfer.regions.create({
-
-                })
-            ]
-        })
-        //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
-        wavesurfer.load(urlRecord)
-
-        wavesurfer.on('ready', function (e) {
-            wavesurfer.play()
-            updateTimer(wavesurfer)
-            const totalTime = secondsToTimestamp(wavesurfer.getDuration())
-            $('#waveform-time-indicator .totalTime').text(totalTime)
-        })
-
-        wavesurfer.on('audioprocess', function (e) {
-            updateTimer(wavesurfer)
-        })
-
-        $('.controls .btn').on('click', function () {
-            var action = $(this).data('action')
-            console.log("action", action)
-            switch (action) {
-                case 'play':
-                    wavesurfer.playPause()
-                    break
-                case 'back':
-                    wavesurfer.skipBackward(10)
-                    updateTimer(wavesurfer)
-                    break
-                case 'forward':
-                    wavesurfer.skipForward(10)
-                    updateTimer(wavesurfer)
-                    break
+        _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+            if (resp.code == 200) {
+                configWaveSurfer(resp.result, urlRecord)
+            } else {
+                console.log("get list note callId " + callId + " error")
+                configWaveSurfer([], urlRecord)
             }
-        })
-
-        $('.dropdown-item').on('click', function () {
-            var val = $(this).attr("data-val")
-            console.log("value play speed", val)
-            wavesurfer.setPlaybackRate(val)
-            $("#defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
         })
     })
 
@@ -224,6 +183,72 @@ function bindClick() {
     })
 
 }
+function configWaveSurfer(arrRegion, urlRecord) {
+    var wavesurfer = WaveSurfer.create({
+        container: '#formDetailRecord',
+        scrollParent: true,
+        waveColor: '#A8DBA8',
+        progressColor: '#3B8686',
+        backend: 'MediaElement',
+        plugins: [
+            WaveSurfer.regions.create({})
+        ]
+    })
+    //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+    wavesurfer.load(urlRecord)
+
+    wavesurfer.on('ready', function (e) {
+        wavesurfer.play()
+        updateTimer(wavesurfer)
+        const totalTime = _secondsToTimestamp(wavesurfer.getDuration())
+        $('#waveform-time-indicator .totalTime').text(totalTime)
+    })
+
+    wavesurfer.on('audioprocess', function (e) {
+        updateTimer(wavesurfer)
+    })
+
+    arrRegion.forEach(el => {
+        wavesurfer.addRegion({
+            start: _convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0),
+            loop: false,
+            color: 'hsla(9, 100%, 64%, 1)',
+            attributes: {
+                title: `Nội dung ghi chú: ${el.description}\nNgười ghi chú: ${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''} (${el.userCreate && el.userCreate.userName ? el.userCreate.userName : ''}) lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}\nVị trí ghi chú: ${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}`
+            }
+        })
+    })
+
+    $('.controls .btn').on('click', function () {
+        var action = $(this).data('action')
+        console.log("action", action)
+        switch (action) {
+            case 'play':
+                wavesurfer.playPause()
+                break
+            case 'back':
+                wavesurfer.skipBackward(10)
+                updateTimer(wavesurfer)
+                break
+            case 'forward':
+                wavesurfer.skipForward(10)
+                updateTimer(wavesurfer)
+                break
+        }
+    })
+
+    $('.dropdown-item').on('click', function () {
+        var val = $(this).attr("data-val")
+        console.log("value play speed", val)
+        wavesurfer.setPlaybackRate(val)
+        $("#defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
+    })
+
+    //event change title wavesufer to notes
+    wavesurfer.on('region-mouseenter', function (region, e) {
+        region.element.title = region.attributes.title
+    })
+}
 
 function SaveConfigurationColums(dataUpdate) {
     return _AjaxData('/scoreMission/configurationColums', 'POST', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
@@ -238,20 +263,8 @@ function SaveConfigurationColums(dataUpdate) {
 }
 
 function updateTimer(wavesurfer) {
-    var formattedTime = secondsToTimestamp(wavesurfer.getCurrentTime())
+    var formattedTime = _secondsToTimestamp(wavesurfer.getCurrentTime())
     $('#waveform-time-indicator .time').text(formattedTime)
-}
-
-function secondsToTimestamp(seconds) {
-    seconds = Math.floor(seconds)
-    var h = Math.floor(seconds / 3600)
-    var m = Math.floor((seconds - (h * 3600)) / 60)
-    var s = seconds - (h * 3600) - (m * 60)
-
-    h = h < 10 ? '0' + h : h
-    m = m < 10 ? '0' + m : m
-    s = s < 10 ? '0' + s : s
-    return h + ':' + m + ':' + s
 }
 
 function getFormData(formId) {
@@ -368,7 +381,7 @@ function createTable(data, scoreScripts, ConfigurationColums) {
         }
         rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
-            <td class="text-center callId">${item.callId || ''}</td>
+            <td class="text-center callId" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
             <td class="text-center">    
                 <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
@@ -377,7 +390,7 @@ function createTable(data, scoreScripts, ConfigurationColums) {
                 <i class="fas fa-pen-square mr-2 showCallScore" data-id="${idScoreScript}" title="Sửa chấm điểm"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
-                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName}></i>
+                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
             </td>
         </tr>`
     })

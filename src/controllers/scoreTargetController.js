@@ -9,9 +9,9 @@ const {
 
 const model = require('../models')
 const UserRoleModel = require('../models/userRole')
+const { TeamStatus } = require('../models/team')
 
 const {
-  assignmentListEmpty,
   scoreTargetNotFound,
   statusUpdateFail,
   headerDefault,
@@ -50,7 +50,7 @@ exports.new = async (req, res, next) => {
     })
 
     let users = await model.User.findAll({ where: { isActive: 1 } })
-    let teams = await model.Team.findAll({})
+    let teams = await model.Team.findAll({ where: { status: TeamStatus.ON, name: { [Op.ne]: 'Default' } } })
     let groups = await model.Group.findAll({})
 
     return _render(req, res, 'scoreTarget/target', {
@@ -116,7 +116,7 @@ exports.detail = async (req, res, next) => {
       model.ScoreTargetCond.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
       model.ScoreTarget_ScoreScript.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
       model.User.findAll({ where: { isActive: 1 } }),
-      model.Team.findAll({}),
+      model.Team.findAll({ where: { status: TeamStatus.ON, name: { [Op.ne]: 'Default' } } }),
       model.Group.findAll({}),
       getListUserAssignment(),
       model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: id } }),
@@ -431,8 +431,6 @@ exports.assignment = async (req, res) => {
   try {
     const { id } = req.params
     const { assignment } = req.body
-
-    //if (assignment && assignment.length == 0) throw new Error(assignmentListEmpty)
 
     //xóa các user đã được phân công trước đó
     await model.ScoreTargetAssignment.destroy({ where: { scoreTargetId: id } })
