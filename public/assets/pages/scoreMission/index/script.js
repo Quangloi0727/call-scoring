@@ -107,8 +107,27 @@ function bindClick() {
     $(document).on('click', '.showCallScore', function () {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-id')
-        $('#btn-save-modal').attr('data-callId', callId)
-        $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
+        $("#recordCallScore").html('')
+        let url = "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav"
+        //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+        $("#downloadFile").attr("url-record", url)
+        var wavesurfer = WaveSurfer.create({
+            container: '#recordCallScore',
+            scrollParent: true,
+            waveColor: '#A8DBA8',
+            progressColor: '#3B8686',
+            backend: 'MediaElement',
+            maxCanvasWidth: 300,
+            plugins: [
+                WaveSurfer.regions.create({
+
+                })
+            ]
+        })
+        //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+        wavesurfer.load(url)
+        wavesurfer.play()
+
         return getDetailScoreScript(idScoreScript)
     })
 
@@ -340,7 +359,7 @@ function createTable(data, scoreScripts, ConfigurationColums) {
         let dropdown = ''
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore disabled" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
             })
         }
         let tdTable = ''
