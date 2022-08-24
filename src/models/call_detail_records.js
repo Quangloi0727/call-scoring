@@ -74,12 +74,12 @@ class CallDetailRecords extends Model {
       as: "team"
     })
 
-    models.CallDetailRecords.belongsTo(models.CallRating, {
+    models.CallDetailRecords.hasMany(models.CallRating, {
       foreignKey: "callId",
       as: "callRating",
     })
 
-    models.CallDetailRecords.belongsTo(models.CallRatingNote, {
+    models.CallDetailRecords.hasMany(models.CallRatingNote, {
       foreignKey: "callId",
       as: "callRatingNote",
     })

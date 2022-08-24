@@ -88,7 +88,7 @@ exports.getScoreMission = async (req, res, next) => {
             include: [
                 { model: model.User, as: 'agent' },
                 { model: model.Team, as: 'team' },
-
+                { model: model.CallRating, as: 'callRating' },
                 { model: model.CallRatingNote, as: 'callRatingNote' },
             ],
             offset: offset,
@@ -222,7 +222,6 @@ exports.saveCallRating = async (req, res) => {
     let transaction
     try {
         const data = req.body
-        data.userId = req.user.id
         transaction = await model.sequelize.transaction()
 
         if (data.resultCriteria && data.resultCriteria.length > 0) {
@@ -232,6 +231,8 @@ exports.saveCallRating = async (req, res) => {
         }
 
         if (data.note) {
+            let idCriteriaGroup = data.note.idCriteriaGroup
+            if (idCriteriaGroup == 'default') data.note = 0
             await model.CallRatingNote.create(data.note, { transaction: transaction })
         }
         await transaction.commit()
