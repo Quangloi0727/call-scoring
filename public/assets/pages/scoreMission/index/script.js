@@ -60,24 +60,34 @@ function bindClick() {
         $("#downloadFile").attr("url-record", urlRecord)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
             if (resp.code == 200) {
-                configWaveSurfer(resp.result, urlRecord)
+                configWaveSurfer(resp.result, urlRecord, null)
             } else {
                 console.log("get list note callId " + callId + " error")
-                configWaveSurfer([], urlRecord)
+                configWaveSurfer([], urlRecord, null)
             }
         })
     })
 
     $("#showDetailRecord").on("hidden.bs.modal", function () {
-        location.reload()
+        // location.reload()
+    })
+
+    $("#popupCallScore").on("hidden.bs.modal", function () {
+        $('#recordCallScore').html('')
     })
 
     $(document).on('click', '.showCallScore', function () {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-id')
+
+        let url = $(this).attr('url-record')
+        $("#downloadFile-popupCallScore").attr("url-record", url)
+        // let url = "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav"
+        configWaveSurfer([], url, '#recordCallScore')
+
         $('#btn-save-modal').attr('data-callId', callId)
         $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
-        return getDetailScoreScript(idScoreScript)
+        return getDetailScoreScript(idScoreScript, callId)
     })
 
     $(document).on('click', '.detailScoreScript', function () {
@@ -90,28 +100,23 @@ function bindClick() {
 
     $(document).on('click', '.nav-link.nav-criteria-group', function () {
         $('.nameCriteriaGroup').text($(this).text())
-        $('.scoreCriteria').text(`Tổng điển: 0/${$(this).attr('data-point')} - 0%`)
+        if ($(this).attr('resultPointCriteriaGroup') || $(this).attr('resultPointCriteriaGroup') == 0) {
+            let point = $(this).attr('resultPointCriteriaGroup')
+
+            let total = $(this).attr('data-point')
+            var perc = ((point / total) * 100).toFixed(0)
+            let html = `
+            <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+            aria-valuemax="100">Hoàn thành ${perc}%</div>`
+            $('#progress-scoreCriteria').html(html)
+            $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
+
+        } else $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
     })
 
     // xử lí chọn option ghi chú của mục tiêu
     $(document).on('change', '#idCriteriaGroup', function () {
-        let html = ``
-        if (_criteriaGroups && _criteriaGroups.length > 0) {
-            _criteriaGroups.map((criteriaGroup) => {
-
-                if (criteriaGroup.id == parseInt($(this).val())) {
-                    if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
-                        criteriaGroup.Criteria.map((el) => {
-                            html += `<option value="${el.id}">${el.name}</option>`
-                        })
-                    }
-                }
-            })
-            $('#idCriteria').html(html)
-            $('.selectpicker').selectpicker('refresh')
-            $('#idCriteria').prop("disabled", html ? false : true)
-            $('.selectpicker').selectpicker('refresh')
-        }
+        renderCriteria($(this).val())
     })
 
     // button lưu tùy chỉnh bảng
@@ -138,6 +143,11 @@ function bindClick() {
     })
 
     $(document).on('click', '#downloadFile', function () {
+        let src_file = $(this).attr("url-record")
+        window.location = src_file
+    })
+
+    $(document).on('click', '#downloadFile-popupCallScore', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
@@ -171,9 +181,9 @@ function bindClick() {
     })
 
 }
-function configWaveSurfer(arrRegion, urlRecord) {
+function configWaveSurfer(arrRegion, urlRecord, container) {
     var wavesurfer = WaveSurfer.create({
-        container: '#formDetailRecord',
+        container: container ? container : '#formDetailRecord',
         scrollParent: true,
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
@@ -182,14 +192,15 @@ function configWaveSurfer(arrRegion, urlRecord) {
             WaveSurfer.regions.create({})
         ]
     })
-    //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+    wavesurfer.empty()
+    // wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
     wavesurfer.load(urlRecord)
 
     wavesurfer.on('ready', function (e) {
         wavesurfer.play()
         updateTimer(wavesurfer)
         const totalTime = _secondsToTimestamp(wavesurfer.getDuration())
-        $('#waveform-time-indicator .totalTime').text(totalTime)
+        $('.waveform-time-indicator .totalTime').text(totalTime)
     })
 
     wavesurfer.on('audioprocess', function (e) {
@@ -206,8 +217,12 @@ function configWaveSurfer(arrRegion, urlRecord) {
             }
         })
     })
+    let elementSelector = '#showDetailRecord .controls .btn'
+    if (container) {
+        elementSelector = '#elmRecordCallScore .controls .btn'
+    }
 
-    $('.controls .btn').on('click', function () {
+    $(`${elementSelector}`).on('click', function () {
         var action = $(this).data('action')
         console.log("action", action)
         switch (action) {
@@ -252,7 +267,7 @@ function SaveConfigurationColums(dataUpdate) {
 
 function updateTimer(wavesurfer) {
     var formattedTime = _secondsToTimestamp(wavesurfer.getCurrentTime())
-    $('#waveform-time-indicator .time').text(formattedTime)
+    $('.waveform-time-indicator .time').text(formattedTime)
 }
 
 function getFormData(formId) {
@@ -291,8 +306,10 @@ function findData(page) {
     })
 }
 
-// xử lí data cho chức năng tùy chỉnh bảng
-/// *****_Start_*****
+/**
+ * xử lí data cho chức năng tùy chỉnh bảng
+ * *****Start*****
+ */
 function renderPopupCustomColumn(ConfigurationColums, init = false) {
     let popupHtml = ''
     popupHtml += `<div class="mb-3 border-bottom">
@@ -347,6 +364,8 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
 
     data.forEach((item, element) => {
         let check = false
+
+        //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
         if (item.callRatingNote && item.callRatingNote.length > 0) {
             check = true
@@ -355,7 +374,8 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
         let dropdown = ''
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore disabled" data-callId="${item.id}"  data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
+                url-record="${item.recordingFileName}" data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
             })
         }
 
@@ -369,7 +389,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" data-id="${idScoreScript}" title="Sửa chấm điểm"></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm"  ${check ? 'disabled' : ''}></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
@@ -413,36 +433,39 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm
-function getDetailScoreScript(idScoreScript) {
+function getDetailScoreScript(idScoreScript, callId) {
     let queryData = {}
-    queryData.id = idScoreScript
+    queryData.idScoreScript = idScoreScript
+    queryData.callId = callId
     _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
-        console.log(resp)
+        console.log("data kịch bản chấm điểm", resp)
         if (resp.code != 200) {
             return toastr.error(resp.message)
         }
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
-            _criteriaGroups = resp.data.CriteriaGroup
-            //render dữ liệu ra popup
 
-            return popupScore(resp.data.CriteriaGroup)
+            // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
+            _criteriaGroups = resp.data.CriteriaGroup
+
+            //render dữ liệu ra popup
+            return popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
         }
     })
     $('#popupCallScore').modal('show')
 }
 
 // xử lí dữ liệu ra popup
-function popupScore(criteriaGroup) {
+function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     let navHTML = `
     <li class="nav-item border-bottom" disable>
         <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
     </li>`
     $('#formCallScore')[0].reset()
     $('.tab-content').html('')
-    let optionidCriteriaGroup = `<option value="default">Toàn bộ kịch bản</option>`
+    let optionIdCriteriaGroup = `<option value="0">Toàn bộ kịch bản</option>`
     let totalPoint = 0
-    criteriaGroup.map((criteriaGroup) => {
+    criteriaGroups.map((criteriaGroup) => {
         let uuidv4 = window.location.uuidv4()
         let pointCriteria = 0
         let navTabContent
@@ -452,11 +475,12 @@ function popupScore(criteriaGroup) {
                 let htmlSelectionCriteria = ``
                 if (criteria.SelectionCriteria.length > 0) {
                     criteria.SelectionCriteria.map((el) => {
-                        htmlSelectionCriteria += `<option value="${el.id}">${el.name + ': ' + (el.score)}</option>`
+                        htmlSelectionCriteria += `<option data-point="${el.score}" value="${el.id}">${el.name + ': ' + (el.score)}</option>`
                     })
                 }
-                criteriaHtml += `<label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
-                <select class="form-control selectpicker pl-2 criteria" data-criteriaId="${criteria.id}">
+                criteriaHtml += `
+                <label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
+                <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" data-criteriaId="${criteria.id}">
                     ${htmlSelectionCriteria}
                 </select>`
                 pointCriteria += parseInt(criteria.scoreMax)
@@ -473,26 +497,88 @@ function popupScore(criteriaGroup) {
         // tạo thanh nav cho Nhóm tiêu chí
         navHTML += `
         <li class="nav-item border-bottom">
-            <a class="nav-link nav-criteria-group" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+            <a class="nav-link nav-criteria-group group-${criteriaGroup.id}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
             aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
         </li>`
-        optionidCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
+        optionIdCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
         $('.tab-content').append(navTabContent)
 
     })
 
-    $('.scoreScript').text(`Tổng điển: 0/${totalPoint} - 0%`)
-    $('#idCriteriaGroup').html(optionidCriteriaGroup)
-    $('#idCriteria').val("")
-    $('#idCriteria').prop("disabled", true)
-    $('.selectpicker').selectpicker('refresh')
-    $('#idCriteriaGroup').val('default')
+    $('#idCriteriaGroup').html(optionIdCriteriaGroup)
+
+    // xử lí dữ liệu cho phần ghi chú chấm điểm
+    if (resultCallRatingNote && resultCallRatingNote.length > 0 && resultCallRatingNote[0].idCriteriaGroup != 0) {
+        $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
+        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
+        renderCriteria(resultCallRatingNote[0].idCriteriaGroup)
+        $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
+        $('#description').val(resultCallRatingNote[0].description)
+        $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
+        $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
+    } else {
+        $('#idCriteria').val("")
+        $('#idCriteria').prop("disabled", true)
+        $('#idCriteriaGroup').val('0')
+        $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
+    }
+
+    // xử lí dữ liệu cho phần kịch bản và tính tổng điểm
     $('.selectpicker').selectpicker('refresh')
     $('.nav-scoreScript').html(navHTML)
+    let resultPointCriteria = 0
+    if (resultCallRating && resultCallRatingNote.length > 0) {
+        resultCallRating.map((el) => {
+            // tìm các mục tiêu có id tương ứng và cộng điểm
+            resultPointCriteria += parseInt($(`.selectpicker.criteria option[value="${el.idSelectionCriteria}"]`).attr('data-point'))
+            //gán giá trị cho ô select
+            $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria)
+        })
+
+        criteriaGroups.map((criteriaGroup) => {
+            let resultPointCriteriaGroup = 0
+            resultCallRating.map((el) => {
+                let point = $(`.selectpicker.criteriaGroup-${criteriaGroup.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
+                resultPointCriteriaGroup += point ? parseInt(point) : 0
+            })
+            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
+        })
+
+
+        // phần trăm điểm
+        var perc = ((resultPointCriteria / totalPoint) * 100).toFixed(0)
+        // gán phần trăm điểm
+        let html = `
+        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+        aria-valuemax="100">Hoàn thành ${perc}%</div>`
+        $('#progress-scoreScript').html(html)
+        $('.scoreScript').text(`Tổng điểm: ${resultPointCriteria}/${totalPoint} - ${perc}%`)
+    }
+
+    $('.selectpicker').selectpicker('refresh')
+}
+
+function renderCriteria(idCriteriaGroup) {
+    let html = ``
+    if (_criteriaGroups && _criteriaGroups.length > 0) {
+        _criteriaGroups.map((criteriaGroup) => {
+
+            if (criteriaGroup.id == parseInt(idCriteriaGroup)) {
+                if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
+                    criteriaGroup.Criteria.map((el) => {
+                        html += `<option value="${el.id}">${el.name}</option>`
+                    })
+                }
+            }
+        })
+        $('#idCriteria').html(html)
+        $('.selectpicker').selectpicker('refresh')
+        $('#idCriteria').prop("disabled", html ? false : true)
+        $('.selectpicker').selectpicker('refresh')
+    }
 }
 
 $(function () {
-
 
     $('#popup_startTime').datetimepicker({
         format: 'DD/MM/YYYY',
@@ -525,4 +611,6 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '.nav-link.nav-criteria-group')
     $(document).off('change', '#idCriteriaGroup')
     $(document).off('click', '#downloadFile')
+    $(document).off('click', '#downloadFile-popupCallScore')
+
 })
