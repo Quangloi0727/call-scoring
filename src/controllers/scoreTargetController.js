@@ -449,6 +449,76 @@ exports.assignment = async (req, res) => {
   }
 }
 
+exports.replication = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    if (!id || id == '') {
+      throw new Error('Bản ghi sao chép không tồn tại!')
+    }
+
+    const scoreScript = await model.ScoreScript.findAll({
+      where: { status: CONST_STATUS['Hoạt động'] },
+      attributes: ['name', 'id'],
+      raw: true,
+      nest: true
+    })
+
+    let detail = await model.ScoreTarget.findOne({
+      where: { id: { [Op.eq]: Number(id) } },
+      nest: true,
+      raw: true,
+    })
+    delete detail.name;
+    delete detail.id;
+    detail.status = 0
+    let [ScoreTargetAuto, ScoreTargetCond, ScoreTarget_ScoreScript, users, teams, groups, listUserAssignment, userAssigned] = await Promise.all([
+      model.ScoreTargetAuto.findAll({
+        where: { scoreTargetId: { [Op.eq]: Number(id) } },
+        include: [
+          { model: model.ScoreTargetKeywordSet, as: 'KeywordSet' },
+        ],
+        order: [
+          ['id', 'DESC'],
+        ],
+        nest: true,
+      }),
+      model.ScoreTargetCond.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
+      model.ScoreTarget_ScoreScript.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
+      model.User.findAll({ where: { isActive: 1 } }),
+      model.Team.findAll({ where: { status: TeamStatus.ON, name: { [Op.ne]: 'Default' } } }),
+      model.Group.findAll({}),
+      getListUserAssignment(),
+      model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: id } }),
+    ])
+
+    return _render(req, res, 'scoreTarget/target', {
+      titlePage: null,
+      scoreScript: scoreScript.length > 0 ? scoreScript : [],
+      ScoreTarget: detail,
+      ScoreTargetAuto: ScoreTargetAuto,
+      ScoreTargetCond: ScoreTargetCond,
+      ScoreTarget_ScoreScript: ScoreTarget_ScoreScript,
+      CONST_RATING_BY,
+      CONST_CALL_TYPE,
+      CONST_EFFECTIVE_TIME_TYPE,
+      CONST_STATUS,
+      CONST_DATA,
+      CONST_COND,
+      users,
+      teams,
+      groups,
+      isEdit: false,
+      listUserAssignment,
+      userAssigned
+    })
+  } catch (error) {
+    _logger.error(`------- error ------- `)
+    _logger.error(error)
+    return next(error)
+  }
+}
+
 function getListUserAssignment() {
   return model.User.findAll({
     where: { isActive: 1 },

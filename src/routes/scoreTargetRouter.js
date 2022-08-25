@@ -24,4 +24,7 @@ router.route('/:id/updateStatus')
 router.route('/:id/assignment')
   .put(scoreTargetController.assignment)
 
+router.route('/replication/:id')
+  .get(libsPassport.isAdmin, scoreTargetController.replication)
+
 module.exports = router
