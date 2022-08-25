@@ -55,7 +55,7 @@ function bindClick() {
         const callId = $(this).attr('data-callId')
         $("#formDetailRecord").html('')
         $('#showDetailRecord').modal('show')
-        $("#defaultPlaySpeed").text("Chuẩn")
+        $(".defaultPlaySpeed").text("Chuẩn")
         //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
         $("#downloadFile").attr("url-record", urlRecord)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
@@ -240,7 +240,7 @@ function configWaveSurfer(arrRegion, urlRecord, container) {
         var val = $(this).attr("data-val")
         console.log("value play speed", val)
         wavesurfer.setPlaybackRate(val)
-        $("#defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
+        $(".defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
     })
 
     //event change title wavesufer to notes
