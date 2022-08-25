@@ -69,11 +69,12 @@ function bindClick() {
     })
 
     $("#showDetailRecord").on("hidden.bs.modal", function () {
-        // location.reload()
+        location.reload()
     })
 
     $("#popupCallScore").on("hidden.bs.modal", function () {
         $('#recordCallScore').html('')
+        location.reload()
     })
 
     $(document).on('click', '.showCallScore', function () {
