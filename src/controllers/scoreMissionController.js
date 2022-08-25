@@ -181,10 +181,10 @@ exports.getDetailScoreScript = async (req, res, next) => {
 
         if (callId) {
             p.push(model.CallRating.findAll({
-                where: { callId: { [Op.eq]: callId } }
+                where: { callId:callId }
             }))
             p.push(model.CallRatingNote.findAll({
-                where: { callId: { [Op.eq]: callId } }
+                where: { callId: callId }
             }))
         }
 
@@ -197,6 +197,7 @@ exports.getDetailScoreScript = async (req, res, next) => {
             resultCallRatingNote: resultCallRatingNote
         })
     } catch (error) {
+        _logger.error("get data chi tiết kịch bản lỗi: ", error)
         return res.json({ code: ERR_500.code, message: error.message })
     }
 }

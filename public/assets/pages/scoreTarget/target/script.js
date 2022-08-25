@@ -1,51 +1,50 @@
 
 const $form_target_general = $('#form_target_general')
+$form_target_general.validate({
 
-function bindClick() {
-  $form_target_general.validate({
-
-    rules: {
-      description: {
-        maxlength: 500
-      },
-      name: {
-        required: true,
-        maxlength: 100
-      },
-      numberOfCall: {
-        digits: true
-      }
+  rules: {
+    description: {
+      maxlength: 500
     },
-    messages: {
-      description: {
-        maxlength: 'Độ dài không quá 500 kí tự'
-      },
-      name: {
-        required: "Không được bỏ trống",
-        maxlength: "Độ dài không được quá 100 kí tự"
-      },
-      numberOfCall: {
-        digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-      }
+    name: {
+      required: true,
+      maxlength: 100
     },
-    ignore: ":hidden",
-    errorElement: 'span',
-    errorPlacement: function (error, element) {
-      error.addClass('invalid-feedback')
-      element.closest('.form-group').append(error)
-    },
-    highlight: function (element, errorClass, validClass) {
-      $(element).addClass('is-invalid')
-    },
-    unhighlight: function (element, errorClass, validClass) {
-      $(element).removeClass('is-invalid')
+    numberOfCall: {
+      digits: true
     }
-  })
+  },
+  messages: {
+    description: {
+      maxlength: 'Độ dài không quá 500 kí tự'
+    },
+    name: {
+      required: "Không được bỏ trống",
+      maxlength: "Độ dài không được quá 100 kí tự"
+    },
+    numberOfCall: {
+      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+    }
+  },
+  ignore: ":hidden",
+  errorElement: 'span',
+  errorPlacement: function (error, element) {
+    error.addClass('invalid-feedback')
+    element.closest('.form-group').append(error)
+  },
+  highlight: function (element, errorClass, validClass) {
+    $(element).addClass('is-invalid')
+  },
+  unhighlight: function (element, errorClass, validClass) {
+    $(element).removeClass('is-invalid')
+  }
+})
+function bindClick() {
 
   $(document).on("click", "#btn_save_scoreTarget", function (e) {
     // check valid cho form
-    if (!$form_target_general.valid()) return
-
+    if (!$form_target_general.valid()) return toastr.error("Thông tin nhập không hợp lệ")
+    // console.log($('#form_target_general').valid());
     // lấy giá trị cho tap chung
     let formData = getFormData('form_target_general')
 
@@ -70,6 +69,7 @@ function bindClick() {
     console.log(temp)
     console.log(check)
     if (check == false) {
+      toastr.error("Tên tiêu chí chấm đã được sử dụng")
       return $('.duplicateNameTarget').removeClass('d-none')
     }
 
@@ -263,6 +263,7 @@ function bindClick() {
   $(document).on('click', '#btn-add-keyword-set', function (e) {
     return renKeywordSet()
   })
+
   $(document).on('click', '.nav-link', function (e) {
     if ($(this).attr('id') == 'tab-score-target-auto-tab') {
       $('.btn-add-row-target-auto').removeClass('d-none')
@@ -303,7 +304,8 @@ function saveData(formData, method) {
     },
     error: function (error) {
       if (error.responseJSON.message == window.location.MESSAGE_ERROR["QA-002"]) return $(".duplicateNameScoreTarget").removeClass('d-none')
-      return toastr.error(error.responseJSON.message)
+      console.log("Lưu data bị lỗi :", error.responseJSON.message);
+      return toastr.error("Có lỗi đang xảy ra")
     },
   })
 }
