@@ -13,16 +13,16 @@ router.route('/newTarget')
   .get(libsPassport.isAdmin, scoreTargetController.new)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin, scoreTargetController.detail)
+  .get(libsPassport.isAdmin,libsPassport.isAdmin, scoreTargetController.detail)
 
 router.route('/gets')
-  .get(scoreTargetController.gets)
+  .get(libsPassport.isAdmin,scoreTargetController.gets)
 
 router.route('/:id/updateStatus')
-  .put(scoreTargetController.updateStatus)
+  .put(libsPassport.isAdmin,scoreTargetController.updateStatus)
 
 router.route('/:id/assignment')
-  .put(scoreTargetController.assignment)
+  .put(libsPassport.isAdmin,scoreTargetController.assignment)
 
 router.route('/replication/:id')
   .get(libsPassport.isAdmin, scoreTargetController.replication)
