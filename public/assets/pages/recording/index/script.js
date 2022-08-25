@@ -342,33 +342,6 @@ function findData(page, exportExcel, queryData) {
   })
 }
 
-function handleAudio() {
-  setTimeout(() => {
-    $(".audio-element").on({
-      play: function () { // the audio is playing!
-        // $(".audio-element").pause();
-        // _.each($('.audio-element'), function (el) {
-        //   var __audio = $(el)[0];
-        //   __audio.pause();
-        //   // if (__audio != audio && !__audio.paused) {
-
-        //         // $(el).closest('td').find('.zmdi-play').show();
-        //         // $(el).closest('td').find('.zmdi-pause').hide();
-        //     // }
-        // });
-
-        // let _audio = $(this)[0];
-        // _audio.play();
-
-        console.log('play')
-      },
-      pause: function () { // the audio is paused!
-        console.log('páue', this)
-      },
-    })
-  }, 50)
-}
-
 function itemColumn(key, title, value) {
   // debugger;
   return `<li class="mb-3 border-bottom ${key == 'callId' ? "unsortable" : ""}">
@@ -505,7 +478,6 @@ function createTable(data, ConfigurationColums, queryData) {
     })
 
     $tableData.html(html)
-    // handleAudio();
     return
   }
 }
