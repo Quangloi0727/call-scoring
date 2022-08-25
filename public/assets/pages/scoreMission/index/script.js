@@ -60,7 +60,7 @@ function bindClick() {
     })
 
     $("#showDetailRecord").on("hidden.bs.modal", function () {
-        // location.reload()
+        location.reload()
     })
 
     $("#popupCallScore").on("hidden.bs.modal", function () {
@@ -365,6 +365,7 @@ function createTable(data, scoreScripts, ConfigurationColums) {
             idScoreScript = item.callRatingNote[0].idScoreScript
         }
         let dropdown = ''
+        console.log(scoreScripts);
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
                 dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
