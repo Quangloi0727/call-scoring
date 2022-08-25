@@ -79,15 +79,10 @@ function bindClick() {
     $(document).on('click', '.showCallScore', function () {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-id')
-
+      
+        if($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
         let url = $(this).attr('url-record')
-        $("#downloadFile-popupCallScore").attr("url-record", url)
-        // let url = "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav"
-        configWaveSurfer([], url, '#recordCallScore')
-
-        $('#btn-save-modal').attr('data-callId', callId)
-        $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
-        return getDetailScoreScript(idScoreScript, callId)
+        return getDetailScoreScript(idScoreScript, callId,url)
     })
 
     $(document).on('click', '.detailScoreScript', function () {
@@ -389,7 +384,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm"  ${check ? 'disabled' : ''}></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
@@ -433,7 +428,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm
-function getDetailScoreScript(idScoreScript, callId) {
+function getDetailScoreScript(idScoreScript, callId,url) {
     let queryData = {}
     queryData.idScoreScript = idScoreScript
     queryData.callId = callId
@@ -447,12 +442,16 @@ function getDetailScoreScript(idScoreScript, callId) {
 
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
-
+            $("#downloadFile-popupCallScore").attr("url-record", url)
+            configWaveSurfer([], url, '#recordCallScore')
+    
+            $('#btn-save-modal').attr('data-callId', callId)
+            $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
             //render dữ liệu ra popup
-            return popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
+            popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
+            return $('#popupCallScore').modal('show')
         }
     })
-    $('#popupCallScore').modal('show')
 }
 
 // xử lí dữ liệu ra popup
@@ -510,7 +509,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     // xử lí dữ liệu cho phần ghi chú chấm điểm
     if (resultCallRatingNote && resultCallRatingNote.length > 0 && resultCallRatingNote[0].idCriteriaGroup != 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
-        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
+        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup) 
         renderCriteria(resultCallRatingNote[0].idCriteriaGroup)
         $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
         $('#description').val(resultCallRatingNote[0].description)
