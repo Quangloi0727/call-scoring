@@ -289,6 +289,12 @@ function findData(page) {
         url: '/scoreMission/getData?' + $.param(queryData),
         cache: 'false',
         success: function (result) {
+            if (result.configurationColums) {
+                const checkValueFalse = Object.values(result.configurationColums).every((rs) => rs === false)
+                if (checkValueFalse == true) {
+                    $('.table-left').css('position','inherit');
+                }
+            }
             $('.page-loader').hide()
             CACHE_CONFIG_COLUMN = result.configurationColums
             createTable(result.data, result.scoreScripts, result.configurationColums ? result.configurationColums : headerDefault, result.configurationColums ? false : true)
