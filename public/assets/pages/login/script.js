@@ -30,7 +30,7 @@ $(function () {
       $.ajax({
         type: "POST",
         url: '/login',
-        data: dataString,
+        data:  `userName=${$("#userName").val()}&password=${window.btoa($("#password").val())}`,
         success: (result) => {
           msgAlert
             .removeClass("d-none alert-danger")
@@ -38,7 +38,6 @@ $(function () {
             .find(".alert-content")
             .html("Thành công")
           window.location.reload()
-
           //   setTimeout(() => {
           //     msgAlert.addClass("d-none");
           //     // trỏ sang trang thông báo tạo tài khoản thành công, cần vào mail để active
