@@ -18,6 +18,7 @@ exports.getLogin = async (req, res, next) => {
 }
 
 exports.postLogin = (req, res, next) => {
+  req.body.password = Buffer.from(req.body.password, 'base64').toString()
   return passport.authenticate('local-login', async (err, user) => {
     try {
       if (err) {

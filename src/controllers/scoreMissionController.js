@@ -141,6 +141,14 @@ exports.getCallRatingNotes = async (req, res, next) => {
                 {
                     model: model.User,
                     as: 'userCreate'
+                },
+                {
+                    model: model.Criteria,
+                    as: 'criteria'
+                },
+                {
+                    model: model.CriteriaGroup,
+                    as: 'criteriaGroup'
                 }
             ]
         })
