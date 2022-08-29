@@ -62,14 +62,14 @@ function bindClick() {
         $("#callId").text(callId)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
             if (resp.code == 200) {
-                configWaveSurfer(resp.result, urlRecord, "#recordComment")
+                wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
                 _AjaxGetData('/scoreMission/getAllCriteriaGroup', 'GET', function (resp) {
                     renderCriteriaGroup(resp.result)
                     $('.selectpicker').selectpicker('refresh')
                 })
             } else {
                 console.log("get list note callId " + callId + " error")
-                configWaveSurfer([], urlRecord, "#recordComment")
+                wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
             }
         })
     })
@@ -83,10 +83,10 @@ function bindClick() {
         $("#downloadFile").attr("url-record", urlRecord)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
             if (resp.code == 200) {
-                configWaveSurfer(resp.result, urlRecord, null)
+                wavesurfer =  _configWaveSurfer(resp.result, urlRecord, null)
             } else {
                 console.log("get list note callId " + callId + " error")
-                configWaveSurfer([], urlRecord, null)
+                wavesurfer = _configWaveSurfer([], urlRecord, null)
             }
         })
     })
@@ -228,11 +228,11 @@ function bindClick() {
                 break
             case 'back':
                 wavesurfer.skipBackward(10)
-                updateTimer(wavesurfer)
+                _updateTimer(wavesurfer)
                 break
             case 'forward':
                 wavesurfer.skipForward(10)
-                updateTimer(wavesurfer)
+                _updateTimer(wavesurfer)
                 break
         }
     })
@@ -263,69 +263,6 @@ function bindClick() {
     })
 
 }
-function configWaveSurfer(arrRegion, urlRecord, container) {
-    wavesurfer = new WaveSurfer.create({
-        container: container ? container : '#formDetailRecord',
-        scrollParent: true,
-        waveColor: '#A8DBA8',
-        progressColor: '#3B8686',
-        backend: 'MediaElement',
-        splitChannels: true,
-        splitChannelsOptions: {
-            overlay: false,
-            channelColors: {
-                0: {
-                    progressColor: 'green',
-                    waveColor: 'pink'
-                },
-                1: {
-                    progressColor: 'orange',
-                    waveColor: 'purple'
-                }
-            }
-        },
-        plugins: [
-            WaveSurfer.regions.create({})
-        ]
-    })
-
-    wavesurfer.empty()
-    //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/29/409ddeda-2766-11ed-813e-95f7e31f94c6.wav")
-    wavesurfer.load(urlRecord)
-
-    wavesurfer.on('ready', function (e) {
-        wavesurfer.play()
-        updateTimer(wavesurfer)
-        const totalTime = _secondsToTimestamp(wavesurfer.getDuration())
-        $('.waveform-time-indicator .totalTime').text(totalTime)
-    })
-
-    wavesurfer.on('audioprocess', function (e) {
-        updateTimer(wavesurfer)
-    })
-
-    arrRegion.forEach(el => {
-        wavesurfer.addRegion({
-            start: _convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0),
-            loop: false,
-            color: 'hsla(9, 100%, 64%, 1)',
-            attributes: {
-                title: `Nội dung ghi chú: ${el.description}\nGhi chú cho: ${genNoteFor(el.criteria, el.criteriaGroup)}\nNgười ghi chú: ${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''} (${el.userCreate && el.userCreate.userName ? el.userCreate.userName : ''}) lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}\nVị trí ghi chú: ${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}`
-            }
-        })
-    })
-
-    //event change title wavesurfer to notes
-    wavesurfer.on('region-mouseenter', function (region, e) {
-        region.element.title = region.attributes.title
-    })
-
-}
-
-function genNoteFor(criteria, criteriaGroup) {
-    if (!criteria) return "Toàn bộ kịch bản"
-    return `${criteria.name} / ${criteriaGroup.name}`
-}
 
 function SaveConfigurationColums(dataUpdate) {
     return _AjaxData('/scoreMission/configurationColums', 'POST', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
@@ -337,11 +274,6 @@ function SaveConfigurationColums(dataUpdate) {
             window.location.href = "/scoreMission"
         }, 2500)
     })
-}
-
-function updateTimer(wavesurfer) {
-    var formattedTime = _secondsToTimestamp(wavesurfer.getCurrentTime())
-    $('.waveform-time-indicator .time').text(formattedTime)
 }
 
 function getFormData(formId) {
@@ -527,7 +459,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
             $("#downloadFile-popupCallScore").attr("url-record", url)
-            configWaveSurfer([], url, '#recordCallScore')
+            wavesurfer = _configWaveSurfer([], url, '#recordCallScore')
 
             $('#btn-save-modal').attr('data-callId', callId)
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
@@ -688,7 +620,7 @@ $(function () {
 })
 
 $(window).on('beforeunload', function () {
-    
+
     $(document).off('click', '.btn-add-comment')
     $(document).off('click', '.sorting')
     $(document).off('click', '#resetColumnCustom')
