@@ -159,6 +159,36 @@ exports.getCallRatingNotes = async (req, res, next) => {
     }
 }
 
+exports.getAllCriteriaGroup = async (req, res, next) => {
+    try {
+        const result = await model.CriteriaGroup.findAll({
+            include: [
+                {
+                    model: model.ScoreScript,
+                    as: 'ScoreScript',
+                    where: { status: 1 }
+                }
+            ]
+        })
+        return res.json({ code: 200, result: result })
+    } catch (error) {
+        _logger.error("get all criteria group errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
+exports.getCriteriaByCriteriaGroup = async (req, res, next) => {
+    try {
+        const result = await model.Criteria.findAll({
+            where: { criteriaGroupId: req.params.criteriaGroupId, isActive: 1 }
+        })
+        return res.json({ code: 200, result: result })
+    } catch (error) {
+        _logger.error("get Criteria By CriteriaGroup errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
 exports.getDetailScoreScript = async (req, res, next) => {
     try {
         const { idScoreScript, callId } = req.query
@@ -189,7 +219,7 @@ exports.getDetailScoreScript = async (req, res, next) => {
 
         if (callId) {
             p.push(model.CallRating.findAll({
-                where: { callId:callId }
+                where: { callId: callId }
             }))
             p.push(model.CallRatingNote.findAll({
                 where: { callId: callId }
@@ -267,7 +297,6 @@ exports.saveCallRating = async (req, res) => {
 
         if (data.note) {
             data.note.created = req.user.id
-            await model.CallRatingNote.destroy({ where: { callId: data.resultCriteria[0].callId } })
             await model.CallRatingNote.create(data.note, { transaction: transaction })
         }
         await transaction.commit()
@@ -276,7 +305,7 @@ exports.saveCallRating = async (req, res) => {
             message: 'Success!',
         })
     } catch (error) {
-        _logger.error("Xoá tùy chỉnh bảng bị lỗi: ", error)
+        _logger.error("Tạo mới chấm điểm: ", error)
         return res.status(ERR_500.code).json({ message: error.message })
     }
 }

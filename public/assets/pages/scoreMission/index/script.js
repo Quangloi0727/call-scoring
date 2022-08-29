@@ -53,12 +53,32 @@ function bindClick() {
         })
     })
 
+    $(document).on('click', '.fa-comment-alt', function () {
+        $('#popupComment').modal('show')
+        const urlRecord = $(this).attr('url-record')
+        const callId = $(this).attr('data-callId')
+        $('#btn-add-comment').attr('data-callId', callId)
+        $("#downloadFile-popupComment").attr("url-record", urlRecord)
+        $("#callId").text(callId)
+        _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+            if (resp.code == 200) {
+                configWaveSurfer(resp.result, urlRecord, "#recordComment")
+                _AjaxGetData('/scoreMission/getAllCriteriaGroup', 'GET', function (resp) {
+                    renderCriteriaGroup(resp.result)
+                    $('.selectpicker').selectpicker('refresh')
+                })
+            } else {
+                console.log("get list note callId " + callId + " error")
+                configWaveSurfer([], urlRecord, "#recordComment")
+            }
+        })
+    })
+
     $(document).on('click', '.fa-play-circle', function () {
         const urlRecord = $(this).attr('url-record')
         const callId = $(this).attr('data-callId')
         $("#formDetailRecord").html('')
         $('#showDetailRecord').modal('show')
-        $(".defaultPlaySpeed").text("Chuẩn")
         //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
         $("#downloadFile").attr("url-record", urlRecord)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
@@ -69,10 +89,6 @@ function bindClick() {
                 configWaveSurfer([], urlRecord, null)
             }
         })
-    })
-
-    $("#popupCallScore").on("hidden.bs.modal", function () {
-        $('#recordCallScore').html('')
     })
 
     $(document).on('click', '.showCallScore', function () {
@@ -110,7 +126,30 @@ function bindClick() {
 
     // xử lí chọn option ghi chú của mục tiêu
     $(document).on('change', '#idCriteriaGroup', function () {
-        renderCriteria($(this).val())
+        renderCriteria($(this).val(), '#idCriteria')
+    })
+
+    $(document).on('click', '#btn-add-comment', function () {
+        let data = {}
+        let callId = $(this).attr('data-callId')
+        data.note = getFormData('formCallComment')
+        data.note.callId = callId
+        data.note.idCriteria = data.note.idCriteriaComment
+        data.note.idCriteriaGroup = data.note.idCriteriaGroupComment
+        _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+            if (resp.code != 200) {
+                return toastr.error(resp.message)
+            }
+            toastr.success('Lưu thành công !')
+            return setTimeout(() => {
+                window.location.href = "/scoreMission"
+            }, 2500)
+        })
+    })
+
+    // xử lí chọn option ghi chú của mục tiêu
+    $(document).on('change', '#idCriteriaGroupComment', function () {
+        renderCriteria($(this).val(), '#idCriteriaComment')
     })
 
     // button lưu tùy chỉnh bảng
@@ -126,21 +165,17 @@ function bindClick() {
         SaveConfigurationColums(obj)
     })
 
-    // hiển thị data sau khi tủy chỉnh bảng
-    $modal_customs_table.on('show.bs.modal', function (event) {
-        if (CACHE_CONFIG_COLUMN) {
-            renderPopupCustomColumn(CACHE_CONFIG_COLUMN)
-        } else {
-            renderPopupCustomColumn(headerDefault, true)
-        }
-    })
-
     $(document).on('click', '#downloadFile', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
 
     $(document).on('click', '#downloadFile-popupCallScore', function () {
+        let src_file = $(this).attr("url-record")
+        window.location = src_file
+    })
+
+    $(document).on('click', '#downloadFile-popupComment', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
@@ -172,6 +207,17 @@ function bindClick() {
             }, 2500)
         })
     })
+
+    
+    // hiển thị data sau khi tủy chỉnh bảng
+    $modal_customs_table.on('show.bs.modal', function (event) {
+        if (CACHE_CONFIG_COLUMN) {
+            renderPopupCustomColumn(CACHE_CONFIG_COLUMN)
+        } else {
+            renderPopupCustomColumn(headerDefault, true)
+        }
+    })
+
 
     $(`.controls .btn`).on('click', function () {
         var action = $(this).data('action')
@@ -207,6 +253,15 @@ function bindClick() {
         wavesurfer.destroy()
     })
 
+    $("#popupComment").on("hidden.bs.modal", function () {
+        wavesurfer.destroy()
+        $('#formCallComment')[0].reset();
+    })
+
+    $("#popupCallScore").on("hidden.bs.modal", function () {
+        $('#recordCallScore').html('')
+    })
+
 }
 function configWaveSurfer(arrRegion, urlRecord, container) {
     wavesurfer = new WaveSurfer.create({
@@ -215,13 +270,27 @@ function configWaveSurfer(arrRegion, urlRecord, container) {
         waveColor: '#A8DBA8',
         progressColor: '#3B8686',
         backend: 'MediaElement',
+        splitChannels: true,
+        splitChannelsOptions: {
+            overlay: false,
+            channelColors: {
+                0: {
+                    progressColor: 'green',
+                    waveColor: 'pink'
+                },
+                1: {
+                    progressColor: 'orange',
+                    waveColor: 'purple'
+                }
+            }
+        },
         plugins: [
             WaveSurfer.regions.create({})
         ]
     })
 
     wavesurfer.empty()
-    //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+    //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/29/409ddeda-2766-11ed-813e-95f7e31f94c6.wav")
     wavesurfer.load(urlRecord)
 
     wavesurfer.on('ready', function (e) {
@@ -401,7 +470,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
                     ${dropdown}
                 </div>
                 <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
-                <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
+                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
             </td>
@@ -413,7 +482,6 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     return
 
 }
-
 
 function checkConfigDefaultHeader(dataConfig, configDefault) {
     let htmlString = ``
@@ -468,6 +536,15 @@ function getDetailScoreScript(idScoreScript, callId, url) {
             return $('#popupCallScore').modal('show')
         }
     })
+}
+//
+function renderCriteriaGroup(data) {
+    let html = `<option value="0" selected>Toàn bộ kịch bản</option>`
+    data.forEach(el => {
+        html += `<option value="${el.id}">${el.name}</option>`
+    })
+    $('#idCriteriaGroupComment').html(html)
+    $('.selectpicker').selectpicker('refresh')
 }
 
 // xử lí dữ liệu ra popup
@@ -526,7 +603,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     if (resultCallRatingNote && resultCallRatingNote.length > 0 && resultCallRatingNote[0].idCriteriaGroup != 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
         $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
-        renderCriteria(resultCallRatingNote[0].idCriteriaGroup)
+        renderCriteria(resultCallRatingNote[0].idCriteriaGroup, "#idCriteria")
         $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
         $('#description').val(resultCallRatingNote[0].description)
         $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
@@ -573,28 +650,22 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.selectpicker').selectpicker('refresh')
 }
 
-function renderCriteria(idCriteriaGroup) {
+function renderCriteria(idCriteriaGroup, idAddCriteria) {
     let html = ``
-    if (_criteriaGroups && _criteriaGroups.length > 0) {
-        _criteriaGroups.map((criteriaGroup) => {
-
-            if (criteriaGroup.id == parseInt(idCriteriaGroup)) {
-                if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
-                    criteriaGroup.Criteria.map((el) => {
-                        html += `<option value="${el.id}">${el.name}</option>`
-                    })
-                }
-            }
-        })
-        $('#idCriteria').html(html)
-        $('.selectpicker').selectpicker('refresh')
-        $('#idCriteria').prop("disabled", html ? false : true)
-        $('.selectpicker').selectpicker('refresh')
-    }
+    _AjaxGetData('/scoreMission/' + idCriteriaGroup + '/getCriteriaByCriteriaGroup', 'GET', function (resp) {
+        if (resp.code == 200) {
+            resp.result.forEach((el, index) => {
+                html += `<option value="${el.id}" ${index == 0 ? 'selected' : ''}>${el.name}</option>`
+            })
+            $(`${idAddCriteria}`).html(html)
+            $('.selectpicker').selectpicker('refresh')
+            $(`${idAddCriteria}`).prop("disabled", html ? false : true)
+            $('.selectpicker').selectpicker('refresh')
+        }
+    })
 }
 
 $(function () {
-
     $('#popup_startTime').datetimepicker({
         format: 'DD/MM/YYYY',
         icons: { time: 'far fa-clock' }
@@ -612,11 +683,17 @@ $(function () {
     $("#sortable").sortable({
         items: "li:not(.unsortable)"
     })
+
+    $(".defaultPlaySpeed").text("Chuẩn")
 })
 
 $(window).on('beforeunload', function () {
-
+    
+    $(document).off('click', '.btn-add-comment')
     $(document).off('click', '.sorting')
+    $(document).off('click', '#resetColumnCustom')
+    $(document).off('click', '.fa-comment-alt')
+    $(document).off('click', '.fa-play-circle')
     $(document).off('click', '.zpaging')
     $(document).off('click', '#select-all')
     $(document).off('click', '#modal_customs_table')
@@ -625,7 +702,11 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '.detailNoteScore')
     $(document).off('click', '.nav-link.nav-criteria-group')
     $(document).off('change', '#idCriteriaGroup')
+    $(document).off('change', '#idCriteriaGroupComment')
     $(document).off('click', '#downloadFile')
+    $(document).off('click', '#btn_save_customs')
     $(document).off('click', '#downloadFile-popupCallScore')
+    $(document).off('click', '#downloadFile-popupComment')
+    $(document).off('click', '#btn-save-modal')
 
 })
