@@ -66,9 +66,6 @@
   display: initial;
 }
 
-.modal-body {
-  padding: 0px;
-}
 
 .row.p-2.col-sm-12.bg-light {
   margin: 0px;
@@ -108,4 +105,26 @@
 
 li {
   list-style-type: none;
+}
+
+
+.error-non-select {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
+}
+
+.error-input-timeNote {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
+}
+
+.error-textarea-description {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
 }

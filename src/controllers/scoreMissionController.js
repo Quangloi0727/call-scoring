@@ -3,7 +3,7 @@ const { Op, QueryTypes } = require('sequelize')
 const pagination = require('pagination')
 const UserModel = require('../models/user')
 const UserRoleModel = require('../models/userRole')
-const titlePage = 'Nhiệm vụ chấm điểm'
+const titlePage = 'Danh sách nhiệm vụ chấm điểm'
 const {
     SUCCESS_200,
     ERR_500,
@@ -80,22 +80,56 @@ exports.getScoreMission = async (req, res, next) => {
                 })
             }
         }
-        const { count, rows } = await model.CallDetailRecords.findAndCountAll({
-            where: query,
-            order: [
-                ['id', 'DESC'],
-            ],
-            include: [
-                { model: model.User, as: 'agent' },
-                { model: model.Team, as: 'team' },
-                { model: model.CallRating, as: 'callRating' },
-                { model: model.CallRatingNote, as: 'callRatingNote' },
-            ],
-            offset: offset,
-            limit: limit,
 
-            nest: true
-        })
+        let [{ rows }, { count }] = await Promise.all([
+            // ds các bản ghi đã lấy ddc
+            model.CallDetailRecords.findAndCountAll({
+                where: query,
+                include: [
+                    { model: model.User, as: 'agent' },
+                    {
+                        model: model.Team,
+                        as: 'team',
+                        include: {
+                            model: model.TeamGroup,
+                            as: 'TeamGroup',
+                            include: {
+                                model: model.Group,
+                                as: 'Group'
+                            },
+                        },
+                    },
+                    { model: model.CallRating, as: 'callRating' },
+                    {
+                        model: model.CallRatingNote,
+                        as: 'callRatingNote',
+                    },
+                    {
+                        model: model.CallRating,
+                        as: 'callRating',
+                        include: {
+                            model: model.SelectionCriteria,
+                            as: 'SelectionCriteria'
+                        },
+                    },
+                ],
+                order: [
+                    ['id', 'DESC'],
+                ],
+                offset: offset,
+                limit: limit,
+
+                nest: true
+            }),
+            //tính tổng
+            model.CallDetailRecords.findAndCountAll({
+                where: query,
+                offset: offset,
+                limit: limit,
+
+                nest: true
+            })
+        ])
 
         const scoreScripts = await model.ScoreTarget_ScoreScript.findAll({
             where: {
@@ -288,7 +322,8 @@ exports.saveCallRating = async (req, res) => {
     try {
         const data = req.body
         transaction = await model.sequelize.transaction()
-
+        data.timeNoteMinutes = _.refactorTimeToMinutes(data.note.timeNoteMinutes, data.note.timeNoteSecond).newMinutes
+        data.timeNoteSecond = _.refactorTimeToMinutes(data.note.timeNoteMinutes, data.note.timeNoteSecond).newSeconds
         if (data.resultCriteria && data.resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
             await model.CallRating.destroy({ where: { callId: data.resultCriteria[0].callId } })
