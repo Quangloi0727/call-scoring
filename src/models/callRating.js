@@ -9,7 +9,11 @@ class CallRating extends Model {
           allowNull: false
         },
         idSelectionCriteria: {
-          type: DataTypes.INTEGER
+          type: DataTypes.INTEGER,
+          references: {
+            model: "SelectionCriteria",
+            key: "id",
+          },
         },
         idCriteria: {
           type: DataTypes.INTEGER,
@@ -29,7 +33,13 @@ class CallRating extends Model {
       foreignKey: "callId",
       as: "rates",
     })
+
+    models.CallRating.belongsTo(models.SelectionCriteria, {
+      foreignKey: "idSelectionCriteria",
+      as: "SelectionCriteria",
+    })
   }
+
 
 }
 

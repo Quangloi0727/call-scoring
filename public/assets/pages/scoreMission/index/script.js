@@ -73,17 +73,16 @@ function bindClick() {
     })
 
     $("#popupCallScore").on("hidden.bs.modal", function () {
-        $('#recordCallScore').html('')
-        location.reload()
+        $('#recordCallScore').empty();
     })
 
     $(document).on('click', '.showCallScore', function () {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-id')
-      
-        if($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
+
+        if ($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
         let url = $(this).attr('url-record')
-        return getDetailScoreScript(idScoreScript, callId,url)
+        return getDetailScoreScript(idScoreScript, callId, url)
     })
 
     $(document).on('click', '.detailScoreScript', function () {
@@ -107,7 +106,10 @@ function bindClick() {
             $('#progress-scoreCriteria').html(html)
             $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
 
-        } else $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
+        } else {
+            $('#progress-scoreCriteria').html('')
+            $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
+        }
     })
 
     // xử lí chọn option ghi chú của mục tiêu
@@ -177,6 +179,7 @@ function bindClick() {
     })
 
 }
+
 function configWaveSurfer(arrRegion, urlRecord, container) {
     var wavesurfer = WaveSurfer.create({
         container: container ? container : '#formDetailRecord',
@@ -292,7 +295,7 @@ function findData(page) {
             if (result.configurationColums) {
                 const checkValueFalse = Object.values(result.configurationColums).every((rs) => rs === false)
                 if (checkValueFalse == true) {
-                    $('.table-left').css('position','inherit');
+                    $('.table-left').css('position', 'inherit');
                 }
             }
             $('.page-loader').hide()
@@ -328,7 +331,7 @@ function renderPopupCustomColumn(ConfigurationColums, init = false) {
         })
     } else {
         for (const [key, value] of Object.entries(ConfigurationColums)) {
-            popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true' : value)
+            popupHtml += itemColumn(key, headerDefault[key], value.status == 1 ? 'true' : 'false')
         }
     }
 
@@ -363,7 +366,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
-
+    console.log(data);
     data.forEach((item, element) => {
         let check = false
 
@@ -374,7 +377,6 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
             idScoreScript = item.callRatingNote[0].idScoreScript
         }
         let dropdown = ''
-        console.log(scoreScripts);
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
                 dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
@@ -422,21 +424,65 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 }
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
+    let resultPointCriteria = 0
+    if (item.callRating && item.callRating.length > 0) {
+        item.callRating.map((el) => {
+            resultPointCriteria += el.SelectionCriteria.score
+        })
+    }
+
     let htmlString = ``
     if (configDefault) {
         for (const [key] of Object.entries(dataConfig)) {
-            htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            if (key == 'manualReviewScore') {
+
+                htmlString += ` <td class="text-center manualReviewScore ${headerDefault['manualReviewScore'].status == 1 ? '' : 'd-none'}">${resultPointCriteria}</td>`
+
+            } else if (key == 'agentName') {
+
+                htmlString += ` <td class="text-center agentName ${headerDefault['agentName'].status == 1 ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+
+            } else if (key == 'teamName') {
+
+                htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
+
+            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+                let teamsName = ''
+                item['team'].TeamGroup.map((el) => {
+                    teamsName += ('' + el.Group.name)
+                })
+                htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
+
+            } else htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
         }
     } else {
         for (const [key, value] of Object.entries(dataConfig)) {
-            htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            if (key == 'manualReviewScore') {
+                htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${resultPointCriteria}</td>`
+            } else if (key == 'agentName') {
+
+                htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+
+            } else if (key == 'teamName') {
+
+                htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
+
+            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+                let teamsName = ''
+                item['team'].TeamGroup.map((el) => {
+                    teamsName += ('' + el.Group.name)
+                })
+                htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
+
+            }
+            else htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
         }
     }
     return htmlString
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm
-function getDetailScoreScript(idScoreScript, callId,url) {
+function getDetailScoreScript(idScoreScript, callId, url) {
     let queryData = {}
     queryData.idScoreScript = idScoreScript
     queryData.callId = callId
@@ -452,7 +498,7 @@ function getDetailScoreScript(idScoreScript, callId,url) {
             _criteriaGroups = resp.data.CriteriaGroup
             $("#downloadFile-popupCallScore").attr("url-record", url)
             configWaveSurfer([], url, '#recordCallScore')
-    
+
             $('#btn-save-modal').attr('data-callId', callId)
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
             //render dữ liệu ra popup
@@ -486,8 +532,8 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
                     })
                 }
                 criteriaHtml += `
-                <label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
-                <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" data-criteriaId="${criteria.id}">
+                <label class="col-sm-10 form-check-label mt-4">${criteria.name}</label>
+                <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" title="Chọn" data-criteriaId="${criteria.id}">
                     ${htmlSelectionCriteria}
                 </select>`
                 pointCriteria += parseInt(criteria.scoreMax)
@@ -513,26 +559,46 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     })
 
     $('#idCriteriaGroup').html(optionIdCriteriaGroup)
-
+    console.log(resultCallRatingNote);
     // xử lí dữ liệu cho phần ghi chú chấm điểm
-    if (resultCallRatingNote && resultCallRatingNote.length > 0 && resultCallRatingNote[0].idCriteriaGroup != 0) {
+    if (resultCallRatingNote && resultCallRatingNote.length > 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
-        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup) 
+        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
         renderCriteria(resultCallRatingNote[0].idCriteriaGroup)
         $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
         $('#description').val(resultCallRatingNote[0].description)
         $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
         $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
+
+        $('#idCriteriaGroup').prop('disabled', true)
+        $('#idCriteria').prop('disabled', true)
+        $('#timeNoteMinutes').prop('disabled', true)
+        $('#timeNoteSecond').prop('disabled', true)
+        $('#description').prop('disabled', true)
+
     } else {
         $('#idCriteria').val("")
         $('#idCriteria').prop("disabled", true)
         $('#idCriteriaGroup').val('0')
+
+        $('#progress-scoreCriteria').html('')
+        $('.nameCriteriaGroup').text('')
+        $('.scoreCriteria').text('')
+
+        $('#idCriteriaGroup').prop('disabled', false)
+        $('#idCriteria').prop('disabled', false)
+        $('#timeNoteMinutes').prop('disabled', false)
+        $('#timeNoteSecond').prop('disabled', false)
+        $('#description').prop('disabled', false)
+
         $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
     }
 
     // xử lí dữ liệu cho phần kịch bản và tính tổng điểm
     $('.selectpicker').selectpicker('refresh')
+    console.log("aaaaaa");
     $('.nav-scoreScript').html(navHTML)
+    $('#progress-scoreScript').html('')
     let resultPointCriteria = 0
     if (resultCallRating && resultCallRatingNote.length > 0) {
         resultCallRating.map((el) => {
@@ -618,6 +684,7 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '.nav-link.nav-criteria-group')
     $(document).off('change', '#idCriteriaGroup')
     $(document).off('click', '#downloadFile')
+    $(document).off('click', '#btn-save-modal')
     $(document).off('click', '#downloadFile-popupCallScore')
 
 })
