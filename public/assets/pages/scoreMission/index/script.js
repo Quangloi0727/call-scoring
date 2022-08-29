@@ -83,7 +83,7 @@ function bindClick() {
         $("#downloadFile").attr("url-record", urlRecord)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
             if (resp.code == 200) {
-                wavesurfer =  _configWaveSurfer(resp.result, urlRecord, null)
+                wavesurfer = _configWaveSurfer(resp.result, urlRecord, null)
             } else {
                 console.log("get list note callId " + callId + " error")
                 wavesurfer = _configWaveSurfer([], urlRecord, null)
@@ -121,7 +121,10 @@ function bindClick() {
             $('#progress-scoreCriteria').html(html)
             $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
 
-        } else $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
+        } else {
+            $('#progress-scoreCriteria').html('')
+            $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
+        }
     })
 
     // xử lí chọn option ghi chú của mục tiêu
@@ -165,12 +168,21 @@ function bindClick() {
         SaveConfigurationColums(obj)
     })
 
+    // hiển thị data sau khi tủy chỉnh bảng
+    $modal_customs_table.on('show.bs.modal', function (event) {
+        if (CACHE_CONFIG_COLUMN) {
+            renderPopupCustomColumn(CACHE_CONFIG_COLUMN)
+        } else {
+            renderPopupCustomColumn(headerDefault, true)
+        }
+    })
+
     $(document).on('click', '#downloadFile', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
 
-    $(document).on('click', '#downloadFile-popupCallScore', function () {
+    $(document).on('click', '#downloadFile-popupComment', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
@@ -185,17 +197,51 @@ function bindClick() {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-idScoreScript')
         let arr = []
+        let checkSelectNull = false
+        $(".error-non-select").remove()
         $(".selectpicker.criteria").each(function () {
+            if ($(this).val() == '') {
+                checkSelectNull = true
+                $(this).closest('.form-group').append(`<span class="error-non-select mr-1">${window.location.MESSAGE_ERROR["QA-001"]}</span>`)
+            }
             arr.push({
                 idSelectionCriteria: $(this).val(),
                 idCriteria: $(this).attr('data-criteriaId'),
                 callId: callId
             })
         })
+
+        if (checkSelectNull) return toastr.error("Không được để trống tiêu chí")
+
         data.note = getFormData('formCallScore')
         data.note.callId = callId
         data.note.idScoreScript = idScoreScript
         data.resultCriteria = arr
+
+
+        if (data.note.description && (!data.note.timeNoteMinutes && !data.note.timeNoteSecond)) {
+            $('.error-input-timeNote').removeClass('d-none')
+            $('.error-input-timeNote').text(window.location.MESSAGE_ERROR["QA-001"])
+            return toastr.error('Thời gian ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
+        }
+
+        if (data.note.timeNoteMinutes || data.note.timeNoteSecond) {
+            let timeNoteMinutes = data.note.timeNoteMinutes ? data.note.timeNoteMinutes : 0
+            let timeNoteSecond = data.note.timeNoteSecond ? data.note.timeNoteSecond : 0
+            let totalSeconds = _convertTime(timeNoteMinutes, timeNoteSecond)
+            console.log(totalSeconds);
+            if (totalSeconds > wavesurfer.getDuration()) {
+                $('.error-input-timeNote').removeClass('d-none')
+                $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ")
+                return toastr.error("Thời gian ghi chú không hợp lệ")
+            }
+        }
+
+        if (!data.note.description && (data.note.timeNoteMinutes || data.note.timeNoteSecond)) {
+            $('.error-textarea-description').removeClass('d-none')
+            $('.error-textarea-description').text('Nội dung ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
+            return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
+        }
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -208,7 +254,7 @@ function bindClick() {
         })
     })
 
-    
+
     // hiển thị data sau khi tủy chỉnh bảng
     $modal_customs_table.on('show.bs.modal', function (event) {
         if (CACHE_CONFIG_COLUMN) {
@@ -338,7 +384,7 @@ function renderPopupCustomColumn(ConfigurationColums, init = false) {
         })
     } else {
         for (const [key, value] of Object.entries(ConfigurationColums)) {
-            popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true' : value)
+            popupHtml += itemColumn(key, headerDefault[key], value.status == 1 ? 'true' : 'false')
         }
     }
 
@@ -430,14 +476,58 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 }
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
+    let resultPointCriteria = 0
+    if (item.callRating && item.callRating.length > 0) {
+        item.callRating.map((el) => {
+            resultPointCriteria += el.SelectionCriteria.score
+        })
+    }
+
     let htmlString = ``
     if (configDefault) {
         for (const [key] of Object.entries(dataConfig)) {
-            htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            if (key == 'manualReviewScore') {
+
+                htmlString += ` <td class="text-center manualReviewScore ${headerDefault['manualReviewScore'].status == 1 ? '' : 'd-none'}">${resultPointCriteria}</td>`
+
+            } else if (key == 'agentName') {
+
+                htmlString += ` <td class="text-center agentName ${headerDefault['agentName'].status == 1 ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+
+            } else if (key == 'teamName') {
+
+                htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
+
+            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+                let teamsName = ''
+                item['team'].TeamGroup.map((el) => {
+                    teamsName += ('' + el.Group.name)
+                })
+                htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
+
+            } else htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
         }
     } else {
         for (const [key, value] of Object.entries(dataConfig)) {
-            htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            if (key == 'manualReviewScore') {
+                htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${resultPointCriteria}</td>`
+            } else if (key == 'agentName') {
+
+                htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+
+            } else if (key == 'teamName') {
+
+                htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
+
+            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+                let teamsName = ''
+                item['team'].TeamGroup.map((el) => {
+                    teamsName += ('' + el.Group.name)
+                })
+                htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
+
+            }
+            else htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
         }
     }
     return htmlString
@@ -455,11 +545,11 @@ function getDetailScoreScript(idScoreScript, callId, url) {
         }
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
-
+            console.log(resp);
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
             $("#downloadFile-popupCallScore").attr("url-record", url)
-            wavesurfer = _configWaveSurfer([], url, '#recordCallScore')
+            wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
 
             $('#btn-save-modal').attr('data-callId', callId)
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
@@ -496,6 +586,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
             let criteriaHtml = ``
             criteriaGroup.Criteria.map((criteria) => {
+                let _uuidv4 = window.location.uuidv4()
                 let htmlSelectionCriteria = ``
                 if (criteria.SelectionCriteria.length > 0) {
                     criteria.SelectionCriteria.map((el) => {
@@ -503,10 +594,13 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
                     })
                 }
                 criteriaHtml += `
-                <label class="col-sm-10 form-check-label mt-4">${criteriaGroup.name} - <span class="font-italic">${criteria.name}</span></label>
-                <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" data-criteriaId="${criteria.id}">
-                    ${htmlSelectionCriteria}
-                </select>`
+                <div class="form-group">
+                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
+                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
+                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
+                        ${htmlSelectionCriteria}
+                    </select>
+                </div>`
                 pointCriteria += parseInt(criteria.scoreMax)
                 totalPoint += parseInt(criteria.scoreMax)
             })
@@ -530,9 +624,9 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     })
 
     $('#idCriteriaGroup').html(optionIdCriteriaGroup)
-
+    console.log(resultCallRatingNote);
     // xử lí dữ liệu cho phần ghi chú chấm điểm
-    if (resultCallRatingNote && resultCallRatingNote.length > 0 && resultCallRatingNote[0].idCriteriaGroup != 0) {
+    if (resultCallRatingNote && resultCallRatingNote.length > 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
         $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
         renderCriteria(resultCallRatingNote[0].idCriteriaGroup, "#idCriteria")
@@ -540,16 +634,25 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         $('#description').val(resultCallRatingNote[0].description)
         $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
         $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
+
+        showDisableElement(true)
     } else {
         $('#idCriteria').val("")
-        $('#idCriteria').prop("disabled", true)
         $('#idCriteriaGroup').val('0')
+
+        $('#progress-scoreCriteria').html('')
+        $('.nameCriteriaGroup').text('')
+        $('.scoreCriteria').text('')
+
+        showDisableElement(false)
+        $('#idCriteria').prop("disabled", true)
         $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
     }
 
     // xử lí dữ liệu cho phần kịch bản và tính tổng điểm
     $('.selectpicker').selectpicker('refresh')
     $('.nav-scoreScript').html(navHTML)
+    $('#progress-scoreScript').html('')
     let resultPointCriteria = 0
     if (resultCallRating && resultCallRatingNote.length > 0) {
         resultCallRating.map((el) => {
@@ -582,6 +685,14 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.selectpicker').selectpicker('refresh')
 }
 
+function showDisableElement(check) {
+    $('#idCriteriaGroup').prop('disabled', check)
+    $('#idCriteria').prop('disabled', check)
+    $('#timeNoteMinutes').prop('disabled', check)
+    $('#timeNoteSecond').prop('disabled', check)
+    $('#description').prop('disabled', check)
+    return;
+}
 function renderCriteria(idCriteriaGroup, idAddCriteria) {
     let html = ``
     _AjaxGetData('/scoreMission/' + idCriteriaGroup + '/getCriteriaByCriteriaGroup', 'GET', function (resp) {
@@ -636,7 +747,6 @@ $(window).on('beforeunload', function () {
     $(document).off('change', '#idCriteriaGroup')
     $(document).off('change', '#idCriteriaGroupComment')
     $(document).off('click', '#downloadFile')
-    $(document).off('click', '#btn_save_customs')
     $(document).off('click', '#downloadFile-popupCallScore')
     $(document).off('click', '#downloadFile-popupComment')
     $(document).off('click', '#btn-save-modal')
