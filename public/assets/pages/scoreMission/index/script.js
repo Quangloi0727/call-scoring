@@ -83,7 +83,7 @@ function bindClick() {
         $("#downloadFile").attr("url-record", urlRecord)
         _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
             if (resp.code == 200) {
-                wavesurfer =  _configWaveSurfer(resp.result, urlRecord, null)
+                wavesurfer = _configWaveSurfer(resp.result, urlRecord, null)
             } else {
                 console.log("get list note callId " + callId + " error")
                 wavesurfer = _configWaveSurfer([], urlRecord, null)
@@ -182,7 +182,7 @@ function bindClick() {
         window.location = src_file
     })
 
-    $(document).on('click', '#downloadFile-popupComment', function () {
+    $(document).on('click', '#downloadFile-popupCallScore', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
@@ -197,17 +197,51 @@ function bindClick() {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-idScoreScript')
         let arr = []
+        let checkSelectNull = false
+        $(".error-non-select").remove()
         $(".selectpicker.criteria").each(function () {
+            if ($(this).val() == '') {
+                checkSelectNull = true
+                $(this).closest('.form-group').append(`<span class="error-non-select mr-1">${window.location.MESSAGE_ERROR["QA-001"]}</span>`)
+            }
             arr.push({
                 idSelectionCriteria: $(this).val(),
                 idCriteria: $(this).attr('data-criteriaId'),
                 callId: callId
             })
         })
+
+        if (checkSelectNull) return toastr.error("Không được để trống tiêu chí")
+
         data.note = getFormData('formCallScore')
         data.note.callId = callId
         data.note.idScoreScript = idScoreScript
         data.resultCriteria = arr
+
+
+        if (data.note.description && (!data.note.timeNoteMinutes && !data.note.timeNoteSecond)) {
+            $('.error-input-timeNote').removeClass('d-none')
+            $('.error-input-timeNote').text(window.location.MESSAGE_ERROR["QA-001"])
+            return toastr.error('Thời gian ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
+        }
+
+        if (data.note.timeNoteMinutes || data.note.timeNoteSecond) {
+            let timeNoteMinutes = data.note.timeNoteMinutes ? data.note.timeNoteMinutes : 0
+            let timeNoteSecond = data.note.timeNoteSecond ? data.note.timeNoteSecond : 0
+            let totalSeconds = _convertTime(timeNoteMinutes, timeNoteSecond)
+            console.log(totalSeconds);
+            if (totalSeconds > wavesurfer.getDuration()) {
+                $('.error-input-timeNote').removeClass('d-none')
+                $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ")
+                return toastr.error("Thời gian ghi chú không hợp lệ")
+            }
+        }
+
+        if (!data.note.description && (data.note.timeNoteMinutes || data.note.timeNoteSecond)) {
+            $('.error-textarea-description').removeClass('d-none')
+            $('.error-textarea-description').text('Nội dung ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
+            return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
+        }
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -220,7 +254,7 @@ function bindClick() {
         })
     })
 
-    
+
     // hiển thị data sau khi tủy chỉnh bảng
     $modal_customs_table.on('show.bs.modal', function (event) {
         if (CACHE_CONFIG_COLUMN) {
@@ -511,11 +545,11 @@ function getDetailScoreScript(idScoreScript, callId, url) {
         }
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
-
+            console.log(resp);
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
             $("#downloadFile-popupCallScore").attr("url-record", url)
-            wavesurfer = _configWaveSurfer([], url, '#recordCallScore')
+            wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
 
             $('#btn-save-modal').attr('data-callId', callId)
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
@@ -552,6 +586,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
             let criteriaHtml = ``
             criteriaGroup.Criteria.map((criteria) => {
+                let _uuidv4 = window.location.uuidv4()
                 let htmlSelectionCriteria = ``
                 if (criteria.SelectionCriteria.length > 0) {
                     criteria.SelectionCriteria.map((el) => {
@@ -559,10 +594,13 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
                     })
                 }
                 criteriaHtml += `
-                <label class="col-sm-10 form-check-label mt-4">${criteria.name}</label>
-                <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" title="Chọn" data-criteriaId="${criteria.id}">
-                    ${htmlSelectionCriteria}
-                </select>`
+                <div class="form-group">
+                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
+                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
+                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
+                        ${htmlSelectionCriteria}
+                    </select>
+                </div>`
                 pointCriteria += parseInt(criteria.scoreMax)
                 totalPoint += parseInt(criteria.scoreMax)
             })
@@ -597,27 +635,17 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
         $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
 
-        $('#idCriteriaGroup').prop('disabled', true)
-        $('#idCriteria').prop('disabled', true)
-        $('#timeNoteMinutes').prop('disabled', true)
-        $('#timeNoteSecond').prop('disabled', true)
-        $('#description').prop('disabled', true)
-
+        showDisableElement(true)
     } else {
         $('#idCriteria').val("")
-        $('#idCriteria').prop("disabled", true)
         $('#idCriteriaGroup').val('0')
 
         $('#progress-scoreCriteria').html('')
         $('.nameCriteriaGroup').text('')
         $('.scoreCriteria').text('')
 
-        $('#idCriteriaGroup').prop('disabled', false)
-        $('#idCriteria').prop('disabled', false)
-        $('#timeNoteMinutes').prop('disabled', false)
-        $('#timeNoteSecond').prop('disabled', false)
-        $('#description').prop('disabled', false)
-
+        showDisableElement(false)
+        $('#idCriteria').prop("disabled", true)
         $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
     }
 
@@ -657,6 +685,14 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.selectpicker').selectpicker('refresh')
 }
 
+function showDisableElement(check) {
+    $('#idCriteriaGroup').prop('disabled', check)
+    $('#idCriteria').prop('disabled', check)
+    $('#timeNoteMinutes').prop('disabled', check)
+    $('#timeNoteSecond').prop('disabled', check)
+    $('#description').prop('disabled', check)
+    return;
+}
 function renderCriteria(idCriteriaGroup, idAddCriteria) {
     let html = ``
     _AjaxGetData('/scoreMission/' + idCriteriaGroup + '/getCriteriaByCriteriaGroup', 'GET', function (resp) {
