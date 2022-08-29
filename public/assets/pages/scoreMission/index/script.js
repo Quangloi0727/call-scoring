@@ -182,7 +182,7 @@ function bindClick() {
         window.location = src_file
     })
 
-    $(document).on('click', '#downloadFile-popupComment', function () {
+    $(document).on('click', '#downloadFile-popupCallScore', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
