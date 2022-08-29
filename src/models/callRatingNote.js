@@ -64,6 +64,16 @@ class CallRatingNote extends Model {
       foreignKey: "updated",
       as: "userUpdate",
     })
+
+    models.CallRatingNote.belongsTo(models.Criteria, {
+      foreignKey: "idCriteria",
+      as: "criteria",
+    })
+
+    models.CallRatingNote.belongsTo(models.CriteriaGroup, {
+      foreignKey: "idCriteriaGroup",
+      as: "criteriaGroup",
+    })
   }
 
 }

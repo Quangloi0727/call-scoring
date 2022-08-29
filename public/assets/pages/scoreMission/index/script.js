@@ -6,12 +6,15 @@ const $resetColumnCustom = $('#resetColumnCustom')
 const $modal_customs_table = $("#modal_customs_table")
 const $selectAll = $("#select-all")
 
+//init wavesurfer
+var wavesurfer = null
+
 // Lưu tạm dữ liệu của nhóm tiêu chí từ kịch bản chấm điểm
-let _criteriaGroups = {}
+var _criteriaGroups = {}
 
 // WARNING
 // CACHE
-let CACHE_CONFIG_COLUMN = null
+var CACHE_CONFIG_COLUMN = null
 
 function bindClick() {
 
@@ -68,12 +71,8 @@ function bindClick() {
         })
     })
 
-    $("#showDetailRecord").on("hidden.bs.modal", function () {
-        location.reload()
-    })
-
     $("#popupCallScore").on("hidden.bs.modal", function () {
-        $('#recordCallScore').empty();
+        $('#recordCallScore').html('')
     })
 
     $(document).on('click', '.showCallScore', function () {
@@ -119,7 +118,6 @@ function bindClick() {
 
     // button lưu tùy chỉnh bảng
     $(document).on('click', '#btn_save_customs', function () {
-        let listCheck = []
         let obj = {}
         $("#sortable input:checkbox").each(function (index) {
             // gán dữ liệu
@@ -178,10 +176,43 @@ function bindClick() {
         })
     })
 
-}
+    $(`.controls .btn`).on('click', function () {
+        var action = $(this).data('action')
+        console.log("action", action)
+        switch (action) {
+            case 'play':
+                wavesurfer.playPause()
+                break
+            case 'back':
+                wavesurfer.skipBackward(10)
+                updateTimer(wavesurfer)
+                break
+            case 'forward':
+                wavesurfer.skipForward(10)
+                updateTimer(wavesurfer)
+                break
+        }
+    })
 
+
+    $('.dropdown-item').on('click', function () {
+        var val = $(this).attr("data-val")
+        console.log("value play speed", val)
+        wavesurfer.setPlaybackRate(val)
+        $(".defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
+    })
+
+    $("#showDetailRecord").on("hidden.bs.modal", function () {
+        wavesurfer.destroy()
+    })
+
+    $("#popupCallScore").on("hidden.bs.modal", function () {
+        wavesurfer.destroy()
+    })
+
+}
 function configWaveSurfer(arrRegion, urlRecord, container) {
-    var wavesurfer = WaveSurfer.create({
+    wavesurfer = new WaveSurfer.create({
         container: container ? container : '#formDetailRecord',
         scrollParent: true,
         waveColor: '#A8DBA8',
@@ -191,8 +222,9 @@ function configWaveSurfer(arrRegion, urlRecord, container) {
             WaveSurfer.regions.create({})
         ]
     })
+
     wavesurfer.empty()
-    // wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+    //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
     wavesurfer.load(urlRecord)
 
     wavesurfer.on('ready', function (e) {
@@ -212,44 +244,21 @@ function configWaveSurfer(arrRegion, urlRecord, container) {
             loop: false,
             color: 'hsla(9, 100%, 64%, 1)',
             attributes: {
-                title: `Nội dung ghi chú: ${el.description}\nNgười ghi chú: ${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''} (${el.userCreate && el.userCreate.userName ? el.userCreate.userName : ''}) lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}\nVị trí ghi chú: ${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}`
+                title: `Nội dung ghi chú: ${el.description}\nGhi chú cho: ${genNoteFor(el.criteria, el.criteriaGroup)}\nNgười ghi chú: ${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''} (${el.userCreate && el.userCreate.userName ? el.userCreate.userName : ''}) lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}\nVị trí ghi chú: ${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}`
             }
         })
     })
-    let elementSelector = '#showDetailRecord .controls .btn'
-    if (container) {
-        elementSelector = '#elmRecordCallScore .controls .btn'
-    }
 
-    $(`${elementSelector}`).on('click', function () {
-        var action = $(this).data('action')
-        console.log("action", action)
-        switch (action) {
-            case 'play':
-                wavesurfer.playPause()
-                break
-            case 'back':
-                wavesurfer.skipBackward(10)
-                updateTimer(wavesurfer)
-                break
-            case 'forward':
-                wavesurfer.skipForward(10)
-                updateTimer(wavesurfer)
-                break
-        }
-    })
-
-    $('.dropdown-item').on('click', function () {
-        var val = $(this).attr("data-val")
-        console.log("value play speed", val)
-        wavesurfer.setPlaybackRate(val)
-        $(".defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
-    })
-
-    //event change title wavesufer to notes
+    //event change title wavesurfer to notes
     wavesurfer.on('region-mouseenter', function (region, e) {
         region.element.title = region.attributes.title
     })
+
+}
+
+function genNoteFor(criteria, criteriaGroup) {
+    if (!criteria) return "Toàn bộ kịch bản"
+    return `${criteria.name} / ${criteriaGroup.name}`
 }
 
 function SaveConfigurationColums(dataUpdate) {
@@ -295,7 +304,7 @@ function findData(page) {
             if (result.configurationColums) {
                 const checkValueFalse = Object.values(result.configurationColums).every((rs) => rs === false)
                 if (checkValueFalse == true) {
-                    $('.table-left').css('position', 'inherit');
+                    $('.table-left').css('position', 'inherit')
                 }
             }
             $('.page-loader').hide()
@@ -596,7 +605,6 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
 
     // xử lí dữ liệu cho phần kịch bản và tính tổng điểm
     $('.selectpicker').selectpicker('refresh')
-    console.log("aaaaaa");
     $('.nav-scoreScript').html(navHTML)
     $('#progress-scoreScript').html('')
     let resultPointCriteria = 0
