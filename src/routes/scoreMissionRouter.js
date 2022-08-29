@@ -22,4 +22,10 @@ router.route('/saveCallRating')
 router.route('/:id/getCallRatingNotes')
     .get(scoreMissionController.getCallRatingNotes)
 
+router.route('/:criteriaGroupId/getCriteriaByCriteriaGroup')
+    .get(scoreMissionController.getCriteriaByCriteriaGroup)
+
+router.route('/getAllCriteriaGroup')
+    .get(scoreMissionController.getAllCriteriaGroup)
+
 module.exports = router

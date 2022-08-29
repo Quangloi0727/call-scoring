@@ -193,6 +193,36 @@ exports.getCallRatingNotes = async (req, res, next) => {
     }
 }
 
+exports.getAllCriteriaGroup = async (req, res, next) => {
+    try {
+        const result = await model.CriteriaGroup.findAll({
+            include: [
+                {
+                    model: model.ScoreScript,
+                    as: 'ScoreScript',
+                    where: { status: 1 }
+                }
+            ]
+        })
+        return res.json({ code: 200, result: result })
+    } catch (error) {
+        _logger.error("get all criteria group errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
+exports.getCriteriaByCriteriaGroup = async (req, res, next) => {
+    try {
+        const result = await model.Criteria.findAll({
+            where: { criteriaGroupId: req.params.criteriaGroupId, isActive: 1 }
+        })
+        return res.json({ code: 200, result: result })
+    } catch (error) {
+        _logger.error("get Criteria By CriteriaGroup errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
 exports.getDetailScoreScript = async (req, res, next) => {
     try {
         const { idScoreScript, callId } = req.query
@@ -309,7 +339,7 @@ exports.saveCallRating = async (req, res) => {
             message: 'Success!',
         })
     } catch (error) {
-        _logger.error("Xoá tùy chỉnh bảng bị lỗi: ", error)
+        _logger.error("Tạo mới chấm điểm: ", error)
         return res.status(ERR_500.code).json({ message: error.message })
     }
 }
@@ -333,7 +363,7 @@ function handleData(data, privatePhoneNumber = false) {
 
     newData = data.map((el) => {
         el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
-        el.duration = hms(el.duration)
+        el.duration = _.hms(el.duration)
         el.recordingFileName = _config.pathRecording + el.recordingFileName
 
         // che số
@@ -346,25 +376,5 @@ function handleData(data, privatePhoneNumber = false) {
     })
 
     return newData
-}
-
-function hms(secs) {
-    if (isNaN(secs) || !secs || secs == 0) return '00:00:00'
-
-    let sec = 0
-    let minutes = 0
-    let hours = 0
-
-    sec = Math.ceil(secs)
-    minutes = Math.floor(sec / 60)
-    sec = sec % 60
-    hours = Math.floor(minutes / 60)
-    minutes = minutes % 60
-
-    return `${hours}:${pad(minutes)}:${pad(sec)}`
-}
-
-function pad(num) {
-    return ('0' + num).slice(-2)
 }
 

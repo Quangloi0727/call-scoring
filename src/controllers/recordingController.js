@@ -473,7 +473,7 @@ function handleData(data, privatePhoneNumber = false) {
 
   newData = data.map((el) => {
     el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
-    el.duration = hms(el.duration)
+    el.duration = _.hms(el.duration)
     el.recordingFileName = _config.pathRecording + el.recordingFileName
 
     // che số
@@ -596,26 +596,6 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
       return reject(error)
     }
   })
-}
-
-function hms(secs) {
-  if (isNaN(secs) || !secs || secs == 0) return '00:00:00'
-
-  let sec = 0
-  let minutes = 0
-  let hours = 0
-
-  sec = Math.ceil(secs)
-  minutes = Math.floor(sec / 60)
-  sec = sec % 60
-  hours = Math.floor(minutes / 60)
-  minutes = minutes % 60
-
-  return `${hours}:${pad(minutes)}:${pad(sec)}`
-}
-
-function pad(num) {
-  return ('0' + num).slice(-2)
 }
 
 async function getTeamOfGroup(userId) {
