@@ -322,7 +322,8 @@ exports.saveCallRating = async (req, res) => {
     try {
         const data = req.body
         transaction = await model.sequelize.transaction()
-
+        data.timeNoteMinutes = _.refactorTimeToMinutes(data.note.timeNoteMinutes, data.note.timeNoteSecond).newMinutes
+        data.timeNoteSecond = _.refactorTimeToMinutes(data.note.timeNoteMinutes, data.note.timeNoteSecond).newSeconds
         if (data.resultCriteria && data.resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
             await model.CallRating.destroy({ where: { callId: data.resultCriteria[0].callId } })

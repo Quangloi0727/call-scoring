@@ -22,5 +22,20 @@ module.exports = {
 
     pad: function (num) {
         return ('0' + num).slice(-2)
+    },
+
+    /**
+     * Computed the boundaries limits and return them
+     * @param minutes phút nhập vào
+     * @param seconds giây nhập vào
+     */
+    refactorTimeToMinutes: function (minutes, seconds) {
+        let _minutes = minutes ? parseInt(minutes) : 0
+        let _seconds = seconds ? parseInt(seconds) : 0
+
+        var newMinutes = Math.floor(_seconds / 60) + _minutes;
+        var newSeconds = _seconds - newMinutes * 60;
+
+        return { newMinutes: newMinutes, newSeconds: newSeconds }
     }
 }
