@@ -94,11 +94,15 @@
   background-color: red !important;
 }
 
+.wholeScript {
+  background-color: #0dced5 !important;
+}
+
 #title_config_column {
   font-size: 20px;
   margin: 17px;
 }
 
-li{
+li {
   list-style-type: none;
 }

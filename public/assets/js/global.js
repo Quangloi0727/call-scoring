@@ -86,14 +86,18 @@
         })
 
         arrRegion.forEach(el => {
-            wavesurfer.addRegion({
+            const initRegion = wavesurfer.addRegion({
                 start: _convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0),
                 loop: false,
-                color: 'hsla(9, 100%, 64%, 1)',
+                color: 'rgba(255, 0, 0, 0.8)',
                 attributes: {
                     title: `Nội dung ghi chú: ${el.description}\nGhi chú cho: ${_genNoteFor(el.criteria, el.criteriaGroup)}\nNgười ghi chú: ${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''} (${el.userCreate && el.userCreate.userName ? el.userCreate.userName : ''}) lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}\nVị trí ghi chú: ${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}`
                 }
             })
+            if (!el.criteria) {
+                $(initRegion.element.children[0]).addClass("wholeScript")
+                $(initRegion.element.children[1]).addClass("wholeScript")
+            }
         })
 
         //event change title wavesurfer to notes
