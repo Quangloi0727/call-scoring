@@ -1,22 +1,18 @@
 
-const { Op, QueryTypes } = require('sequelize')
+const { Op } = require('sequelize')
 const pagination = require('pagination')
-const UserModel = require('../models/user')
-const UserRoleModel = require('../models/userRole')
 const titlePage = 'Danh sách nhiệm vụ chấm điểm'
 const {
     SUCCESS_200,
     ERR_500,
-    ERR_400,
-    ERR_403
 } = require("../helpers/constants/statusCodeHTTP")
 
 const {
     CONST_COND,
-    CONST_DATA,
-    CONST_STATUS } = require('../helpers/constants/index')
+    CONST_STATUS
+} = require('../helpers/constants/index')
 
-const { headerDefault, idCallNotFound } = require('../helpers/constants/fieldScoreMission')
+const { headerDefault, idCallNotFound, callHasBeenScored } = require('../helpers/constants/fieldScoreMission')
 
 const { cheSo } = require("../helpers/functions")
 
@@ -193,7 +189,7 @@ exports.getCallRatingNotes = async (req, res, next) => {
     }
 }
 
-exports.getAllCriteriaGroup = async (req, res, next) => {
+exports.getCriteriaGroupByCallRatingId = async (req, res, next) => {
     try {
         const result = await model.CriteriaGroup.findAll({
             include: [
@@ -207,6 +203,17 @@ exports.getAllCriteriaGroup = async (req, res, next) => {
         return res.json({ code: 200, result: result })
     } catch (error) {
         _logger.error("get all criteria group errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
+exports.checkScored = async (req, res, next) => {
+    try {
+        const result = await model.CallRating.findOne({ where: { callId: req.params.id } })
+        if (result) throw new Error(callHasBeenScored)
+        return res.json({ code: 200, result: result })
+    } catch (error) {
+        _logger.error("get check scored errors", error)
         return res.json({ code: 500, message: error })
     }
 }

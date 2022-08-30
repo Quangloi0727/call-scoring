@@ -47,8 +47,10 @@ const headerDefault = {
 }
 
 const idCallNotFound = "Id cuộc gọi không tồn tại !"
+const callHasBeenScored = "Cuộc gọi đã được chấm điểm !"
 
 module.exports = {
+    callHasBeenScored,
     idCallNotFound,
     headerDefault
 }

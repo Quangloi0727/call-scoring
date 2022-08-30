@@ -25,7 +25,10 @@ router.route('/:id/getCallRatingNotes')
 router.route('/:criteriaGroupId/getCriteriaByCriteriaGroup')
     .get(scoreMissionController.getCriteriaByCriteriaGroup)
 
-router.route('/getAllCriteriaGroup')
-    .get(scoreMissionController.getAllCriteriaGroup)
+router.route('/getCriteriaGroupByCallRatingId')
+    .get(scoreMissionController.getCriteriaGroupByCallRatingId)
+
+router.route('/:id/checkScored')
+    .get(scoreMissionController.checkScored)
 
 module.exports = router

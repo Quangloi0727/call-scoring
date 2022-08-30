@@ -60,18 +60,25 @@ function bindClick() {
         $('#btn-add-comment').attr('data-callId', callId)
         $("#downloadFile-popupComment").attr("url-record", urlRecord)
         $("#callId").text(callId)
-        _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+        _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
             if (resp.code == 200) {
-                wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
-                _AjaxGetData('/scoreMission/getAllCriteriaGroup', 'GET', function (resp) {
-                    renderCriteriaGroup(resp.result)
-                    $('.selectpicker').selectpicker('refresh')
-                })
-            } else {
-                console.log("get list note callId " + callId + " error")
-                wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
+                $("#idCriteriaGroupComment").attr("disabled", true)
+                $("#idCriteriaComment").attr("disabled", true)
             }
+            _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+                if (resp.code == 200) {
+                    wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
+                    _AjaxGetData('/scoreMission/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
+                        renderCriteriaGroup(resp.result)
+                        $('.selectpicker').selectpicker('refresh')
+                    })
+                } else {
+                    console.log("get list note callId " + callId + " error")
+                    wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
+                }
+            })
         })
+
     })
 
     $(document).on('click', '.fa-play-circle', function () {
@@ -229,7 +236,7 @@ function bindClick() {
             let timeNoteMinutes = data.note.timeNoteMinutes ? data.note.timeNoteMinutes : 0
             let timeNoteSecond = data.note.timeNoteSecond ? data.note.timeNoteSecond : 0
             let totalSeconds = _convertTime(timeNoteMinutes, timeNoteSecond)
-            console.log(totalSeconds);
+            console.log(totalSeconds)
             if (totalSeconds > wavesurfer.getDuration()) {
                 $('.error-input-timeNote').removeClass('d-none')
                 $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ")
@@ -301,7 +308,7 @@ function bindClick() {
 
     $("#popupComment").on("hidden.bs.modal", function () {
         wavesurfer.destroy()
-        $('#formCallComment')[0].reset();
+        $('#formCallComment')[0].reset()
     })
 
     $("#popupCallScore").on("hidden.bs.modal", function () {
@@ -545,7 +552,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
         }
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
-            console.log(resp);
+            console.log(resp)
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
             $("#downloadFile-popupCallScore").attr("url-record", url)
@@ -624,7 +631,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     })
 
     $('#idCriteriaGroup').html(optionIdCriteriaGroup)
-    console.log(resultCallRatingNote);
+    console.log(resultCallRatingNote)
     // xử lí dữ liệu cho phần ghi chú chấm điểm
     if (resultCallRatingNote && resultCallRatingNote.length > 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
@@ -691,7 +698,7 @@ function showDisableElement(check) {
     $('#timeNoteMinutes').prop('disabled', check)
     $('#timeNoteSecond').prop('disabled', check)
     $('#description').prop('disabled', check)
-    return;
+    return
 }
 function renderCriteria(idCriteriaGroup, idAddCriteria) {
     let html = ``
