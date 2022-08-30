@@ -329,8 +329,8 @@ exports.saveCallRating = async (req, res) => {
     try {
         const data = req.body
         transaction = await model.sequelize.transaction()
-        data.timeNoteMinutes = _.refactorTimeToMinutes(data.note.timeNoteMinutes, data.note.timeNoteSecond).newMinutes
-        data.timeNoteSecond = _.refactorTimeToMinutes(data.note.timeNoteMinutes, data.note.timeNoteSecond).newSeconds
+        data.note.timeNoteMinutes = _.refactorTimeToMinutes(req.body.note.timeNoteMinutes, req.body.note.timeNoteSecond).newMinutes
+        data.note.timeNoteSecond = _.refactorTimeToMinutes(req.body.note.timeNoteMinutes, req.body.note.timeNoteSecond).newSeconds
         if (data.resultCriteria && data.resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
             await model.CallRating.destroy({ where: { callId: data.resultCriteria[0].callId } })
@@ -338,6 +338,9 @@ exports.saveCallRating = async (req, res) => {
         }
 
         if (data.note) {
+            if (data.resultCriteria[0].idScoreScript) {
+                await model.CallRatingNote.update({ where: { callId: data.note.callId } }, { idScoreScript: data.resultCriteria[0].idScoreScript }, { transaction: transaction })
+            }
             data.note.created = req.user.id
             await model.CallRatingNote.create(data.note, { transaction: transaction })
         }

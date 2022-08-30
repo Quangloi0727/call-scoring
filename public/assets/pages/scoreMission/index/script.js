@@ -23,6 +23,11 @@ function bindClick() {
         return findData(page)
     })
 
+    $(document).on('change', '.sl-limit-page', function () {
+        console.log('change sl-limit-page')
+        return findData(1)
+    })
+
     $selectAll.click(function (event) {
         if (this.checked) {
             // Iterate each checkbox
@@ -101,10 +106,10 @@ function bindClick() {
     $(document).on('click', '.showCallScore', function () {
         let callId = $(this).attr('data-callId')
         let idScoreScript = $(this).attr('data-id')
-
+        let _callId = $(this).attr('callId')
         if ($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
         let url = $(this).attr('url-record')
-        return getDetailScoreScript(idScoreScript, callId, url)
+        return getDetailScoreScript(idScoreScript, callId, url, _callId)
     })
 
     $(document).on('click', '.detailScoreScript', function () {
@@ -194,7 +199,7 @@ function bindClick() {
         window.location = src_file
     })
 
-    $(document).on('click', '#downloadFile-popupComment', function () {
+    $(document).on('click', '#downloadFile-popupCallScore', function () {
         let src_file = $(this).attr("url-record")
         window.location = src_file
     })
@@ -214,7 +219,8 @@ function bindClick() {
             arr.push({
                 idSelectionCriteria: $(this).val(),
                 idCriteria: $(this).attr('data-criteriaId'),
-                callId: callId
+                callId: callId,
+                idScoreScript: idScoreScript
             })
         })
 
@@ -426,20 +432,20 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
-
+    console.log(data);
     data.forEach((item, element) => {
         let check = false
 
         //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
-        if (item.callRatingNote && item.callRatingNote.length > 0) {
+        if (item.callRating && item.callRating.length > 0) {
             check = true
-            idScoreScript = item.callRatingNote[0].idScoreScript
+            idScoreScript = item.callRating[0].idScoreScript
         }
         let dropdown = ''
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
+                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}"  callId="${item.callId}" data-callId="${item.id}" 
                 url-record="${item.recordingFileName}" data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
             })
         }
@@ -454,10 +460,10 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
-                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" callId="${item.callId}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
+                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
-                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record = ${item.recordingFileName} data-callId=${item.id}></i>
+                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
             </td>
         </tr>`
     })
@@ -541,7 +547,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm
-function getDetailScoreScript(idScoreScript, callId, url) {
+function getDetailScoreScript(idScoreScript, callId, url, _callId) {
     let queryData = {}
     queryData.idScoreScript = idScoreScript
     queryData.callId = callId
@@ -555,6 +561,8 @@ function getDetailScoreScript(idScoreScript, callId, url) {
             console.log(resp)
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
+
+            $(".id-file-record").text(_callId)
             $("#downloadFile-popupCallScore").attr("url-record", url)
             wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
 
@@ -578,15 +586,12 @@ function renderCriteriaGroup(data) {
 
 // xử lí dữ liệu ra popup
 function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
-    let navHTML = `
-    <li class="nav-item border-bottom" disable>
-        <a class="nav-link active" href="#">[Tên nhóm tiêu chí]</a>
-    </li>`
+    let navHTML = ``
     $('#formCallScore')[0].reset()
     $('.tab-content').html('')
     let optionIdCriteriaGroup = `<option value="0">Toàn bộ kịch bản</option>`
     let totalPoint = 0
-    criteriaGroups.map((criteriaGroup) => {
+    criteriaGroups.map((criteriaGroup, index) => {
         let uuidv4 = window.location.uuidv4()
         let pointCriteria = 0
         let navTabContent
@@ -613,7 +618,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
             })
             // giao diện từng tiêu chí của mỗi Nhóm tiêu chí
             navTabContent = `
-            <div class="tab-pane fade mb-4" id="tab-criteria-group-${uuidv4}" role="tabpanel"
+            <div class="tab-pane fade mb-4 ${index == 0 ? "show active" : ""}" id="tab-criteria-group-${uuidv4}" role="tabpanel"
                 aria-labelledby="custom-tabs-three-home-tab">
                 ${criteriaHtml}
             </div>
@@ -622,7 +627,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         // tạo thanh nav cho Nhóm tiêu chí
         navHTML += `
         <li class="nav-item border-bottom">
-            <a class="nav-link nav-criteria-group group-${criteriaGroup.id}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+            <a class="nav-link nav-criteria-group group-${criteriaGroup.id} ${index == 0 ? "active" : ""}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
             aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
         </li>`
         optionIdCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
@@ -687,6 +692,24 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         aria-valuemax="100">Hoàn thành ${perc}%</div>`
         $('#progress-scoreScript').html(html)
         $('.scoreScript').text(`Tổng điểm: ${resultPointCriteria}/${totalPoint} - ${perc}%`)
+    }
+    // hiển thị điểm của mục tiêu đầu tiên
+    let $firstElm = $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}`)
+    $('.nameCriteriaGroup').text($firstElm.text())
+    if ($firstElm.attr('resultPointCriteriaGroup') || $firstElm.attr('resultPointCriteriaGroup') == 0) {
+        let point = $firstElm.attr('resultPointCriteriaGroup')
+
+        let total = $firstElm.attr('data-point')
+        var perc = ((point / total) * 100).toFixed(0)
+        let html = `
+        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+        aria-valuemax="100">Hoàn thành ${perc}%</div>`
+        $('#progress-scoreCriteria').html(html)
+        $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
+
+    } else {
+        $('#progress-scoreCriteria').html('')
+        $('.scoreCriteria').text(`Tổng điểm: 0/${$firstElm.attr('data-point')} - 0%`)
     }
 
     $('.selectpicker').selectpicker('refresh')
