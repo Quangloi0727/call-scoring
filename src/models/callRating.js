@@ -11,13 +11,16 @@ class CallRating extends Model {
         idSelectionCriteria: {
           type: DataTypes.INTEGER,
           references: {
-            model: "SelectionCriteria",
+            model: "SelectionCriterias",
             key: "id",
           },
         },
         idCriteria: {
           type: DataTypes.INTEGER,
-        }
+        },
+        idScoreScript: {
+          type: DataTypes.INTEGER
+        },
       },
       {
         sequelize,
