@@ -1,0 +1,168 @@
+<div class="modal fade" id="popupCallScore" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Chấm điểm cuộc gọi</h5>
+        <div class="justify-content-between">
+          <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Hủy</button>
+          <button type="button" class="btn btn-outline-primary" id="btn-save-modal">Xác nhận</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div id="elmRecordCallScore">
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailNoteScore" role="button">
+              <Label><i class="far fa-angle-down"></i>File ghi âm cuộc gọi</Label>
+            </a>
+          </div>
+          <div class="ml-sm-2 waveform-time-indicator">
+            <span class="time">00:00:00</span> / <span class="totalTime">00:00:00</span>
+          </div>
+          <div class="modal-body justify-content-center" id="recordCallScore">
+
+          </div>
+          <div class="row controls mt-sm-3 mb-sm-3">
+            <div class="col-md-1"></div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" data-action="play">Phát / Tạm dừng</button>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" data-action="back"><i class="fas fa-fast-backward"></i>
+                10s
+                trước</button>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" data-action="forward"><i class="fas fa-fast-forward"></i>
+                10s
+                sau</button>
+            </div>
+            <div class="col-md-2">
+              <div class="dropdown show">
+                <a class="btn btn-primary btn-sm btn-block dropdown-toggle" role="button" id="dropdownMenuLink"
+                  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Tốc độ phát / <span class="defaultPlaySpeed"></span><i class="fa fa-caret-down"
+                    aria-hidden="true"></i>
+                </a>
+
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                  <a class="dropdown-item" role="button" data-val="0.25">0.25</a>
+                  <a class="dropdown-item" role="button" data-val="0.5">0.5</a>
+                  <a class="dropdown-item" role="button" data-val="0.75">0.75</a>
+                  <a class="dropdown-item" role="button" data-val="1">Chuẩn</a>
+                  <a class="dropdown-item" role="button" data-val="1.25">1.25</a>
+                  <a class="dropdown-item" role="button" data-val="1.5">1.5</a>
+                  <a class="dropdown-item" role="button" data-val="1.75">1.75</a>
+                  <a class="dropdown-item" role="button" data-val="2">2</a>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <button class="btn btn-primary btn-sm btn-block" id="downloadFile-popupCallScore">Tải về</button>
+            </div>
+          </div>
+        </div>
+        <form id="formCallScore" autocomplete="off">
+
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailScoreScript" role="button">
+              <label for=""><i class="far fa-angle-down"></i> Kịch bản chấm điểm</label>
+            </a>
+          </div>
+          <div class="">
+            <div class="row border-bottom">
+              <div class="col-sm-4 border-right p-2">
+                <label class="nameScoreScript"></label>
+                <br>
+                <label class="scoreScript"></label>
+                <div class="progress" id="progress-scoreScript">
+
+                </div>
+              </div>
+              <div class="col-sm-8  p-2">
+                <label class="nameCriteriaGroup"></label>
+                <br>
+                <label class="scoreCriteria"></label>
+                <div class="progress" id="progress-scoreCriteria">
+
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 border-right">
+                <ul class="nav nav-scoreScript flex-column mb-3" id="tablist" role="tablist">
+                </ul>
+              </div>
+              <div class="col-sm-8 tab-content">
+
+              </div>
+            </div>
+          </div>
+          <div class="row p-2 col-sm-12 bg-light">
+            <a class="detailNoteScore" role="button">
+              <Label><i class="far fa-angle-down"></i> Ghi chú chấm điểm</Label>
+            </a>
+          </div>
+
+          <div class="col-sm-1"></div>
+          <div class="form-group row mt-1">
+            <div class="col-sm-1"></div>
+            <label for="idCriteriaGroup" class="col-sm-3 normal-label col-form-label">Ghi chú cho</label>
+            <div class="row col-sm-8">
+
+              <select class="form-control col-sm-6 selectpicker input pl-2" name="idCriteriaGroup" id="idCriteriaGroup">
+                <option value="default" selected>Toàn bộ kịch bản</option>
+              </select>
+
+              <select class="form-control col-sm-6 selectpicker input pl-2" name="idCriteria" id="idCriteria" disabled>
+              </select>
+
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="row">
+              <div class="col-sm-1"></div>
+              <label for="description" class="col-sm-3 form-check-label">Nội dung ghi chú</label>
+            </div>
+            <div class="row">
+              <div class="col-sm-1"></div>
+              <div class="col-sm-10">
+                <div class="form-group">
+                  <textarea class="form-control input" id="description" name="description"></textarea>
+                  <span class="error-textarea-description d-none"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row mt-3">
+            <div class="col-sm-1"></div>
+            <label for="timeNote" class="col-sm-3 normal-label col-form-label">Thời điểm ghi chú</label>
+            <div class="row form-group col-sm-8">
+              <div class="col-sm-3">
+                <input type="number" placeholder="00" class="form-control input" name="timeNoteMinutes"
+                  id="timeNoteMinutes"></input>
+              </div>
+              <div class="col-sm-3">
+                <label class="col-form-label" for="timeNoteMinutes">Phút</label>
+              </div>
+              <div class="col-sm-3">
+                <input type="number" placeholder="00" class="form-control input" name="timeNoteSecond"
+                  id="timeNoteSecond"></input>
+              </div>
+              <div class="col-sm-3">
+                <label class="col-form-label" for="timeNoteSecond ">Giây</label>
+              </div>
+              <span class="error-input-timeNote d-none">Trùng thời gian ghi chú</span>
+            </div>
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-content-criteria">
+
+</div>

@@ -73,11 +73,11 @@ const CONST_DATA = {
 
 const CONST_COND = {
   contains: {
-    n: 'contains',
+    n: 'substring',
     t: "Chứa"
   },
   'notContains': {
-    n: 'not contains',
+    n: 'notLike',
     t: "Không chứa"
   },
   'strictEqual': {
@@ -85,35 +85,35 @@ const CONST_COND = {
     t: "Chính xác là", /// bằng tuyệt đối
   },
   'notNull': {
-    n: '!null',
+    n: 'not',
     t: "Không trống",
   },
   'null': {
-    n: 'null',
+    n: 'is',
     t: "Trống",
   },
   'greaterThan': {
-    n: '<',
+    n: 'gt',
     t: "Lớn hơn",
     p: 'only number'
   },
   'lessThan': {
-    n: '<',
+    n: 'lt',
     t: "Nhỏ hơn",
     p: 'only number'
   },
   'greaterThanOrEqual': {
-    n: '>=',
+    n: 'gte',
     t: "Lớn hơn hoặc bằng",
     p: 'only number'
   },
   'lessThanOrEqual': {
-    n: '<=',
+    n: 'lte',
     t: "Nhỏ hơn hoặc bằng",
     p: 'only number'
   },
   'abstractEqual': {
-    n: '==',
+    n: 'eq',
     t: "Bằng",
     p: 'only number'
   }
@@ -121,10 +121,8 @@ const CONST_COND = {
 
 const scoreTargetNotFound = 'Không tìm thấy mục tiêu chấm điểm vui lòng thử lại sau !'
 const statusUpdateFail = 'Trạng thái chuyển không hợp lệ !'
-const assignmentListEmpty = 'Danh sách phân công không được để trống !'
 
 module.exports = {
-  assignmentListEmpty,
   scoreTargetNotFound,
   statusUpdateFail,
   CONST_RATING_BY,

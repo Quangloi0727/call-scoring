@@ -1,94 +1,86 @@
 
 const $form_target_general = $('#form_target_general')
+$form_target_general.validate({
 
+  rules: {
+    description: {
+      maxlength: 500
+    },
+    name: {
+      required: true,
+      maxlength: 100
+    },
+    numberOfCall: {
+      digits: true
+    }
+  },
+  messages: {
+    description: {
+      maxlength: 'Độ dài không quá 500 kí tự'
+    },
+    name: {
+      required: "Không được bỏ trống",
+      maxlength: "Độ dài không được quá 100 kí tự"
+    },
+    numberOfCall: {
+      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+    }
+  },
+  ignore: ":hidden",
+  errorElement: 'span',
+  errorPlacement: function (error, element) {
+    error.addClass('invalid-feedback')
+    element.closest('.form-group').append(error)
+  },
+  highlight: function (element, errorClass, validClass) {
+    $(element).addClass('is-invalid')
+  },
+  unhighlight: function (element, errorClass, validClass) {
+    $(element).removeClass('is-invalid')
+  }
+})
 function bindClick() {
 
-  const form_target_general = $form_target_general.validate({
+  $(document).on("click", "#btn_save_scoreTarget", function (e) {
+    // check valid cho form
+    if (!$form_target_general.valid()) return toastr.error("Thông tin nhập không hợp lệ")
+    // console.log($('#form_target_general').valid());
+    // lấy giá trị cho tap chung
+    let formData = getFormData('form_target_general')
 
-    rules: {
-      description: {
-        maxlength: 500
-      },
-      name: {
-        required: true,
-        maxlength: 100
-      },
-      numberOfCall: {
-        digits: true
-      },
-      nameTargetAuto: {
-        required: true,
-        maxlength: 500
-      },
-      point: {
-        required: true,
-        maxlength: 5,
-        digits: true
-      },
-      keyword: {
-        required: true,
-        maxlength: 1000,
-      }
-    },
-    messages: {
-      description: {
-        maxlength: 'Độ dài không quá 500 kí tự'
-      },
-      name: {
-        required: "Không được bỏ trống",
-        maxlength: "Độ dài không được quá 100 kí tự"
-      },
-      numberOfCall: {
-        digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-      },
-      nameTargetAuto: {
-        required: "Không được bỏ trống",
-        maxlength: "Độ dài không được quá 500 kí tự"
-      },
-      point: {
-        required: "Không được bỏ trống",
-        maxlength: "Giá trị tối đa là 99999",
-        digits: "Chỉ nhận giá trị số nguyên (>= 0)"
-      },
-      keyword: {
-        required: "Không được bỏ trống",
-        maxlength: "Độ dài không được quá 1000 kí tự",
-      },
-    },
-    ignore: ":hidden",
-    errorElement: 'span',
-    errorPlacement: function (error, element) {
-      error.addClass('invalid-feedback')
-      element.closest('.form-group').append(error)
-    },
-    highlight: function (element, errorClass, validClass) {
-      $(element).addClass('is-invalid')
-    },
-    unhighlight: function (element, errorClass, validClass) {
-      $(element).removeClass('is-invalid')
-    },
-    submitHandler: function (form) {
+    // lấy dữ liệu Điều kiện ở tap chung
+    let arrCond = getArrCond(formData.conditionSearch)
+    formData.arrCond = arrCond
 
-      // lấy giá trị cho tap chung
-      let formData = getFormData('form_target_general')
+    let arrTargetAuto = getTargetAutoData()
+    formData.arrTargetAuto = arrTargetAuto
 
-      // lấy dữ liệu Điều kiện ở tap chung
-      let arrCond = getArrCond(formData.conditionSearch)
-      formData.arrCond = arrCond
+    console.log(formData)
 
-      let arrTargetAuto = getTargetAutoData()
-      formData.arrTargetAuto = arrTargetAuto
-
-      console.log(formData)
-      if ($('#btn_save_scoreTarget').attr('data-id')) {
-        formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
-        saveData(formData, 'PUT')
-        return console.log($('#btn_save_scoreTarget').attr('data-id'))
-      }
-      return saveData(formData, 'POST')
+    // check trùng Tiêu chí chấm 
+    let temp = []
+    let check = true
+    arrTargetAuto.map((el) => {
+      temp.push(el.nameTargetAuto)
+      const found = temp.filter(element => element == el.nameTargetAuto)
+      console.log(found)
+      if (found.length >= 2) check = false
+    })
+    console.log(temp)
+    console.log(check)
+    if (check == false) {
+      toastr.error("Tên tiêu chí chấm đã được sử dụng")
+      return $('.duplicateNameTarget').removeClass('d-none')
     }
-  })
 
+    if ($('#btn_save_scoreTarget').attr('data-id')) {
+      formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
+      saveData(formData, 'PUT')
+      return console.log($('#btn_save_scoreTarget').attr('data-id'))
+    }
+    return saveData(formData, 'POST')
+
+  })
   $(document).on("click", "#btn_cancel_scoreTarget", function (e) {
     window.location.href = "/scoreTarget"
   })
@@ -271,6 +263,7 @@ function bindClick() {
   $(document).on('click', '#btn-add-keyword-set', function (e) {
     return renKeywordSet()
   })
+
   $(document).on('click', '.nav-link', function (e) {
     if ($(this).attr('id') == 'tab-score-target-auto-tab') {
       $('.btn-add-row-target-auto').removeClass('d-none')
@@ -311,7 +304,8 @@ function saveData(formData, method) {
     },
     error: function (error) {
       if (error.responseJSON.message == window.location.MESSAGE_ERROR["QA-002"]) return $(".duplicateNameScoreTarget").removeClass('d-none')
-      return toastr.error(error.responseJSON.message)
+      console.log("Lưu data bị lỗi :", error.responseJSON.message);
+      return toastr.error("Có lỗi đang xảy ra")
     },
   })
 }
@@ -364,13 +358,13 @@ function getTargetAutoData() {
   // handle dữ liệu cho tap mục tiêu tự động
   let nameTargetAuto = []
   let uuidv4 = []
-  $("input[name='nameTargetAuto']").each(function () {
+  $("input[true_name='nameTargetAuto']").each(function () {
     nameTargetAuto.push($(this).val())
     uuidv4.push($(this).attr('uuidv4'))
   })
 
   let point = []
-  $("input[name='point']").each(function () {
+  $("input[true_name='point']").each(function () {
     point.push($(this).val())
   })
 
@@ -382,7 +376,7 @@ function getTargetAutoData() {
   let arr = []
   nameTargetAuto.map((el, i) => {
     let keyword = []
-    $(`input[uuidv4='${uuidv4[i]}'][name="keyword"]`).each(function () {
+    $(`input[uuidv4='${uuidv4[i]}'][true_name="keyword"]`).each(function () {
       keyword.push({ keyword: $(this).val() })
     })
     arr.push({
@@ -604,7 +598,7 @@ $(function () {
 
 $(window).on('beforeunload', function () {
 
-  $(document).off('click', 'input[name="timeFor"]')
+  $(document).off('click', 'input[name="callTime"]')
   $(document).off('click', 'input:text[name="effectiveTime"]')
   $(document).off('change', '#effectiveTimeType')
   $(document).off('click', '#btn-add-conditions')

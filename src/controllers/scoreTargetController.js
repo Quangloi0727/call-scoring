@@ -9,9 +9,9 @@ const {
 
 const model = require('../models')
 const UserRoleModel = require('../models/userRole')
+const { TeamStatus } = require('../models/team')
 
 const {
-  assignmentListEmpty,
   scoreTargetNotFound,
   statusUpdateFail,
   headerDefault,
@@ -20,7 +20,8 @@ const {
   CONST_EFFECTIVE_TIME_TYPE,
   CONST_STATUS,
   CONST_DATA,
-  CONST_COND, MESSAGE_ERROR,
+  CONST_COND,
+  MESSAGE_ERROR,
   USER_ROLE } = require('../helpers/constants/index')
 
 exports.index = async (req, res, next) => {
@@ -42,14 +43,14 @@ exports.new = async (req, res, next) => {
   try {
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: 1 },
+      where: { status: CONST_STATUS['Hoạt động'] },
       attributes: ['name', 'id'],
       raw: true,
       nest: true
     })
 
     let users = await model.User.findAll({ where: { isActive: 1 } })
-    let teams = await model.Team.findAll({})
+    let teams = await model.Team.findAll({ where: { status: TeamStatus.ON, name: { [Op.ne]: 'Default' } } })
     let groups = await model.Group.findAll({})
 
     return _render(req, res, 'scoreTarget/target', {
@@ -89,7 +90,7 @@ exports.detail = async (req, res, next) => {
     }
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: 1 },
+      where: { status: CONST_STATUS['Hoạt động'] },
       attributes: ['name', 'id'],
       raw: true,
       nest: true
@@ -115,7 +116,7 @@ exports.detail = async (req, res, next) => {
       model.ScoreTargetCond.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
       model.ScoreTarget_ScoreScript.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
       model.User.findAll({ where: { isActive: 1 } }),
-      model.Team.findAll({}),
+      model.Team.findAll({ where: { status: TeamStatus.ON, name: { [Op.ne]: 'Default' } } }),
       model.Group.findAll({}),
       getListUserAssignment(),
       model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: id } }),
@@ -177,7 +178,6 @@ exports.gets = async (req, res, next) => {
       include: [
         { model: model.User, as: 'userCreate' },
         { model: model.User, as: 'userUpdate' },
-        { model: model.ScoreTarget_ScoreScript, as: 'ScoreTarget_ScoreScript' },
       ],
       required: false,
       offset: offset,
@@ -210,7 +210,7 @@ exports.create = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond, scoreScriptId } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond, scoreScriptId, numberOfCall } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -225,7 +225,9 @@ exports.create = async (req, res, next) => {
       data.effectiveTimeStart = moment(string[0]).startOf('day')
       data.effectiveTimeEnd = moment(string[1]).endOf('day')
     } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
-
+    if (numberOfCall) {
+      data.numberOfCall = Math.abs(numberOfCall)
+    }
     // check tồn tại của tên mục tiêu
     const foundScoreTargetName = await model.ScoreTarget.findOne({ where: { name: name } })
     if (foundScoreTargetName) throw new Error(MESSAGE_ERROR['QA-002'])
@@ -299,7 +301,7 @@ exports.update = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId, numberOfCall } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -320,7 +322,9 @@ exports.update = async (req, res, next) => {
     // check trùng tên mục tiêu
     const foundScoreTargetName = await model.ScoreTarget.findOne({ where: { name: name, id: { [Op.ne]: data['edit-id'] } } })
     if (foundScoreTargetName) throw new Error(MESSAGE_ERROR['QA-002'])
-
+    if (numberOfCall) {
+      data.numberOfCall = Math.abs(numberOfCall)
+    }
     data.updated = req.user.id
 
     // update tiêu chí
@@ -381,7 +385,7 @@ exports.update = async (req, res, next) => {
       scoreScriptId.map((el) => {
         arr.push({
           scoreScriptId: el,
-          scoreTargetId: data.id
+          scoreTargetId: data['edit-id']
         })
       })
       await model.ScoreTarget_ScoreScript.bulkCreate(arr, { transaction: transaction })
@@ -428,8 +432,6 @@ exports.assignment = async (req, res) => {
     const { id } = req.params
     const { assignment } = req.body
 
-    //if (assignment && assignment.length == 0) throw new Error(assignmentListEmpty)
-
     //xóa các user đã được phân công trước đó
     await model.ScoreTargetAssignment.destroy({ where: { scoreTargetId: id } })
 
@@ -444,6 +446,76 @@ exports.assignment = async (req, res) => {
     console.log(error)
     console.log(`------- error ------- `)
     return res.json({ message: error.message, code: ERR_500.code })
+  }
+}
+
+exports.replication = async (req, res, next) => {
+  try {
+    const { id } = req.params
+
+    if (!id || id == '') {
+      throw new Error('Bản ghi sao chép không tồn tại!')
+    }
+
+    const scoreScript = await model.ScoreScript.findAll({
+      where: { status: CONST_STATUS['Hoạt động'] },
+      attributes: ['name', 'id'],
+      raw: true,
+      nest: true
+    })
+
+    let detail = await model.ScoreTarget.findOne({
+      where: { id: { [Op.eq]: Number(id) } },
+      nest: true,
+      raw: true,
+    })
+    delete detail.name;
+    delete detail.id;
+    detail.status = 0
+    let [ScoreTargetAuto, ScoreTargetCond, ScoreTarget_ScoreScript, users, teams, groups, listUserAssignment, userAssigned] = await Promise.all([
+      model.ScoreTargetAuto.findAll({
+        where: { scoreTargetId: { [Op.eq]: Number(id) } },
+        include: [
+          { model: model.ScoreTargetKeywordSet, as: 'KeywordSet' },
+        ],
+        order: [
+          ['id', 'DESC'],
+        ],
+        nest: true,
+      }),
+      model.ScoreTargetCond.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
+      model.ScoreTarget_ScoreScript.findAll({ where: { scoreTargetId: { [Op.eq]: Number(id) } } }),
+      model.User.findAll({ where: { isActive: 1 } }),
+      model.Team.findAll({ where: { status: TeamStatus.ON, name: { [Op.ne]: 'Default' } } }),
+      model.Group.findAll({}),
+      getListUserAssignment(),
+      model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: id } }),
+    ])
+
+    return _render(req, res, 'scoreTarget/target', {
+      titlePage: null,
+      scoreScript: scoreScript.length > 0 ? scoreScript : [],
+      ScoreTarget: detail,
+      ScoreTargetAuto: ScoreTargetAuto,
+      ScoreTargetCond: ScoreTargetCond,
+      ScoreTarget_ScoreScript: ScoreTarget_ScoreScript,
+      CONST_RATING_BY,
+      CONST_CALL_TYPE,
+      CONST_EFFECTIVE_TIME_TYPE,
+      CONST_STATUS,
+      CONST_DATA,
+      CONST_COND,
+      users,
+      teams,
+      groups,
+      isEdit: false,
+      listUserAssignment,
+      userAssigned
+    })
+  } catch (error) {
+    _logger.error(`------- error ------- `)
+    _logger.error(error)
+    return next(error)
   }
 }
 

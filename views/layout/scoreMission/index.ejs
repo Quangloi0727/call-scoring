@@ -10,8 +10,12 @@
                         <div class="card">
                             <div class="card-header col-12 row">
                                 <div class="col-6 d-flex justify-content-start">
-                                    <select class="col-4 selectpicker input" name="status" id="status">
-                                        <option value="">Cuộc gọi có thời lượng > 2p</option>
+                                    <select class="col-4 selectpicker input" name="scoreTargetId" id="scoreTargetId">
+                                        <% scoreTarget.forEach((ele)=> { %>
+                                            <option value="<%- ele.id %>">
+                                                <%- ele.name %>
+                                            </option>
+                                        <% }) %>
                                     </select>
                                 </div>
                                 <div class="col-6 d-flex justify-content-end">
@@ -40,7 +44,7 @@
                                     <table class="table-right custom-table">
                                         <thead>
                                             <tr class="text-center">
-                                                <th class="text-truncate">Điểm đánh giá thủ công</th>
+                                                <th>Điểm đánh giá thủ công</th>
                                                 <th>Điểm đánh giá tự động</th>
                                                 <th>Kết quả đánh giá</th>
                                                 <th>Hướng gọi</th>
@@ -79,6 +83,7 @@
                 </button>
             </div>
             <div class="modal-body">
+                <p id="title_config_column">Danh sách nhiệm vụ chấm điểm</p>
                 <ul>
                     <li class="mb-3 border-bottom">
                         <input class="form-check-input" type="checkbox" name="" id="select-all" />
@@ -86,20 +91,7 @@
                     </li>
                 </ul>
                 <ul id="sortable">
-                    <div class="mb-3 border-bottom">
-                        <ul>Mã cuộc gọi</ul>
-                        <ul>Thao tác</ul>
-                    </div>
-                    <% Object.keys(headerDefault).forEach((i)=> { %>
-                        <li class="mb-3 border-bottom">
-                            <input class="form-check-input" type="checkbox" name="<%= i %>"
-                                <%=headerDefault[i].status==1 ? 'checked' :'' %> />
-                            <%= headerDefault[i].name%>
-                                <span style="float: right;">
-                                    <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
-                                </span>
-                        </li>
-                        <% }) %>
+ 
                 </ul>
 
                 <div class="modal-footer justify-content-between">
@@ -126,6 +118,9 @@
         </div>
     </div>
 </div>
+
+
+<%- include('./popupCallScore.ejs') %>
 
 
 <div class="modal fade" id="modal_general_setting">
@@ -156,25 +151,55 @@
     </div>
 </div>
 
-
 <div class="modal fade" id="showDetailRecord" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Chi tiết file ghi âm</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+    <div class="modal-dialog showDetailRecord" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title">Chi tiết file ghi âm</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="waveform-time-indicator ml-sm-2">
+                <span class="time">00:00:00</span> / <span class="totalTime">00:00:00</span>
+            </div>
+            <div class="modal-body" id="formDetailRecord">
+                
+            </div>
+            <div class="row controls mt-sm-3 mb-sm-3">
+                <div class="col-md-3">
+                    <button class="btn btn-primary" data-action="play">Phát / Tạm dừng</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary" data-action="back"><i class="fas fa-fast-backward"></i> 10s trước</button>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary" data-action="forward"><i class="fas fa-fast-forward"></i> 10s sau</button>
+                </div>
+                <div class="col-md-3">
+                    <div class="dropdown show">
+                        <a class="btn btn-primary" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Tốc độ phát / <span class="defaultPlaySpeed"></span><i class="fa fa-caret-down" aria-hidden="true"></i>
+                        </a>
+
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                        <a class="dropdown-item" role="button" data-val="0.25">0.25</a>
+                        <a class="dropdown-item" role="button" data-val="0.5">0.5</a>
+                        <a class="dropdown-item" role="button" data-val="0.75">0.75</a>
+                        <a class="dropdown-item" role="button" data-val="1">Chuẩn</a>
+                        <a class="dropdown-item" role="button" data-val="1.25">1.25</a>
+                        <a class="dropdown-item" role="button" data-val="1.5">1.5</a>
+                        <a class="dropdown-item" role="button" data-val="1.75">1.75</a>
+                        <a class="dropdown-item" role="button" data-val="2">2</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary" id="downloadFile">Tải về</button>
+                </div>
+            </div>
         </div>
-        <div class="modal-body" id="formDetailRecord">
-            
-        </div>
-        <div class="controls">
-            <button class="btn btn-primary" data-action="back">Backward</button>
-            <button class="btn btn-primary" data-action="play">Play / Pause</button>
-            <button class="btn btn-primary" data-action="forward">Forward</button>
-            <button class="btn btn-primary" data-action="mute">Toggle Mute</button>
-        </div>
-      </div>
     </div>
 </div>
+
+<%- include('./popupComment.ejs') %>
