@@ -269,7 +269,21 @@ exports.getDetailScoreScript = async (req, res, next) => {
                 where: { callId: callId }
             }))
             p.push(model.CallRatingNote.findAll({
-                where: { callId: callId }
+                where: { callId: callId },
+                include: [
+                    {
+                        model: model.User,
+                        as: 'userCreate'
+                    },
+                    {
+                        model: model.Criteria,
+                        as: 'criteria'
+                    },
+                    {
+                        model: model.CriteriaGroup,
+                        as: 'criteriaGroup'
+                    }
+                ]
             }))
         }
 
@@ -350,6 +364,8 @@ exports.saveCallRating = async (req, res) => {
             if (resultCriteria && resultCriteria[0] && resultCriteria[0].idScoreScript) {
                 await model.CallRatingNote.update({ idScoreScript: resultCriteria[0].idScoreScript }, { where: { callId: note.callId } }, { transaction: transaction })
             }
+            const findCallRating = await model.CallRating.findOne({ where: { callId: note.callId } })
+            note.idScoreScript = findCallRating ? findCallRating.idScoreScript : null
             note.created = req.user.id
             note.idCriteriaGroup == 0 ? note.idCriteriaGroup = null : ''
             await model.CallRatingNote.create(note, { transaction: transaction })

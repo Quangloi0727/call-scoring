@@ -69,25 +69,23 @@ function bindClick() {
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
                 $("#idCriteriaComment").attr("disabled", true)
-                $('.selectpicker').selectpicker('refresh')
-                wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
             } else {
                 $("#idCriteriaGroupComment").attr("disabled", false)
                 $("#idCriteriaComment").attr("disabled", false)
                 $('.selectpicker').selectpicker('refresh')
-                _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
-                    if (resp.code == 200) {
-                        wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
-                        _AjaxGetData('/scoreMission/' + callId + '/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
-                            renderCriteriaGroup(resp.result.CriteriaGroup)
-                            $('.selectpicker').selectpicker('refresh')
-                        })
-                    } else {
-                        console.log("get list note callId " + callId + " error")
-                        wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
-                    }
+                _AjaxGetData('/scoreMission/' + callId + '/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
+                    renderCriteriaGroup(resp.result.CriteriaGroup)
+                    $('.selectpicker').selectpicker('refresh')
                 })
             }
+            _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+                if (resp.code == 200) {
+                    wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
+                } else {
+                    console.log("get list note callId " + callId + " error")
+                    wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
+                }
+            })
         })
 
     })
