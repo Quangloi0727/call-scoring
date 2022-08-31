@@ -1,5 +1,5 @@
 const { Model, DataTypes } = require("sequelize")
-
+const { getLengthField } = require("../helpers/functions")
 class CallRatingNote extends Model {
   static init(sequelize) {
     return super.init(
@@ -18,7 +18,7 @@ class CallRatingNote extends Model {
           type: DataTypes.INTEGER
         },
         description: {
-          type: DataTypes.STRING
+          type: DataTypes.STRING(getLengthField('description')),
         },
         timeNoteMinutes: {
           type: DataTypes.INTEGER

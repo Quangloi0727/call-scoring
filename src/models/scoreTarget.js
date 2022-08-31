@@ -3,7 +3,6 @@ const moment = require("moment")
 const { Model, DataTypes, Op } = require("sequelize")
 
 const { MESSAGE_ERROR } = require("../helpers/constants")
-const { getLengthField } = require("../helpers/functions")
 class ScoreTarget extends Model {
   static init(sequelize) {
     return super.init(
