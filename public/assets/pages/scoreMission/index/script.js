@@ -69,9 +69,8 @@ function bindClick() {
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
                 $("#idCriteriaComment").attr("disabled", true)
-                $("#idCriteriaComment").html('')
-                wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
                 $('.selectpicker').selectpicker('refresh')
+                wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
             } else {
                 $("#idCriteriaGroupComment").attr("disabled", false)
                 $("#idCriteriaComment").attr("disabled", false)
@@ -322,6 +321,7 @@ function bindClick() {
     $("#popupComment").on("hidden.bs.modal", function () {
         wavesurfer.destroy()
         $('#formCallComment')[0].reset()
+        $("#idCriteriaComment").html('')
     })
 
     $("#popupCallScore").on("hidden.bs.modal", function () {

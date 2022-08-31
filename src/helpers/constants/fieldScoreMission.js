@@ -48,8 +48,10 @@ const headerDefault = {
 
 const idCallNotFound = "Id cuộc gọi không tồn tại !"
 const callHasBeenScored = "Cuộc gọi đã được chấm điểm !"
+const timeNoteExists = "Thời điểm ghi chú đã tồn tại !"
 
 module.exports = {
+    timeNoteExists,
     callHasBeenScored,
     idCallNotFound,
     headerDefault

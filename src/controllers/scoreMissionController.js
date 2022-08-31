@@ -12,7 +12,7 @@ const {
     CONST_STATUS
 } = require('../helpers/constants/index')
 
-const { headerDefault, idCallNotFound, callHasBeenScored } = require('../helpers/constants/fieldScoreMission')
+const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists } = require('../helpers/constants/fieldScoreMission')
 
 const { cheSo } = require("../helpers/functions")
 
@@ -345,6 +345,8 @@ exports.saveCallRating = async (req, res) => {
         }
 
         if (note) {
+            const checkExistNote = await model.CallRatingNote.findOne({ where: { callId: note.callId, timeNoteMinutes: note.timeNoteMinutes, timeNoteSecond: note.timeNoteSecond } })
+            if (checkExistNote) throw new Error(timeNoteExists)
             if (resultCriteria && resultCriteria[0] && resultCriteria[0].idScoreScript) {
                 await model.CallRatingNote.update({ idScoreScript: resultCriteria[0].idScoreScript }, { where: { callId: note.callId } }, { transaction: transaction })
             }
@@ -359,7 +361,7 @@ exports.saveCallRating = async (req, res) => {
         })
     } catch (error) {
         _logger.error("Tạo mới chấm điểm: ", error)
-        return res.status(ERR_500.code).json({ message: error.message })
+        return res.json({ code: ERR_500.code, message: error.message })
     }
 }
 
