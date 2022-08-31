@@ -25,7 +25,7 @@ router.route('/:id/getCallRatingNotes')
 router.route('/:criteriaGroupId/getCriteriaByCriteriaGroup')
     .get(scoreMissionController.getCriteriaByCriteriaGroup)
 
-router.route('/getCriteriaGroupByCallRatingId')
+router.route('/:callId/getCriteriaGroupByCallRatingId')
     .get(scoreMissionController.getCriteriaGroupByCallRatingId)
 
 router.route('/:id/checkScored')

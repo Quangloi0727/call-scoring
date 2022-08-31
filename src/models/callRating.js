@@ -24,9 +24,7 @@ class CallRating extends Model {
       },
       {
         sequelize,
-        modelName: "CallRatings",
-        hooks: {
-        },
+        modelName: "CallRatings"
       }
     )
   }

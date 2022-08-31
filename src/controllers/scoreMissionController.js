@@ -191,12 +191,18 @@ exports.getCallRatingNotes = async (req, res, next) => {
 
 exports.getCriteriaGroupByCallRatingId = async (req, res, next) => {
     try {
-        const result = await model.CriteriaGroup.findAll({
+        const findCallRating = await model.CallRating.findOne({ where: { callId: req.params.callId } })
+        if (!findCallRating) throw new Error(callHasBeenScored)
+        const result = await model.ScoreScript.findOne({
+            where: { id: { [Op.eq]: Number(findCallRating.idScoreScript) } },
             include: [
                 {
-                    model: model.ScoreScript,
-                    as: 'ScoreScript',
-                    where: { status: 1 }
+                    model: model.CriteriaGroup,
+                    as: 'CriteriaGroup',
+                    include: {
+                        model: model.Criteria,
+                        as: 'Criteria'
+                    }
                 }
             ]
         })
@@ -327,22 +333,24 @@ exports.deleteConfigurationColums = async (req, res) => {
 exports.saveCallRating = async (req, res) => {
     let transaction
     try {
-        const data = req.body
+        const { resultCriteria, note } = req.body
+        const { timeNoteMinutes, timeNoteSecond } = note
         transaction = await model.sequelize.transaction()
-        data.note.timeNoteMinutes = _.refactorTimeToMinutes(req.body.note.timeNoteMinutes, req.body.note.timeNoteSecond).newMinutes
-        data.note.timeNoteSecond = _.refactorTimeToMinutes(req.body.note.timeNoteMinutes, req.body.note.timeNoteSecond).newSeconds
-        if (data.resultCriteria && data.resultCriteria.length > 0) {
+        note.timeNoteMinutes = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newMinutes
+        note.timeNoteSecond = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newSeconds
+        if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
-            await model.CallRating.destroy({ where: { callId: data.resultCriteria[0].callId } })
-            await model.CallRating.bulkCreate(data.resultCriteria, { transaction: transaction })
+            await model.CallRating.destroy({ where: { callId: resultCriteria[0].callId } }, { transaction: transaction })
+            await model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
         }
 
-        if (data.note) {
-            if (data.resultCriteria[0].idScoreScript) {
-                await model.CallRatingNote.update({ where: { callId: data.note.callId } }, { idScoreScript: data.resultCriteria[0].idScoreScript }, { transaction: transaction })
+        if (note) {
+            if (resultCriteria && resultCriteria[0] && resultCriteria[0].idScoreScript) {
+                await model.CallRatingNote.update({ idScoreScript: resultCriteria[0].idScoreScript }, { where: { callId: note.callId } }, { transaction: transaction })
             }
-            data.note.created = req.user.id
-            await model.CallRatingNote.create(data.note, { transaction: transaction })
+            note.created = req.user.id
+            note.idCriteriaGroup == 0 ? note.idCriteriaGroup = null : ''
+            await model.CallRatingNote.create(note, { transaction: transaction })
         }
         await transaction.commit()
         return res.json({

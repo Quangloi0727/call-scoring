@@ -69,19 +69,26 @@ function bindClick() {
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
                 $("#idCriteriaComment").attr("disabled", true)
+                $("#idCriteriaComment").html('')
+                wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
+                $('.selectpicker').selectpicker('refresh')
+            } else {
+                $("#idCriteriaGroupComment").attr("disabled", false)
+                $("#idCriteriaComment").attr("disabled", false)
+                $('.selectpicker').selectpicker('refresh')
+                _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+                    if (resp.code == 200) {
+                        wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
+                        _AjaxGetData('/scoreMission/' + callId + '/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
+                            renderCriteriaGroup(resp.result.CriteriaGroup)
+                            $('.selectpicker').selectpicker('refresh')
+                        })
+                    } else {
+                        console.log("get list note callId " + callId + " error")
+                        wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
+                    }
+                })
             }
-            _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
-                if (resp.code == 200) {
-                    wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
-                    _AjaxGetData('/scoreMission/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
-                        renderCriteriaGroup(resp.result)
-                        $('.selectpicker').selectpicker('refresh')
-                    })
-                } else {
-                    console.log("get list note callId " + callId + " error")
-                    wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
-                }
-            })
         })
 
     })
@@ -432,7 +439,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
-    console.log(data);
+    console.log(data)
     data.forEach((item, element) => {
         let check = false
 
@@ -640,7 +647,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     // xử lí dữ liệu cho phần ghi chú chấm điểm
     if (resultCallRatingNote && resultCallRatingNote.length > 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
-        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup)
+        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup == null ? 0 : resultCallRatingNote[0].idCriteriaGroup)
         renderCriteria(resultCallRatingNote[0].idCriteriaGroup, "#idCriteria")
         $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
         $('#description').val(resultCallRatingNote[0].description)
