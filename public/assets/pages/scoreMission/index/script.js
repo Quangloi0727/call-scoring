@@ -69,6 +69,7 @@ function bindClick() {
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
                 $("#idCriteriaComment").attr("disabled", true)
+                $('.selectpicker').selectpicker('refresh')
             } else {
                 $("#idCriteriaGroupComment").attr("disabled", false)
                 $("#idCriteriaComment").attr("disabled", false)
@@ -141,6 +142,12 @@ function bindClick() {
             $('#progress-scoreCriteria').html('')
             $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
         }
+    })
+
+    // event nhập text ghi chú
+    $('textarea').on('keyup', function (e) {
+        const lengthValue = $(this).val()
+        $(".countValueLength").text(lengthValue.length + "/500")
     })
 
     // xử lí chọn option ghi chú của mục tiêu
@@ -314,18 +321,16 @@ function bindClick() {
 
     $("#popupCallScore").on("hidden.bs.modal", function () {
         wavesurfer.destroy()
+        $('#recordCallScore').html('')
+        $(".countValueLength").text("0/500")
     })
 
     $("#popupComment").on("hidden.bs.modal", function () {
         wavesurfer.destroy()
         $('#formCallComment')[0].reset()
         $("#idCriteriaComment").html('')
+        $(".countValueLength").text("0/500")
     })
-
-    $("#popupCallScore").on("hidden.bs.modal", function () {
-        $('#recordCallScore').html('')
-    })
-
 }
 
 function SaveConfigurationColums(dataUpdate) {
