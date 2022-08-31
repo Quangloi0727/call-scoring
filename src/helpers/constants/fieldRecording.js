@@ -1,6 +1,7 @@
 // cấu hình bảng mặc định
 const headerDefault = {
     callId: "ID cuộc gọi",
+    action: "Thao tác",
     direction: "Hướng gọi",
     agentName: "Điện thoại viên",
     teamName: "Đội ngũ",
@@ -32,7 +33,19 @@ const keysTitleExcel = [
     "var10",
 ]
 
+const SOURCE_NAME = {
+    oreka: {
+        code: 'ORK',
+        text: 'Orec'
+    },
+    fs: {
+        code: 'FS',
+        text: 'Freeswitch'
+    }
+}
+
 module.exports = {
     headerDefault,
-    keysTitleExcel
+    keysTitleExcel,
+    SOURCE_NAME
 }

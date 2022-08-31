@@ -1,4 +1,4 @@
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize')
 
 class AgentTeamMember extends Model {
   static init(sequelize) {
@@ -26,14 +26,13 @@ class AgentTeamMember extends Model {
         sequelize,
         modelName: 'AgentTeamMembers'
       },
-    );
+    )
   }
 
   static associate(models) {
-    models.AgentTeamMember.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
-    
-    models.AgentTeamMember.belongsTo(models.Team, { foreignKey: 'teamId' });
+    models.AgentTeamMember.belongsTo(models.User, { foreignKey: 'userId', as: 'user' })
+    models.AgentTeamMember.belongsTo(models.Team, { foreignKey: 'teamId', as: 'teams' })
   }
 }
 
-module.exports = AgentTeamMember;
+module.exports = AgentTeamMember

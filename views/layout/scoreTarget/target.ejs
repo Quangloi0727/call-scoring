@@ -6,9 +6,16 @@
   var CONST_DATA = JSON.parse('<%- JSON.stringify(CONST_DATA)%>')
   var CONST_COND = JSON.parse('<%- JSON.stringify(CONST_COND)%>')
   var ScoreTarget = JSON.parse('<%- JSON.stringify(ScoreTarget)%>')
+  var ScoreTargetAuto = JSON.parse('<%- JSON.stringify(ScoreTargetAuto)%>')
+  var ScoreTargetCond = JSON.parse('<%- JSON.stringify(ScoreTargetCond)%>')
+  var ScoreTarget_ScoreScript = JSON.parse('<%- JSON.stringify(ScoreTarget_ScoreScript)%>')
+
   var _users = JSON.parse('<%- JSON.stringify(users)%>')
   var _teams = JSON.parse('<%- JSON.stringify(teams)%>')
   var _groups = JSON.parse('<%- JSON.stringify(groups)%>')
+
+  var _userAssigned = JSON.parse('<%- JSON.stringify(userAssigned)%>')
+  var _isEdit = <%- isEdit %>
 
 </script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
@@ -34,26 +41,27 @@
 
         <div class="card">
           <div class="card-body">
-            <form id="form_target_general" onsubmit="return false">
+            <form id="form_target_general">
               <div class="row">
 
                 <div class="form-group col-sm-3">
                   <input type="text" class="form-control input" id="name" name="name" placeholder="Mục tiêu" />
+                  <span class="d-none duplicateNameScoreTarget">Tên mục tiêu đã được sử dụng</span>
                 </div>
 
                 <div class="form-group col-sm-3 ml-auto text-left">
-                  <button type="button"
-                    class="btn btn-primary <%- ScoreTarget[0] &&  ScoreTarget[0].status != '0' ? 'd-none' : '' %>"
-                    data-dismiss="modal">Phân công</button>
-                  <button type="button"
-                    class="btn btn-primary <%- ScoreTarget[0] &&  ScoreTarget[0].status != '0' ? 'd-none' : '' %>">Nhân bản</button>
+                  <button type="button" class="btn btn-primary" data-dismiss="modal"
+                    id="btn_assignment_scoreTarget">Phân công</button>
+                  <a type="button" class="btn btn-primary"
+                    href="/scoreTarget/replication/<%- ScoreTarget ? ScoreTarget.id : ''  %> "
+                    id="btn_duplicate_scoreTarget">Nhân bản</a>
                 </div>
 
                 <div class="form-group col-sm-6 ml-auto text-right">
-                  <button type="button" class="btn btn-default" data-dismiss="modal" id="btn_cancel_scoreTarget" >Hủy</button>
-                  <button type="submit" id="btn_save_scoreTarget"
-                    data-id="<%- ScoreTarget[0] ? ScoreTarget[0].id : '' %>"
-                    class="btn btn-primary <%- ScoreTarget[0] && ScoreTarget[0].status !=0 ? 'd-none' : '' %> ">Lưu</button>
+                  <button type="button" class="btn btn-default" data-dismiss="modal"
+                    id="btn_cancel_scoreTarget">Hủy</button>
+                  <button type="button" id="btn_save_scoreTarget" data-id="<%- ScoreTarget ? ScoreTarget.id : '' %>"
+                    class="btn btn-primary">Lưu</button>
                 </div>
 
               </div>
@@ -65,7 +73,7 @@
                     aria-selected="true">Chung</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link " id="tab-score-target-auto-tab" data-toggle="pill" href="#tab-score-target-auto"
+                  <a class="nav-link" id="tab-score-target-auto-tab" data-toggle="pill" href="#tab-score-target-auto"
                     role="tab" aria-controls="tab-score-script-script" aria-selected="false">Chấm tự động</a>
                 </li>
               </ul>
@@ -80,7 +88,9 @@
                   <!-- tab auto -->
                   <%- include('./tap.target.auto.ejs') %>
                     <!-- end tab auto -->
-
+                    <link href="/assets/pages/scoreTarget/tapTargetAuto/style.css" rel="stylesheet">
+                    <script type="text/javascript" src="/assets/pages/scoreTarget/tapTargetAuto/script.js"
+                      defer></script>
               </div>
 
             </form>
@@ -89,5 +99,31 @@
       </div><!-- /.container-fluid -->
     </section>
     <!-- /.content -->
+  </div>
+</div>
+
+<div class="modal fade" id="modal_assignment_scoreTarget" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" id="modal_content_assignment_scoreTarget">
+      <div class="modal-header">
+        <h5 class="modal-title">Phân công</h5>
+      </div>
+      <div class="modal-body">
+        <div>
+          <select id="listBoxAssignment" multiple="multiple">
+            <% listUserAssignment.forEach(el=>{ %>
+              <option value="<%- el.id %>">
+                <%- el.fullName + ' (' + el.userName + ')' %>
+              </option>
+              <%}) %>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelModalAssignment" data-dismiss="modal">Hủy</button>
+        <button type="button" class="btn btn-success" id="confirmAssignmentScoreTarget"
+          data-id="<%- ScoreTarget.id %>">Xác nhận</button>
+      </div>
+    </div>
   </div>
 </div>

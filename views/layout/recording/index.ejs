@@ -86,11 +86,10 @@
                   <% let ele=headerDefault[i]; %>
                     <% let sorting=['duration'].includes(i) ? 'sorting' : '' ; %>
                       <!-- them sort -->
-
                       <th class="text-center sortHeader <%= i %> <%= sorting %>" id-sort="<%= i %>">
                         <%= ele%>
                       </th>
-                      <% }) %>
+                <% }) %>
               </tr>
             </thead>
             <tbody id="table_data"></tbody>
@@ -157,11 +156,6 @@
           </div>
           <div class="row">
             <div class="col-6">
-              <!-- <div class="form-group">
-                <label>Họ tên</label>
-                <input class="form-control input" type="text" id="val_fullName" name="fullName">
-              </div> -->
-
               <div class="form-group">
                 <label>Họ tên</label>
                 <select class="form-control selectpicker input selectpickerAdvanced" name="fullName" id="val_fullName"
@@ -176,12 +170,6 @@
 
             </div>
             <div class="col-6">
-
-              <!-- <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <input class="form-control input" type="text" id="val_userName" name="userName">
-              </div> -->
-
               <div class="form-group">
                 <label>Tên đăng nhập</label>
                 <select class="form-control selectpicker input selectpickerAdvanced" name="userName" id="val_userName"

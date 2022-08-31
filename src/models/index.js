@@ -20,10 +20,15 @@ const ScoreTargetModel = require('./scoreTarget')
 const ScoreTargetAutoModel = require('./scoreTargetAuto')
 const ScoreTargetCondModel = require('./scoreTargetCond')
 const ScoreTargetKeywordSetModel = require('./scoreTargetKeywordSet')
+const ScoreTarget_ScoreScriptModel = require('./scoreTarget_scoreScript')
+const ScoreTargetAssignmentModel = require('./scoreTargetAssignment')
 
 const CriteriaGroupsModel = require('./criteriaGroups')
 const CriteriasModel = require('./criterias')
 const SelectionCriteriasModel = require('./selectionCriterias')
+
+const CallRatingModel = require('./callRating')
+const CallRatingNoteModel = require('./callRatingNote')
 
 let db = {}
 let sequelize = null
@@ -36,7 +41,7 @@ if (config.use_env_variable) {
 
 const models = {
   User: UserModel.init(sequelize),
-  Team: TeamModel.init(sequelize),
+  Team: TeamModel.Team.init(sequelize),
   AgentTeamMember: AgentTeamMemberModel.init(sequelize),
   CallDetailRecords: CallDetailRecordsModel.init(sequelize),
   UserRole: UserRoleModel.init(sequelize),
@@ -49,10 +54,15 @@ const models = {
   RuleDetail: RuleDetailModel.init(sequelize),
   ScoreScript: ScoreScriptsModel.init(sequelize),
 
+  CallRating: CallRatingModel.init(sequelize),
+  CallRatingNote: CallRatingNoteModel.init(sequelize),
+
   ScoreTarget: ScoreTargetModel.init(sequelize), // mục tiêu chấm điểm
   ScoreTargetAuto: ScoreTargetAutoModel.init(sequelize),
   ScoreTargetCond: ScoreTargetCondModel.init(sequelize),
   ScoreTargetKeywordSet: ScoreTargetKeywordSetModel.init(sequelize),
+  ScoreTarget_ScoreScript: ScoreTarget_ScoreScriptModel.init(sequelize),
+  ScoreTargetAssignment: ScoreTargetAssignmentModel.init(sequelize),
 
   CriteriaGroup: CriteriaGroupsModel.init(sequelize),
   Criteria: CriteriasModel.init(sequelize),

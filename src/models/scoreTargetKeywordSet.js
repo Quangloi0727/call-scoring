@@ -38,14 +38,4 @@ class ScoreTargetKeywordSet extends Model {
   }
 }
 
-async function handleBeforeCreate(team, option) {
-  const teamResult = await ScoreScript.findOne({
-    where: { name: { [Op.eq]: team.name.toString() } },
-  })
-
-  if (teamResult) {
-    throw new Error(MESSAGE_ERROR["QA-002"])
-  }
-}
-
 module.exports = ScoreTargetKeywordSet

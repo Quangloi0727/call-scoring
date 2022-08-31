@@ -3,8 +3,6 @@
   width: 120px !important;
 }
 
-
-
 .wrapper-table {
   display: flex;
   overflow: auto;
@@ -20,27 +18,113 @@
   max-width: 200px;
   min-width: 200px;
   background: white;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .table-right {
   margin-left: 400px;
 }
 
-
 .custom-table {
   border: 1px solid #dee2e6;
 }
 
 .custom-table thead th {
-  padding: 15px 5px;
+  margin: 15px 5px;
   max-width: 200px;
   min-width: 200px;
   border: 1px solid #dee2e6;
   padding: 0.75rem;
-  background-color: #FFFF;
+  background-color: #ffff;
 }
 
 .custom-table tr td {
   border: 1px solid #dee2e6;
   padding: 0.75rem !important;
+}
+
+.fa-play-circle {
+  cursor: pointer;
+}
+
+#showDetailRecord .modal-dialog {
+  width: 80%;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.border-content {
+  /* background-color: red !important; */
+  border-top: solid 2px rgba(0, 0, 0, 0.125);
+}
+
+.nav-scorescript {
+  display: initial;
+}
+
+
+.row.p-2.col-sm-12.bg-light {
+  margin: 0px;
+}
+
+.form-control.textarea {
+  margin-right: 7.5px;
+  margin-left: 7.5px;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.normal-label {
+  font-weight: normal !important;
+}
+
+.modal-dialog.showDetailRecord {
+  max-width: 40% !important;
+  height: 100%;
+}
+
+.wavesurfer-handle {
+  background-color: red !important;
+}
+
+.wholeScript {
+  background-color: #0dced5 !important;
+}
+
+#title_config_column {
+  font-size: 20px;
+  margin: 17px;
+}
+
+li {
+  list-style-type: none;
+}
+
+
+.error-non-select {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
+}
+
+.error-input-timeNote {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
+}
+
+.error-textarea-description {
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
 }
