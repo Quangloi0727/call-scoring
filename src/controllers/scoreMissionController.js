@@ -348,27 +348,33 @@ exports.saveCallRating = async (req, res) => {
     let transaction
     try {
         const { resultCriteria, note } = req.body
-        const { timeNoteMinutes, timeNoteSecond } = note
+        const { timeNoteMinutes, timeNoteSecond } = note || {}
+        const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
-        note.timeNoteMinutes = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newMinutes
-        note.timeNoteSecond = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newSeconds
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
-            await model.CallRating.destroy({ where: { callId: resultCriteria[0].callId } }, { transaction: transaction })
+            const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })
+            const ids = _.pluck(findCallRating, 'id')
+            if (ids.length > 0) await model.CallRating.destroy({ where: { id: { [Op.in]: ids } } }, { transaction: transaction })
             await model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
         }
 
         if (note) {
+            note.timeNoteMinutes = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newMinutes
+            note.timeNoteSecond = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newSeconds
             const checkExistNote = await model.CallRatingNote.findOne({ where: { callId: note.callId, timeNoteMinutes: note.timeNoteMinutes, timeNoteSecond: note.timeNoteSecond } })
             if (checkExistNote) throw new Error(timeNoteExists)
-            if (resultCriteria && resultCriteria[0] && resultCriteria[0].idScoreScript) {
-                await model.CallRatingNote.update({ idScoreScript: resultCriteria[0].idScoreScript }, { where: { callId: note.callId } }, { transaction: transaction })
-            }
-            const findCallRating = await model.CallRating.findOne({ where: { callId: note.callId } })
-            note.idScoreScript = findCallRating ? findCallRating.idScoreScript : null
             note.created = req.user.id
             note.idCriteriaGroup == 0 ? note.idCriteriaGroup = null : ''
+            const getIdScoreScript = await model.CallRatingNote.findOne({ where: { callId: note.callId, idScoreScript: { [Op.ne]: null } } })
+            note.idScoreScript = getIdScoreScript ? getIdScoreScript.idScoreScript : null
             await model.CallRatingNote.create(note, { transaction: transaction })
+            //đồng bộ kịch bản chấm điểm
+            if (callId && idScoreScript) {
+                const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } })
+                const ids = _.pluck(findCallRatingNote, 'id')
+                await model.CallRatingNote.update({ idScoreScript: idScoreScript }, { where: { id: { [Op.in]: ids } } }, { transaction: transaction })
+            }
         }
         await transaction.commit()
         return res.json({
