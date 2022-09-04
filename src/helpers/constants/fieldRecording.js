@@ -2,14 +2,20 @@
 const headerDefault = {
     callId: "ID cuộc gọi",
     action: "Thao tác",
+    scoreScript: "Điểm đánh giá",
     direction: "Hướng gọi",
     agentName: "Điện thoại viên",
     teamName: "Đội ngũ",
+    group: "Nhóm",
     caller: "Số gọi đi",
     called: "Số gọi đến",
+    audioHtml: "File ghi âm",
     origTime: "Ngày giờ gọi",
     duration: "Thời lượng",
-    audioHtml: "Ghi âm",
+    scoreScriptHandle: "Điểm đánh giá thủ công",
+    scoreScriptAuto: "Điểm đánh giá tự động",
+    scoreScriptCreatedBy: "Người chấm điểm",
+    scoreScriptResult: "Kết quả đánh giá",
     sourceName: "Nguồn ghi âm"
 }
 
