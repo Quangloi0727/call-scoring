@@ -64,7 +64,7 @@ function bindClick() {
         const callId = $(this).attr('data-callId')
         $('#btn-add-comment').attr('data-callId', callId)
         $("#downloadFile-popupComment").attr("url-record", urlRecord)
-        $("#callId").text(callId)
+        $(".callId").text(callId)
         _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
@@ -94,6 +94,7 @@ function bindClick() {
     $(document).on('click', '.fa-play-circle', function () {
         const urlRecord = $(this).attr('url-record')
         const callId = $(this).attr('data-callId')
+        $(".callId").text(callId)
         $("#formDetailRecord").html('')
         $('#showDetailRecord').modal('show')
         //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
@@ -109,10 +110,11 @@ function bindClick() {
     })
 
     $(document).on('click', '.showCallScore', function () {
+        if ($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
         let callId = $(this).attr('data-callId')
+        $(".callId").text(callId)
         let idScoreScript = $(this).attr('data-id')
         let _callId = $(this).attr('callId')
-        if ($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
         let url = $(this).attr('url-record')
         return getDetailScoreScript(idScoreScript, callId, url, _callId)
     })
@@ -253,7 +255,6 @@ function bindClick() {
             let timeNoteMinutes = data.note.timeNoteMinutes ? data.note.timeNoteMinutes : 0
             let timeNoteSecond = data.note.timeNoteSecond ? data.note.timeNoteSecond : 0
             let totalSeconds = _convertTime(timeNoteMinutes, timeNoteSecond)
-            console.log(totalSeconds)
             if (totalSeconds > wavesurfer.getDuration()) {
                 $('.error-input-timeNote').removeClass('d-none')
                 $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ")
@@ -266,6 +267,8 @@ function bindClick() {
             $('.error-textarea-description').text('Nội dung ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
             return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
         }
+        const action = $(this).attr('method')
+        if (action == 'edit') delete data.note
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -646,18 +649,20 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     })
 
     $('#idCriteriaGroup').html(optionIdCriteriaGroup)
-    console.log(resultCallRatingNote)
+    console.log('resultCallRating', resultCallRating)
+    console.log('resultCallRatingNote', resultCallRatingNote)
     // xử lí dữ liệu cho phần ghi chú chấm điểm
-    if (resultCallRatingNote && resultCallRatingNote.length > 0) {
+    if (resultCallRating && resultCallRating.length > 0) {
         $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
         $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup == null ? 0 : resultCallRatingNote[0].idCriteriaGroup)
-        renderCriteria(resultCallRatingNote[0].idCriteriaGroup, "#idCriteria")
+        renderCriteria(resultCallRatingNote[0].idCriteriaGroup == null ? 0 : resultCallRatingNote[0].idCriteriaGroup, "#idCriteria")
         $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
         $('#description').val(resultCallRatingNote[0].description)
         $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
         $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
 
         showDisableElement(true)
+        $("#btn-save-modal").attr('method', 'edit')
     } else {
         $('#idCriteria').val("")
         $('#idCriteriaGroup').val('0')
@@ -667,6 +672,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         $('.scoreCriteria').text('')
 
         showDisableElement(false)
+        $("#btn-save-modal").attr('method', 'add')
         $('#idCriteria').prop("disabled", true)
         $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
     }

@@ -2,7 +2,7 @@
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Chấm điểm cuộc gọi</h5>
+        <h5 class="modal-title">Chấm điểm cuộc gọi <span class="callId"></span></h5>
         <div class="justify-content-between">
           <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Hủy</button>
           <button type="button" class="btn btn-outline-primary" id="btn-save-modal">Xác nhận</button>
@@ -121,19 +121,16 @@
           <div class="form-group">
             <div class="row">
               <div class="col-sm-1"></div>
-              <div class="col-md-9">
+              <div class="col-md-10">
                 <label for="description" class="col-sm-3 form-check-label">Nội dung ghi chú</label>
-              </div>
-              <div class="col-md-2">
-                <label for="recipient-name" class="col-form-label"><span
-                    class="c-red countValueLength">0/500</span></label>
+                <label for="recipient-name" class="form-check-label float-right"><span class="countValueLength">0/500</span></label>
               </div>
             </div>
             <div class="row">
               <div class="col-sm-1"></div>
               <div class="col-sm-10">
                 <div class="form-group">
-                  <textarea class="form-control input" id="description" name="description"></textarea>
+                  <textarea class="form-control input" id="description" name="description" maxlength="500"></textarea>
                   <span class="error-textarea-description d-none"></span>
                 </div>
               </div>
