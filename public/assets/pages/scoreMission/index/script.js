@@ -58,6 +58,29 @@ function bindClick() {
         })
     })
 
+    $(document).on('click', '.fa-history', function () {
+        $('#popupHistory').modal('show')
+        const callId = $(this).attr('data-callId')
+        _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+            if (resp.code == 200) {
+                if (resp.result && resp.result.length == 0) return
+                let html = ``
+                resp.result.forEach(el => {
+                    html += `
+                                <p class="font-weight-bold">[${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''}] đã thêm ghi chú lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>
+                                <p>Ghi chú cho :${_genNoteFor(el.criteria, el.criteriaGroup)}</p>
+                                <p>Hiển thị trên file ghi âm tại :${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}</p>
+                                <p>${el.description}</p>
+                                <hr></hr>
+                            `
+                })
+                $("#comment .card-body").html(html)
+            } else {
+                console.log("get call rating note form history fail", resp)
+            }
+        })
+    })
+
     $(document).on('click', '.fa-comment-alt', function () {
         $('#popupComment').modal('show')
         const urlRecord = $(this).attr('url-record')
@@ -475,7 +498,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
                 </div>
                 <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
-                <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
+                <i class="fas fa-history mr-2" title="Lịch sử chấm điểm" data-callId=${item.id}></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
             </td>
         </tr>`
@@ -783,6 +806,7 @@ $(function () {
 
 $(window).on('beforeunload', function () {
 
+    $(document).off('click', '.fa-history')
     $(document).off('click', '.btn-add-comment')
     $(document).off('click', '.sorting')
     $(document).off('click', '#resetColumnCustom')
