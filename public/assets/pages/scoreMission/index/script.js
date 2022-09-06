@@ -491,7 +491,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
 
         rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
-            <td class="text-center callId" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
+            <td class="text-center callIdColumn" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
             <td class="text-center">    
                 <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
@@ -679,7 +679,8 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         let dataPriority
         dataPriority = resultCallRatingNote.find(el => el.createdByForm == CreatedByForm.ADD)
         if (!dataPriority) dataPriority = resultCallRatingNote[0]
-        const { idCriteriaGroup, idCriteria, description, timeNoteMinutes, timeNoteSecond } = dataPriority | {}
+
+        const { idCriteriaGroup, idCriteria, description, timeNoteMinutes, timeNoteSecond } = dataPriority || {}
 
         $('.titlePopupCallSource').text('Sửa chấm điểm cuộc gọi:')
         $('#idCriteriaGroup').val(idCriteriaGroup == null ? 0 : idCriteriaGroup)
