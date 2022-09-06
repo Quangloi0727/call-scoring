@@ -41,7 +41,7 @@ if (config.use_env_variable) {
 
 const models = {
   User: UserModel.init(sequelize),
-  Team: TeamModel.Team.init(sequelize),
+  Team: TeamModel.init(sequelize),
   AgentTeamMember: AgentTeamMemberModel.init(sequelize),
   CallDetailRecords: CallDetailRecordsModel.init(sequelize),
   UserRole: UserRoleModel.init(sequelize),

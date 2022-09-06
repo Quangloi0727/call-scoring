@@ -46,6 +46,12 @@ const headerDefault = {
     }
 }
 
+const CreatedByForm = {
+    ADD: 1,
+    EDIT: 2,
+    COMMENT: 3
+}
+
 const idCallNotFound = "Id cuộc gọi không tồn tại !"
 const callHasBeenScored = "Cuộc gọi đã được chấm điểm !"
 const timeNoteExists = "Đã tồn tại ghi chú tại thời điểm này !"
@@ -54,5 +60,6 @@ module.exports = {
     timeNoteExists,
     callHasBeenScored,
     idCallNotFound,
-    headerDefault
+    headerDefault,
+    CreatedByForm
 }

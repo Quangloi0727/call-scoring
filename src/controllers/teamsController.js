@@ -6,7 +6,7 @@ const UserRoleModel = require('../models/userRole')
 const TeamModel = require('../models/team').Team
 const AgentTeamMemberModel = require('../models/agentTeamMember')
 const model = require('../models')
-const { TeamStatus } = require('../models/team')
+const { TeamStatus } = require('../helpers/constants/fileTeam')
 const {
   SUCCESS_200,
   ERR_500

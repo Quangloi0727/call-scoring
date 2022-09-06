@@ -13,7 +13,7 @@ const {
 } = require("../helpers/constants/statusField")
 
 const titlePage = 'Danh sách nhóm'
-const { TeamStatus } = require('../models/team')
+const { TeamStatus } = require('../helpers/constants/fileTeam')
 
 exports.index = async (req, res, next) => {
   try {
