@@ -357,7 +357,9 @@ exports.saveCallRating = async (req, res) => {
         transaction = await model.sequelize.transaction()
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
-            await model.CallRating.destroy({ where: { callId: callId } }, { transaction: transaction })
+            const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })
+            const ids = _.pluck(findCallRating, 'id')
+            if (ids.length > 0) await model.CallRating.destroy({ where: { id: { [Op.in]: ids } } }, { transaction: transaction })
             await model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
         }
 
