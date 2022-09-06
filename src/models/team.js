@@ -1,8 +1,5 @@
 const { Model, DataTypes, Op } = require('sequelize')
-const TeamStatus = {
-  ON: 1,
-  OFF: 2
-}
+const { TeamStatus } = require('../helpers/constants/fileTeam')
 class Team extends Model {
   static init(sequelize) {
     return super.init(
@@ -21,8 +18,7 @@ class Team extends Model {
           }
         },
         status: {
-          type: DataTypes.INTEGER,
-          values: [TeamStatus.ON, TeamStatus.OFF],
+          type: DataTypes.ENUM(TeamStatus.ON, TeamStatus.OFF),
           defaultValue: TeamStatus.ON
         },
       },
@@ -55,4 +51,4 @@ async function handleBeforeCreate(team, option) {
   }
 }
 
-module.exports = { Team, TeamStatus }
+module.exports = Team 

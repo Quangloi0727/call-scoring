@@ -90,6 +90,11 @@
   height: 100%;
 }
 
+.modal-dialog.popupHistory {
+  max-width: 40% !important;
+  height: 100%;
+}
+
 .wavesurfer-handle {
   background-color: red !important;
 }
@@ -127,4 +132,8 @@ li {
   margin-top: 0.25rem;
   font-size: 80%;
   color: #dc3545;
+}
+
+.btn-history{
+  font-size: 20px !important;
 }
