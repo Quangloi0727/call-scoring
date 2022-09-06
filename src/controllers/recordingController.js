@@ -20,7 +20,7 @@ const { cheSo } = require("../helpers/functions")
 const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
 const { headerDefault, keysTitleExcel, SOURCE_NAME } = require('../helpers/constants/fieldRecording')
-const { TeamStatus } = require('../models/team')
+const { TeamStatus } = require('../helpers/constants/fileTeam')
 const { Team } = require('../models/team')
 
 exports.index = async (req, res, next) => {

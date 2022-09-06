@@ -114,9 +114,8 @@ function bindClick() {
         let callId = $(this).attr('data-callId')
         $(".callId").text(callId)
         let idScoreScript = $(this).attr('data-id')
-        let _callId = $(this).attr('callId')
         let url = $(this).attr('url-record')
-        return getDetailScoreScript(idScoreScript, callId, url, _callId)
+        return getDetailScoreScript(idScoreScript, callId, url)
     })
 
     $(document).on('click', '.detailScoreScript', function () {
@@ -164,6 +163,7 @@ function bindClick() {
         data.note.callId = callId
         data.note.idCriteria = data.note.idCriteriaComment
         data.note.idCriteriaGroup = data.note.idCriteriaGroupComment
+        data.note.createdByForm = CreatedByForm.COMMENT
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
                 return toastr.error(resp.message)
@@ -242,6 +242,7 @@ function bindClick() {
         data.note = getFormData('formCallScore')
         data.note.callId = callId
         data.note.idScoreScript = idScoreScript
+        data.note.createdByForm = CreatedByForm.ADD
         data.resultCriteria = arr
 
 
@@ -445,7 +446,6 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
-    console.log(data)
     data.forEach((item, element) => {
         let check = false
 
@@ -458,7 +458,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
         let dropdown = ''
         if (scoreScripts.length > 0) {
             scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}"  callId="${item.callId}" data-callId="${item.id}" 
+                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
                 url-record="${item.recordingFileName}" data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
             })
         }
@@ -473,7 +473,7 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" callId="${item.callId}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
@@ -560,7 +560,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm
-function getDetailScoreScript(idScoreScript, callId, url, _callId) {
+function getDetailScoreScript(idScoreScript, callId, url) {
     let queryData = {}
     queryData.idScoreScript = idScoreScript
     queryData.callId = callId
@@ -571,11 +571,9 @@ function getDetailScoreScript(idScoreScript, callId, url, _callId) {
         }
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
-            console.log(resp)
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.data.CriteriaGroup
 
-            $(".id-file-record").text(_callId)
             $("#downloadFile-popupCallScore").attr("url-record", url)
             wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
 
@@ -653,17 +651,24 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     console.log('resultCallRatingNote', resultCallRatingNote)
     // xử lí dữ liệu cho phần ghi chú chấm điểm
     if (resultCallRating && resultCallRating.length > 0) {
-        $('.popupCallScore').text('Sửa chấm điểm cuộc gọi')
-        $('#idCriteriaGroup').val(resultCallRatingNote[0].idCriteriaGroup == null ? 0 : resultCallRatingNote[0].idCriteriaGroup)
-        renderCriteria(resultCallRatingNote[0].idCriteriaGroup == null ? 0 : resultCallRatingNote[0].idCriteriaGroup, "#idCriteria")
-        $('#idCriteria').val(resultCallRatingNote[0].idCriteria)
-        $('#description').val(resultCallRatingNote[0].description)
-        $('#timeNoteMinutes').val(resultCallRatingNote[0].timeNoteMinutes)
-        $('#timeNoteSecond').val(resultCallRatingNote[0].timeNoteSecond)
+        //ưu tiên hiển thị ở màn tạo mới 
+        let dataPriority
+        dataPriority = resultCallRatingNote.find(el => el.createdByForm == CreatedByForm.ADD)
+        if (!dataPriority) dataPriority = resultCallRatingNote[0]
+
+        $('.titlePopupCallSource').text('Sửa chấm điểm cuộc gọi:')
+        $('#idCriteriaGroup').val(dataPriority.idCriteriaGroup == null ? 0 : dataPriority.idCriteriaGroup)
+        renderCriteria(dataPriority.idCriteriaGroup == null ? 0 : dataPriority.idCriteriaGroup, "#idCriteria")
+        $('#idCriteria').val(dataPriority.idCriteria)
+        $('#description').val(dataPriority.description)
+        $('#timeNoteMinutes').val(dataPriority.timeNoteMinutes)
+        $('#timeNoteSecond').val(dataPriority.timeNoteSecond)
 
         showDisableElement(true)
         $("#btn-save-modal").attr('method', 'edit')
+        $(".countValueLength").text(dataPriority.description.length + "/500")
     } else {
+        $('.titlePopupCallSource').text('Tạo chấm điểm cuộc gọi:')
         $('#idCriteria').val("")
         $('#idCriteriaGroup').val('0')
 

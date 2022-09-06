@@ -9,7 +9,7 @@ const {
 
 const model = require('../models')
 const UserRoleModel = require('../models/userRole')
-const { TeamStatus } = require('../models/team')
+const { TeamStatus } = require('../helpers/constants/fileTeam')
 
 const {
   scoreTargetNotFound,
@@ -469,8 +469,8 @@ exports.replication = async (req, res, next) => {
       nest: true,
       raw: true,
     })
-    delete detail.name;
-    delete detail.id;
+    delete detail.name
+    delete detail.id
     detail.status = 0
     let [ScoreTargetAuto, ScoreTargetCond, ScoreTarget_ScoreScript, users, teams, groups, listUserAssignment, userAssigned] = await Promise.all([
       model.ScoreTargetAuto.findAll({

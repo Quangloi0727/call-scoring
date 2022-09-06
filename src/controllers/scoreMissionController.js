@@ -12,7 +12,7 @@ const {
     CONST_STATUS
 } = require('../helpers/constants/index')
 
-const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists } = require('../helpers/constants/fieldScoreMission')
+const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
 
 const { cheSo } = require("../helpers/functions")
 
@@ -32,13 +32,14 @@ exports.index = async (req, res, next) => {
             scoreTarget: scoreTarget,
             title: titlePage,
             titlePage: titlePage,
-            headerDefault: headerDefault
+            headerDefault: headerDefault,
+            CreatedByForm
         })
     } catch (error) {
-        console.log(`------- error ------- `)
-        console.log(error)
-        console.log(`------- error ------- `)
-        return next(error)
+        _logger.error(`------- error ------- `)
+        _logger.error(error)
+        _logger.error(`------- error ------- `)
+        return res.status(ERR_500.code).json({ message: error.message })
     }
 }
 
@@ -258,8 +259,8 @@ exports.getDetailScoreScript = async (req, res, next) => {
                             model: model.SelectionCriteria,
                             as: 'SelectionCriteria'
                         },
-                    },
-                },
+                    }
+                }
             ],
             nest: true
         }))
@@ -283,7 +284,10 @@ exports.getDetailScoreScript = async (req, res, next) => {
                         model: model.CriteriaGroup,
                         as: 'criteriaGroup'
                     }
-                ]
+                ],
+                order: [
+                    ['createdAt', 'DESC']
+                ],
             }))
         }
 
@@ -353,27 +357,29 @@ exports.saveCallRating = async (req, res) => {
         transaction = await model.sequelize.transaction()
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
-            const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })
-            const ids = _.pluck(findCallRating, 'id')
-            if (ids.length > 0) await model.CallRating.destroy({ where: { id: { [Op.in]: ids } } }, { transaction: transaction })
+            await model.CallRating.destroy({ where: { callId: callId } }, { transaction: transaction })
             await model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
         }
 
         if (note) {
             note.timeNoteMinutes = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newMinutes
             note.timeNoteSecond = _.refactorTimeToMinutes(timeNoteMinutes, timeNoteSecond).newSeconds
-            const checkExistNote = await model.CallRatingNote.findOne({ where: { callId: note.callId, timeNoteMinutes: note.timeNoteMinutes, timeNoteSecond: note.timeNoteSecond } })
+            const checkExistNote = await model.CallRatingNote.findOne({ where: { callId: note.callId, timeNoteMinutes: note.timeNoteMinutes, timeNoteSecond: note.timeNoteSecond } }, { transaction: transaction })
             if (checkExistNote) throw new Error(timeNoteExists)
             note.created = req.user.id
             note.idCriteriaGroup == 0 ? note.idCriteriaGroup = null : ''
-            const getIdScoreScript = await model.CallRatingNote.findOne({ where: { callId: note.callId, idScoreScript: { [Op.ne]: null } } })
-            note.idScoreScript = getIdScoreScript ? getIdScoreScript.idScoreScript : null
+            const getIdScoreScript = await model.CallRatingNote.findOne({ where: { callId: note.callId, idScoreScript: { [Op.ne]: null } } }, { transaction: transaction })
+            note.idScoreScript = idScoreScript ? idScoreScript : (getIdScoreScript ? getIdScoreScript.idScoreScript : null)
             await model.CallRatingNote.create(note, { transaction: transaction })
             //đồng bộ kịch bản chấm điểm
             if (callId && idScoreScript) {
-                const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } })
-                const ids = _.pluck(findCallRatingNote, 'id')
-                await model.CallRatingNote.update({ idScoreScript: idScoreScript }, { where: { id: { [Op.in]: ids } } }, { transaction: transaction })
+                const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } }, { transaction: transaction })
+                if (findCallRatingNote.length) {
+                    for (const note of findCallRatingNote) {
+                        note.update({ idScoreScript })
+                        await note.save()
+                    }
+                }
             }
         }
         await transaction.commit()

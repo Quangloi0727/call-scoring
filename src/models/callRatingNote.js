@@ -1,5 +1,6 @@
 const { Model, DataTypes } = require("sequelize")
 const { getLengthField } = require("../helpers/functions")
+const { CreatedByForm } = require("../helpers/constants/fieldScoreMission")
 class CallRatingNote extends Model {
   static init(sequelize) {
     return super.init(
@@ -25,6 +26,10 @@ class CallRatingNote extends Model {
         },
         timeNoteSecond: {
           type: DataTypes.INTEGER
+        },
+        createdByForm: {
+          type: DataTypes.ENUM(CreatedByForm.ADD, CreatedByForm.EDIT, CreatedByForm.COMMENT),
+          defaultValue: CreatedByForm.EDIT
         },
         created: {
           type: DataTypes.INTEGER,
