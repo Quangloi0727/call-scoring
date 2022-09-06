@@ -293,6 +293,7 @@ function bindClick() {
         }
         const action = $(this).attr('method')
         if (action == 'edit') delete data.note
+        if (!data.note.timeNoteMinutes && !data.note.timeNoteSecond) delete data.note // case này là case KH k nhập chấm điểm
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -678,18 +679,19 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         let dataPriority
         dataPriority = resultCallRatingNote.find(el => el.createdByForm == CreatedByForm.ADD)
         if (!dataPriority) dataPriority = resultCallRatingNote[0]
+        const { idCriteriaGroup, idCriteria, description, timeNoteMinutes, timeNoteSecond } = dataPriority | {}
 
         $('.titlePopupCallSource').text('Sửa chấm điểm cuộc gọi:')
-        $('#idCriteriaGroup').val(dataPriority.idCriteriaGroup == null ? 0 : dataPriority.idCriteriaGroup)
-        renderCriteria(dataPriority.idCriteriaGroup == null ? 0 : dataPriority.idCriteriaGroup, "#idCriteria")
-        $('#idCriteria').val(dataPriority.idCriteria)
-        $('#description').val(dataPriority.description)
-        $('#timeNoteMinutes').val(dataPriority.timeNoteMinutes)
-        $('#timeNoteSecond').val(dataPriority.timeNoteSecond)
+        $('#idCriteriaGroup').val(idCriteriaGroup == null ? 0 : idCriteriaGroup)
+        renderCriteria(idCriteriaGroup == null ? 0 : idCriteriaGroup, "#idCriteria")
+        $('#idCriteria').val(idCriteria)
+        $('#description').val(description)
+        $('#timeNoteMinutes').val(timeNoteMinutes)
+        $('#timeNoteSecond').val(timeNoteSecond)
 
         showDisableElement(true)
         $("#btn-save-modal").attr('method', 'edit')
-        $(".countValueLength").text(dataPriority.description.length + "/500")
+        $(".countValueLength").text(description && description.length + "/500")
     } else {
         $('.titlePopupCallSource').text('Tạo chấm điểm cuộc gọi:')
         $('#idCriteria').val("")
@@ -710,7 +712,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.nav-scoreScript').html(navHTML)
     $('#progress-scoreScript').html('')
     let resultPointCriteria = 0
-    if (resultCallRating && resultCallRatingNote.length > 0) {
+    if (resultCallRating) {
         resultCallRating.map((el) => {
             // tìm các mục tiêu có id tương ứng và cộng điểm
             resultPointCriteria += parseInt($(`.selectpicker.criteria option[value="${el.idSelectionCriteria}"]`).attr('data-point'))
