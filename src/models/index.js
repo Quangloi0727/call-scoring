@@ -29,6 +29,7 @@ const SelectionCriteriasModel = require('./selectionCriterias')
 
 const CallRatingModel = require('./callRating')
 const CallRatingNoteModel = require('./callRatingNote')
+const CallRatingHistoryModel = require('./callRatingHistory')
 
 let db = {}
 let sequelize = null
@@ -56,6 +57,7 @@ const models = {
 
   CallRating: CallRatingModel.init(sequelize),
   CallRatingNote: CallRatingNoteModel.init(sequelize),
+  CallRatingHistory: CallRatingHistoryModel.init(sequelize),
 
   ScoreTarget: ScoreTargetModel.init(sequelize), // mục tiêu chấm điểm
   ScoreTargetAuto: ScoreTargetAutoModel.init(sequelize),
