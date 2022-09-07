@@ -19,8 +19,11 @@ router.route('/configurationColums')
 router.route('/saveCallRating')
     .post(scoreMissionController.saveCallRating)
 
-router.route('/:id/getCallRatingNotes')
+router.route('/:callId/getCallRatingNotes')
     .get(scoreMissionController.getCallRatingNotes)
+
+router.route('/:callId/getCallRatingHistory')
+    .get(scoreMissionController.getCallRatingHistory)
 
 router.route('/:criteriaGroupId/getCriteriaByCriteriaGroup')
     .get(scoreMissionController.getCriteriaByCriteriaGroup)
