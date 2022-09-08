@@ -402,6 +402,11 @@ function bindClick() {
         $(".countValueLength").text("0/500")
     })
 
+    $("#popupHistory").on("hidden.bs.modal", function () {
+        $("#callScore .card-body").html('')
+        $("#comment .card-body").html('')
+    })
+
     $("#popupComment").on("hidden.bs.modal", function () {
         wavesurfer.destroy()
         $('#formCallComment')[0].reset()
