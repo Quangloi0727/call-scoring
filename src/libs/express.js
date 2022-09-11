@@ -77,6 +77,9 @@ function initServer() {
 
 
   app.use("*", (req, res, next) => {
+    console.log(1111,req);
+    console.log(2222,res);
+    
     if (req.originalUrl.indexOf("style.css") >= 0 || req.originalUrl.indexOf("script.js") >= 0) return next(null, req, res, next)
     const err = new ResError(ERR_404.code, `Page ${ERR_404.message}`)
     next(err, req, res, next)

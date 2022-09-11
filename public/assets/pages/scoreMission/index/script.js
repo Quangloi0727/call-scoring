@@ -16,6 +16,9 @@ var _criteriaGroups = {}
 // CACHE
 var CACHE_CONFIG_COLUMN = null
 
+// data before edir
+var dataEditOrigin = null
+
 function bindClick() {
 
     $(document).on('click', '.zpaging', function () {
@@ -67,7 +70,7 @@ function bindClick() {
                 let html = ``
                 resp.result.forEach(el => {
                     html += `
-                                <p class="font-weight-bold">[${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''}] đã thêm ghi chú lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>
+                                <p class="font-weight-bold">[${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''}] đã thêm một ghi chú lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>
                                 <p>Ghi chú cho :${_genNoteFor(el.criteria, el.criteriaGroup)}</p>
                                 <p>Hiển thị trên file ghi âm tại :${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}</p>
                                 <p>${el.description}</p>
@@ -75,6 +78,42 @@ function bindClick() {
                             `
                 })
                 $("#comment .card-body").html(html)
+            } else {
+                console.log("get call rating note form history fail", resp)
+            }
+        })
+        _AjaxGetData('/scoreMission/' + callId + '/getCallRatingHistory', 'GET', function (resp) {
+            console.log("data edit history", resp)
+            if (resp.code == 200) {
+                if (resp.resultEdit && resp.resultEdit.length == 0 && resp.resultAdd && resp.resultAdd.length == 0) return
+                let html = ``
+                const grouped = _.groupBy(resp.resultEdit, el => el.createdAt)
+                for (let index in grouped) {
+                    const data = grouped[index]
+                    html += `<p class="font-weight-bold">[${data[0].userCreate && data[0].userCreate.fullName ? data[0].userCreate.fullName : ''}] đã sửa chấm điểm lúc ${(moment(data[0].createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>`
+                    data.forEach(el => {
+                        html += `
+                                    <div class = "row">
+                                        <div class="col-6">
+                                            <i class='fas fa-edit'></i>
+                                            ${el.criteria && el.criteria.name ? el.criteria.name : ''} :
+                                        </div>
+                                        <div class="col-6">
+                                            ${el.selectionCriteriaOld && el.selectionCriteriaOld.name ? el.selectionCriteriaOld.name : ''} <i class="fas fa-angle-double-right"></i>
+                                            ${el.selectionCriteriaNew && el.selectionCriteriaNew.name ? el.selectionCriteriaNew.name : ''}
+                                        </div>
+                                    </div>
+                                `
+                    })
+                    html += `<hr></hr>`
+                }
+
+                if (resp.resultAdd && !_.isEmpty(resp.resultAdd)) {
+                    const { userCreate, createdAt } = resp.resultAdd || {}
+                    html += `<p class="font-weight-bold">[${userCreate.fullName}] đã chấm điểm lúc ${(moment(createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>`
+                }
+
+                $("#callScore .card-body").html(html)
             } else {
                 console.log("get call rating note form history fail", resp)
             }
@@ -291,9 +330,19 @@ function bindClick() {
             $('.error-textarea-description').text('Nội dung ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
             return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
         }
-        const action = $(this).attr('method')
-        if (action == 'edit') delete data.note
+
         if (!data.note.timeNoteMinutes && !data.note.timeNoteSecond) delete data.note // case này là case KH k nhập chấm điểm
+
+        const action = $(this).attr('method')
+
+        if (action == 'edit') {
+            delete data.note
+            data.type = 'edit'
+        } else {
+            data.type = 'add'
+        }
+
+        data.dataEditOrigin = dataEditOrigin
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -351,6 +400,11 @@ function bindClick() {
         wavesurfer.destroy()
         $('#recordCallScore').html('')
         $(".countValueLength").text("0/500")
+    })
+
+    $("#popupHistory").on("hidden.bs.modal", function () {
+        $("#callScore .card-body").html('')
+        $("#comment .card-body").html('')
     })
 
     $("#popupComment").on("hidden.bs.modal", function () {
@@ -604,6 +658,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
             $('#btn-save-modal').attr('data-callId', callId)
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
             //render dữ liệu ra popup
+            dataEditOrigin = resp.resultCallRating
             popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
             return $('#popupCallScore').modal('show')
         }
@@ -680,12 +735,11 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         dataPriority = resultCallRatingNote.find(el => el.createdByForm == CreatedByForm.ADD)
         if (!dataPriority) dataPriority = resultCallRatingNote[0]
 
-        const { idCriteriaGroup, idCriteria, description, timeNoteMinutes, timeNoteSecond } = dataPriority || {}
+        const { idCriteriaGroup, description, timeNoteMinutes, timeNoteSecond } = dataPriority || {}
 
         $('.titlePopupCallSource').text('Sửa chấm điểm cuộc gọi:')
         $('#idCriteriaGroup').val(idCriteriaGroup == null ? 0 : idCriteriaGroup)
-        renderCriteria(idCriteriaGroup == null ? 0 : idCriteriaGroup, "#idCriteria")
-        $('#idCriteria').val(idCriteria)
+        $('#idCriteria').html(`<option>${dataPriority && dataPriority.criteria && dataPriority.criteria.name ? dataPriority.criteria.name : ''}</option>`)
         $('#description').val(description)
         $('#timeNoteMinutes').val(timeNoteMinutes)
         $('#timeNoteSecond').val(timeNoteSecond)

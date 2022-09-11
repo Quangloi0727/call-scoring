@@ -1,4 +1,3 @@
-
 const { Op } = require('sequelize')
 const pagination = require('pagination')
 const titlePage = 'Danh sách nhiệm vụ chấm điểm'
@@ -164,10 +163,10 @@ exports.getScoreMission = async (req, res, next) => {
 
 exports.getCallRatingNotes = async (req, res, next) => {
     try {
-        const { id } = req.params
-        if (!id || id == 'null' || id == '') throw new Error(idCallNotFound)
+        const { callId } = req.params
+        if (!callId || callId == 'null' || callId == '') throw new Error(idCallNotFound)
         const result = await model.CallRatingNote.findAll({
-            where: { callId: id },
+            where: { callId: callId },
             include: [
                 {
                     model: model.User,
@@ -181,11 +180,60 @@ exports.getCallRatingNotes = async (req, res, next) => {
                     model: model.CriteriaGroup,
                     as: 'criteriaGroup'
                 }
+            ],
+            order: [
+                ['createdAt', 'DESC']
             ]
         })
         return res.json({ code: 200, result: result })
     } catch (error) {
         _logger.error("get list notes errors", error)
+        return res.json({ code: 500, message: error })
+    }
+}
+
+exports.getCallRatingHistory = async (req, res, next) => {
+    try {
+        const { callId } = req.params
+        if (!callId || callId == 'null' || callId == '') throw new Error(idCallNotFound)
+        const resultEdit = await model.CallRatingHistory.findAll({
+            where: { callId: callId, type: CreatedByForm.EDIT },
+            include: [
+                {
+                    model: model.User,
+                    as: 'userCreate'
+                },
+                {
+                    model: model.Criteria,
+                    as: 'criteria'
+                },
+                {
+                    model: model.SelectionCriteria,
+                    as: 'selectionCriteriaOld'
+                },
+                {
+                    model: model.SelectionCriteria,
+                    as: 'selectionCriteriaNew'
+                }
+            ],
+            order: [
+                ['createdAt', 'DESC']
+            ]
+        })
+
+        const resultAdd = await model.CallRatingHistory.findOne({
+            where: { callId: callId, type: CreatedByForm.ADD },
+            include: [
+                {
+                    model: model.User,
+                    as: 'userCreate'
+                }
+            ]
+        })
+
+        return res.json({ code: 200, resultEdit: resultEdit, resultAdd: resultAdd })
+    } catch (error) {
+        _logger.error("get list call rating history", error)
         return res.json({ code: 500, message: error })
     }
 }
@@ -287,7 +335,7 @@ exports.getDetailScoreScript = async (req, res, next) => {
                 ],
                 order: [
                     ['createdAt', 'DESC']
-                ],
+                ]
             }))
         }
 
@@ -351,7 +399,7 @@ exports.deleteConfigurationColums = async (req, res) => {
 exports.saveCallRating = async (req, res) => {
     let transaction
     try {
-        const { resultCriteria, note } = req.body
+        const { resultCriteria, note, type, dataEditOrigin } = req.body
         const { timeNoteMinutes, timeNoteSecond } = note || {}
         const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
@@ -384,11 +432,21 @@ exports.saveCallRating = async (req, res) => {
                 }
             }
         }
+
+        // create history
+        switch (type) {
+            case 'add':
+                await model.CallRatingHistory.create({ type: CreatedByForm.ADD, created: req.user.id, callId: callId }, { transaction: transaction })
+                break
+            case 'edit':
+                await createCallRatingHistory(dataEditOrigin, resultCriteria, req.user.id, CreatedByForm.EDIT, transaction)
+                break
+            default:
+                break
+        }
+
         await transaction.commit()
-        return res.json({
-            code: SUCCESS_200.code,
-            message: 'Success!',
-        })
+        return res.json({ code: SUCCESS_200.code, message: 'Success!' })
     } catch (error) {
         _logger.error("Tạo mới chấm điểm: ", error)
         return res.json({ code: ERR_500.code, message: error.message })
@@ -427,5 +485,24 @@ function handleData(data, privatePhoneNumber = false) {
     })
 
     return newData
+}
+
+async function createCallRatingHistory(dataEditOrigin, resultCriteria, userId, type, transaction) {
+    let resultCompare = []
+    resultCriteria.map(function (el1) {
+        dataEditOrigin.map(function (el2) {
+            if (Number(el1.idSelectionCriteria) !== Number(el2.idSelectionCriteria) && Number(el1.idCriteria) === Number(el2.idCriteria) && Number(el1.idScoreScript) === Number(el2.idScoreScript)) {
+                el1.idSelectionCriteriaOld = el2.idSelectionCriteria
+                el1.idSelectionCriteriaNew = el1.idSelectionCriteria
+                resultCompare.push(el1)
+            }
+        })
+    })
+    const resultInsert = resultCompare.map(el => {
+        el.created = userId
+        el.type = type
+        return el
+    })
+    await model.CallRatingHistory.bulkCreate(resultInsert, { transaction: transaction })
 }
 
