@@ -1,12 +1,12 @@
 const { SUCCESS_200, ERR_500 } = require("../helpers/constants/statusCodeHTTP")
-const { SOURCE_NAME, idExist, nameExist } = require('../helpers/constants/manageSourceRecord')
+const { SOURCE_NAME, idExist, nameExist, hostPortExist, sourceNotExist } = require('../helpers/constants/manageSourceRecord')
 const pagination = require('pagination')
 const titlePage = 'Quản lý nguồn ghi âm'
 const model = require('../models')
+const { Op } = require('sequelize')
 
 exports.index = async (req, res, next) => {
     try {
-
         return _render(req, res, 'manageSourceRecord/index', {
             titlePage,
             SOURCE_NAME
@@ -21,6 +21,7 @@ exports.index = async (req, res, next) => {
 exports.getListSource = async (req, res, next) => {
     try {
         let { page, limit, sourceName } = req.query
+
         if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
         limit = Number(limit)
 
@@ -28,7 +29,7 @@ exports.getListSource = async (req, res, next) => {
 
         if (sourceName) {
             _query.sourceName = {}
-            _query.sourceName.$like = `%${sourceName}%`
+            _query.sourceName[Op.like] = `%${sourceName}%`
         }
 
         const pageNumber = page ? Number(page) : 1
@@ -47,8 +48,8 @@ exports.getListSource = async (req, res, next) => {
                 },
             ],
             order: [['updatedAt', 'DESC']],
-            limit: pageNumber,
-            offset: offset
+            offset: offset,
+            limit: limit
         })
 
         let count = model.dbSource.count({ where: _query })
@@ -75,13 +76,16 @@ exports.getListSource = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
     try {
-        const { id, sourceType, sourceName } = req.body
+        const { id, sourceType, sourceName, dbHost, dbPort } = req.body
 
         const checkExistId = await model.dbSource.findOne({ where: { id: id } })
         if (checkExistId) throw new Error(idExist)
 
         const checkNameExist = await model.dbSource.findOne({ where: { sourceName: sourceName } })
         if (checkNameExist) throw new Error(nameExist)
+
+        const checkExistPortHost = await model.dbSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort } })
+        if (checkExistPortHost) throw new Error(hostPortExist)
 
         for (var pro in SOURCE_NAME) {
             if (SOURCE_NAME[pro].code == sourceType) {
@@ -98,6 +102,73 @@ exports.create = async (req, res, next) => {
 
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
 
+    } catch (error) {
+        _logger.error(`------- error ------- `)
+        _logger.error(error)
+        _logger.error(`------- error ------- `)
+        return res.json({ code: ERR_500.code, message: error.message })
+    }
+}
+
+exports.detail = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const findSource = await model.dbSource.findOne({ where: { id: id } })
+        if (!findSource) throw new Error(sourceNotExist)
+
+        return res.json({ code: SUCCESS_200.code, data: findSource })
+
+    } catch (error) {
+        _logger.error(`------- error ------- `)
+        _logger.error(error)
+        _logger.error(`------- error ------- `)
+        return res.json({ code: ERR_500.code, message: error.message })
+    }
+}
+
+exports.update = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        const { sourceType, sourceName, dbHost, dbPort } = req.body
+
+        const checkNameExist = await model.dbSource.findOne({ where: { sourceName: sourceName, id: { [Op.ne]: id } } })
+        if (checkNameExist) throw new Error(nameExist)
+
+        const checkExistPortHost = await model.dbSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort, id: { [Op.ne]: id } } })
+        if (checkExistPortHost) throw new Error(hostPortExist)
+
+        for (var pro in SOURCE_NAME) {
+            if (SOURCE_NAME[pro].code == sourceType) {
+                req.body.tableInclude = SOURCE_NAME[pro].tableInclude
+                req.body.sourceType = SOURCE_NAME[pro].text
+                break
+            }
+        }
+
+        req.body.updated = req.user.id
+        req.body.lastUpdateTime = _moment(new Date()).valueOf()
+
+        await model.dbSource.update(req.body, { where: { id: id } })
+
+        return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
+    } catch (error) {
+        _logger.error(`------- error ------- `)
+        _logger.error(error)
+        _logger.error(`------- error ------- `)
+        return res.json({ code: ERR_500.code, message: error.message })
+    }
+}
+
+exports.updateStatus = async (req, res, next) => {
+    try {
+        const { id } = req.params
+        
+        req.body.updated = req.user.id
+        req.body.lastUpdateTime = _moment(new Date()).valueOf()
+
+        await model.dbSource.update(req.body, { where: { id: id } })
+
+        return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
     } catch (error) {
         _logger.error(`------- error ------- `)
         _logger.error(error)
