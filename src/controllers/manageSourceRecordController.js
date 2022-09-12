@@ -1,5 +1,6 @@
 const { SUCCESS_200, ERR_500 } = require("../helpers/constants/statusCodeHTTP")
 const { SOURCE_NAME, idExist, nameExist } = require('../helpers/constants/manageSourceRecord')
+const pagination = require('pagination')
 const titlePage = 'Quản lý nguồn ghi âm'
 const model = require('../models')
 
@@ -20,6 +21,8 @@ exports.index = async (req, res, next) => {
 exports.getListSource = async (req, res, next) => {
     try {
         let { page, limit, sourceName } = req.query
+        if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
+        limit = Number(limit)
 
         let _query = {}
 
@@ -33,7 +36,17 @@ exports.getListSource = async (req, res, next) => {
 
         let findList = model.dbSource.findAll({
             where: _query,
-            order: [['updateAt', 'DESC']],
+            include: [
+                {
+                    model: model.User,
+                    as: 'userCreate'
+                },
+                {
+                    model: model.User,
+                    as: 'userUpdate'
+                },
+            ],
+            order: [['updatedAt', 'DESC']],
             limit: pageNumber,
             offset: offset
         })
@@ -44,13 +57,13 @@ exports.getListSource = async (req, res, next) => {
 
         let paginator = new pagination.SearchPaginator({
             current: pageNumber,
-            listData: listData,
             rowsPerPage: limit,
             totalResult: totalRecord
         })
 
         return res.json({
             code: SUCCESS_200.code,
+            listData: listData,
             message: 'Success!',
             paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
         })
@@ -78,6 +91,7 @@ exports.create = async (req, res, next) => {
             }
         }
 
+        req.body.created = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
         await model.dbSource.create(req.body)

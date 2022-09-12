@@ -67,12 +67,47 @@ function validateAndCreate() {
 function bindClick() {
     // get list source record
     $(document).on('click', '#source-recording', function () {
-        _AjaxGetData('/manageSourceRecord/getListSource', 'GET', function (resp) { 
-            console.log(111,resp);
-            
+        let formSearch = getFormData('form_search')
+        console.log(111, formSearch)
+        _AjaxGetData('/manageSourceRecord/getListSource', 'GET', function (resp) {
+            console.log(111, resp)
+            if (resp.code == 500) return toastr.error(resp.message)
+            createTable(resp.listData)
+            $('#paging_table').html(window.location.CreatePaging(resp.paginator))
         })
     })
 
+}
+
+function createTable(listData) {
+    let html = ''
+    listData.forEach(item => {
+        html += `<tr>
+                    <td>${item.sourceName}</td>
+                    <td>${item.sourceName}</td>
+                    <td>${item.sourceType}</td>
+                    <td>${item.enabled == true ? 'Hoạt động' : 'Ngừng hoạt động'}</td>
+                    <td>${item.createdAt ? moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+                    <td>${item.userCreate && item.userCreate.fullName ? item.userCreate.fullName : ''}</td>
+                    <td>${item.updatedAt ? moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+                    <td>${item.userUpdate && item.userUpdate.fullName ? item.userUpdate.fullName : ''}</td>
+                </tr>`
+    })
+
+    $("#tableBody").html(html)
+    return
+}
+
+function getFormData(formId) {
+    let filter = {}
+
+    filter = _.chain($(`#${formId} .input`)).reduce(function (memo, el) {
+        let value = $(el).val()
+        if (value != '' && value != null) memo[el.name] = value
+        return memo
+    }, {}).value()
+
+    return filter
 }
 
 $(function () {

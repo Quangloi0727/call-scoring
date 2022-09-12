@@ -7,10 +7,10 @@
                     <div class="card-header row">
                         <ul class="nav nav-pills mb-3" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" data-toggle="pill" href="#manage-source" role="tab" aria-selected="true">File Server</a>
+                                <a class="nav-link active btn btn-outline-primary" data-toggle="pill" href="#manage-source" role="tab" aria-selected="true">File Server</a>
                             </li>
                             <li class="nav-item ml-5" id="source-recording">
-                                <a class="nav-link" data-toggle="pill" href="#manage-file-server" role="tab" aria-selected="false">Nguồn ghi âm</a>
+                                <a class="nav-link btn btn-outline-primary" data-toggle="pill" href="#manage-file-server" role="tab" aria-selected="false">Nguồn ghi âm</a>
                             </li>
                         </ul>
                     </div>
@@ -26,17 +26,19 @@
                                         <input type="text" class="form-control" id="input_search_group" name="name" placeholder="Tìm kiếm tên nguồn" autocomplete="off"/>
                                       </div>
                                     </div>
-                                    <div class="col-8">
+                                    <div class="col-7">
                                         <div class="col-1">
                                             <button type="button" class="form-control btn btn-primary btn-circle" id="search_group">
                                                 <i class="fas fa-search p-0"></i>
                                               </button>
                                         </div>
                                     </div>
-                                    <div class="col-1">
-                                        <button type="button" class="form-control btn btn-primary" data-toggle="modal" data-target="#modalCreateSource">
-                                            Thêm mới <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
-                                        </button>
+                                    <div class="col-2">
+                                        <div class="col-10 float-right">
+                                            <button type="button" class="form-control btn btn-primary" data-toggle="modal" data-target="#modalCreateSource">
+                                                Thêm mới <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -59,7 +61,7 @@
                                 </table>
 
                                 <div class="col-12 d-flex justify-content-center" id="paging_table">
-                                    111
+                                    
                                 </div>
 
                             </div>
