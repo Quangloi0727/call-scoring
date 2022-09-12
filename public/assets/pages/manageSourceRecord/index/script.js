@@ -140,7 +140,7 @@ function bindClick() {
 
     $(document).on('click', '#confirmActive', function () {
         const id = $(this).attr("data-id")
-        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: 1 }), { contentType: "application/json" }, function (resp) {
+        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: ENABLED.ON }), { contentType: "application/json" }, function (resp) {
             if (resp.code == 500) return toastr.error(resp.message)
 
             toastr.success(resp.message)
@@ -150,7 +150,7 @@ function bindClick() {
 
     $(document).on('click', '#confirmUnActive', function () {
         const id = $(this).attr("data-id")
-        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: 0 }), { contentType: "application/json" }, function (resp) {
+        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: ENABLED.OFF }), { contentType: "application/json" }, function (resp) {
             if (resp.code == 500) return toastr.error(resp.message)
 
             toastr.success(resp.message)
