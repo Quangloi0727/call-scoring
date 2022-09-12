@@ -2,7 +2,6 @@ const titlePage = 'Danh sách cuộc gọi'
 const pagination = require('pagination')
 const { Op, QueryTypes } = require('sequelize')
 const lodash = require('lodash')
-const moment = require('moment')
 const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
@@ -123,7 +122,7 @@ exports.getRecording = async (req, res) => {
     if (!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]) return res.status(ERR_403.code).json({ message: ERR_403.message_detail.notHaveAccessData })
 
     if (user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0) {
-      let _now = moment()
+      let _now = _moment()
       limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix() // second times
     }
 
@@ -131,8 +130,8 @@ exports.getRecording = async (req, res) => {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
 
-    let startTimeMilisecond = Number(moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'))
-    let endTimeMilisecond = Number(moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'))
+    let startTimeMilisecond = Number(_moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'))
+    let endTimeMilisecond = Number(_moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'))
 
     if (startTimeMilisecond > endTimeMilisecond) {
       return res.status(ERR_400.code).json({
@@ -472,7 +471,7 @@ function handleData(data, privatePhoneNumber = false) {
   let newData = []
 
   newData = data.map((el) => {
-    el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
+    el.origTime = _moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
     el.duration = _.hms(el.duration)
     el.recordingFileName = _config.pathRecording + el.recordingFileName
 
@@ -546,8 +545,8 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
   return new Promise(async (resolve, reject) => {
     try {
 
-      let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY')
-      let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY')
+      let startTime = _moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY')
+      let endTime = _moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY')
 
       let titleExcel = {}
       let dataHeader = {}

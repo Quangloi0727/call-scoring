@@ -1,0 +1,88 @@
+<!-- Modal -->
+<div class="modal fade" id="modalCreateSource" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nguồn ghi âm</h5>
+            </div>
+            <div class="modal-body">
+                <form id="form_new_source" onsubmit="return false">
+                    <div class="row">
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>Tên nguồn (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="sourceName" />
+                            </div>
+                        </div>
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>Loại nguồn (<span class="text-red">*</span>)</label>
+                                <select class="form-control selectpicker input" title="Chọn" name="sourceType">
+                                    <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
+                                        <option value="<%= SOURCE_NAME[item].code %>">
+                                          <%= SOURCE_NAME[item].text %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>dbServerName (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbServerName" />
+                            </div>
+                        </div>
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>dbServerId (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbServerId" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>dbHost (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbHost" />
+                            </div>
+                        </div>
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>dbPort (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbPort" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>dbUser (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbUser" />
+                            </div>
+                        </div>
+                        <div class="col-md-6 ml-auto">
+                            <div class="form-group">
+                                <label>dbPassword (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbPassword" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>dbName (<span class="text-red">*</span>)</label>
+                                <input type="text" class="form-control input" name="dbName" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="save_new_source">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
