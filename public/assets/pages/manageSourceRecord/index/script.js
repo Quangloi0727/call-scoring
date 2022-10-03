@@ -1,7 +1,7 @@
 function validateAndCreate() {
     $("#form_new_source").validate({
         rules: {
-            name: {
+            sourceName: {
                 required: true
             },
             sourceType: {
@@ -29,6 +29,9 @@ function validateAndCreate() {
             dbName: {
                 required: true
             }
+        },
+        messages: {
+            sourceType: window.location.MESSAGE_ERROR["QA-001"]
         },
         ignore: ":hidden",
         errorElement: "span",
@@ -53,19 +56,19 @@ function validateAndCreate() {
 
             dataCreate.id = window.location.uuidv4()
 
-            // _AjaxData('/manageSourceRecord', 'POST', JSON.stringify(dataCreate), { contentType: "application/json" }, function (resp) {
-            //     if (resp.code == 500) return toastr.error(resp.message)
+            _AjaxData('/manageSourceRecord', 'POST', JSON.stringify(dataCreate), { contentType: "application/json" }, function (resp) {
+                if (resp.code == 500) return toastr.error(resp.message)
 
-            //     toastr.success(resp.message)
-            //     return refreshPage("modalCreateSource")
-            // })
+                toastr.success(resp.message)
+                return refreshPage("modalCreateSource")
+            })
 
         }
     })
 
     $("#form_update_source").validate({
         rules: {
-            name: {
+            sourceName: {
                 required: true
             },
             sourceType: {
@@ -93,6 +96,9 @@ function validateAndCreate() {
             dbName: {
                 required: true
             }
+        },
+        messages: {
+            sourceType: window.location.MESSAGE_ERROR["QA-001"]
         },
         ignore: ":hidden",
         errorElement: "span",
