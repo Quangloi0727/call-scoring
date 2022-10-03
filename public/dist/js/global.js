@@ -23,12 +23,11 @@
     "QA-006": "Lưu thành công!",
     "QA-007": "Thông tin cấu hình lỗi!",
     "QA-008": "Giá trị đến phải lớn hơn giá trị từ",
-    "QA-009":
-      "Khoảng đạt chỉ tiêu cần lớn hơn và nằm ngoài khoảng cần cải thiện",
-    "QA-010":
-      "Khoảng vượt chỉ tiêu cần lớn hơn và nằm ngoài khoảng đạt chỉ tiêu",
+    "QA-009": "Khoảng đạt chỉ tiêu cần lớn hơn và nằm ngoài khoảng cần cải thiện",
+    "QA-010": "Khoảng vượt chỉ tiêu cần lớn hơn và nằm ngoài khoảng đạt chỉ tiêu",
     "QA-011": "Điểm lựa chọn phải nhỏ hơn hoặc bằng điểm tối đa",
     "QA-012": "Đã tồn tại ghi chú tại thời điểm này",
+    "QA-013": "Vui lòng chỉ nhập số !",
   }
 
   function CreatePaging(paging, classPaging = "zpaging") {
@@ -185,6 +184,7 @@
   window.location.uuidv4 = uuidv4
 
   $.validator.messages.required = MESSAGE_ERROR["QA-001"]
+  $.validator.messages.number = MESSAGE_ERROR["QA-013"]
   $.validator.messages.maxlength = $.validator.format("Độ dài không quá {0} kí tự")
   $.validator.messages.max = $.validator.format("Hãy nhập từ {0} trở xuống.")
   $.validator.messages.min = $.validator.format("Hãy nhập từ {0} trở lên.")

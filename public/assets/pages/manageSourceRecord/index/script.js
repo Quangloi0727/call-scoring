@@ -1,7 +1,7 @@
 function validateAndCreate() {
     $("#form_new_source").validate({
         rules: {
-            name: {
+            sourceName: {
                 required: true
             },
             sourceType: {
@@ -17,7 +17,8 @@ function validateAndCreate() {
                 required: true
             },
             dbPort: {
-                required: true
+                required: true,
+                number: true
             },
             dbUser: {
                 required: true
@@ -28,6 +29,9 @@ function validateAndCreate() {
             dbName: {
                 required: true
             }
+        },
+        messages: {
+            sourceType: window.location.MESSAGE_ERROR["QA-001"]
         },
         ignore: ":hidden",
         errorElement: "span",
@@ -64,7 +68,7 @@ function validateAndCreate() {
 
     $("#form_update_source").validate({
         rules: {
-            name: {
+            sourceName: {
                 required: true
             },
             sourceType: {
@@ -80,7 +84,8 @@ function validateAndCreate() {
                 required: true
             },
             dbPort: {
-                required: true
+                required: true,
+                number: true
             },
             dbUser: {
                 required: true
@@ -91,6 +96,9 @@ function validateAndCreate() {
             dbName: {
                 required: true
             }
+        },
+        messages: {
+            sourceType: window.location.MESSAGE_ERROR["QA-001"]
         },
         ignore: ":hidden",
         errorElement: "span",
@@ -140,7 +148,7 @@ function bindClick() {
 
     $(document).on('click', '#confirmActive', function () {
         const id = $(this).attr("data-id")
-        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: 1 }), { contentType: "application/json" }, function (resp) {
+        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: ENABLED.ON }), { contentType: "application/json" }, function (resp) {
             if (resp.code == 500) return toastr.error(resp.message)
 
             toastr.success(resp.message)
@@ -150,7 +158,7 @@ function bindClick() {
 
     $(document).on('click', '#confirmUnActive', function () {
         const id = $(this).attr("data-id")
-        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: 0 }), { contentType: "application/json" }, function (resp) {
+        _AjaxData('/manageSourceRecord/' + id + '/updateStatus', 'PUT', JSON.stringify({ enabled: ENABLED.OFF }), { contentType: "application/json" }, function (resp) {
             if (resp.code == 500) return toastr.error(resp.message)
 
             toastr.success(resp.message)

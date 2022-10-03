@@ -1,5 +1,5 @@
 const { SUCCESS_200, ERR_500 } = require("../helpers/constants/statusCodeHTTP")
-const { SOURCE_NAME, idExist, nameExist, hostPortExist, sourceNotExist } = require('../helpers/constants/manageSourceRecord')
+const { SOURCE_NAME, idExist, nameExist, hostPortExist, sourceNotExist, ENABLED } = require('../helpers/constants/manageSourceRecord')
 const pagination = require('pagination')
 const titlePage = 'Quản lý nguồn ghi âm'
 const model = require('../models')
@@ -9,7 +9,8 @@ exports.index = async (req, res, next) => {
     try {
         return _render(req, res, 'manageSourceRecord/index', {
             titlePage,
-            SOURCE_NAME
+            SOURCE_NAME,
+            ENABLED
         })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -162,7 +163,7 @@ exports.update = async (req, res, next) => {
 exports.updateStatus = async (req, res, next) => {
     try {
         const { id } = req.params
-        
+
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
