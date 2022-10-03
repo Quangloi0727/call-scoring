@@ -97,6 +97,7 @@ exports.create = async (req, res, next) => {
         }
 
         req.body.created = req.user.id
+        req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
         await model.dbSource.create(req.body)
