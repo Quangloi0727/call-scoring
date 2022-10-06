@@ -20,10 +20,22 @@ const CONST_CALL_TYPE = {
 }
 
 const CONST_EFFECTIVE_TIME_TYPE = {
-  'Mỗi tháng': 1,
-  'Mỗi tuần': 2,
-  'Mỗi ngày': 3,
-  'Khoảng ngày': 4,
+  EVERY_MONTH: {
+    n: 1,
+    t: "Mỗi tháng"
+  },
+  EVERY_WEEK: {
+    n: 2,
+    t: "Mỗi tuần"
+  },
+  EVERY_DAY: {
+    n: 3,
+    t: "Mỗi ngày"
+  },
+  ABOUT_DAY: {
+    n: 4,
+    t: "Khoảng ngày"
+  }
 }
 
 const CONST_STATUS = {

@@ -11,14 +11,16 @@ function validateAndCreate() {
                 required: true
             },
             dbServerId: {
-                required: true
+                required: true,
+                maxlength: 6
             },
             dbHost: {
                 required: true
             },
             dbPort: {
                 required: true,
-                number: true
+                number: true,
+                maxlength: 6
             },
             dbUser: {
                 required: true
@@ -78,14 +80,16 @@ function validateAndCreate() {
                 required: true
             },
             dbServerId: {
-                required: true
+                required: true,
+                maxlength: 6
             },
             dbHost: {
                 required: true
             },
             dbPort: {
                 required: true,
-                number: true
+                number: true,
+                maxlength: 6
             },
             dbUser: {
                 required: true

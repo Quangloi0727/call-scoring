@@ -69,11 +69,11 @@
             <label for="effectiveTime" class="col-sm-3 form-check-label">Thời gian hiệu lực</label>
             <div class="col-sm-3">
                 <select class="form-control selectpicker input" id="effectiveTimeType" name="effectiveTimeType">
-                    <% for (const [key, value] of Object.entries(CONST_EFFECTIVE_TIME_TYPE)) {%>
-                        <option value="<%- value %>">
-                            <%- key %>
+                    <% Object.keys(CONST_EFFECTIVE_TIME_TYPE).forEach((item)=> { %>
+                        <option value="<%= CONST_EFFECTIVE_TIME_TYPE[item].n %>">
+                            <%= CONST_EFFECTIVE_TIME_TYPE[item].t %>
                         </option>
-                        <% } %>
+                    <% }); %>
                 </select>
             </div>
             <div class="col-sm-3 effectiveTimeStart">
