@@ -1,7 +1,7 @@
 function validateAndCreate() {
     $("#form_new_source").validate({
         rules: {
-            name: {
+            sourceName: {
                 required: true
             },
             sourceType: {
@@ -11,13 +11,16 @@ function validateAndCreate() {
                 required: true
             },
             dbServerId: {
-                required: true
+                required: true,
+                maxlength: 6
             },
             dbHost: {
                 required: true
             },
             dbPort: {
-                required: true
+                required: true,
+                number: true,
+                maxlength: 6
             },
             dbUser: {
                 required: true
@@ -28,6 +31,9 @@ function validateAndCreate() {
             dbName: {
                 required: true
             }
+        },
+        messages: {
+            sourceType: window.location.MESSAGE_ERROR["QA-001"]
         },
         ignore: ":hidden",
         errorElement: "span",
@@ -64,7 +70,7 @@ function validateAndCreate() {
 
     $("#form_update_source").validate({
         rules: {
-            name: {
+            sourceName: {
                 required: true
             },
             sourceType: {
@@ -74,13 +80,16 @@ function validateAndCreate() {
                 required: true
             },
             dbServerId: {
-                required: true
+                required: true,
+                maxlength: 6
             },
             dbHost: {
                 required: true
             },
             dbPort: {
-                required: true
+                required: true,
+                number: true,
+                maxlength: 6
             },
             dbUser: {
                 required: true
@@ -91,6 +100,9 @@ function validateAndCreate() {
             dbName: {
                 required: true
             }
+        },
+        messages: {
+            sourceType: window.location.MESSAGE_ERROR["QA-001"]
         },
         ignore: ":hidden",
         errorElement: "span",
@@ -234,9 +246,9 @@ function createTable(listData) {
                     <td class = "text-center"><a href="javascript:void(0)" class="${item.enabled == true ? 'action-off' : 'action-on'}" data-id="${item.id} ">${item.enabled == true ? 'Ngừng hoạt động' : 'Kích hoạt'}</a></td>
                     <td class = "text-center">${item.sourceType}</td>
                     <td class = "text-center">${item.enabled == true ? '<span class="badge badge-success">Hoạt động</span>' : '<span class="badge badge-danger">Ngừng hoạt động</span>'}</td>
-                    <td class = "text-center">${item.createdAt ? moment(item.createdAt).format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+                    <td class = "text-center">${item.createdAt ? moment(item.createdAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''}</td>
                     <td class = "text-center">${item.userCreate && item.userCreate.fullName ? item.userCreate.fullName : ''}</td>
-                    <td class = "text-center">${item.updatedAt ? moment(item.updatedAt).format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+                    <td class = "text-center">${item.updatedAt ? moment(item.updatedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''}</td>
                     <td class = "text-center">${item.userUpdate && item.userUpdate.fullName ? item.userUpdate.fullName : ''}</td>
                 </tr>`
     })

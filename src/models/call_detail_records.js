@@ -39,6 +39,10 @@ class CallDetailRecords extends Model {
         xmlCdrId: DataTypes.STRING(36),
         node: DataTypes.STRING(20),
         lastUpdateTime: DataTypes.BIGINT,
+        share: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false
+        },
         teamId: {
           type: DataTypes.INTEGER,
           references: {
@@ -58,7 +62,7 @@ class CallDetailRecords extends Model {
       {
         sequelize,
         timestamps: false,
-        modelName: "call_detail_records",
+        modelName: "call_detail_records_new",
       }
     )
   }

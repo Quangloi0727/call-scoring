@@ -1,4 +1,3 @@
-const { now } = require("lodash")
 const moment = require("moment")
 const { Model, DataTypes, Op } = require("sequelize")
 
