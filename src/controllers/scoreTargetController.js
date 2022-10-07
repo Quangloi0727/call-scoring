@@ -1,4 +1,4 @@
-const { Op, QueryTypes } = require('sequelize')
+const { Op } = require('sequelize')
 const pagination = require('pagination')
 const moment = require('moment')
 const titlePage = 'Mục tiêu chấm điểm'
@@ -43,7 +43,7 @@ exports.new = async (req, res, next) => {
   try {
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: CONST_STATUS['Hoạt động'] },
+      where: { status: CONST_STATUS.ACTIVE.value },
       attributes: ['name', 'id'],
       raw: true,
       nest: true
@@ -90,7 +90,7 @@ exports.detail = async (req, res, next) => {
     }
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: CONST_STATUS['Hoạt động'] },
+      where: { status: CONST_STATUS.ACTIVE.value },
       attributes: ['name', 'id'],
       raw: true,
       nest: true
@@ -297,12 +297,13 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   let transaction
-
   try {
-
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId, numberOfCall } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId, numberOfCall, status } = req.body
     transaction = await model.sequelize.transaction()
+
+    const foundScoreTarget = await model.ScoreTarget.findOne({ where: { id: { [Op.eq]: data['edit-id'] } } })
+    if (parseInt(status) < parseInt(foundScoreTarget.status)) throw new Error(statusUpdateFail)
 
     if (callTime) {
       let string = callTime.split(' - ')
@@ -458,7 +459,7 @@ exports.replication = async (req, res, next) => {
     }
 
     const scoreScript = await model.ScoreScript.findAll({
-      where: { status: CONST_STATUS['Hoạt động'] },
+      where: { status: CONST_STATUS.ACTIVE.value },
       attributes: ['name', 'id'],
       raw: true,
       nest: true

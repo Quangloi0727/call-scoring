@@ -22,7 +22,7 @@ exports.index = async (req, res, next) => {
     try {
 
         const scoreTarget = await model.ScoreTarget.findAll({
-            where: { status: CONST_STATUS['Hoạt động'] },
+            where: { status: CONST_STATUS.ACTIVE.value},
             attributes: ['name', 'id'],
             raw: true,
             nest: true

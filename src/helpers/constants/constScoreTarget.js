@@ -21,28 +21,36 @@ const CONST_CALL_TYPE = {
 
 const CONST_EFFECTIVE_TIME_TYPE = {
   EVERY_MONTH: {
-    n: 1,
-    t: "Mỗi tháng"
+    value: 1,
+    text: "Mỗi tháng"
   },
   EVERY_WEEK: {
-    n: 2,
-    t: "Mỗi tuần"
+    value: 2,
+    text: "Mỗi tuần"
   },
   EVERY_DAY: {
-    n: 3,
-    t: "Mỗi ngày"
+    value: 3,
+    text: "Mỗi ngày"
   },
   ABOUT_DAY: {
-    n: 4,
-    t: "Khoảng ngày"
+    value: 4,
+    text: "Khoảng ngày"
   }
 }
 
 const CONST_STATUS = {
-  "Nháp": 0,
-  "Hoạt động": 1,
-  "Ngừng hoạt động": 2
-
+  DRAFT: {
+    value: 0,
+    text: "Nháp"
+  },
+  ACTIVE: {
+    value: 1,
+    text: "Hoạt động"
+  },
+  UN_ACTIVE: {
+    value: 2,
+    text: "Ngừng hoạt động"
+  }
 }
 
 const CONST_DATA = {

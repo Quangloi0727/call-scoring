@@ -62,7 +62,7 @@ class CallDetailRecords extends Model {
       {
         sequelize,
         timestamps: false,
-        modelName: "call_detail_records_new",
+        modelName: "call_detail_records",
       }
     )
   }
