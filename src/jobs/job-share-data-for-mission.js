@@ -14,6 +14,11 @@ try {
                 _logger.info('ScoreTarget ' + scoreTarget.name + ' unsatisfied time share call !')
                 continue
             }
+            const findScoreTargetAssign = await model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: scoreTarget.id } })
+            if (!findScoreTargetAssign.length) {
+                _logger.info('ScoreTarget ' + scoreTarget.name + ' not have user assigned !')
+                continue
+            }
         }
     })
 } catch (err) {
