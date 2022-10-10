@@ -12,7 +12,7 @@ function validateAndCreate() {
             },
             dbServerId: {
                 required: true,
-                maxlength: 6
+                maxlength: 5
             },
             dbHost: {
                 required: true
@@ -81,7 +81,7 @@ function validateAndCreate() {
             },
             dbServerId: {
                 required: true,
-                maxlength: 6
+                maxlength: 5
             },
             dbHost: {
                 required: true
@@ -279,6 +279,9 @@ function genSourceType(sourceType) {
 }
 
 $(function () {
+    $('.selectpicker').selectpicker().change(function () {
+        $(this).valid()
+    })
     validateAndCreate()
     bindClick()
 })
