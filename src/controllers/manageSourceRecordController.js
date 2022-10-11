@@ -5,6 +5,7 @@ const titlePage = 'Quản lý nguồn ghi âm'
 const model = require('../models')
 const { Op } = require('sequelize')
 
+const { requestSource } = require('../common/funtionsAPI/sourceAPI')
 exports.index = async (req, res, next) => {
     try {
         return _render(req, res, 'manageSourceRecord/index', {
@@ -36,7 +37,7 @@ exports.getListSource = async (req, res, next) => {
         const pageNumber = page ? Number(page) : 1
         const offset = (pageNumber * limit) - limit
 
-        let findList = model.dbSource.findAll({
+        let findList = model.manageSource.findAll({
             where: _query,
             include: [
                 {
@@ -53,7 +54,7 @@ exports.getListSource = async (req, res, next) => {
             limit: limit
         })
 
-        let count = model.dbSource.count({ where: _query })
+        let count = model.manageSource.count({ where: _query })
 
         const [listData, totalRecord] = await Promise.all([findList, count])
 
@@ -79,13 +80,13 @@ exports.create = async (req, res, next) => {
     try {
         const { id, sourceType, sourceName, dbHost, dbPort } = req.body
 
-        const checkExistId = await model.dbSource.findOne({ where: { id: id } })
+        const checkExistId = await model.manageSource.findOne({ where: { id: id } })
         if (checkExistId) throw new Error(idExist)
 
-        const checkNameExist = await model.dbSource.findOne({ where: { sourceName: sourceName } })
+        const checkNameExist = await model.manageSource.findOne({ where: { sourceName: sourceName } })
         if (checkNameExist) throw new Error(nameExist)
 
-        const checkExistPortHost = await model.dbSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort } })
+        const checkExistPortHost = await model.manageSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort } })
         if (checkExistPortHost) throw new Error(hostPortExist)
 
         for (var pro in SOURCE_NAME) {
@@ -100,7 +101,22 @@ exports.create = async (req, res, next) => {
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
-        await model.dbSource.create(req.body)
+        const manageSource = await model.manageSource.create(req.body)
+
+        // request tạo source theo api
+        var config = {
+            method: 'post',
+            url: _config.pathUrlSource + '/source',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        const _source = await requestSource(req.body, config)
+        manageSource.set({
+            sourceId: _source.data.id
+        });
+        await manageSource.save();
 
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
 
@@ -115,7 +131,7 @@ exports.create = async (req, res, next) => {
 exports.detail = async (req, res, next) => {
     try {
         const { id } = req.params
-        const findSource = await model.dbSource.findOne({ where: { id: id } })
+        const findSource = await model.manageSource.findOne({ where: { id: id } })
         if (!findSource) throw new Error(sourceNotExist)
 
         return res.json({ code: SUCCESS_200.code, data: findSource })
@@ -133,10 +149,10 @@ exports.update = async (req, res, next) => {
         const { id } = req.params
         const { sourceType, sourceName, dbHost, dbPort } = req.body
 
-        const checkNameExist = await model.dbSource.findOne({ where: { sourceName: sourceName, id: { [Op.ne]: id } } })
+        const checkNameExist = await model.manageSource.findOne({ where: { sourceName: sourceName, id: { [Op.ne]: id } } })
         if (checkNameExist) throw new Error(nameExist)
 
-        const checkExistPortHost = await model.dbSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort, id: { [Op.ne]: id } } })
+        const checkExistPortHost = await model.manageSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort, id: { [Op.ne]: id } } })
         if (checkExistPortHost) throw new Error(hostPortExist)
 
         for (var pro in SOURCE_NAME) {
@@ -149,9 +165,18 @@ exports.update = async (req, res, next) => {
 
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
+        const source = await model.manageSource.findOne({ where: { id: id } })
+        const updateSource = await model.manageSource.update(req.body, { where: { id: id } })
+        // request tạo source theo api
+        var config = {
+            method: 'put',
+            url: _config.pathUrlSource + '/source/' + source.sourceId,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
 
-        await model.dbSource.update(req.body, { where: { id: id } })
-
+        await requestSource(req.body, config);
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -162,18 +187,34 @@ exports.update = async (req, res, next) => {
 }
 
 exports.updateStatus = async (req, res, next) => {
+    let transaction
     try {
         const { id } = req.params
-
+        transaction = await model.sequelize.transaction()
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
-        await model.dbSource.update(req.body, { where: { id: id } })
+        let updateSource = await model.manageSource.update(req.body, { where: { id: id } }, { transaction: transaction })
+        let status = 'disable'
+        const source = await model.manageSource.findOne({ where: { id: id } })
+        if (updateSource.enable == 1) {
+            status += 'enable'
+        }
+        var config = {
+            method: 'put',
+            url: _config.pathUrlSource + '/source/' + source.sourceId + '/' + status,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
 
+        await requestSource(null, config);
+        await transaction.commit()
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
     } catch (error) {
         _logger.error(`------- error ------- `)
         _logger.error(error)
+        if (transaction) await transaction.rollback()
         _logger.error(`------- error ------- `)
         return res.json({ code: ERR_500.code, message: error.message })
     }
