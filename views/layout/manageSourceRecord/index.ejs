@@ -7,73 +7,136 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                  <div class="card">
-                    <div class="card-header row">
-                        <ul class="nav nav-pills mb-3" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active btn btn-outline-primary tab-manage-source" data-toggle="pill" href="#manage-source" role="tab" aria-selected="true">File Server</a>
-                            </li>
-                            <li class="nav-item ml-5" id="source-recording">
-                                <a class="nav-link btn btn-outline-primary tab-manage-file-server" data-toggle="pill" href="#manage-file-server" role="tab" aria-selected="false">Nguồn ghi âm</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="card-body">
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="manage-source" role="tabpanel">
-
-                            </div>
-                            <div class="tab-pane fade" id="manage-file-server" role="tabpanel">
-                                <div class="row">
-                                    <div class="col-3">
-                                      <div class="form-group">
-                                        <input type="text" class="form-control searchColumn" name="sourceName" placeholder="Tìm kiếm tên nguồn" autocomplete="off"/>
-                                      </div>
-                                    </div>
-                                    <div class="col-7">
-                                        <div class="col-1">
-                                            <button type="button" class="form-control btn btn-primary btn-circle" id="searchSource">
-                                                <i class="fas fa-search p-0"></i>
-                                              </button>
+                    <div class="card">
+                        <div class="card-header row">
+                            <ul class="nav nav-pills mb-3" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active btn btn-outline-primary tab-manage-source"
+                                        data-toggle="pill" href="#manage-source" role="tab" aria-selected="true">File
+                                        Server</a>
+                                </li>
+                                <li class="nav-item ml-5" id="source-recording">
+                                    <a class="nav-link btn btn-outline-primary tab-manage-file-server"
+                                        data-toggle="pill" href="#manage-file-server" role="tab"
+                                        aria-selected="false">Nguồn ghi âm</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="manage-source" role="tabpanel">
+                                    <div class="row mb-2">
+                                        <div class="col-sm-6"></div>
+                                        <div class="col-sm-6 d-flex justify-content-end">
+                                            <button type="button" id="btn-cancel-save-file-server"
+                                                class="btn btn-light">Hủy</button>
+                                            <button type="button" id="btn-save-file-server" class="btn btn-primary ml-2"
+                                                data-id="<%- fileServer ? fileServer.id : "" %>">Lưu</button>
                                         </div>
                                     </div>
-                                    <div class="col-2">
-                                        <div class="col-10 float-right">
-                                            <button type="button" class="form-control btn btn-primary" data-toggle="modal" data-target="#modalCreateSource">
-                                                Thêm mới <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
-                                            </button>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>IP Server</label><input type="text" class="form-control input"
+                                                    id="ipServer" name="ipServer"
+                                                    value='<%- fileServer ? fileServer.ipServer : "" %>' />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>Đường dẫn</label><input type="text" class="form-control input"
+                                                    value='<%- fileServer ? fileServer.path : "" %>' id="path"
+                                                    name="path" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>Username</label>
+                                                <input type="text" class="form-control input " id="username"
+                                                    name="username"
+                                                    value='<%- fileServer ? fileServer.username : "" %>' />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>Password</label>
+                                                <input type="text" class="form-control input" id="password"
+                                                    name="password"
+                                                    value='<%- fileServer ? fileServer.password : "" %>' />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label>Port</label>
+                                                <input type="text" class="form-control input" id="port" name="port"
+                                                    value='<%- fileServer ? fileServer.port : "" %>'>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12 d-flex justify-content-end">
+                                            <button type="button" id="btn-try-to-connect" class="btn btn-light">Thử kết nối</button>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="tab-pane fade" id="manage-file-server" role="tabpanel">
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control searchColumn" name="sourceName"
+                                                    placeholder="Tìm kiếm tên nguồn" autocomplete="off" />
+                                            </div>
+                                        </div>
+                                        <div class="col-7">
+                                            <div class="col-1">
+                                                <button type="button" class="form-control btn btn-primary btn-circle"
+                                                    id="searchSource">
+                                                    <i class="fas fa-search p-0"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-2">
+                                            <div class="col-10 float-right">
+                                                <button type="button" class="form-control btn btn-primary"
+                                                    data-toggle="modal" data-target="#modalCreateSource">
+                                                    Thêm mới <i class="fa fa-plus p-0 ml-1" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <table class="table table-bordered table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-center">Tên nguồn</th>
-                                            <th class="text-center">Thao tác</th>
-                                            <th class="text-center">Loại nguồn</th>
-                                            <th class="text-center">Trạng thái</th>
-                                            <th class="text-center">Ngày tạo</th>
-                                            <th class="text-center">Người tạo</th>
-                                            <th class="text-center">Cập nhật gần nhất</th>
-                                            <th class="text-center">Người cập nhật gần nhất</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="tableBody">
+                                    <table class="table table-bordered table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-center">Tên nguồn</th>
+                                                <th class="text-center">Thao tác</th>
+                                                <th class="text-center">Loại nguồn</th>
+                                                <th class="text-center">Trạng thái</th>
+                                                <th class="text-center">Ngày tạo</th>
+                                                <th class="text-center">Người tạo</th>
+                                                <th class="text-center">Cập nhật gần nhất</th>
+                                                <th class="text-center">Người cập nhật gần nhất</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tableBody">
 
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
 
-                                <div class="col-12 d-flex justify-content-center" id="paging_table">
-                                    
+                                    <div class="col-12 d-flex justify-content-center" id="paging_table">
+
+                                    </div>
+
                                 </div>
-
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
     </section>
 </div>
 

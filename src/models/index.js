@@ -32,6 +32,8 @@ const CallRatingNoteModel = require('./callRatingNote')
 const CallRatingHistoryModel = require('./callRatingHistory')
 const dbSourceModal = require('./db_sources')
 
+const dbFileServer = require('./fileServer')
+
 let db = {}
 let sequelize = null
 
@@ -71,6 +73,7 @@ const models = {
   CriteriaGroup: CriteriaGroupsModel.init(sequelize),
   Criteria: CriteriasModel.init(sequelize),
   SelectionCriteria: SelectionCriteriasModel.init(sequelize),
+  FileServer: dbFileServer.init(sequelize),
 }
 
 Object.keys(models).forEach(model => {
