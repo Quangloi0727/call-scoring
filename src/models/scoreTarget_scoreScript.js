@@ -29,7 +29,7 @@ class ScoreTargets_ScoreScripts extends Model {
   static associate(models) {
     models.ScoreTarget_ScoreScript.belongsTo(models.ScoreScript, {
       foreignKey: "scoreScriptId",
-      as: "ScoreScripts",
+      as: "scoreScriptInfo",
     })
 
     models.ScoreTarget_ScoreScript.belongsTo(models.ScoreTarget, {

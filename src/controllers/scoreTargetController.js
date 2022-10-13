@@ -241,7 +241,6 @@ exports.create = async (req, res, next) => {
 
       if (arrCond) {
         arrCond.map((el) => {
-          // let check = Object.keys(CONST_COND).find(key => key == el.cond)
           if (el.cond && CONST_COND[el.cond].p == 'only number') {
             let checkNum = isNaN(el.value) ? true : false
             if (checkNum || parseInt(el.value) < 0) throw new Error('Giá trị nhập phải là định dạng số >= 0')
@@ -329,20 +328,13 @@ exports.update = async (req, res, next) => {
     data.updated = req.user.id
 
     // update tiêu chí
-    await model.ScoreTarget.update(
-      data,
-      { where: { id: Number(data['edit-id']) } },
-      { transaction: transaction })
+    await model.ScoreTarget.update(data, { where: { id: Number(data['edit-id']) } }, { transaction: transaction })
 
     // xóa hết bảng Điều kiện với ID tiêu chí đang update
-    await model.ScoreTargetCond.destroy(
-      { where: { scoreTargetId: Number(data['edit-id']) } },
-      { transaction: transaction })
+    await model.ScoreTargetCond.destroy({ where: { scoreTargetId: Number(data['edit-id']) } }, { transaction: transaction })
 
     // xóa hết bảng chấm điểm hiện tại với ID tiêu chí đang update
-    await model.ScoreTargetAuto.destroy(
-      { where: { scoreTargetId: Number(data['edit-id']) } },
-      { transaction: transaction })
+    await model.ScoreTargetAuto.destroy({ where: { scoreTargetId: Number(data['edit-id']) } }, { transaction: transaction })
 
     // check và tạo các Điều kiện mới 
     if (arrCond) {
@@ -357,12 +349,10 @@ exports.update = async (req, res, next) => {
     }
 
     if (arrTargetAuto && arrTargetAuto.length > 0) {
-      // var temp = []
       let p = []
       arrTargetAuto.forEach(function (el, index) {
         el.scoreTargetId = Number(data['edit-id'])
-        p.push(model.ScoreTargetAuto.create(
-          el, { transaction: transaction }))
+        p.push(model.ScoreTargetAuto.create(el, { transaction: transaction }))
       })
 
       let result = await Promise.all(p)
@@ -389,6 +379,7 @@ exports.update = async (req, res, next) => {
           scoreTargetId: data['edit-id']
         })
       })
+      await model.ScoreTarget_ScoreScript.destroy({ where: { scoreTargetId: Number(data['edit-id']) } }, { transaction: transaction })
       await model.ScoreTarget_ScoreScript.bulkCreate(arr, { transaction: transaction })
     }
     await transaction.commit()

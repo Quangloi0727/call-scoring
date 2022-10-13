@@ -22,6 +22,7 @@ const ScoreTargetCondModel = require('./scoreTargetCond')
 const ScoreTargetKeywordSetModel = require('./scoreTargetKeywordSet')
 const ScoreTarget_ScoreScriptModel = require('./scoreTarget_scoreScript')
 const ScoreTargetAssignmentModel = require('./scoreTargetAssignment')
+const CallShareModel = require('./callShare')
 
 const CriteriaGroupsModel = require('./criteriaGroups')
 const CriteriasModel = require('./criterias')
@@ -67,6 +68,7 @@ const models = {
   ScoreTargetKeywordSet: ScoreTargetKeywordSetModel.init(sequelize),
   ScoreTarget_ScoreScript: ScoreTarget_ScoreScriptModel.init(sequelize),
   ScoreTargetAssignment: ScoreTargetAssignmentModel.init(sequelize),
+  CallShare: CallShareModel.init(sequelize),
 
   CriteriaGroup: CriteriaGroupsModel.init(sequelize),
   Criteria: CriteriasModel.init(sequelize),

@@ -384,7 +384,7 @@ function renOption(data) {
   let dataOption = ``
   let logicOption = ``
   for (const [key, value] of Object.entries(CONST_DATA)) {
-    dataOption += `<option value="${key}" ${(data && key == data.data) ? 'selected' : ''}>${value.t}</option>`
+    dataOption += `<option value="${key}" ${(data && key == data.data) ? 'selected' : ''}>${value.text}</option>`
   }
 
   for (const [key, value] of Object.entries(CONST_COND)) {
@@ -445,11 +445,11 @@ function renOption(data) {
 
 function optionConditionValue(conditionsData) {
   let option = ``
-  if (conditionsData == 'agent') {
+  if (conditionsData == 'agentId') {
     _users.map((el) => {
       option += `<option value="${el.id}">${el.firstName + '' + el.lastName}</option>`
     })
-  } else if (conditionsData == 'team') {
+  } else if (conditionsData == 'teamId') {
     _teams.map((el) => {
       option += `<option value="${el.id}">${el.name}</option>`
     })
@@ -457,7 +457,7 @@ function optionConditionValue(conditionsData) {
     option += ` <option value="inbound">inbound</option>
                 <option value="outbound">outbound</option>
               `
-  } else if (conditionsData == 'group') {
+  } else if (conditionsData == 'groupId') {
     _groups.map((el) => {
       option += `<option value="${el.id}">${el.name}</option>`
     })
@@ -466,11 +466,11 @@ function optionConditionValue(conditionsData) {
 }
 
 function checkConditionData(element, ratingBy) {
-  if (element.val() == 'agent' && ratingBy == '1') {
+  if (element.val() == 'agentId' && ratingBy == '1') {
     element.val("caller")
     toastr.error(`Không được chọn dữ liệu là "Điện thoại viên" vì Đối tượng xét là "Đội ngũ"`)
   }
-  if (element.val() == 'team' && ratingBy == '0') {
+  if (element.val() == 'teamId' && ratingBy == '0') {
     element.val("caller")
     toastr.error(`Không được chọn dữ liệu là "Đội ngũ" vì Đối tượng xét là "Điện thoại viên"`)
   }

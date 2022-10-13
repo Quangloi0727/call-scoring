@@ -1,4 +1,5 @@
 var log4js = require('log4js')
+var log4js_extend = require("log4js-extend")
 var fs = require('fs-extra')
 
 var getLogger = function (moduleName) {
@@ -19,6 +20,10 @@ var getLogger = function (moduleName) {
                 another: { appenders: ['console'], level: 'trace' },
                 default: { appenders: ['console', 'filelog'], level: 'trace' }
             }
+        })
+
+        log4js_extend(log4js, {
+            format: "[@name (@file:@line:@column)]"
         })
 
     } catch (err) {

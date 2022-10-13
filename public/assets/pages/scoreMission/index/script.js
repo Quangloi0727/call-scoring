@@ -450,6 +450,7 @@ function findData(page) {
         url: '/scoreMission/getData?' + $.param(queryData),
         cache: 'false',
         success: function (result) {
+            console.log("List data score mission", result)
             if (result.configurationColums) {
                 const checkValueFalse = Object.values(result.configurationColums).every((rs) => rs === false)
                 if (checkValueFalse == true) {
@@ -458,7 +459,7 @@ function findData(page) {
             }
             $('.page-loader').hide()
             CACHE_CONFIG_COLUMN = result.configurationColums
-            createTable(result.data, result.scoreScripts, result.configurationColums ? result.configurationColums : headerDefault, result.configurationColums ? false : true)
+            createTable(result.data, result.configurationColums ? result.configurationColums : headerDefault, result.configurationColums ? false : true)
             return $('#paging_table').html(window.location.CreatePaging(result.paginator))
         },
         error: function (error) {
@@ -516,7 +517,7 @@ function itemColumn(key, title, value) {
             </li>`
 }
 ///***** __end__*****
-function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
+function createTable(data, ConfigurationColums, configDefault) {
     let objColums = { ...ConfigurationColums }
     renderPopupCustomColumn(ConfigurationColums)
     renderHeaderTable(ConfigurationColums, configDefault)
@@ -524,20 +525,25 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
-    data.forEach((item, element) => {
+    data.forEach(item => {
+        console.log(1111, item)
+
+        const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
+        const { recordingFileName } = item.callInfo
         let check = false
 
-        //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
+        // //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
-        if (item.callRating && item.callRating.length > 0) {
+        if (item.callRatingInfo && item.callRatingInfo.length > 0) {
             check = true
-            idScoreScript = item.callRating[0].idScoreScript
+            idScoreScript = item.callRatingInfo[0].idScoreScript
         }
+
         let dropdown = ''
-        if (scoreScripts.length > 0) {
-            scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
-                url-record="${item.recordingFileName}" data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+        if (ScoreTarget_ScoreScript.length > 0) {
+            ScoreTarget_ScoreScript.map((el) => {
+                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.callId}" 
+                url-record="${recordingFileName}" data-id="${el.scoreScriptId}">${el.scoreScriptInfo && el.scoreScriptInfo.name ? el.scoreScriptInfo.name : ''}</a>`
             })
         }
 
@@ -545,16 +551,16 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
 
         rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
-            <td class="text-center callIdColumn" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
+            <td class="text-center callIdColumn" title=${item.callId || ''} style="width:200px; overflow:hidden;">${item.callId || ''}</td>
             <td class="text-center">    
                 <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
-                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
-                <i class="fas fa-history mr-2" title="Lịch sử chấm điểm" data-callId=${item.id}></i>
-                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${recordingFileName}" data-callId="${item.callId}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
+                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${recordingFileName}" data-callId=${item.callId}></i>
+                <i class="fas fa-history mr-2" title="Lịch sử chấm điểm" data-callId=${item.callId}></i>
+                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${recordingFileName}" data-callId=${item.callId}></i>
             </td>
         </tr>`
     })
@@ -580,10 +586,11 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 }
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
+    const { callInfo, callRatingInfo } = item
     let resultPointCriteria = 0
-    if (item.callRating && item.callRating.length > 0) {
-        item.callRating.map((el) => {
-            resultPointCriteria += el.SelectionCriteria.score
+    if (callRatingInfo && callRatingInfo.length > 0) {
+        callRatingInfo.map((el) => {
+            resultPointCriteria += el.selectionCriteriaInfo.score
         })
     }
 
@@ -596,20 +603,24 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
             } else if (key == 'agentName') {
 
-                htmlString += ` <td class="text-center agentName ${headerDefault['agentName'].status == 1 ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+                htmlString += ` <td class="text-center agentName ${headerDefault['agentName'].status == 1 ? '' : 'd-none'}">${callInfo['agent'] ? callInfo['agent'].fullName : ''}</td>`
 
             } else if (key == 'teamName') {
 
-                htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
+                htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
-            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
-                let teamsName = ''
-                item['team'].TeamGroup.map((el) => {
-                    teamsName += ('' + el.Group.name)
-                })
-                htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
+            }
+            //else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+            //     let teamsName = ''
+            //     item['team'].TeamGroup.map((el) => {
+            //         teamsName += ('' + el.Group.name)
+            //     })
+            //     htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
 
-            } else htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            // } 
+            else {
+                htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
+            }
         }
     } else {
         for (const [key, value] of Object.entries(dataConfig)) {
@@ -617,21 +628,24 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
                 htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${resultPointCriteria}</td>`
             } else if (key == 'agentName') {
 
-                htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+                htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${callInfo['agent'] ? callInfo['agent'].fullName : ''}</td>`
 
             } else if (key == 'teamName') {
 
-                htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
-
-            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
-                let teamsName = ''
-                item['team'].TeamGroup.map((el) => {
-                    teamsName += ('' + el.Group.name)
-                })
-                htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
+                htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
             }
-            else htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            // else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+            //     let teamsName = ''
+            //     item['team'].TeamGroup.map((el) => {
+            //         teamsName += ('' + el.Group.name)
+            //     })
+            //     htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
+
+            // }
+            else {
+                htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
+            }
         }
     }
     return htmlString

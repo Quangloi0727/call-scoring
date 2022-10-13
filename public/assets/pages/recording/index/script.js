@@ -50,11 +50,7 @@ function bindClick() {
     if (e.which == 13) {
       let page = 1
       let formData = getFormData('form_search')
-
-      console.log('formData: ', formData)
-
       searchType = DEFAULT_SEARCH
-
       findData(page, null, formData)
     }
 
@@ -63,12 +59,9 @@ function bindClick() {
   $buttonAdvancedSearch.on('click', function () {
     let page = 1
     let formData = getFormData('form_advanced_search')
-
     searchType = ADVANCED_SEARCH
-
-    console.log('formData: ', formData)
-
     localStorage.setItem('modalData', JSON.stringify(formData))
+
     if (formData.startTime) {
       $('[name="startTime"]').val(formData.startTime)
     }
@@ -171,30 +164,25 @@ function bindClick() {
     items: "li:not(.unsortable)"
   })
 
-  $btn_save_customs.click(function (event) {
-    let listCheck = []
+  $btn_save_customs.click(function () {
     $checkInput.each(function (index) {
       // đoạn này e check và cho ẩn hiện luôn ko có save data nguyenvc
       var colToHide = $tableRecording.find("." + $(this).attr("name"))
 
       if ($(this).is(":checked") == false) {
-
         $(colToHide).toggle(false)
-
       } else {
         $(colToHide).toggle(true)
       }
 
     })
+
     let obj = {}
     $("#sortable input:checkbox").each(function () {
       let key = $(this).attr("name")
       let value = $(this).is(":checked")
       obj[key] = value
-
     })
-    console.log(obj)
-    // debugger;
     SaveConfigurationColums(obj)
   })
 
@@ -206,10 +194,8 @@ function bindClick() {
       })
     } else {
       $(':checkbox').each(function () {
-        console.log($(this).attr('name'))
         if ($(this).attr('name') == 'callId') return
         this.checked = false
-
       })
     }
   })
@@ -284,8 +270,6 @@ function SaveConfigurationColums(data) {
       }
 
       return findData(1, null, formData)
-
-      // return location.reload();
     },
     error: function (error) {
       $modal_customs_table.modal('hide')
@@ -348,7 +332,7 @@ function itemColumn(key, title, value) {
         <input class="form-check-input" type="checkbox" name="${key}" ${key == 'callId' ? 'disabled' : ''} ${key == 'callId' || value == 'true' ? 'checked' : ''}/>
         ${title}
         <span style="float: right;">
-        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+          <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
         </span>
   </li>`
 }
@@ -492,7 +476,6 @@ function downloadFromUrl(url) {
 }
 
 $(function () {
-
 
   $('#popup_startTime').datetimepicker({
     format: 'DD/MM/YYYY',

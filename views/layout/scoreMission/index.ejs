@@ -11,8 +11,7 @@
                         <div class="card">
                             <div class="card-header col-12 row">
                                 <div class="col-6 d-flex justify-content-start">
-                                    <select class="col-4 selectpicker input" name="scoreTargetId" id="scoreTargetId"
-                                        multiple>
+                                    <select class="col-4 selectpicker input" name="scoreTargetId" id="scoreTargetId" multiple>
                                         <% scoreTarget.forEach((ele,index)=> { %>
                                             <option <%- index==0 ? 'selected' :'' %> value="<%- ele.id %>">
                                                     <%- ele.name %>
