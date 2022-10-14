@@ -14,7 +14,6 @@ function findData(page, formQuery) {
   $loadingData.show()
 
   _AjaxGetData('scoreTarget/gets?' + $.param(queryData), 'GET', function (resp) {
-    console.log(resp)
     if (resp.code != 200) {
       return toastr.error(resp.message)
     }

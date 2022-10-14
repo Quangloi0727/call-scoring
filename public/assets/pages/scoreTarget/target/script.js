@@ -68,9 +68,12 @@ function bindClick() {
     }
 
     if ($('#btn_save_scoreTarget').attr('data-id')) {
+      const arr = $('#scoreScriptId option[disabled]').val()
       formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
-      saveData(formData, 'PUT')
-      return console.log($('#btn_save_scoreTarget').attr('data-id'))
+      if (formData['scoreScriptId']) {
+        formData['scoreScriptId'] = formData['scoreScriptId'].concat(arr.split(','))
+      }
+      return saveData(formData, 'PUT')
     }
     return saveData(formData, 'POST')
 
@@ -568,6 +571,9 @@ $(function () {
         arr.push(el.scoreScriptId)
       })
       $('#scoreScriptId').val(arr)
+      arr.map(el => {
+        $("#scoreScriptId option[value=" + el + "]").attr('disabled', 'disabled')
+      })
     }
 
     //render data của phần "Điều kiện"
