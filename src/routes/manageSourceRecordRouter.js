@@ -18,4 +18,15 @@ router.route('/getListSource')
 router.route('/:id/detail')
     .get(manageSourceRecordController.detail)
 
+router.route('/:id/detail')
+    .get(manageSourceRecordController.detail)
+
+router.route('/saveFileServer')
+    .post(manageSourceRecordController.saveFileServer)
+
+    
+router.route('/checkShhFileServer')
+    .post(manageSourceRecordController.checkShhFileServer)
+    
+
 module.exports = router

@@ -4,14 +4,19 @@ const pagination = require('pagination')
 const titlePage = 'Quản lý nguồn ghi âm'
 const model = require('../models')
 const { Op } = require('sequelize')
+const { NodeSSH } = require('node-ssh')
+
+const ssh = new NodeSSH()
 
 const { requestSource } = require('../common/funtionsAPI/sourceAPI')
 exports.index = async (req, res, next) => {
     try {
+        const fileServer = await model.FileServer.findOne()
         return _render(req, res, 'manageSourceRecord/index', {
             titlePage,
             SOURCE_NAME,
-            ENABLED
+            ENABLED,
+            fileServer: (fileServer ? fileServer.dataValues : "")
         })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -215,6 +220,45 @@ exports.updateStatus = async (req, res, next) => {
         _logger.error(`------- error ------- `)
         _logger.error(error)
         if (transaction) await transaction.rollback()
+        _logger.error(`------- error ------- `)
+        return res.json({ code: ERR_500.code, message: error.message })
+    }
+}
+
+exports.saveFileServer = async (req, res) => {
+    try {
+        const body = req.body
+        body.updated = req.user.id
+        if (!body.id || body.id == "") {
+            body.created = req.user.id
+            await model.FileServer.create(body)
+        } else {
+            await model.FileServer.update(req.body, { where: { id: body.id } })
+        }
+        res.json({ code: SUCCESS_200.code })
+    } catch (error) {
+        _logger.error(`------- error ------- `)
+        _logger.error(error)
+        _logger.error(`------- error ------- `)
+        return res.json({ code: ERR_500.code, message: error.message })
+    }
+}
+
+exports.checkShhFileServer = async (req, res) => {
+    try {
+        const body = req.body
+        const password = body.password
+        await ssh.connect({
+            host: body.ipServer,
+            username: body.username,
+            port: body.port,
+            password,
+            tryKeyboard: true,
+        })
+        res.json({ code: SUCCESS_200.code })
+    } catch (error) {
+        _logger.error(`------- error ------- `)
+        _logger.error(error)
         _logger.error(`------- error ------- `)
         return res.json({ code: ERR_500.code, message: error.message })
     }
