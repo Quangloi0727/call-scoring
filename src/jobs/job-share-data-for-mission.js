@@ -87,17 +87,28 @@ async function buildQueryCall(scoreTargetId) {
     let query = []
     const findConditions = await model.ScoreTargetCond.findAll({ where: { scoreTargetId: scoreTargetId }, raw: true })
     if (!findConditions.length) return query
-    findConditions.map(el => {
-        const { data, cond, value } = el
-        let obj = {}
-        if (cond) {
-            obj[data] = { [Op[CONST_COND[cond].n]]: value }
-            query.push(obj)
-        } else {
-            obj[data] = value
-            query.push(obj)
-        }
-    })
+    await Promise.all(
+        findConditions.map(async el => {
+            const { data, cond, value } = el
+            let obj = {}
+            if (cond) {
+                obj[data] = { [Op[CONST_COND[cond].n]]: value }
+                query.push(obj)
+            } else {
+                if (data == "groupId") {
+                    const findTeamByGroupId = await model.TeamGroup.findAll({ where: { groupId: value }, raw: true })
+                    const teamId = _.pluck(findTeamByGroupId, "teamId")
+                    query.push({ teamId: { [Op.in]: teamId } })
+                } else {
+                    obj[data] = value
+                    query.push(obj)
+                }
+                return query
+            }
+            return query
+        })
+    )
+
     console.log("Query implement", query)
     return { conditionSearch: findConditions[0].conditionSearch, query: query }
 }

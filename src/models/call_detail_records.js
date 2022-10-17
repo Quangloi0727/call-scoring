@@ -39,13 +39,6 @@ class CallDetailRecords extends Model {
           type: DataTypes.BOOLEAN,
           defaultValue: false
         },
-        groupId: {
-          type: DataTypes.INTEGER,
-          references: {
-            model: "Groups",
-            key: "id",
-          }
-        },
         teamId: {
           type: DataTypes.INTEGER,
           references: {
@@ -102,11 +95,6 @@ class CallDetailRecords extends Model {
     models.CallDetailRecords.belongsTo(models.Team, {
       foreignKey: "teamId",
       as: "team"
-    })
-
-    models.CallDetailRecords.belongsTo(models.Team, {
-      foreignKey: "groupId",
-      as: "group"
     })
 
     models.CallDetailRecords.hasMany(models.CallRating, {
