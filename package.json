@@ -5,7 +5,7 @@
   "main": "auth_server.js",
   "dependencies": {
     "async": "^3.2.3",
-    "axios": "0.27.2",
+    "axios": "^0.27.2",
     "connect-mongo": "^3.2.0",
     "connect-multiparty": "^2.2.0",
     "cors": "^2.8.5",

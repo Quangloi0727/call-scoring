@@ -4,8 +4,8 @@ const pagination = require('pagination')
 const titlePage = 'Quản lý nguồn ghi âm'
 const model = require('../models')
 const { Op } = require('sequelize')
+const axios = require('axios')
 
-const { requestSource } = require('../common/funtionsAPI/sourceAPI')
 exports.index = async (req, res, next) => {
     try {
         return _render(req, res, 'manageSourceRecord/index', {
@@ -104,19 +104,11 @@ exports.create = async (req, res, next) => {
         const manageSource = await model.manageSource.create(req.body)
 
         // request tạo source theo api
-        var config = {
-            method: 'post',
-            url: _config.pathUrlSource + '/source',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
+        const response = await axios.post(_config.pathUrlSource + '/source', req.body, { headers: { 'Content-Type': 'application/json' } })
 
-        const _source = await requestSource(req.body, config)
-        manageSource.set({
-            sourceId: _source.data.id
-        });
-        await manageSource.save();
+        manageSource.set({ sourceId: response.data.data.id })
+
+        await manageSource.save()
 
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
 
@@ -165,18 +157,14 @@ exports.update = async (req, res, next) => {
 
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
-        const source = await model.manageSource.findOne({ where: { id: id } })
-        const updateSource = await model.manageSource.update(req.body, { where: { id: id } })
-        // request tạo source theo api
-        var config = {
-            method: 'put',
-            url: _config.pathUrlSource + '/source/' + source.sourceId,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
 
-        await requestSource(req.body, config);
+        await model.manageSource.update(req.body, { where: { id: id } })
+
+        // request tạo source theo api
+        const source = await model.manageSource.findOne({ where: { id: id } })
+
+        await axios.put(_config.pathUrlSource + '/source/' + source.sourceId, req.body, { headers: { 'Content-Type': 'application/json' } })
+
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -194,22 +182,14 @@ exports.updateStatus = async (req, res, next) => {
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
-        let updateSource = await model.manageSource.update(req.body, { where: { id: id } }, { transaction: transaction })
-        let status = 'disable'
-        const source = await model.manageSource.findOne({ where: { id: id } })
-        if (updateSource.enable == 1) {
-            status += 'enable'
-        }
-        var config = {
-            method: 'put',
-            url: _config.pathUrlSource + '/source/' + source.sourceId + '/' + status,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
+        await model.manageSource.update(req.body, { where: { id: id } }, { transaction: transaction })
 
-        await requestSource(null, config);
+        const source = await model.manageSource.findOne({ where: { id: id } })
+
+        await axios.put(_config.pathUrlSource + '/source/' + source.sourceId + '/' + genStatus(source.enabled), null, { headers: { 'Content-Type': 'application/json' } })
+
         await transaction.commit()
+
         return res.json({ code: SUCCESS_200.code, message: "Lưu thành công !" })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -218,4 +198,9 @@ exports.updateStatus = async (req, res, next) => {
         _logger.error(`------- error ------- `)
         return res.json({ code: ERR_500.code, message: error.message })
     }
+}
+
+function genStatus(enabled) {
+    if (enabled == ENABLED.ON) return 'enable'
+    if (enabled == ENABLED.OFF) return 'disable'
 }

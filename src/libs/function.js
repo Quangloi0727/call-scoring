@@ -33,8 +33,8 @@ module.exports = {
         let _minutes = minutes ? parseInt(minutes) : 0
         let _seconds = seconds ? parseInt(seconds) : 0
 
-        var newMinutes = Math.floor(_seconds / 60) + _minutes;
-        var newSeconds = _seconds - newMinutes * 60;
+        var newMinutes = Math.floor(_seconds / 60) + _minutes
+        var newSeconds = _seconds - newMinutes * 60
 
         return { newMinutes: newMinutes, newSeconds: newSeconds }
     }
