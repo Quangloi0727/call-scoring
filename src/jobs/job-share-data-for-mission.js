@@ -153,5 +153,6 @@ function buildQueryCount(effectiveTimeType) {
         default:
             break
     }
+    console.log("buildQueryCount", buildQueryCount)
     return query
 }
