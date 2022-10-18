@@ -1,9 +1,9 @@
 const cron = require("node-cron")
 const model = require('../models')
-const { CONST_STATUS, CONST_COND } = require('../helpers/constants/constScoreTarget')
+const { CONST_STATUS, CONST_COND, CONST_EFFECTIVE_TIME_TYPE } = require('../helpers/constants/constScoreTarget')
 const { Op } = require('sequelize')
 
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("*/1 * * * *", async () => {
     try {
         _logger.info('start job share data for mission at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
         const findScoreTarget = await model.ScoreTarget.findAll({ where: { status: CONST_STATUS.ACTIVE.value } })
@@ -20,16 +20,27 @@ cron.schedule("*/5 * * * *", async () => {
                 }
 
                 const findScoreTargetAssign = await model.ScoreTargetAssignment.findAll({ where: { scoreTargetId: scoreTarget.id }, raw: true })
+
                 if (!findScoreTargetAssign.length) {
                     _logger.info('ScoreTarget ' + scoreTarget.name + ' not have user assigned !')
                     continue
                 }
 
+                const queryCountImplement = buildQueryCount(scoreTarget.effectiveTimeType)
+
                 for (let i = 0; i < findScoreTargetAssign.length; i++) {
                     try {
                         const scoreTargetAssign = findScoreTargetAssign[i]
 
-                        const checkKPI = await model.CallShare.count({ where: { assignFor: scoreTargetAssign.userId, scoreTargetId: scoreTarget.id } })
+                        const checkKPI = await model.CallShare.count({
+                            where: {
+                                [Op.and]: [
+                                    { assignFor: scoreTargetAssign.userId, scoreTargetId: scoreTarget.id },
+                                    queryCountImplement
+                                ]
+                            }
+                        })
+
                         if (checkKPI >= scoreTarget.numberOfCall) {
                             _logger.info('UserId ' + scoreTargetAssign.userId + ' success KPI for scoreTarget ' + scoreTarget.name + ' !')
                             continue
@@ -111,4 +122,37 @@ async function buildQueryCall(scoreTargetId) {
 
     console.log("Query implement", query)
     return { conditionSearch: findConditions[0].conditionSearch, query: query }
+}
+
+function buildQueryCount(effectiveTimeType) {
+    let query = {}
+    switch (effectiveTimeType) {
+
+        case CONST_EFFECTIVE_TIME_TYPE.EVERY_DAY.value:
+            const startDate = _moment(new Date(), "YYYY-MM-DD HH:mm:ss").startOf('day').format('YYYY-MM-DD HH:mm:ss')
+            const endDate = _moment(new Date(), "YYYY-MM-DD HH:mm:ss").endOf('day').format('YYYY-MM-DD HH:mm:ss')
+            query.createdAt = {}
+            query.createdAt[Op.gte] = startDate
+            query.createdAt[Op.lte] = endDate
+            break
+        case CONST_EFFECTIVE_TIME_TYPE.EVERY_WEEK.value:
+            const startWeek = _moment(new Date(), "YYYY-MM-DD HH:mm:ss").startOf('week').format('YYYY-MM-DD HH:mm:ss')
+            const endDWeek = _moment(new Date(), "YYYY-MM-DD HH:mm:ss").endOf('week').format('YYYY-MM-DD HH:mm:ss')
+            query.createdAt = {}
+            query.createdAt[Op.gte] = startWeek
+            query.createdAt[Op.lte] = endDWeek
+            break
+        case CONST_EFFECTIVE_TIME_TYPE.EVERY_MONTH.value:
+            const startMonth = _moment(new Date(), "YYYY-MM-DD HH:mm:ss").startOf('month').format('YYYY-MM-DD HH:mm:ss')
+            const endDMonth = _moment(new Date(), "YYYY-MM-DD HH:mm:ss").endOf('month').format('YYYY-MM-DD HH:mm:ss')
+            query.createdAt = {}
+            query.createdAt[Op.gte] = startMonth
+            query.createdAt[Op.lte] = endDMonth
+            break
+
+        default:
+            break
+    }
+    console.log("buildQueryCount", buildQueryCount)
+    return query
 }
