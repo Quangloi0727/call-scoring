@@ -230,6 +230,7 @@ exports.getRecording = async (req, res) => {
     }
 
     const ConfigurationColums = await getConfigurationColums(req.user.id)
+    
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums)
     }
