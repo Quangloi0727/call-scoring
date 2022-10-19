@@ -526,8 +526,6 @@ function createTable(data, ConfigurationColums, configDefault) {
     let rightTable = ''
     let leftTable = ``
     data.forEach(item => {
-        console.log(1111, item)
-
         const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
         const { recordingFileName } = item.callInfo
         let check = false

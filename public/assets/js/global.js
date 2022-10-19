@@ -65,6 +65,16 @@
                     }
                 }
             },
+            responsive: true,
+            xhr: {
+                mode: "no-cors",
+                method: "GET",
+                credentials: "include",
+                headers: [
+                    { key: "cache-control", value: "no-cache" },
+                    { key: "pragma", value: "no-cache" }
+                ]
+            },
             plugins: [
                 WaveSurfer.regions.create({})
             ]
