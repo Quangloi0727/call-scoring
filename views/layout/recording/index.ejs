@@ -74,7 +74,7 @@
             <button type="button" class="form-control btn btn-primary" id="export_excel">
               Xuất Excel
             </button>
-            <% } %>
+          <% } %>
         </div>
       </div>
       <div class="card-body">
@@ -83,12 +83,14 @@
             <thead>
               <tr>
                 <% Object.keys(headerDefault).forEach((i)=> { %>
-                  <% let ele=headerDefault[i]; %>
-                    <% let sorting=['duration'].includes(i) ? 'sorting' : '' ; %>
-                      <!-- them sort -->
-                      <th class="text-center sortHeader <%= i %> <%= sorting %>" id-sort="<%= i %>">
-                        <%= ele%>
-                      </th>
+                  <%
+                    if(i != "sourceName"){ %>
+                      <% let sorting=['duration'].includes(i) ? 'sorting' : '' %>
+                        <th class="text-center sortHeader <%= i %> <%= sorting %>" id-sort="<%= i %>">
+                          <%= headerDefault[i] %>
+                        </th>
+                      <%}
+                    %>
                 <% }) %>
               </tr>
             </thead>
