@@ -1,0 +1,105 @@
+<!-- UI phần cuộc gọi được chấm điểm -->
+<form id="frmDataRetentionPolicy">
+  <div class="row mb-2 border-bottom border-secondary p-2">
+    <div class="col-sm-6 row border-right border-secondary">
+
+      <div class="col-sm-12 p-3">
+        <label class="">Cuộc gọi đã được chấm điểm</label>
+      </div>
+
+      <div class="col-sm-12 p-3 row">
+        <div class="col-sm-3">Lưu lại trong</div>
+        <div class="col-sm-3">
+          <input type="text" class="form-control" placeholder="Nhập..." autocomplete="off"
+            name="valueSaveForCallGotPoint" id="valueSaveForCallGotPoint" disabled>
+        </div>
+        <div class="col-sm-3">
+          <select class="form-control selectpicker input" id="typeDateSaveForCallGotPoint" data-live-search="true"
+            title="Chọn...">
+            <% Object.keys(TypeDateSaveForCall).forEach((item)=> { %>
+              <option value="<%= item %>" <%- item=='month' ? 'selected' : '' %>>
+                <%= TypeDateSaveForCall[item].text %>
+              </option>
+              <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-sm-12 ml-1 p-3 row icheck-primary d-inline">
+        <input type="checkbox" id="unlimitedSaveForCallGotPoint" name="unlimitedSaveForCallGotPoint" checked>
+        <label for="unlimitedSaveForCallGotPoint" style=" font-weight: normal;">
+          Lưu không giới hạn
+        </label>
+      </div>
+
+    </div>
+    <div class="col-sm-6 row pl-4">
+
+      <div class="col-sm-12 p-3">
+        <label class="">Cuộc gọi chưa được chấm điểm</label>
+      </div>
+
+      <div class="col-sm-12 row p-3">
+        <div class="col-sm-3">Lưu lại trong</div>
+        <div class="col-sm-3">
+          <input type="text" class="form-control" placeholder="Nhập..." name="valueSaveForCallNoPoint"
+            id="valueSaveForCallNoPoint" autocomplete="off" disabled>
+        </div>
+        <div class="col-sm-3">
+          <select class="form-control selectpicker input" data-live-search="true" title="Chọn...">
+            <% Object.keys(TypeDateSaveForCall).forEach((item)=> { %>
+              <option value="<%= item %>" <%- item=='month' ? 'selected' : '' %>>
+                <%= TypeDateSaveForCall[item].text %>
+              </option>
+              <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <div class="col-sm-12 ml-1 p-3 row icheck-primary d-inline">
+
+        <input type="checkbox" id="unlimitedSaveForCallNoPoint" name="unlimitedSaveForCallNoPoint" checked>
+        <label for="unlimitedSaveForCallNoPoint" style=" font-weight: normal;">
+          Lưu không giới hạn
+        </label>
+
+      </div>
+
+    </div>
+  </div>
+</form>
+
+<!-- UI phần thêm đội ngũ vào trong chính sách -->
+<div class="row mb-2">
+  <div class="col-sm-12">
+    <label class="text-primary">Thêm đội ngũ</label>
+  </div>
+  <div class="col-sm-6 d-flex form-group">
+    <div class="col-sm-8 pl-0">
+      <select class="form-control selectpicker input" data-live-search="true" title="Chọn...">
+      </select>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="btn btn-block btn-primary float-sm-left" id="add_user">
+        Thêm
+      </button>
+    </div>
+  </div>
+</div>
+<div class="row mb-2">
+  <div class="col-sm-12">
+    <label class="text-primary">Danh sách đội ngũ</label>
+  </div>
+  <div class="col-sm-6 d-flex form-group">
+    <div class="col-sm-8 pl-0">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Tìm kiếm..." autocomplete="off">
+      </div>
+    </div>
+    <div class="col-sm-2">
+      <button type="button" class="form-control btn btn-primary btn-circle" id="btn_search_member">
+        <i class="fas fa-search p-0"></i>
+      </button>
+    </div>
+  </div>
+</div>

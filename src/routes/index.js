@@ -13,6 +13,7 @@ const scoreMissionRouter = require('./scoreMissionRouter')
 const additionalFieldRouter = require('./additionalFieldRouter')
 const scoreTargetRouter = require('./scoreTargetRouter')
 const manageSourceRecordRouter = require('./manageSourceRecordRouter')
+const dataRetentionPolicyRouter = require('./dataRetentionPolicy')
 const { isLoggedIn } = require('../libs/passport')
 const router = express.Router()
 
@@ -29,4 +30,5 @@ router.use('/scoreMission', isLoggedIn, scoreMissionRouter)
 router.use('/scoreTarget', isLoggedIn, scoreTargetRouter)
 router.use('/manageSourceRecord', isLoggedIn, manageSourceRecordRouter)
 router.use('/additional-field', isLoggedIn, additionalFieldRouter)
+router.use('/dataRetentionPolicy', isLoggedIn, dataRetentionPolicyRouter)
 module.exports = router
