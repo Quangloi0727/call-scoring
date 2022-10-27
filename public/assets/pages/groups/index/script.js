@@ -185,13 +185,7 @@ $(function () {
   function createTable(data) {
     let html = '';
     data.forEach((item) => {
-      let leaderHtml = '';
-      let totalMember = item.member.filter((user) => user.role == 0);
-      // let leaders = item.member.filter((user) => user.role == USER_ROLE.groupmanager.n);
       let htmlLeader = '';
-
-      // console.log('leaders: ', leaders);
-
       if(item.leaders > 1){
         let itemDrop = item.leaderDetails.split(';').map((user) => {
           return `

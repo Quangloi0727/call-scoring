@@ -549,7 +549,7 @@ function createTable(data, ConfigurationColums, configDefault) {
 
         rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
-            <td class="text-center callIdColumn" title=${item.callId || ''} style="width:200px; overflow:hidden;">${item.callId || ''}</td>
+            <td class="text-center callIdColumn" title="${item.callId || ''}">${item.callId || ''}</td>
             <td class="text-center">    
                 <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
