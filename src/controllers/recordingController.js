@@ -218,7 +218,7 @@ exports.getRecording = async (req, res) => {
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `
     if (teams) query += `AND team.id IN (${teams.toString()}) `
-    if (callId) query += `AND records.callId LIKE '%${callId.toString()}%' `
+    if (callId) query += `AND records.id LIKE '%${callId.toString()}%' `
     if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `
 
     // limit time by rule
@@ -230,6 +230,7 @@ exports.getRecording = async (req, res) => {
     }
 
     const ConfigurationColums = await getConfigurationColums(req.user.id)
+    
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums)
     }

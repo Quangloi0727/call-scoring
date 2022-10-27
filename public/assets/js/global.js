@@ -66,23 +66,16 @@
                 }
             },
             responsive: true,
-            xhr: {
-                mode: "no-cors",
-                method: "GET",
-                credentials: "include",
-                headers: [
-                    { key: "cache-control", value: "no-cache" },
-                    { key: "pragma", value: "no-cache" }
-                ]
-            },
             plugins: [
                 WaveSurfer.regions.create({})
-            ]
+            ],
+            xhr: { cache: 'default', mode: 'cors', method: 'GET', credentials: 'same-origin', redirect: 'follow', referrer: 'client' }
         })
 
         wavesurfer.empty()
-        //wavesurfer.load("https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/29/409ddeda-2766-11ed-813e-95f7e31f94c6.wav")
         wavesurfer.load(urlRecord)
+        // wavesurfer.load('https://ia800508.us.archive.org/15/items/LoveThemeFromTheGodfather/02LoveThemeFromTheGodfather.mp3')
+        //wavesurfer.load('https://qa.metechvn.com/static/omicx.metechvn.com/archive/2022/Oct/18/ac6954d6-4e9a-11ed-a921-b7a6dc5403cb.wav')
 
         wavesurfer.on('ready', function (e) {
             wavesurfer.play()
