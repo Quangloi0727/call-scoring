@@ -578,6 +578,10 @@ $(function () {
 
     //render data của phần "Điều kiện"
     if (ScoreTargetCond && ScoreTargetCond.length > 0) {
+      //render điều kiện lọc
+      const { conditionSearch } = ScoreTargetCond[0]
+      $("#conditionSearch").val(conditionSearch)
+      //render điều kiện lọc implement
       ScoreTargetCond.map((el) => {
         renOption(el)
       })

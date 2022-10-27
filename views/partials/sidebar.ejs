@@ -13,103 +13,100 @@
     <!-- Sidebar Menu -->
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-
         <li class="nav-item">
           <a href="/recording" class="nav-link">
             <i class="nav-icon fas fa-microphone"></i>
             <p>Recording</p>
           </a>
         </li>
-        <% if(currUser && currUser.roles.find((item)=> item.role == 2)) { %>
-          <li class="nav-item">
-            <a href="/scoreMission" class="nav-link">
-              <i class="nav-icon fas fa-check"></i>
-              <p>Nhiệm vụ chấm điểm</p>
-            </a>
-          </li>
-          <li class="nav-item ">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-cog"></i>
-              <p>
-                Admin
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <a href="/users" class="nav-link">
-                  <p class="ml-5">Quản lý người dùng</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="/teams" class="nav-link">
-                  <p class="ml-5">Quản lý đội ngũ</p>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="/groups" class="nav-link">
-                  <p class="ml-5">Quản lý nhóm</p>
-                </a>
-              </li>
+        <li class="nav-item">
+          <a href="/scoreMission" class="nav-link">
+            <i class="nav-icon fas fa-check"></i>
+            <p>Nhiệm vụ chấm điểm</p>
+          </a>
+        </li>
+        <li class="nav-item ">
+          <a href="#" class="nav-link">
+            <i class="nav-icon fas fa-cog"></i>
+            <p>
+              Admin
+              <i class="right fas fa-angle-left"></i>
+            </p>
+          </a>
+          <ul class="nav nav-treeview">
+            <li class="nav-item">
+              <a href="/users" class="nav-link">
+                <p class="ml-5">Quản lý người dùng</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/teams" class="nav-link">
+                <p class="ml-5">Quản lý đội ngũ</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="/groups" class="nav-link">
+                <p class="ml-5">Quản lý nhóm</p>
+              </a>
+            </li>
 
-              <li class="nav-item">
-                <a href="/rules" class="nav-link">
-                  <p class="ml-5">Quản lý quyền nâng cao</p>
-                </a>
-              </li>
+            <li class="nav-item">
+              <a href="/rules" class="nav-link">
+                <p class="ml-5">Quản lý quyền nâng cao</p>
+              </a>
+            </li>
 
-              <li class="nav-item">
-                <a href="/additional-field" class="nav-link">
-                  <p class="ml-5">Quản lý trường bổ sung</p>
-                </a>
-              </li>
+            <li class="nav-item">
+              <a href="/additional-field" class="nav-link">
+                <p class="ml-5">Quản lý trường bổ sung</p>
+              </a>
+            </li>
 
-              <li class="nav-item ">
-                <a href="#" class="nav-link">
-                  <p class="ml-5">
-                    Đánh giá chấm điểm
-                    <i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="/scoreTarget" class="nav-link">
-                      <p class="" style="margin-left: 5rem !important;">Mục tiêu chấm điểm</p>
-                    </a>
-                  </li>
-                  <li class="nav-item">
-                    <a href="/scoreScripts" class="nav-link">
-                      <p style="margin-left: 5rem !important;">Kịch bản chấm điểm</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
+            <li class="nav-item ">
+              <a href="#" class="nav-link">
+                <p class="ml-5">
+                  Đánh giá chấm điểm
+                  <i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/scoreTarget" class="nav-link">
+                    <p class="" style="margin-left: 5rem !important;">Mục tiêu chấm điểm</p>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="/scoreScripts" class="nav-link">
+                    <p style="margin-left: 5rem !important;">Kịch bản chấm điểm</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
 
-              <li class="nav-item">
-                <a href="/manageSourceRecord" class="nav-link">
-                  <p class="ml-5">Quản lý nguồn ghi âm</p>
-                </a>
-              </li>
+            <li class="nav-item">
+              <a href="/manageSourceRecord" class="nav-link">
+                <p class="ml-5">Quản lý nguồn ghi âm</p>
+              </a>
+            </li>
 
-              <!-- quản lí tenant -->
-              <li class="nav-item ">
-                <a href="#" class="nav-link">
-                  <p class="ml-5">
-                    Quản lí tenant<i class="right fas fa-angle-left"></i>
-                  </p>
-                </a>
-                <ul class="nav nav-treeview">
-                  <li class="nav-item">
-                    <a href="/tenant" class="nav-link">
-                      <p style="margin-left: 5rem !important;">Logo</p>
-                    </a>
-                  </li>
-                </ul>
-              </li>
+            <!-- quản lí tenant -->
+            <li class="nav-item ">
+              <a href="#" class="nav-link">
+                <p class="ml-5">
+                  Quản lí tenant<i class="right fas fa-angle-left"></i>
+                </p>
+              </a>
+              <ul class="nav nav-treeview">
+                <li class="nav-item">
+                  <a href="/tenant" class="nav-link">
+                    <p style="margin-left: 5rem !important;">Logo</p>
+                  </a>
+                </li>
+              </ul>
+            </li>
 
-            </ul>
-          </li>
-          <% } %>
+          </ul>
+        </li>
       </ul>
     </nav>
     <!-- /.sidebar-menu -->
