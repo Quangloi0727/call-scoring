@@ -1,14 +1,13 @@
 <script>
   var UnlimitedSaveForCall = JSON.parse('<%- JSON.stringify(UnlimitedSaveForCall)%>');
   var dataRetentionPolicy = JSON.parse('<%- JSON.stringify(dataRetentionPolicy)%>');
-  var STATUS = JSON.parse('<%- JSON.stringify(STATUS)%>');
 </script>
 <form id="frmDataRetentionPolicy" onsubmit="return false">
   <div class="row">
 
     <div class="form-group col-sm-3">
-      <input type="text" class="form-control inputData" value="<%= dataRetentionPolicy.nameDataRetentionPolicy  %>"
-        id="nameDataRetentionPolicy" name="nameDataRetentionPolicy" placeholder="Chính sách" />
+      <input type="text" class="form-control inputData" id="nameDataRetentionPolicy" name="nameDataRetentionPolicy"
+        placeholder="Chính sách" />
       <span class="d-none duplicateName">Tên chính sách đã được sử dụng</span>
     </div>
 

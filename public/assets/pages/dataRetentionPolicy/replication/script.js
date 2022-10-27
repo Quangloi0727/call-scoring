@@ -80,6 +80,8 @@ $(function () {
         }, {})
         .value()
 
+      const id = $('#btnSave').attr('data-id')
+
       // check và set giá trị cho "Cuộc gọi đã được chấm điểm"
       if (parseInt(dataCreate.valueSaveForCallGotPoint) >= 0) {
         dataCreate.unlimitedSaveForCallGotPoint = UnlimitedSaveForCall.UnlimitedNotSave.value
@@ -133,9 +135,8 @@ $(function () {
 
   $(document).on('click', '.remove-team', function () {
     // xóa trên giao diện
-    $(this).parent().parent().remove()
-
     let teamIds = []
+    $(this).parent().parent().remove()
     $('span.remove-team').each(function () {
       teamIds.push($(this).attr('data-id'))
     })
@@ -147,6 +148,14 @@ $(function () {
   $(document).on('click', '#btnCancel', function () {
     window.location.href = "/dataRetentionPolicy"
   })
+
+  if (dataRetentionPolicy && dataRetentionPolicy.DataRetentionPolicy_Team) {
+    let teams = _.pluck(dataRetentionPolicy.DataRetentionPolicy_Team, 'TeamInfo')
+    let teamIds = _.pluck(teams, 'id')
+    $('#selectAddTeams').val(teamIds)
+    $('.selectpicker').selectpicker('refresh')
+    return renderTeams(teams)
+  }
 })
 
 function renderTeams(teams) {

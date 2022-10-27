@@ -72,7 +72,7 @@ $(function () {
       $(element).removeClass('is-invalid');
     },
     submitHandler: function () {
-      let dataCreate = _.chain($(".inputData"))
+      let dataUpdate = _.chain($(".inputData"))
         .reduce(function (memo, el) {
           let value = $(el).val()
           if (value != "" && value != null) memo[el.name] = value
@@ -80,31 +80,33 @@ $(function () {
         }, {})
         .value()
 
+      const id = $('#btnSave').attr('data-id')
+
       // check và set giá trị cho "Cuộc gọi đã được chấm điểm"
-      if (parseInt(dataCreate.valueSaveForCallGotPoint) >= 0) {
-        dataCreate.unlimitedSaveForCallGotPoint = UnlimitedSaveForCall.UnlimitedNotSave.value
-        dataCreate.valueSaveForCallGotPoint = parseInt(dataCreate.valueSaveForCallGotPoint)
+      if (parseInt(dataUpdate.valueSaveForCallGotPoint) >= 0) {
+        dataUpdate.unlimitedSaveForCallGotPoint = UnlimitedSaveForCall.UnlimitedNotSave.value
+        dataUpdate.valueSaveForCallGotPoint = parseInt(dataUpdate.valueSaveForCallGotPoint)
       } else {
-        dataCreate.unlimitedSaveForCallGotPoint = UnlimitedSaveForCall.UnlimitedSave.value
-        dataCreate.valueSaveForCallGotPoint = null
+        dataUpdate.unlimitedSaveForCallGotPoint = UnlimitedSaveForCall.UnlimitedSave.value
+        dataUpdate.valueSaveForCallGotPoint = null
       }
 
       // check và set giá trị cho "Cuộc gọi chưa được chấm điểm"
-      if (parseInt(dataCreate.valueSaveForCallNoPoint) >= 0) {
-        dataCreate.unlimitedSaveForCallNoPoint = UnlimitedSaveForCall.UnlimitedNotSave.value
-        dataCreate.valueSaveForCallNoPoint = parseInt(dataCreate.valueSaveForCallNoPoint)
+      if (parseInt(dataUpdate.valueSaveForCallNoPoint) >= 0) {
+        dataUpdate.unlimitedSaveForCallNoPoint = UnlimitedSaveForCall.UnlimitedNotSave.value
+        dataUpdate.valueSaveForCallNoPoint = parseInt(dataUpdate.valueSaveForCallNoPoint)
       } else {
-        dataCreate.unlimitedSaveForCallNoPoint = UnlimitedSaveForCall.UnlimitedSave.value
-        dataCreate.valueSaveForCallNoPoint = null
+        dataUpdate.unlimitedSaveForCallNoPoint = UnlimitedSaveForCall.UnlimitedSave.value
+        dataUpdate.valueSaveForCallNoPoint = null
       }
-      _AjaxData('/dataRetentionPolicy', 'POST', JSON.stringify(dataCreate), { contentType: "application/json" }, function (resp) {
+      _AjaxData(`/dataRetentionPolicy/update/${id}`, 'PUT', JSON.stringify(dataUpdate), { contentType: "application/json" }, function (resp) {
         if (resp.code != 200 && resp.message != window.location.MESSAGE_ERROR['QA-002'])
           return toastr.error(resp.message)
         if (resp.code != 200 && resp.message == window.location.MESSAGE_ERROR['QA-002']) {
           $('.duplicateName').removeClass('d-none')
           return toastr.error(resp.message)
         }
-        toastr.success(resp.message)
+        toastr.success("Lưu thành công !")
         return setTimeout(() => {
           window.location.href = "/dataRetentionPolicy"
         }, 2500)
@@ -133,9 +135,8 @@ $(function () {
 
   $(document).on('click', '.remove-team', function () {
     // xóa trên giao diện
-    $(this).parent().parent().remove()
-
     let teamIds = []
+    $(this).parent().parent().remove()
     $('span.remove-team').each(function () {
       teamIds.push($(this).attr('data-id'))
     })
@@ -143,6 +144,19 @@ $(function () {
     $('#selectAddTeams').val(teamIds)
     $('.selectpicker').selectpicker('refresh')
   })
+
+  if (dataRetentionPolicy && dataRetentionPolicy.DataRetentionPolicy_Team) {
+    let teams = _.pluck(dataRetentionPolicy.DataRetentionPolicy_Team, 'TeamInfo')
+    let teamIds = _.pluck(teams, 'id')
+    $('#selectAddTeams').val(teamIds)
+    $('.selectpicker').selectpicker('refresh')
+    renderTeams(teams)
+  }
+
+  if (dataRetentionPolicy && dataRetentionPolicy.status == STATUS.ACTIVE.value) {
+    $('.inputData').attr("disabled", true)
+    $('#btnSave').attr("disabled", true)
+  }
 
   $(document).on('click', '#btnCancel', function () {
     window.location.href = "/dataRetentionPolicy"

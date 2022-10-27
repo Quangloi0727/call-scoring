@@ -4,6 +4,10 @@ class DataRetentionPolicy extends Model {
   static init(sequelize) {
     return super.init(
       {
+        nameDataRetentionPolicy: {
+          type: DataTypes.STRING(250),
+          allowNull: false
+        },
         valueSaveForCallGotPoint: {
           type: DataTypes.INTEGER
           // giá trị được lưu lại trong với cuộc gọi đã chấm điểm
@@ -13,7 +17,7 @@ class DataRetentionPolicy extends Model {
           // lưu lại trong xxx ngày / tháng / năm
         },
         unlimitedSaveForCallGotPoint: {
-          type: DataTypes.BOOLEAN,
+          type: DataTypes.INTEGER,
           allowNull: false
           // lưu không giới hạn với cuộc gọi đã chấm điểm
         },
@@ -26,9 +30,12 @@ class DataRetentionPolicy extends Model {
           // lưu lại trong xxx ngày / tháng / năm với cuộc gọi CHƯA chấm điểm
         },
         unlimitedSaveForCallNoPoint: {
-          type: DataTypes.BOOLEAN,
+          type: DataTypes.INTEGER,
           allowNull: false
           // lưu không giới hạn với cuộc gọi CHƯA chấm điểm
+        },
+        status: {
+          type: DataTypes.INTEGER
         },
         created: {
           type: DataTypes.INTEGER,

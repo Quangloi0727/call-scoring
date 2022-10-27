@@ -13,6 +13,16 @@ const TypeDateSaveForCall = {
   }
 }
 
+const STATUS = {
+  ACTIVE: {
+    value: 1,
+    text: "Đang Hoạt động"
+  },
+  UN_ACTIVE: {
+    value: 2,
+    text: "Không hoạt động"
+  }
+}
 
 const UnlimitedSaveForCall = {
   UnlimitedSave: {
@@ -20,12 +30,21 @@ const UnlimitedSaveForCall = {
     t: "Có lưu không giới hạn",
   },
   UnlimitedNotSave: {
-    n: 0,
+    value: 2,
     t: "Không lưu không giới hạn",
   }
 }
+const DataRetentionPolicyNotFound = 'Không tìm thấy chính sách dữ liệu vui lòng thử lại sau !'
+const statusUpdateFail = 'Đội ngũ trong Chính sách đang thuộc Chính sách khác đang hoạt động !'
+const statusUpdateSuccess = 'Thay đổi trạng thái Chính sách thành công !'
+const deleteSuccess = 'Xóa Chính sách thành công !'
 
 module.exports = {
   TypeDateSaveForCall,
-  UnlimitedSaveForCall
+  UnlimitedSaveForCall,
+  STATUS,
+  DataRetentionPolicyNotFound,
+  statusUpdateFail,
+  statusUpdateSuccess,
+  deleteSuccess
 }
