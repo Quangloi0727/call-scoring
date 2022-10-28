@@ -324,8 +324,8 @@ exports.updateStatus = async (req, res) => {
 function queryDataRetentionPolicy(query) {
   return new Promise(async (resolve, reject) => {
     try {
-      const data = model.DataRetentionPolicy.findAll({
-        query,
+      const data = await model.DataRetentionPolicy.findAll({
+        where: query.where,
         include: [
           { model: model.User, as: 'userCreate' },
           { model: model.User, as: 'userUpdate' },
