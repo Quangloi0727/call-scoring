@@ -200,7 +200,14 @@ exports.update = async (req, res, next) => {
     dataUpdate.updated = req.user.id
 
     // check tồn tại của tên mục tiêu
-    const checkName = await model.DataRetentionPolicy.findOne({ where: { nameDataRetentionPolicy: dataUpdate.nameDataRetentionPolicy } })
+    const checkName = await model.DataRetentionPolicy.findOne({
+      where: {
+        nameDataRetentionPolicy: dataUpdate.nameDataRetentionPolicy,
+        id: {
+          [Op.ne]: id
+        }
+      }
+    })
     if (checkName) throw new Error(MESSAGE_ERROR['QA-002'])
 
     await model.DataRetentionPolicy.update(
