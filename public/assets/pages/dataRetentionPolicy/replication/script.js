@@ -153,8 +153,8 @@ $(function () {
     window.location.href = "/dataRetentionPolicy"
   })
 
-  if (dataRetentionPolicy && dataRetentionPolicy.DataRetentionPolicy_Team) {
-    let teams = _.pluck(dataRetentionPolicy.DataRetentionPolicy_Team, 'TeamInfo')
+  if (dataRetentionPolicy && dataRetentionPolicy.DataRetentionPolicyTeam) {
+    let teams = _.pluck(dataRetentionPolicy.DataRetentionPolicyTeam, 'TeamInfo')
     let teamIds = _.pluck(teams, 'id')
     $('#selectAddTeams').val(teamIds)
     $('.selectpicker').selectpicker('refresh')

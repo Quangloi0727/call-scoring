@@ -1,6 +1,6 @@
 const { Model, DataTypes, Op } = require("sequelize")
 
-class DataRetentionPolicy_Team extends Model {
+class DataRetentionPolicyTeam extends Model {
   static init(sequelize) {
     return super.init(
       {
@@ -21,22 +21,22 @@ class DataRetentionPolicy_Team extends Model {
       },
       {
         sequelize,
-        modelName: "DataRetentionPolicy_Teams",
+        modelName: "DataRetentionPolicyTeams",
       }
     )
   }
 
   static associate(models) {
-    models.DataRetentionPolicy_Team.belongsTo(models.Team, {
+    models.DataRetentionPolicyTeam.belongsTo(models.Team, {
       foreignKey: "teamId",
       as: "TeamInfo",
     })
 
-    models.DataRetentionPolicy_Team.belongsTo(models.DataRetentionPolicy, {
+    models.DataRetentionPolicyTeam.belongsTo(models.DataRetentionPolicy, {
       foreignKey: "dataRetentionPolicyId",
       as: "DataRetentionPolicy",
     })
   }
 }
 
-module.exports = DataRetentionPolicy_Team
+module.exports = DataRetentionPolicyTeam

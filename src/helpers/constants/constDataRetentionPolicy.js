@@ -34,17 +34,17 @@ const UnlimitedSaveForCall = {
     t: "Không lưu không giới hạn",
   }
 }
-const DataRetentionPolicyNotFound = 'Không tìm thấy chính sách dữ liệu vui lòng thử lại sau !'
-const statusUpdateFail = 'Đội ngũ trong Chính sách đang thuộc Chính sách khác đang hoạt động !'
-const statusUpdateSuccess = 'Thay đổi trạng thái Chính sách thành công !'
-const deleteSuccess = 'Xóa Chính sách thành công !'
+const khongTimThayChinhSachDuLieu = 'Không tìm thấy chính sách dữ liệu vui lòng thử lại sau !'
+const doiNguTrongChinhSachDaTonTai = 'Đội ngũ trong Chính sách đang thuộc Chính sách khác đang hoạt động !'
+const thayDoiTrangThaiThanhCong = 'Thay đổi trạng thái Chính sách thành công !'
+const xoaChinhSachThanhCong = 'Xóa Chính sách thành công !'
 
 module.exports = {
   TypeDateSaveForCall,
   UnlimitedSaveForCall,
   STATUS,
-  DataRetentionPolicyNotFound,
-  statusUpdateFail,
-  statusUpdateSuccess,
-  deleteSuccess
+  khongTimThayChinhSachDuLieu,
+  doiNguTrongChinhSachDaTonTai,
+  thayDoiTrangThaiThanhCong,
+  xoaChinhSachThanhCong
 }

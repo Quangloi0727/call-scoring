@@ -89,9 +89,9 @@ class DataRetentionPolicy extends Model {
       as: "userUpdate",
     })
 
-    models.DataRetentionPolicy.hasMany(models.DataRetentionPolicy_Team, {
+    models.DataRetentionPolicy.hasMany(models.DataRetentionPolicyTeam, {
       foreignKey: "dataRetentionPolicyId",
-      as: 'DataRetentionPolicy_Team'
+      as: 'DataRetentionPolicyTeam'
     })
   }
 }

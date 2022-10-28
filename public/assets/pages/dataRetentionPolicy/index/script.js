@@ -111,7 +111,7 @@ function createTable(data) {
     let teamDropDownItemHTML = '';
     let teamHTML = '';
 
-    item.DataRetentionPolicy_Team.forEach((team) => {
+    item.DataRetentionPolicyTeam.forEach((team) => {
       teamDropDownItemHTML += `
         <a class="dropdown-item">
           ${team.TeamInfo.name}
@@ -119,19 +119,19 @@ function createTable(data) {
       `;
     });
 
-    if (item.DataRetentionPolicy_Team.length > 2) {
-      teamHTML = `<div class="dropdown show ${item.DataRetentionPolicy_Team.length > 0 ? '' : 'd-none'}">
+    if (item.DataRetentionPolicyTeam.length > 2) {
+      teamHTML = `<div class="dropdown show ${item.DataRetentionPolicyTeam.length > 0 ? '' : 'd-none'}">
         <a class="dropdown-custom dropdown-toggle text-dark role="button" id="dropdown" 
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          ${item.DataRetentionPolicy_Team.length} đội ngũ
+          ${item.DataRetentionPolicyTeam.length} đội ngũ
         </a>
         <div class="dropdown-menu" aria-labelledby="dropdown">
           ${teamDropDownItemHTML}
         </div>
       </div>`;
-    } else if (item.DataRetentionPolicy_Team.length == 1) {
+    } else if (item.DataRetentionPolicyTeam.length == 1) {
       teamHTML = `<div class="dropdown show">
-        ${item.DataRetentionPolicy_Team[0].TeamInfo.name}
+        ${item.DataRetentionPolicyTeam[0].TeamInfo.name}
       </div>`;
     } else teamHTML = `<div class="dropdown show">Tất cả</div>`;
 

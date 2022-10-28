@@ -3,11 +3,12 @@ const {
   TypeDateSaveForCall,
   UnlimitedSaveForCall,
   STATUS,
-  DataRetentionPolicyNotFound,
-  statusUpdateFail,
-  statusUpdateSuccess,
-  deleteSuccess,
-  MESSAGE_ERROR
+  khongTimThayChinhSachDuLieu,
+  doiNguTrongChinhSachDaTonTai,
+  thayDoiTrangThaiThanhCong,
+  xoaChinhSachThanhCong,
+  MESSAGE_ERROR,
+  TeamStatus
 } = require('../helpers/constants/index')
 const { Op } = require('sequelize')
 const model = require('../models')
@@ -39,7 +40,11 @@ exports.getDetail = async (req, res, next) => {
     }
     const dataRetentionPolicy = await queryDataRetentionPolicy(query)
 
-    const teams = await model.Team.findAll({})
+    const teams = await model.Team.findAll({
+      where: {
+        status: TeamStatus.ON
+      }
+    })
 
     return _render(req, res, 'dataRetentionPolicy/edit', {
       title: titlePage,
@@ -66,7 +71,11 @@ exports.getReplication = async (req, res, next) => {
     }
     const dataRetentionPolicy = await queryDataRetentionPolicy(query)
 
-    const teams = await model.Team.findAll({})
+    const teams = await model.Team.findAll({
+      where: {
+        status: TeamStatus.ON
+      }
+    })
 
     return _render(req, res, 'dataRetentionPolicy/replication', {
       title: titlePage,
@@ -85,42 +94,24 @@ exports.getReplication = async (req, res, next) => {
 exports.getDataRetentionPolicies = async (req, res, next) => {
   try {
     const { nameDataRetentionPolicy } = req.query
-    let { limit, page } = req.query
-    if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
-
-    limit = Number(limit)
+    const { limit, page } = req.query
 
     const pageNumber = page ? Number(page) : 1
-    const offset = (pageNumber * limit) - limit
+    const offset = (pageNumber * Number(limit)) - Number(limit)
 
-    let query = {}
+    const query = {}
     if (nameDataRetentionPolicy) {
       query.nameDataRetentionPolicy = {
         [Op.like]: '%' + nameDataRetentionPolicy + '%'
       }
     }
 
+    const rows = await queryDataRetentionPolicy(query, offset, Number(limit))
 
-    const rows = await model.DataRetentionPolicy.findAll({
-      where: query ? query : {},
-      order: [
-        ['id', 'DESC'],
-      ],
-      include: [
-        { model: model.User, as: 'userCreate' },
-        { model: model.User, as: 'userUpdate' },
-        {
-          model: model.DataRetentionPolicy_Team,
-          as: 'DataRetentionPolicy_Team',
-          include: [{ model: model.Team, as: 'TeamInfo' }]
-        },
-      ],
-      offset: offset,
-      limit: limit,
-
-    })
-    const count = await model.DataRetentionPolicy.count();
-    let paginator = new pagination.SearchPaginator({
+    const count = await model.DataRetentionPolicy.count({
+      where: query ? query : {}
+    });
+    const paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
       totalResult: count,
@@ -142,7 +133,11 @@ exports.getDataRetentionPolicies = async (req, res, next) => {
 
 exports.new = async (req, res, next) => {
   try {
-    const teams = await model.Team.findAll({})
+    const teams = await model.Team.findAll({
+      where: {
+        status: TeamStatus.ON
+      }
+    })
     return _render(req, res, 'dataRetentionPolicy/new', {
       title: titlePage,
       titlePage: titlePage,
@@ -179,7 +174,7 @@ exports.save = async (req, res, next) => {
           dataRetentionPolicyId: dataRetentionPolicy.id
         })
       })
-      await model.DataRetentionPolicy_Team.bulkCreate(dataRetentionPolicy_Teams, { transaction: transaction })
+      await model.DataRetentionPolicyTeam.bulkCreate(dataRetentionPolicy_Teams, { transaction: transaction })
     }
     await transaction.commit()
     return res.json({ code: SUCCESS_200.code })
@@ -226,8 +221,8 @@ exports.update = async (req, res, next) => {
           dataRetentionPolicyId: id
         })
       })
-      await model.DataRetentionPolicy_Team.destroy({ where: { dataRetentionPolicyId: id } }, { transaction: transaction })
-      await model.DataRetentionPolicy_Team.bulkCreate(dataRetentionPolicy_Teams, { transaction: transaction })
+      await model.DataRetentionPolicyTeam.destroy({ where: { dataRetentionPolicyId: id } }, { transaction: transaction })
+      await model.DataRetentionPolicyTeam.bulkCreate(dataRetentionPolicy_Teams, { transaction: transaction })
     }
     await transaction.commit()
     return res.json({ code: SUCCESS_200.code })
@@ -244,9 +239,9 @@ exports.delete = async (req, res) => {
     const id = req.params.id
     transaction = await model.sequelize.transaction()
     await model.DataRetentionPolicy.destroy({ where: { id: id } }, { transaction: transaction })
-    await model.DataRetentionPolicy_Team.destroy({ where: { dataRetentionPolicyId: id } }, { transaction: transaction })
+    await model.DataRetentionPolicyTeam.destroy({ where: { dataRetentionPolicyId: id } }, { transaction: transaction })
     await transaction.commit()
-    return res.json({ code: SUCCESS_200.code, message: deleteSuccess })
+    return res.json({ code: SUCCESS_200.code, message: xoaChinhSachThanhCong })
   } catch (error) {
     _logger.error("xóa chính sách dữ liệu", error)
     if (transaction) await transaction.rollback()
@@ -259,7 +254,8 @@ exports.getTeamByIds = async (req, res) => {
     let { teamIds } = req.query
     const listData = await model.Team.findAll({
       where: {
-        id: teamIds.split(",")
+        id: teamIds.split(","),
+        status: TeamStatus.ON
       }
     })
 
@@ -282,28 +278,29 @@ exports.updateStatus = async (req, res) => {
       where: { id: id },
       include: [
         {
-          model: model.DataRetentionPolicy_Team,
-          as: 'DataRetentionPolicy_Team',
+          model: model.DataRetentionPolicyTeam,
+          as: 'DataRetentionPolicyTeam',
           attributes: ['id', 'teamId']
         },
       ],
       nest: true,
       raw: true,
     })
-    const teams = _.uniq(_.pluck(findDocUpdate, 'DataRetentionPolicy_Team'));
+    if (!findDocUpdate) throw new Error(khongTimThayChinhSachDuLieu)
+
+    const teams = _.uniq(_.pluck(findDocUpdate, 'DataRetentionPolicyTeam'));
     const teamIds = _.uniq(_.pluck(teams, 'teamId'));
-    if (!findDocUpdate) throw new Error(DataRetentionPolicyNotFound)
 
     if (teamIds && teamIds.length > 0 && findDocUpdate[0].status == STATUS.UN_ACTIVE.value) {
       const check = await model.DataRetentionPolicy.findAll({
         where: {
-          status: 1,
+          status: STATUS.ACTIVE.value,
           id: { [Op.ne]: id }
         },
         include: [
           {
-            model: model.DataRetentionPolicy_Team,
-            as: 'DataRetentionPolicy_Team',
+            model: model.DataRetentionPolicyTeam,
+            as: 'DataRetentionPolicyTeam',
             where: {
               teamId: teamIds,
             }
@@ -311,7 +308,7 @@ exports.updateStatus = async (req, res) => {
         ],
       })
 
-      if (check && check.length > 0) throw new Error(statusUpdateFail)
+      if (check && check.length > 0) throw new Error(doiNguTrongChinhSachDaTonTai)
     }
 
     transaction = await model.sequelize.transaction()
@@ -319,7 +316,7 @@ exports.updateStatus = async (req, res) => {
 
     await transaction.commit()
 
-    return res.json({ code: SUCCESS_200.code, message: statusUpdateSuccess })
+    return res.json({ code: SUCCESS_200.code, message: thayDoiTrangThaiThanhCong })
 
   } catch (error) {
     _logger.error("update status", error)
@@ -328,24 +325,25 @@ exports.updateStatus = async (req, res) => {
   }
 }
 
-function queryDataRetentionPolicy(query) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const data = await model.DataRetentionPolicy.findAll({
-        where: query.where,
-        include: [
-          { model: model.User, as: 'userCreate' },
-          { model: model.User, as: 'userUpdate' },
-          {
-            model: model.DataRetentionPolicy_Team,
-            as: 'DataRetentionPolicy_Team',
-            include: [{ model: model.Team, as: 'TeamInfo' }]
-          },
-        ]
-      })
-      return resolve(data)
-    } catch (error) {
-      return reject(error)
+async function queryDataRetentionPolicy(query, offset, limit) {
+  try {
+    const _query = {
+      where: query ? query.where : {},
+      include: [
+        { model: model.User, as: 'userCreate' },
+        { model: model.User, as: 'userUpdate' },
+        {
+          model: model.DataRetentionPolicyTeam,
+          as: 'DataRetentionPolicyTeam',
+          include: [{ model: model.Team, as: 'TeamInfo' }]
+        },
+      ],
     }
-  })
+    if (offset) _query.offset = offset
+    if (limit) _query.limit = limit
+    const data = await model.DataRetentionPolicy.findAll(_query)
+    return data
+  } catch (error) {
+    return error
+  }
 }

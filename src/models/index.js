@@ -36,7 +36,7 @@ const ManageSourceModal = require('./manageSource')
 
 const dbFileServer = require('./fileServer')
 const DataRetentionPolicyModel = require('./dataRetentionPolicy')
-const DataRetentionPolicyTeamsModel = require('./dataRetentionPolicy_Teams')
+const DataRetentionPolicyTeamsModel = require('./dataRetentionPolicyTeams')
 
 let db = {}
 let sequelize = null
@@ -81,7 +81,7 @@ const models = {
   SelectionCriteria: SelectionCriteriasModel.init(sequelize),
   FileServer: dbFileServer.init(sequelize),
   DataRetentionPolicy: DataRetentionPolicyModel.init(sequelize),
-  DataRetentionPolicy_Team: DataRetentionPolicyTeamsModel.init(sequelize),
+  DataRetentionPolicyTeam: DataRetentionPolicyTeamsModel.init(sequelize),
 }
 
 Object.keys(models).forEach(model => {
