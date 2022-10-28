@@ -110,7 +110,7 @@ $(function () {
           $('.duplicateName').removeClass('d-none')
           return toastr.error(resp.message)
         }
-        toastr.success(resp.message)
+        toastr.success("Tạo mới thành công !")
         return setTimeout(() => {
           window.location.href = "/dataRetentionPolicy"
         }, 2500)

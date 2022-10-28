@@ -74,6 +74,12 @@ class DataRetentionPolicy extends Model {
         modelName: "DataRetentionPolicy",
         hooks: {
         },
+        indexes: [
+          {
+            unique: true,
+            fields: ['nameDataRetentionPolicy']
+          },
+        ]
       }
     )
   }

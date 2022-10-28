@@ -3,10 +3,10 @@ const {
   TypeDateSaveForCall,
   UnlimitedSaveForCall,
   STATUS,
-  khongTimThayChinhSachDuLieu,
-  doiNguTrongChinhSachDaTonTai,
-  thayDoiTrangThaiThanhCong,
-  xoaChinhSachThanhCong,
+  dataRetentionPolicyNotFound,
+  statusUpdateFail,
+  statusUpdateSuccess,
+  deleteSuccess,
   MESSAGE_ERROR,
   TeamStatus
 } = require('../helpers/constants/index')
@@ -241,7 +241,7 @@ exports.delete = async (req, res) => {
     await model.DataRetentionPolicy.destroy({ where: { id: id } }, { transaction: transaction })
     await model.DataRetentionPolicyTeam.destroy({ where: { dataRetentionPolicyId: id } }, { transaction: transaction })
     await transaction.commit()
-    return res.json({ code: SUCCESS_200.code, message: xoaChinhSachThanhCong })
+    return res.json({ code: SUCCESS_200.code, message: deleteSuccess })
   } catch (error) {
     _logger.error("xóa chính sách dữ liệu", error)
     if (transaction) await transaction.rollback()
@@ -286,7 +286,7 @@ exports.updateStatus = async (req, res) => {
       nest: true,
       raw: true,
     })
-    if (!findDocUpdate) throw new Error(khongTimThayChinhSachDuLieu)
+    if (!findDocUpdate) throw new Error(dataRetentionPolicyNotFound)
 
     const teams = _.uniq(_.pluck(findDocUpdate, 'DataRetentionPolicyTeam'));
     const teamIds = _.uniq(_.pluck(teams, 'teamId'));
@@ -308,7 +308,7 @@ exports.updateStatus = async (req, res) => {
         ],
       })
 
-      if (check && check.length > 0) throw new Error(doiNguTrongChinhSachDaTonTai)
+      if (check && check.length > 0) throw new Error(statusUpdateFail)
     }
 
     transaction = await model.sequelize.transaction()
@@ -316,7 +316,7 @@ exports.updateStatus = async (req, res) => {
 
     await transaction.commit()
 
-    return res.json({ code: SUCCESS_200.code, message: thayDoiTrangThaiThanhCong })
+    return res.json({ code: SUCCESS_200.code, message: statusUpdateSuccess })
 
   } catch (error) {
     _logger.error("update status", error)
