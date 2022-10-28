@@ -1,13 +1,13 @@
 const TypeDateSaveForCall = {
-  year: {
+  YEAR: {
     value: 365,
     text: "Năm",
   },
-  month: {
+  MONTH: {
     value: 30,
     text: "Tháng",
   },
-  day: {
+  DAY: {
     value: 1,
     text: "Ngày",
   }

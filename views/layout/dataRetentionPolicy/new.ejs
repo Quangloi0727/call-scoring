@@ -33,7 +33,7 @@
           <select class="form-control selectpicker inputData" name="typeDateSaveForCallGotPoint"
             id="typeDateSaveForCallGotPoint" data-live-search="true" title="Chọn...">
             <% Object.keys(TypeDateSaveForCall).forEach((item)=> { %>
-              <option value="<%= item %>" <%- item=='month' ? 'selected' : '' %>>
+              <option value="<%= item %>" <%- item=='MONTH' ? 'selected' : '' %>>
                 <%= TypeDateSaveForCall[item].text %>
               </option>
               <% }); %>
@@ -66,7 +66,7 @@
           <select class="form-control selectpicker inputData" data-live-search="true" id="typeDateSaveForCallNoPoint"
             name="typeDateSaveForCallNoPoint" title="Chọn...">
             <% Object.keys(TypeDateSaveForCall).forEach((item)=> { %>
-              <option value="<%= item %>" <%- item=='month' ? 'selected' : '' %>>
+              <option value="<%= item %>" <%- item=='MONTH' ? 'selected' : '' %>>
                 <%= TypeDateSaveForCall[item].text %>
               </option>
               <% }); %>

@@ -1,7 +1,7 @@
 const moment = require("moment")
 const { Model, DataTypes } = require("sequelize")
 const { ENABLED } = require("../helpers/constants/manageSourceRecord")
-class dbSource extends Model {
+class DbSource extends Model {
     static init(sequelize) {
         return super.init(
             {
@@ -85,22 +85,22 @@ class dbSource extends Model {
             },
             {
                 sequelize,
-                modelName: "db_sources",
+                modelName: "DbSource",
             }
         )
     }
 
     static associate(models) {
-        models.dbSource.belongsTo(models.User, {
+        models.DbSource.belongsTo(models.User, {
             foreignKey: "created",
             as: "userCreate",
         })
 
-        models.dbSource.belongsTo(models.User, {
+        models.DbSource.belongsTo(models.User, {
             foreignKey: "updated",
             as: "userUpdate",
         })
     }
 }
 
-module.exports = dbSource
+module.exports = DbSource

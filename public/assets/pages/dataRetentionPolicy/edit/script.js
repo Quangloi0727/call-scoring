@@ -1,6 +1,10 @@
-$(function () {
-  const $loadingData = $(".page-loader")
+const NUMBER_MAX_VALUE_TXT = "Giá trị phải lớn hơn 0"
+const NUMBER_MIN_VALUE_TXT = "Giá trị không vượt quá 999"
+const REQUIRED_IS_NUMBER = "Giá trị nhập vào là số"
+const STRING_MAX_LENGTH = "Độ dài không được vượt quá 250"
+const REQUIRED_STRING = "Không được để trống tên chính sách"
 
+$(function () {
   $(document).on('change', '#unlimitedSaveForCallGotPoint', function () {
 
     let checked = $('#unlimitedSaveForCallGotPoint').is(':checked');
@@ -45,18 +49,18 @@ $(function () {
     },
     messages: {
       nameDataRetentionPolicy: {
-        required: 'Không được để trống tên chính sách',
-        maxlength: 'Độ dài không được vượt quá 250',
+        required: REQUIRED_STRING,
+        maxlength: STRING_MAX_LENGTH,
       },
       valueSaveForCallGotPoint: {
-        number: 'Giá trị nhập vào là số',
-        min: 'Giá trị phải lớn hơn 0',
-        max: 'Giá trị không vượt quá 999'
+        number: REQUIRED_IS_NUMBER,
+        min: NUMBER_MIN_VALUE_TXT,
+        max: NUMBER_MAX_VALUE_TXT
       },
       valueSaveForCallNoPoint: {
-        number: 'Giá trị nhập vào là số',
-        min: 'Giá trị phải lớn hơn 0',
-        max: 'Giá trị không vượt quá 999'
+        number: REQUIRED_IS_NUMBER,
+        min: NUMBER_MIN_VALUE_TXT,
+        max: NUMBER_MAX_VALUE_TXT
       }
     },
     ignore: ":hidden",
@@ -120,7 +124,6 @@ $(function () {
     let teamIds = $('#selectAddTeams').val()
     if (teamIds && teamIds.length > 0) {
       let strTeamIds = teamIds.join(',')
-      $loadingData.show()
       _AjaxGetData('/dataRetentionPolicy/getTeamByIds?teamIds=' + `${strTeamIds}`, 'GET', function (resp) {
         if (resp.code != 200) {
           return toastr.error(resp.message)

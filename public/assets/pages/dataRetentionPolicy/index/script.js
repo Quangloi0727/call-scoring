@@ -1,4 +1,7 @@
-const $loadingData = $(".page-loader")
+const DATA_RETENTION_POLICY_ACTIVE_TXT = 'Chính sách lưu dữ liệu sẽ được kích hoạt'
+const DATA_RETENTION_POLICY_UN_ACTIVE_TXT = 'Chính sách lưu dữ liệu sẽ bị ngừng hoạt động'
+
+
 $(function () {
 
   $(document).on('click', '#btnSearch', function () {
@@ -27,9 +30,9 @@ $(function () {
     if (status == STATUS.UN_ACTIVE.value) {
       $('#btn-change-status').removeClass('btn-danger')
       $('#btn-change-status').addClass('btn-primary')
-      $('.modal-body-text').text('Chính sách lưu dữ liệu sẽ được kích hoạt')
+      $('.modal-body-text').text(DATA_RETENTION_POLICY_ACTIVE_TXT)
     } else {
-      $('.modal-body-text').text('Chính sách lưu dữ liệu sẽ bị ngừng hoạt động')
+      $('.modal-body-text').text(DATA_RETENTION_POLICY_UN_ACTIVE_TXT)
       $('#btn-change-status').removeClass('btn-primary')
       $('#btn-change-status').addClass('btn-danger')
     }
@@ -87,7 +90,6 @@ function getDataRetentionPolicy(page, nameDataRetentionPolicy) {
   queryData.page = page || 1
   queryData.limit = $('.sl-limit-page').val() || 10
 
-  $loadingData.show()
   const url = '/dataRetentionPolicy/getDataRetentionPolicies?' + $.param(queryData)
   _AjaxGetData(url, 'GET', function (resp) {
     if (resp.code != 200) {

@@ -32,20 +32,12 @@ exports.index = async (req, res, next) => {
 exports.getDetail = async (req, res, next) => {
   try {
     const id = req.params.id
-    const dataRetentionPolicy = await model.DataRetentionPolicy.findAll({
+    const query = {
       where: {
         id: id
-      },
-      include: [
-        { model: model.User, as: 'userCreate' },
-        { model: model.User, as: 'userUpdate' },
-        {
-          model: model.DataRetentionPolicy_Team,
-          as: 'DataRetentionPolicy_Team',
-          include: [{ model: model.Team, as: 'TeamInfo' }]
-        },
-      ]
-    })
+      }
+    }
+    const dataRetentionPolicy = await queryDataRetentionPolicy(query)
 
     const teams = await model.Team.findAll({})
 
@@ -59,7 +51,7 @@ exports.getDetail = async (req, res, next) => {
       dataRetentionPolicy: dataRetentionPolicy[0].dataValues
     })
   } catch (error) {
-    _logger.error("get Detail", error)
+    _logger.error("get chi tiết chính sách dữ liệu", error)
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
@@ -67,20 +59,12 @@ exports.getDetail = async (req, res, next) => {
 exports.getReplication = async (req, res, next) => {
   try {
     const id = req.params.id
-    const dataRetentionPolicy = await model.DataRetentionPolicy.findAll({
+    const query = {
       where: {
         id: id
-      },
-      include: [
-        { model: model.User, as: 'userCreate' },
-        { model: model.User, as: 'userUpdate' },
-        {
-          model: model.DataRetentionPolicy_Team,
-          as: 'DataRetentionPolicy_Team',
-          include: [{ model: model.Team, as: 'TeamInfo' }]
-        },
-      ]
-    })
+      }
+    }
+    const dataRetentionPolicy = await queryDataRetentionPolicy(query)
 
     const teams = await model.Team.findAll({})
 
@@ -151,7 +135,7 @@ exports.getDataRetentionPolicies = async (req, res, next) => {
       }
     })
   } catch (error) {
-    _logger.error("get DataRetentionPolicy", error)
+    _logger.error("Lấy danh sách chính sách dữ liệu", error)
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
@@ -167,7 +151,7 @@ exports.new = async (req, res, next) => {
       teams: teams,
     })
   } catch (error) {
-    _logger.error("get team by ids", error)
+    _logger.error("render tạo mới chính sách dữ liệu", error)
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
@@ -206,7 +190,6 @@ exports.save = async (req, res, next) => {
   }
 }
 
-
 exports.update = async (req, res, next) => {
   let transaction
   try {
@@ -242,7 +225,7 @@ exports.update = async (req, res, next) => {
     await transaction.commit()
     return res.json({ code: SUCCESS_200.code })
   } catch (error) {
-    _logger.error("tạo mới chính sách dữ liệu", error)
+    _logger.error("cập nhật chính sách dữ liệu", error)
     if (transaction) await transaction.rollback()
     return res.json({ code: ERR_400.code, message: error.message })
   }
@@ -258,7 +241,7 @@ exports.delete = async (req, res) => {
     await transaction.commit()
     return res.json({ code: SUCCESS_200.code, message: deleteSuccess })
   } catch (error) {
-    _logger.error("get team by ids", error)
+    _logger.error("xóa chính sách dữ liệu", error)
     if (transaction) await transaction.rollback()
     return res.json({ code: ERR_400.code, message: error.message })
   }
@@ -278,7 +261,7 @@ exports.getTeamByIds = async (req, res) => {
       data: listData
     })
   } catch (error) {
-    _logger.error("get team by ids", error)
+    _logger.error("Lấy danh sách team theo ds team ID", error)
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
@@ -338,3 +321,24 @@ exports.updateStatus = async (req, res) => {
   }
 }
 
+function queryDataRetentionPolicy(query) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const data = model.DataRetentionPolicy.findAll({
+        query,
+        include: [
+          { model: model.User, as: 'userCreate' },
+          { model: model.User, as: 'userUpdate' },
+          {
+            model: model.DataRetentionPolicy_Team,
+            as: 'DataRetentionPolicy_Team',
+            include: [{ model: model.Team, as: 'TeamInfo' }]
+          },
+        ]
+      })
+      return resolve(data)
+    } catch (error) {
+      return reject(error)
+    }
+  })
+}

@@ -31,8 +31,8 @@ const SelectionCriteriasModel = require('./selectionCriterias')
 const CallRatingModel = require('./callRating')
 const CallRatingNoteModel = require('./callRatingNote')
 const CallRatingHistoryModel = require('./callRatingHistory')
-const dbSourceModal = require('./db_sources')
-const manageSourceModal = require('./manageSource')
+const DbSourceModal = require('./db_sources')
+const ManageSourceModal = require('./manageSource')
 
 const dbFileServer = require('./fileServer')
 const DataRetentionPolicyModel = require('./dataRetentionPolicy')
@@ -65,8 +65,8 @@ const models = {
   CallRating: CallRatingModel.init(sequelize),
   CallRatingNote: CallRatingNoteModel.init(sequelize),
   CallRatingHistory: CallRatingHistoryModel.init(sequelize),
-  dbSource: dbSourceModal.init(sequelize),
-  manageSource: manageSourceModal.init(sequelize),
+  DbSource: DbSourceModal.init(sequelize),
+  ManageSource: ManageSourceModal.init(sequelize),
 
   ScoreTarget: ScoreTargetModel.init(sequelize), // mục tiêu chấm điểm
   ScoreTargetAuto: ScoreTargetAutoModel.init(sequelize),
