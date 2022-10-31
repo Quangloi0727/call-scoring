@@ -481,6 +481,7 @@ async function createCallRatingHistory(dataEditOrigin, resultCriteria, userId, t
 
 async function checkRoleUser(roles, id) {
     let arrUserId = []
+    arrUserId = arrUserId.concat(id)
     for (let i = 0; i < roles.length; i++) {
         // check role quản lý đội ngũ
         if (roles[i].role == USER_ROLE.supervisor.n) {
@@ -502,7 +503,7 @@ async function checkRoleUser(roles, id) {
                 raw: true,
                 nest: true
             })
-            arrUserId = [..._.pluck(findUserIdInTeams, 'userId')]
+            arrUserId = arrUserId.concat(_.pluck(findUserIdInTeams, 'userId'))
         }
         // check role quản lý nhóm
         if (roles[i].role == USER_ROLE.groupmanager.n) {
@@ -530,7 +531,7 @@ async function checkRoleUser(roles, id) {
                 raw: true,
                 nest: true
             })
-            arrUserId = [..._.pluck(findUserIdInTeams, 'userId')]
+            arrUserId = arrUserId.concat(_.pluck(findUserIdInTeams, 'userId'))
         }
         continue
     }
