@@ -12,7 +12,7 @@ function validateAndCreate() {
             },
             dbServerId: {
                 required: true,
-                maxlength: 6
+                maxlength: 5
             },
             dbHost: {
                 required: true
@@ -81,7 +81,7 @@ function validateAndCreate() {
             },
             dbServerId: {
                 required: true,
-                maxlength: 6
+                maxlength: 5
             },
             dbHost: {
                 required: true
@@ -211,6 +211,42 @@ function bindClick() {
     $("#modalUpdateSource").on("hidden.bs.modal", function () {
         $('#form_update_source')[0].reset()
     })
+
+    $(document).on('click', "#btn-cancel-save-file-server", function () {
+        return location.reload()
+    })
+
+    $(document).on('click', "#btn-save-file-server", function () {
+        let data = {}
+        data = getFormData('manage-source')
+
+        if ($(this).attr('data-id')) data.id = $(this).attr('data-id')
+
+        _AjaxData('/manageSourceRecord/saveFileServer', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+            if (resp.code != 200) {
+                return toastr.error(resp.message)
+            }
+            toastr.success('Lưu thành công !')
+            return setTimeout(() => {
+                window.location.href = "/manageSourceRecord"
+            }, 2500)
+        })
+    })
+
+    
+    $(document).on('click', "#btn-try-to-connect", function () {
+        data = getFormData('manage-source')
+        
+        if ($(this).attr('data-id')) data.id = $(this).attr('data-id')
+        
+        _AjaxData('/manageSourceRecord/checkShhFileServer', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+            if (resp.code != 200) {
+                return toastr.error(resp.message)
+            }
+            toastr.success('Kết nối thành công !')
+        })
+    })
+
 }
 
 function refreshPage(idForm) {
@@ -242,7 +278,7 @@ function createTable(listData) {
     let html = ''
     listData.forEach(item => {
         html += `<tr>
-                    <td class = "text-center"><a href="javascript:void(0)" class="detail-manage-source-record" data-id="${ item.id} ">${item.sourceName}</a></td>
+                    <td class = "text-center"><a href="javascript:void(0)" class="detail-manage-source-record" data-id="${item.id} ">${item.sourceName}</a></td>
                     <td class = "text-center"><a href="javascript:void(0)" class="${item.enabled == true ? 'action-off' : 'action-on'}" data-id="${item.id} ">${item.enabled == true ? 'Ngừng hoạt động' : 'Kích hoạt'}</a></td>
                     <td class = "text-center">${item.sourceType}</td>
                     <td class = "text-center">${item.enabled == true ? '<span class="badge badge-success">Hoạt động</span>' : '<span class="badge badge-danger">Ngừng hoạt động</span>'}</td>
@@ -278,7 +314,23 @@ function genSourceType(sourceType) {
     }
 }
 
+function getFormData(formId) {
+    let filter = {}
+
+    filter = _.chain($(`#${formId} .input`)).reduce(function (memo, el) {
+        let value = $(el).val()
+        if (value != '' && value != null) memo[el.name] = value
+        else memo[el.name] = ""
+        return memo
+    }, {}).value()
+
+    return filter
+}
+
 $(function () {
+    $('.selectpicker').selectpicker().change(function () {
+        $(this).valid()
+    })
     validateAndCreate()
     bindClick()
 })

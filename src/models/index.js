@@ -22,6 +22,7 @@ const ScoreTargetCondModel = require('./scoreTargetCond')
 const ScoreTargetKeywordSetModel = require('./scoreTargetKeywordSet')
 const ScoreTarget_ScoreScriptModel = require('./scoreTarget_scoreScript')
 const ScoreTargetAssignmentModel = require('./scoreTargetAssignment')
+const CallShareModel = require('./callShare')
 
 const CriteriaGroupsModel = require('./criteriaGroups')
 const CriteriasModel = require('./criterias')
@@ -31,6 +32,9 @@ const CallRatingModel = require('./callRating')
 const CallRatingNoteModel = require('./callRatingNote')
 const CallRatingHistoryModel = require('./callRatingHistory')
 const dbSourceModal = require('./db_sources')
+const manageSourceModal = require('./manageSource')
+
+const dbFileServer = require('./fileServer')
 
 let db = {}
 let sequelize = null
@@ -60,6 +64,7 @@ const models = {
   CallRatingNote: CallRatingNoteModel.init(sequelize),
   CallRatingHistory: CallRatingHistoryModel.init(sequelize),
   dbSource: dbSourceModal.init(sequelize),
+  manageSource: manageSourceModal.init(sequelize),
 
   ScoreTarget: ScoreTargetModel.init(sequelize), // mục tiêu chấm điểm
   ScoreTargetAuto: ScoreTargetAutoModel.init(sequelize),
@@ -67,10 +72,12 @@ const models = {
   ScoreTargetKeywordSet: ScoreTargetKeywordSetModel.init(sequelize),
   ScoreTarget_ScoreScript: ScoreTarget_ScoreScriptModel.init(sequelize),
   ScoreTargetAssignment: ScoreTargetAssignmentModel.init(sequelize),
+  CallShare: CallShareModel.init(sequelize),
 
   CriteriaGroup: CriteriaGroupsModel.init(sequelize),
   Criteria: CriteriasModel.init(sequelize),
   SelectionCriteria: SelectionCriteriasModel.init(sequelize),
+  FileServer: dbFileServer.init(sequelize),
 }
 
 Object.keys(models).forEach(model => {

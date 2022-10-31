@@ -14,7 +14,6 @@ function findData(page, formQuery) {
   $loadingData.show()
 
   _AjaxGetData('scoreTarget/gets?' + $.param(queryData), 'GET', function (resp) {
-    console.log(resp)
     if (resp.code != 200) {
       return toastr.error(resp.message)
     }
@@ -50,8 +49,8 @@ function createTable(data) {
 function renStatus(status) {
   let result
   for (const [key, value] of Object.entries(CONST_STATUS)) {
-    if (status == value) {
-      result = key
+    if (status == value.value) {
+      result = value.text
     }
   }
   return result
@@ -59,7 +58,6 @@ function renStatus(status) {
 
 $(function () {
   //event phân trang 
-  console.log(CONST_STATUS)
   $(document).on('click', '.zpaging', function () {
     let page = $(this).attr('data-link')
     let formQuery = _.chain($(`#form_search .input`)).reduce(function (memo, el) {

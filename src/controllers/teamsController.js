@@ -53,7 +53,7 @@ exports.getTeams = async (req, res, next) => {
     const offset = (pageNumber * limit) - limit
     let query = ''
 
-    if (name) query += `AND (team.name LIKE '%${name}%' OR memberOfTeam.fullName LIKE '%${name}%' OR memberOfTeam.userName LIKE '%${name}%')`
+    if (name) query += `AND (team.name LIKE N'%${name}%' OR memberOfTeam.fullName LIKE N'%${name}%' OR memberOfTeam.userName LIKE N'%${name}%')`
 
     let queryDataString = `
       SELECT
@@ -432,7 +432,7 @@ exports.userOfTeam = async (req, res) => {
     let queryName = ''
 
     if (name) {
-      queryName += `AND Users.fullName LIKE '%${name}%'`
+      queryName += `AND Users.fullName LIKE N'%${name}%'`
     }
 
     let queryString = `

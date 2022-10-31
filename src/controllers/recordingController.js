@@ -20,7 +20,6 @@ const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
 const { headerDefault, keysTitleExcel, SOURCE_NAME } = require('../helpers/constants/fieldRecording')
 const { TeamStatus } = require('../helpers/constants/fileTeam')
-const { Team } = require('../models/team')
 
 exports.index = async (req, res, next) => {
   try {
@@ -31,7 +30,7 @@ exports.index = async (req, res, next) => {
       isAdmin = true
     }
 
-    let { teams, teamIds } = await checkLeader(req.user.id)
+    let { teamIds } = await checkLeader(req.user.id)
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
       let userGroupTeam = await getTeamOfGroup(req.user.id)
@@ -157,7 +156,7 @@ exports.getRecording = async (req, res) => {
       const getAgentOfTeam = await model.AgentTeamMember.findAll({
         where: { teamId: { [Op.in]: arrTeamId }, role: USER_ROLE.agent.n },
         include: [{
-          model: Team,
+          model: model.Team,
           as: 'teams',
           where: {
             status: { [Op.eq]: TeamStatus.OFF }
@@ -166,7 +165,6 @@ exports.getRecording = async (req, res) => {
       })
       const userOfTeamOff = _.pluck(getAgentOfTeam, 'userId')
       if (userOfTeamOff.length > 0) query += `AND records.agentId not in (${userOfTeamOff.join(',')}) `
-
     }
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
@@ -220,7 +218,7 @@ exports.getRecording = async (req, res) => {
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `
     if (teams) query += `AND team.id IN (${teams.toString()}) `
-    if (callId) query += `AND records.callId LIKE '%${callId.toString()}%' `
+    if (callId) query += `AND records.id LIKE '%${callId.toString()}%' `
     if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `
 
     // limit time by rule
@@ -232,6 +230,7 @@ exports.getRecording = async (req, res) => {
     }
 
     const ConfigurationColums = await getConfigurationColums(req.user.id)
+    
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums)
     }
@@ -240,8 +239,8 @@ exports.getRecording = async (req, res) => {
       DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
 
       SELECT
-        records.callId AS callId,
-        records.xmlCdrId AS xmlCdrId,
+        records.id AS callId,
+        records.id AS xmlCdrId,
         records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
@@ -402,7 +401,7 @@ function checkLeader(userId) {
     try {
       let teamIds = []
 
-      const resulds = await model.sequelize.query(
+      const results = await model.sequelize.query(
         `
           SELECT
             Teams.id AS teamId,
@@ -415,9 +414,9 @@ function checkLeader(userId) {
         { type: QueryTypes.SELECT }
       )
 
-      teamIds = _.map(resulds, 'teamId')
+      teamIds = _.map(results, 'teamId')
 
-      return resolve({ teams: resulds, teamIds: teamIds })
+      return resolve({ teams: results, teamIds: teamIds })
     } catch (error) {
       return reject(error)
     }
@@ -433,15 +432,16 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
       } else {
         // sup
         if (teamIds.length > 0) {
-          conditionQuery = `team.id IN (${teamIds.join(',')}) and 
-          AgentTeamMembers.role =  ${USER_ROLE.agent.n}`
+          conditionQuery = `team.id IN (${teamIds.join(',')}) AND AgentTeamMembers.role =  ${USER_ROLE.agent.n}`
         } else {
           // agent
           conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`
         }
 
       }
-      conditionQuery += `and team.status = ${TeamStatus.ON}` //get team active
+
+      conditionQuery += `AND team.status = ${TeamStatus.ON}` //get team active
+
       const result = await model.sequelize.query(
         `
             SELECT
@@ -491,8 +491,8 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
   try {
     const dataResult = await model.sequelize.query(`
       SELECT
-        records.callId AS callId,
-        records.xmlCdrId AS xmlCdrId,
+        records.id AS callId,
+        records.id AS xmlCdrId,
 	      records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,

@@ -8,7 +8,9 @@ const {
 
 const {
     CONST_COND,
-    CONST_STATUS
+    CONST_STATUS,
+    USER_ROLE,
+    TeamStatus
 } = require('../helpers/constants/index')
 
 const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
@@ -20,9 +22,8 @@ const moment = require('moment')
 
 exports.index = async (req, res, next) => {
     try {
-
         const scoreTarget = await model.ScoreTarget.findAll({
-            where: { status: CONST_STATUS['Hoạt động'] },
+            where: { status: CONST_STATUS.ACTIVE.value },
             attributes: ['name', 'id'],
             raw: true,
             nest: true
@@ -46,8 +47,7 @@ exports.getScoreMission = async (req, res, next) => {
     try {
         let {
             page,
-            limit,
-            scoreTargetId
+            limit
         } = req.query
 
         if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
@@ -56,102 +56,71 @@ exports.getScoreMission = async (req, res, next) => {
 
         const pageNumber = page ? Number(page) : 1
         const offset = (pageNumber * limit) - limit
-        let query = {
-            [Op.and]: [
-                { caller: { [Op.ne]: null } },
-                { called: { [Op.ne]: null } }
-            ],
-        }
-        if (scoreTargetId) {
-            let data = await model.ScoreTargetCond.findAll({
-                where: { scoreTargetId: { [Op.eq]: Number(scoreTargetId) } },
-                raw: true,
-                nest: true
-            })
-            if (data.length > 0) {
-                data.map((el) => {
-                    let _data = {}
-                    _data[`${el.data}`] = { [Op[`${CONST_COND[el.cond].n}`]]: Number(el.value), }
-                    query[Op[data[0].conditionSearch]].push(_data)
-                })
-            }
-        }
 
-        let [{ rows }, { count }] = await Promise.all([
-            // ds các bản ghi đã lấy ddc
-            model.CallDetailRecords.findAndCountAll({
-                where: query,
-                include: [
-                    { model: model.User, as: 'agent' },
-                    {
-                        model: model.Team,
-                        as: 'team',
-                        include: {
-                            model: model.TeamGroup,
-                            as: 'TeamGroup',
-                            include: {
-                                model: model.Group,
-                                as: 'Group'
-                            },
-                        },
-                    },
-                    { model: model.CallRating, as: 'callRating' },
-                    {
-                        model: model.CallRatingNote,
-                        as: 'callRatingNote',
-                    },
-                    {
-                        model: model.CallRating,
-                        as: 'callRating',
-                        include: {
-                            model: model.SelectionCriteria,
-                            as: 'SelectionCriteria'
-                        },
-                    },
-                ],
-                order: [
-                    ['id', 'DESC'],
-                ],
-                offset: offset,
-                limit: limit,
+        const { roles, id } = req.user
 
-                nest: true
-            }),
-            //tính tổng
-            model.CallDetailRecords.findAndCountAll({
-                where: query,
-                offset: offset,
-                limit: limit,
+        const arrUserId = await checkRoleUser(roles, id)
 
-                nest: true
-            })
-        ])
-
-        const scoreScripts = await model.ScoreTarget_ScoreScript.findAll({
-            where: {
-                scoreTargetId: { [Op.eq]: Number(scoreTargetId) },
-            },
+        let findList = model.CallShare.findAll({
+            where: { assignFor: arrUserId },
             include: [
                 {
-                    model: model.ScoreScript,
-                    as: 'ScoreScripts',
-                    where: { status: 1 },
+                    model: model.CallDetailRecords,
+                    as: 'callInfo',
+                    include: [
+                        {
+                            model: model.Team,
+                            as: 'team'
+                        },
+                        {
+                            model: model.User,
+                            as: 'agent'
+                        }
+                    ]
+                },
+                {
+                    model: model.ScoreTarget,
+                    as: 'scoreTargetInfo',
+                    include: [
+                        {
+                            model: model.ScoreTarget_ScoreScript,
+                            as: 'ScoreTarget_ScoreScript',
+                            include: {
+                                model: model.ScoreScript,
+                                as: 'scoreScriptInfo'
+                            }
+                        }
+                    ]
+                },
+                {
+                    model: model.CallRating,
+                    as: 'callRatingInfo',
+                    include: {
+                        model: model.SelectionCriteria,
+                        as: 'selectionCriteriaInfo'
+                    }
                 }
             ],
-            nest: true
+            order: [['updatedAt', 'DESC']],
+            offset: offset,
+            limit: limit
         })
+
+        let count = model.CallShare.count({ where: { assignFor: arrUserId } })
+
+        const [listData, totalRecord] = await Promise.all([findList, count])
 
         let paginator = new pagination.SearchPaginator({
             current: pageNumber,
             rowsPerPage: limit,
-            totalResult: count
+            totalResult: totalRecord
         })
 
         let configurationColums = await getConfigurationColums(req.user.id)
+
         return res.status(SUCCESS_200.code).json({
             message: 'Success!',
-            data: handleData(rows, _config.privatePhoneNumberWebView) || [],
-            scoreScripts: scoreScripts,
+            data: handleData(listData, _config.privatePhoneNumberWebView) || [],
             configurationColums: configurationColums,
             paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
         })
@@ -471,14 +440,17 @@ function handleData(data, privatePhoneNumber = false) {
     let newData = []
 
     newData = data.map((el) => {
-        el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
-        el.duration = _.hms(el.duration)
-        el.recordingFileName = _config.pathRecording + el.recordingFileName
+
+        const { origTime, duration, recordingFileName, caller, called } = el.callInfo
+
+        el.callInfo.origTime = moment(origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
+        el.callInfo.duration = _.hms(duration)
+        el.callInfo.recordingFileName = _config.pathRecording + recordingFileName
 
         // che số
         if (privatePhoneNumber) {
-            if (el.caller && el.caller.length >= 10) el.caller = cheSo(el.caller, 4)
-            if (el.called && el.called.length >= 10) el.called = cheSo(el.called, 4)
+            if (caller && caller.length >= 10) el.callInfo.caller = cheSo(caller, 4)
+            if (called && called.length >= 10) el.callInfo.called = cheSo(called, 4)
         }
 
         return el
@@ -506,3 +478,61 @@ async function createCallRatingHistory(dataEditOrigin, resultCriteria, userId, t
     await model.CallRatingHistory.bulkCreate(resultInsert, { transaction: transaction })
 }
 
+
+async function checkRoleUser(roles, id) {
+    let arrUserId = []
+    for (let i = 0; i < roles.length; i++) {
+        // check role quản lý đội ngũ
+        if (roles[i].role == USER_ROLE.supervisor.n) {
+            const teams = await model.AgentTeamMember.findAll({
+                where: { userId: id, role: USER_ROLE.supervisor.n },
+                include: [{
+                    model: model.Team,
+                    as: 'teams',
+                    where: {
+                        status: { [Op.eq]: TeamStatus.ON }
+                    }
+                }],
+                raw: true,
+                nest: true
+            })
+            const teamId = _.pluck(teams, 'teamId')
+            const findUserIdInTeams = await model.AgentTeamMember.findAll({
+                where: { teamId: { [Op.in]: teamId }, role: USER_ROLE.agent.n },
+                raw: true,
+                nest: true
+            })
+            arrUserId = [..._.pluck(findUserIdInTeams, 'userId')]
+        }
+        // check role quản lý nhóm
+        if (roles[i].role == USER_ROLE.groupmanager.n) {
+            const groups = await model.UserGroupMember.findAll({
+                where: { userId: id, role: USER_ROLE.groupmanager.n },
+                raw: true,
+                nest: true
+            })
+            const groupId = _.pluck(groups, 'groupId')
+            const findTeamByGroup = await model.TeamGroup.findAll({
+                where: { groupId: { [Op.in]: groupId } },
+                include: [{
+                    model: model.Team,
+                    as: 'Team',
+                    where: {
+                        status: { [Op.eq]: TeamStatus.ON }
+                    }
+                }],
+                raw: true,
+                nest: true
+            })
+            const teamId = _.pluck(findTeamByGroup, 'teamId')
+            const findUserIdInTeams = await model.AgentTeamMember.findAll({
+                where: { teamId: { [Op.in]: teamId }, role: USER_ROLE.agent.n },
+                raw: true,
+                nest: true
+            })
+            arrUserId = [..._.pluck(findUserIdInTeams, 'userId')]
+        }
+        continue
+    }
+    return arrUserId
+}

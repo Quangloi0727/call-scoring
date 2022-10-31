@@ -1,7 +1,4 @@
-
-const { Model, DataTypes, Op } = require("sequelize")
-const { MESSAGE_ERROR } = require("../helpers/constants")
-
+const { Model, DataTypes } = require("sequelize")
 class ScoreTargetCond extends Model {
   static init(sequelize) {
     return super.init(
@@ -29,11 +26,7 @@ class ScoreTargetCond extends Model {
       },
       {
         sequelize,
-        modelName: "ScoreTargetCond",
-        // hooks: {
-        //   beforeCreate: handleBeforeCreate,
-        // },
-        // If don't want updatedAt
+        modelName: "ScoreTargetCond"
       }
     )
   }

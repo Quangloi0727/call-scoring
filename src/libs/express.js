@@ -48,6 +48,8 @@ function initServer() {
 
   _.mixin(_.extend(require('underscore.string').exports(), require(path.join(_rootPath, 'src', 'libs', 'function'))))
 
+  require(path.join(_rootPath, 'src', 'jobs', 'job-share-data-for-mission'))
+
   // Config socket.io version 3.0.4
   const server = http.createServer(app)
   const io = require('socket.io')(server, {
@@ -74,12 +76,7 @@ function initServer() {
   // Router
   app.use('/', router)
 
-
-
   app.use("*", (req, res, next) => {
-    console.log(1111,req);
-    console.log(2222,res);
-    
     if (req.originalUrl.indexOf("style.css") >= 0 || req.originalUrl.indexOf("script.js") >= 0) return next(null, req, res, next)
     const err = new ResError(ERR_404.code, `Page ${ERR_404.message}`)
     next(err, req, res, next)
