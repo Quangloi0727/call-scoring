@@ -41,7 +41,7 @@ exports.getListSource = async (req, res, next) => {
         const pageNumber = page ? Number(page) : 1
         const offset = (pageNumber * limit) - limit
 
-        let findList = model.manageSource.findAll({
+        let findList = model.ManageSource.findAll({
             where: _query,
             include: [
                 {
@@ -58,7 +58,7 @@ exports.getListSource = async (req, res, next) => {
             limit: limit
         })
 
-        let count = model.manageSource.count({ where: _query })
+        let count = model.ManageSource.count({ where: _query })
 
         const [listData, totalRecord] = await Promise.all([findList, count])
 
@@ -84,13 +84,13 @@ exports.create = async (req, res, next) => {
     try {
         const { id, sourceType, sourceName, dbHost, dbPort } = req.body
 
-        const checkExistId = await model.manageSource.findOne({ where: { id: id } })
+        const checkExistId = await model.ManageSource.findOne({ where: { id: id } })
         if (checkExistId) throw new Error(idExist)
 
-        const checkNameExist = await model.manageSource.findOne({ where: { sourceName: sourceName } })
+        const checkNameExist = await model.ManageSource.findOne({ where: { sourceName: sourceName } })
         if (checkNameExist) throw new Error(nameExist)
 
-        const checkExistPortHost = await model.manageSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort } })
+        const checkExistPortHost = await model.ManageSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort } })
         if (checkExistPortHost) throw new Error(hostPortExist)
 
         for (var pro in SOURCE_NAME) {
@@ -105,7 +105,7 @@ exports.create = async (req, res, next) => {
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
-        const manageSource = await model.manageSource.create(req.body)
+        const manageSource = await model.ManageSource.create(req.body)
 
         // request tạo source theo api
         const response = await axios.post(_config.pathUrlSource + '/source', req.body, { headers: { 'Content-Type': 'application/json' } })
@@ -127,7 +127,7 @@ exports.create = async (req, res, next) => {
 exports.detail = async (req, res, next) => {
     try {
         const { id } = req.params
-        const findSource = await model.manageSource.findOne({ where: { id: id } })
+        const findSource = await model.ManageSource.findOne({ where: { id: id } })
         if (!findSource) throw new Error(sourceNotExist)
 
         return res.json({ code: SUCCESS_200.code, data: findSource })
@@ -145,10 +145,10 @@ exports.update = async (req, res, next) => {
         const { id } = req.params
         const { sourceType, sourceName, dbHost, dbPort } = req.body
 
-        const checkNameExist = await model.manageSource.findOne({ where: { sourceName: sourceName, id: { [Op.ne]: id } } })
+        const checkNameExist = await model.ManageSource.findOne({ where: { sourceName: sourceName, id: { [Op.ne]: id } } })
         if (checkNameExist) throw new Error(nameExist)
 
-        const checkExistPortHost = await model.manageSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort, id: { [Op.ne]: id } } })
+        const checkExistPortHost = await model.ManageSource.findOne({ where: { dbHost: dbHost, dbPort: dbPort, id: { [Op.ne]: id } } })
         if (checkExistPortHost) throw new Error(hostPortExist)
 
         for (var pro in SOURCE_NAME) {
@@ -162,10 +162,10 @@ exports.update = async (req, res, next) => {
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
-        await model.manageSource.update(req.body, { where: { id: id } })
+        await model.ManageSource.update(req.body, { where: { id: id } })
 
         // request tạo source theo api
-        const source = await model.manageSource.findOne({ where: { id: id } })
+        const source = await model.ManageSource.findOne({ where: { id: id } })
 
         await axios.put(_config.pathUrlSource + '/source/' + source.sourceId, req.body, { headers: { 'Content-Type': 'application/json' } })
 
@@ -186,9 +186,9 @@ exports.updateStatus = async (req, res, next) => {
         req.body.updated = req.user.id
         req.body.lastUpdateTime = _moment(new Date()).valueOf()
 
-        await model.manageSource.update(req.body, { where: { id: id } }, { transaction: transaction })
+        await model.ManageSource.update(req.body, { where: { id: id } }, { transaction: transaction })
 
-        const source = await model.manageSource.findOne({ where: { id: id } })
+        const source = await model.ManageSource.findOne({ where: { id: id } })
 
         await axios.put(_config.pathUrlSource + '/source/' + source.sourceId + '/' + genStatus(source.enabled), null, { headers: { 'Content-Type': 'application/json' } })
 

@@ -133,7 +133,66 @@ function validateAndCreate() {
                 toastr.success(resp.message)
                 return refreshPage("modalUpdateSource")
             })
+        }
+    })
 
+    $("#form_file_server").validate({
+        rules: {
+            ipServer: {
+                required: true
+            },
+            path: {
+                required: true
+            },
+            port: {
+                required: true,
+                number: true
+            }
+        },
+        messages: {
+            ipServer: {
+                required: window.location.MESSAGE_ERROR["QA-001"],
+            },
+            path: {
+                required: window.location.MESSAGE_ERROR["QA-001"],
+            },
+            port: {
+                required: window.location.MESSAGE_ERROR["QA-001"],
+                number: 'Giá trị cần nhập là số'
+            }
+        },
+        ignore: ":hidden",
+        errorElement: "span",
+        errorPlacement: function (error, element) {
+            error.addClass("invalid-feedback")
+            element.closest("div").append(error)
+        },
+        highlight: function (element, errorClass, validClass) {
+            $(element).addClass("is-invalid")
+        },
+        unhighlight: function (element, errorClass, validClass) {
+            $(element).removeClass("is-invalid")
+        },
+        submitHandler: function () {
+            let data = {}
+            data = getFormData('manage-source')
+            if ($('#btn-save-file-server').attr('data-id')) data.id = $(this).attr('data-id')
+
+            _AjaxData('/manageSourceRecord/checkShhFileServer', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+                if (resp.code != 200) {
+                    return toastr.error("Thông tin file server không thể kết nối được")
+                }
+
+                _AjaxData('/manageSourceRecord/saveFileServer', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+                    if (resp.code != 200) {
+                        return toastr.error(resp.message)
+                    }
+                    toastr.success('Lưu thành công !')
+                    return setTimeout(() => {
+                        window.location.href = "/manageSourceRecord"
+                    }, 2500)
+                })
+            })
         }
     })
 }
@@ -216,32 +275,20 @@ function bindClick() {
         return location.reload()
     })
 
-    $(document).on('click', "#btn-save-file-server", function () {
-        let data = {}
-        data = getFormData('manage-source')
+    // $(document).on('click', "#btn-save-file-server", function () {
 
-        if ($(this).attr('data-id')) data.id = $(this).attr('data-id')
+    // })
 
-        _AjaxData('/manageSourceRecord/saveFileServer', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
-            if (resp.code != 200) {
-                return toastr.error(resp.message)
-            }
-            toastr.success('Lưu thành công !')
-            return setTimeout(() => {
-                window.location.href = "/manageSourceRecord"
-            }, 2500)
-        })
-    })
 
-    
     $(document).on('click', "#btn-try-to-connect", function () {
         data = getFormData('manage-source')
-        
+
         if ($(this).attr('data-id')) data.id = $(this).attr('data-id')
-        
+
         _AjaxData('/manageSourceRecord/checkShhFileServer', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
-                return toastr.error(resp.message)
+                console.log('kết nối không thành công:', resp.message);
+                return toastr.error('Thử kết nối không thành công')
             }
             toastr.success('Kết nối thành công !')
         })

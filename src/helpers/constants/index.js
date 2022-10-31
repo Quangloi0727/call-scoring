@@ -7,5 +7,6 @@ module.exports = {
     ...require("./special.character"),
     ...require("./fieldRecording"),
     ...require("./constScoreTarget"),
+    ...require("./constDataRetentionPolicy"),
     ...require("./fileTeam"),
 }

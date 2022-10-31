@@ -1,6 +1,6 @@
 const moment = require("moment")
 const { Model, DataTypes } = require("sequelize")
-class fileServer extends Model {
+class FileServer extends Model {
   static init(sequelize) {
     return super.init(
       {
@@ -53,7 +53,7 @@ class fileServer extends Model {
       },
       {
         sequelize,
-        modelName: "fileServer",
+        modelName: "FileServer",
       }
     )
   }
@@ -71,4 +71,4 @@ class fileServer extends Model {
   }
 }
 
-module.exports = fileServer
+module.exports = FileServer
