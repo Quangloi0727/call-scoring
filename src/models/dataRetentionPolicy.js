@@ -4,7 +4,7 @@ class DataRetentionPolicy extends Model {
   static init(sequelize) {
     return super.init(
       {
-        name: {
+        nameDataRetentionPolicy: {
           type: DataTypes.STRING(250),
           allowNull: false
         },
