@@ -27,11 +27,11 @@ const STATUS = {
 const UnlimitedSaveForCall = {
   UnlimitedSave: {
     value: 1,
-    t: "Có lưu không giới hạn",
+    text: "Có lưu không giới hạn",
   },
   UnlimitedNotSave: {
     value: 2,
-    t: "Không lưu không giới hạn",
+    text: "Không lưu không giới hạn",
   }
 }
 const dataRetentionPolicyNotFound = 'Không tìm thấy chính sách dữ liệu vui lòng thử lại sau !'
