@@ -1,7 +1,7 @@
 {
-  "pathRecording": "http://172.16.16.129/static/",
-  "privatePhoneNumberWebView": true, 
+  "pathRecording": "https://qa.metechvn.com/static/",
+  "privatePhoneNumberWebView": true,
   "privatePhoneNumberExcel": true,
-  "limitSearchDayRecording": 60
-  
+  "limitSearchDayRecording": 60,
+  "pathUrlSource": "http://172.16.88.31:5530"
 }

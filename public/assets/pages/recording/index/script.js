@@ -50,11 +50,7 @@ function bindClick() {
     if (e.which == 13) {
       let page = 1
       let formData = getFormData('form_search')
-
-      console.log('formData: ', formData)
-
       searchType = DEFAULT_SEARCH
-
       findData(page, null, formData)
     }
 
@@ -63,12 +59,9 @@ function bindClick() {
   $buttonAdvancedSearch.on('click', function () {
     let page = 1
     let formData = getFormData('form_advanced_search')
-
     searchType = ADVANCED_SEARCH
-
-    console.log('formData: ', formData)
-
     localStorage.setItem('modalData', JSON.stringify(formData))
+
     if (formData.startTime) {
       $('[name="startTime"]').val(formData.startTime)
     }
@@ -171,30 +164,25 @@ function bindClick() {
     items: "li:not(.unsortable)"
   })
 
-  $btn_save_customs.click(function (event) {
-    let listCheck = []
+  $btn_save_customs.click(function () {
     $checkInput.each(function (index) {
       // đoạn này e check và cho ẩn hiện luôn ko có save data nguyenvc
       var colToHide = $tableRecording.find("." + $(this).attr("name"))
 
       if ($(this).is(":checked") == false) {
-
         $(colToHide).toggle(false)
-
       } else {
         $(colToHide).toggle(true)
       }
 
     })
+
     let obj = {}
     $("#sortable input:checkbox").each(function () {
       let key = $(this).attr("name")
       let value = $(this).is(":checked")
       obj[key] = value
-
     })
-    console.log(obj)
-    // debugger;
     SaveConfigurationColums(obj)
   })
 
@@ -206,10 +194,8 @@ function bindClick() {
       })
     } else {
       $(':checkbox').each(function () {
-        console.log($(this).attr('name'))
         if ($(this).attr('name') == 'callId') return
         this.checked = false
-
       })
     }
   })
@@ -284,8 +270,6 @@ function SaveConfigurationColums(data) {
       }
 
       return findData(1, null, formData)
-
-      // return location.reload();
     },
     error: function (error) {
       $modal_customs_table.modal('hide')
@@ -345,12 +329,12 @@ function findData(page, exportExcel, queryData) {
 function itemColumn(key, title, value) {
   // debugger;
   return `<li class="mb-3 border-bottom ${key == 'callId' ? "unsortable" : ""}">
-        <input class="form-check-input" type="checkbox" name="${key}" ${key == 'callId' ? 'disabled' : ''} ${key == 'callId' || value == 'true' ? 'checked' : ''}/>
-        ${title}
-        <span style="float: right;">
-        <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
-        </span>
-  </li>`
+            <input class="form-check-input" type="checkbox" name="${key}" ${key == 'callId' ? 'disabled' : ''} ${key == 'callId' || value == 'true' ? 'checked' : ''}/>
+            ${title}
+            <span style="float: right;">
+              <i class="fas fa-arrows-alt" title="Giữ kéo/thả để sắp xếp"></i>
+            </span>
+          </li>`
 }
 /**
  *  
@@ -360,7 +344,7 @@ function itemColumn(key, title, value) {
 function renderPopupCustomColumn(ConfigurationColums, init = false) {
   let popupHtml = ''
   for (const [key, value] of Object.entries(ConfigurationColums)) {
-    popupHtml += itemColumn(key, headerDefault[key], init == true ? 'true' : value)
+    popupHtml += itemColumn(key, headerDefault[key], (init == true && key != "sourceName") ? 'true' : value)
   }
   let columnNotTick = _.difference(Object.keys(headerDefault), Object.keys(ConfigurationColums))
   columnNotTick.forEach(i => {
@@ -381,7 +365,7 @@ function renderHeaderTable(ConfigurationColums, queryData, init = false) {
     if (queryData.sort && queryData.sort.sort_by == key) {
       sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
     }
-    headerTable += `<th class="text-center sortHeader ${key} ${value == 'true' || init == true ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`
+    headerTable += `<th class="text-center sortHeader ${key} ${(value == 'true' || (init == true && key != "sourceName")) ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`
   }
 
   $('#tableRecording thead tr').html(headerTable)
@@ -415,13 +399,11 @@ function createTable(data, ConfigurationColums, queryData) {
       for (const [key, value] of Object.entries(objColums)) {
         if (key == 'audioHtml' && value == 'true') {
           tdTable += audioHtml
-        }
-        else if (key == 'agentName' && value == 'true') {
+        } else if (key == 'agentName' && value == 'true') {
           tdTable += ` <td class="text-center agentName">${agentName}</td>`
         } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
           tdTable += ` <th class="text-center callId fix"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
-        }
-        else {
+        } else {
           tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>`
         }
       }
@@ -450,24 +432,24 @@ function createTable(data, ConfigurationColums, queryData) {
 
       let tdTable = ''
       Object.keys(headerDefault).forEach((key) => {
-        if (key == 'audioHtml') {
-          tdTable += `<td class="text-center audioHtml">${audioHtml}</td>`
-        }
-        else if (key == 'agentName') {
-          tdTable += ` <td class="text-center agentName">${agentName}</td>`
-        } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
-          tdTable += ` <th class="text-center callId"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
-        } else if (key == 'action') {
-          tdTable += ` <th class="text-center ${key}">
-                          <i class="fas fa-check mr-2" title="Chấm điểm"></i>
-                          <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
-                          <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
-                          <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
-                          <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
-                        </th>`
-        }
-        else {
-          tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>`
+        if (key != "sourceName") {
+          if (key == 'audioHtml') {
+            tdTable += `<td class="text-center audioHtml">${audioHtml}</td>`
+          } else if (key == 'agentName') {
+            tdTable += ` <td class="text-center agentName">${agentName}</td>`
+          } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
+            tdTable += ` <th class="text-center callId"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+          } else if (key == 'action') {
+            tdTable += ` <th class="text-center ${key}">
+                            <i class="fas fa-check mr-2" title="Chấm điểm"></i>
+                            <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
+                            <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
+                            <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
+                            <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
+                          </th>`
+          } else {
+            tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>`
+          }
         }
       })
 
@@ -492,7 +474,6 @@ function downloadFromUrl(url) {
 }
 
 $(function () {
-
 
   $('#popup_startTime').datetimepicker({
     format: 'DD/MM/YYYY',

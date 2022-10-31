@@ -1,7 +1,5 @@
-
 const $form_target_general = $('#form_target_general')
 $form_target_general.validate({
-
   rules: {
     description: {
       maxlength: 500
@@ -39,8 +37,8 @@ $form_target_general.validate({
     $(element).removeClass('is-invalid')
   }
 })
-function bindClick() {
 
+function bindClick() {
   $(document).on("click", "#btn_save_scoreTarget", function (e) {
     // check valid cho form
     if (!$form_target_general.valid()) return toastr.error("Thông tin nhập không hợp lệ")
@@ -55,28 +53,27 @@ function bindClick() {
     let arrTargetAuto = getTargetAutoData()
     formData.arrTargetAuto = arrTargetAuto
 
-    console.log(formData)
-
     // check trùng Tiêu chí chấm 
     let temp = []
     let check = true
     arrTargetAuto.map((el) => {
       temp.push(el.nameTargetAuto)
       const found = temp.filter(element => element == el.nameTargetAuto)
-      console.log(found)
       if (found.length >= 2) check = false
     })
-    console.log(temp)
-    console.log(check)
+
     if (check == false) {
       toastr.error("Tên tiêu chí chấm đã được sử dụng")
       return $('.duplicateNameTarget').removeClass('d-none')
     }
 
     if ($('#btn_save_scoreTarget').attr('data-id')) {
+      const arr = $('#scoreScriptId option[disabled]').val()
       formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
-      saveData(formData, 'PUT')
-      return console.log($('#btn_save_scoreTarget').attr('data-id'))
+      if (formData['scoreScriptId']) {
+        formData['scoreScriptId'] = formData['scoreScriptId'].concat(arr.split(','))
+      }
+      return saveData(formData, 'PUT')
     }
     return saveData(formData, 'POST')
 
@@ -285,11 +282,6 @@ function CustomizeDuallistbox(listboxID) {
   customSettings.find('.btn-group.buttons').remove()
 }
 
-function resetAssignTime() {
-  $("#assignStart").val("00:00:00")
-  $("#assignEnd").val("23:59:59")
-}
-
 function saveData(formData, method) {
   $.ajax({
     type: `${method}`,
@@ -304,8 +296,8 @@ function saveData(formData, method) {
     },
     error: function (error) {
       if (error.responseJSON.message == window.location.MESSAGE_ERROR["QA-002"]) return $(".duplicateNameScoreTarget").removeClass('d-none')
-      console.log("Lưu data bị lỗi :", error.responseJSON.message);
-      return toastr.error("Có lỗi đang xảy ra")
+      console.log("Lưu data bị lỗi :", error.responseJSON.message)
+      return toastr.error(error.responseJSON.message)
     },
   })
 }
@@ -372,6 +364,7 @@ function getTargetAutoData() {
   $("input[name='falsePoint']").each(function () {
     falsePoint.push($(this).is(":checked"))
   })
+
   //map các arr thành bản ghi để dễ dàng khi lưu
   let arr = []
   nameTargetAuto.map((el, i) => {
@@ -394,7 +387,7 @@ function renOption(data) {
   let dataOption = ``
   let logicOption = ``
   for (const [key, value] of Object.entries(CONST_DATA)) {
-    dataOption += `<option value="${key}" ${(data && key == data.data) ? 'selected' : ''}>${value.t}</option>`
+    dataOption += `<option value="${key}" ${(data && key == data.data) ? 'selected' : ''}>${value.text}</option>`
   }
 
   for (const [key, value] of Object.entries(CONST_COND)) {
@@ -453,41 +446,34 @@ function renOption(data) {
   return html
 }
 
-function optionConditionValue(conditionsData, uuidv4) {
+function optionConditionValue(conditionsData) {
   let option = ``
-  if (conditionsData == 'agent') {
+  if (conditionsData == 'agentId') {
     _users.map((el) => {
-      option += `
-        <option value="${el.id}">${el.firstName + '' + el.lastName}</option>
-      `
+      option += `<option value="${el.id}">${el.firstName + '' + el.lastName}</option>`
     })
-  } else if (conditionsData == 'team') {
+  } else if (conditionsData == 'teamId') {
     _teams.map((el) => {
-      option += `
-        <option value="${el.id}">${el.name}</option>
-      `
+      option += `<option value="${el.id}">${el.name}</option>`
     })
   } else if (conditionsData == 'direction') {
-    option += `
-      <option value="inbound">inbound</option>
-      <option value="outbound">outbound</option>
-    `
-  } else if (conditionsData == 'group') {
+    option += ` <option value="inbound">inbound</option>
+                <option value="outbound">outbound</option>
+              `
+  } else if (conditionsData == 'groupId') {
     _groups.map((el) => {
-      option += `
-        <option value="${el.id}">${el.name}</option>
-      `
+      option += `<option value="${el.id}">${el.name}</option>`
     })
   }
   return option
 }
 
 function checkConditionData(element, ratingBy) {
-  if (element.val() == 'agent' && ratingBy == '1') {
+  if (element.val() == 'agentId' && ratingBy == '1') {
     element.val("caller")
     toastr.error(`Không được chọn dữ liệu là "Điện thoại viên" vì Đối tượng xét là "Đội ngũ"`)
   }
-  if (element.val() == 'team' && ratingBy == '0') {
+  if (element.val() == 'teamId' && ratingBy == '0') {
     element.val("caller")
     toastr.error(`Không được chọn dữ liệu là "Đội ngũ" vì Đối tượng xét là "Điện thoại viên"`)
   }
@@ -499,6 +485,8 @@ function setConfigView() {
     $("#btn_assignment_scoreTarget").attr('disabled', 'disabled')
     $("#btn_duplicate_scoreTarget").attr('disabled', 'disabled')
     $("#status").attr("disabled", "disabled")
+    $("#assignStart").val("00:00:00")
+    $("#assignEnd").val("23:59:59")
   } else {
     if (ScoreTarget.status == 1) {
       disableOrEnableButton()
@@ -547,13 +535,13 @@ $(function () {
       cancelLabel: 'Clear'
     }
   })
-
-
   // render data khi ấn xem detail của từng tiêu chí
   // render của tap chung 
+
   if (ScoreTarget) {
     for (const [key, value] of Object.entries(ScoreTarget)) {
       $(`#${key}`).val(value)
+
       if (ScoreTarget.effectiveTimeStart && ScoreTarget.effectiveTimeType != 4) {
         $(`#effectiveTimeStart`).val(moment(ScoreTarget.effectiveTimeStart).format('YYYY-MM-DD'))
       } else if (ScoreTarget.effectiveTimeType == 4) {
@@ -561,23 +549,39 @@ $(function () {
         $('.effectiveTimeStart').addClass('d-none')
         $('#effectiveTime').daterangepicker({ startDate: moment(ScoreTarget.effectiveTimeStart).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.effectiveTimeEnd).format('MM/DD/YYYY') })
       }
+
       if (ScoreTarget.callEndTime && ScoreTarget.callStartTime) {
         $('#callTime').daterangepicker({ startDate: moment(ScoreTarget.callStartTime).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.callEndTime).format('MM/DD/YYYY') })
       }
+
+      if (ScoreTarget.assignStart) {
+        $("#assignStart").val(ScoreTarget.assignStart)
+      }
+
+      if (ScoreTarget.assignEnd) {
+        $("#assignEnd").val(ScoreTarget.assignEnd)
+      }
+
     }
 
     //
     if (ScoreTarget_ScoreScript && ScoreTarget_ScoreScript.length > 0) {
-      console.log(ScoreTarget_ScoreScript)
       let arr = []
       ScoreTarget_ScoreScript.map((el) => {
         arr.push(el.scoreScriptId)
       })
       $('#scoreScriptId').val(arr)
+      arr.map(el => {
+        $("#scoreScriptId option[value=" + el + "]").attr('disabled', 'disabled')
+      })
     }
 
     //render data của phần "Điều kiện"
     if (ScoreTargetCond && ScoreTargetCond.length > 0) {
+      //render điều kiện lọc
+      const { conditionSearch } = ScoreTargetCond[0]
+      $("#conditionSearch").val(conditionSearch)
+      //render điều kiện lọc implement
       ScoreTargetCond.map((el) => {
         renOption(el)
       })
@@ -592,7 +596,6 @@ $(function () {
   }
 
   bindClick()
-  resetAssignTime()
   setConfigView()
 })
 
@@ -613,4 +616,5 @@ $(window).on('beforeunload', function () {
   $(document).off('click', '#confirmUnActiveScoreTarget')
   $(document).off('click', '#confirmAssignmentScoreTarget')
   $(document).off('click', '#cancelModalAssignment')
+
 })

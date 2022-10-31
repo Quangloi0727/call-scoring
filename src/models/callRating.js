@@ -30,17 +30,13 @@ class CallRating extends Model {
   }
 
   static associate(models) {
-    models.CallRating.belongsTo(models.CallDetailRecords, {
-      foreignKey: "callId",
-      as: "rates",
-    })
-
+    
     models.CallRating.belongsTo(models.SelectionCriteria, {
       foreignKey: "idSelectionCriteria",
-      as: "SelectionCriteria",
+      as: "selectionCriteriaInfo"
     })
-  }
 
+  }
 
 }
 

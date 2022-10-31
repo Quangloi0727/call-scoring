@@ -13,32 +13,25 @@ $(function () {
   $.validator.addMethod("pwcheck", function (value) {
     return /^(?=.*?[0-9])(?=.*?[A-Z])(?=.*?[a-z]).{8,}$/.test(value)
   })
-  $formCreateUser.submit(function (event) {
+
+  $(document).on('click', '#submitUser', function () {
     let filter = _.chain($('#form_input_user .input')).reduce(function (memo, el) {
       let value = $(el).val()
       if (value != '' && value != null) memo[el.name] = value
       return memo
     }, {}).value()
-    validator.form()
-    $loadingData.show()
 
-    $.ajax({
-      type: 'POST',
-      url: '/users/insert',
-      data: filter,
-      dataType: "text",
-      success: function () {
-        $loadingData.hide()
-        toastr.success('Thêm mới thành công')
-        return location.reload()
-      },
-      error: function (error) {
-        $loadingData.hide()
+    _AjaxData('/users/insert', 'POST', JSON.stringify(filter), { contentType: "application/json" }, function (resp) {
+      if (resp.code == 500) return toastr.error(resp.message)
 
-        return toastr.error(JSON.parse(error.responseText).message)
-      },
+      toastr.success(resp.message)
+      
+      return setTimeout(() => {
+        location.reload()
+      }, 2500)
     })
   })
+
 
   $(document).on('click', '#btn-save-edit-user', function () {
     let filter = _.chain($('#form_edit_user .input')).reduce(function (memo, el) {
@@ -345,8 +338,7 @@ $(function () {
       }
 
       let rolesHtml = ``
-      Object.keys(USER_ROLE).forEach((ele, index) => {
-        // USER_ROLE[ele].n == 
+      Object.keys(USER_ROLE).forEach((ele) => {
         if (item.roles.length > 0) {
           let found = item.roles.find(element => element.role === USER_ROLE[ele].n)
           if (found) {

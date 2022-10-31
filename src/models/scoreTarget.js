@@ -1,4 +1,3 @@
-const { now } = require("lodash")
 const moment = require("moment")
 const { Model, DataTypes, Op } = require("sequelize")
 
@@ -136,10 +135,11 @@ class ScoreTarget extends Model {
       foreignKey: "scoreTargetId",
       as: 'ScoreTarget_ScoreScript'
     })
+
   }
 }
 
-async function handleBeforeCreate(data, option) {
+async function handleBeforeCreate(data) {
   const foundScoreTarget = await ScoreTarget.findOne({
     where: { name: { [Op.eq]: data.name.toString() } },
   })

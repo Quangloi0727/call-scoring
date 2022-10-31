@@ -24,11 +24,11 @@
                           <label for="status">Trạng thái</label>
                           <select class="form-control selectpicker input" name="status" id="status">
                             <option value="">Chọn...</option>
-                            <% for (const [key, value] of Object.entries(CONST_STATUS)) {%>
-                              <option value="<%- value %>">
-                                <%- key %>
+                            <% Object.keys(CONST_STATUS).forEach((item)=> { %>
+                              <option value="<%= CONST_STATUS[item].value %>">
+                                <%= CONST_STATUS[item].text %>
                               </option>
-                              <% } %>
+                              <% }); %>
                           </select>
                         </div>
                       </div>

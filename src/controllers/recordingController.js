@@ -2,7 +2,6 @@ const titlePage = 'Danh sách cuộc gọi'
 const pagination = require('pagination')
 const { Op, QueryTypes } = require('sequelize')
 const lodash = require('lodash')
-const moment = require('moment')
 const { createExcelPromise } = require('../common/createExcel')
 const {
   SUCCESS_200,
@@ -21,7 +20,6 @@ const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
 const { headerDefault, keysTitleExcel, SOURCE_NAME } = require('../helpers/constants/fieldRecording')
 const { TeamStatus } = require('../helpers/constants/fileTeam')
-const { Team } = require('../models/team')
 
 exports.index = async (req, res, next) => {
   try {
@@ -32,7 +30,7 @@ exports.index = async (req, res, next) => {
       isAdmin = true
     }
 
-    let { teams, teamIds } = await checkLeader(req.user.id)
+    let { teamIds } = await checkLeader(req.user.id)
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
       let userGroupTeam = await getTeamOfGroup(req.user.id)
@@ -123,7 +121,7 @@ exports.getRecording = async (req, res) => {
     if (!user.rules || !user.rules[SYSTEM_RULE.XEM_DU_LIEU.code]) return res.status(ERR_403.code).json({ message: ERR_403.message_detail.notHaveAccessData })
 
     if (user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires >= 0) {
-      let _now = moment()
+      let _now = _moment()
       limitTimeExpires = _now.add(-user.rules[SYSTEM_RULE.XEM_DU_LIEU.code].expires, 'days').unix() // second times
     }
 
@@ -131,8 +129,8 @@ exports.getRecording = async (req, res) => {
       throw new Error('Thời gian bắt đầu và thời gian kết thúc là bắt buộc!')
     }
 
-    let startTimeMilisecond = Number(moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'))
-    let endTimeMilisecond = Number(moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'))
+    let startTimeMilisecond = Number(_moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'))
+    let endTimeMilisecond = Number(_moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'))
 
     if (startTimeMilisecond > endTimeMilisecond) {
       return res.status(ERR_400.code).json({
@@ -158,7 +156,7 @@ exports.getRecording = async (req, res) => {
       const getAgentOfTeam = await model.AgentTeamMember.findAll({
         where: { teamId: { [Op.in]: arrTeamId }, role: USER_ROLE.agent.n },
         include: [{
-          model: Team,
+          model: model.Team,
           as: 'teams',
           where: {
             status: { [Op.eq]: TeamStatus.OFF }
@@ -167,7 +165,6 @@ exports.getRecording = async (req, res) => {
       })
       const userOfTeamOff = _.pluck(getAgentOfTeam, 'userId')
       if (userOfTeamOff.length > 0) query += `AND records.agentId not in (${userOfTeamOff.join(',')}) `
-
     }
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
@@ -221,7 +218,7 @@ exports.getRecording = async (req, res) => {
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `
     if (callDirection) query += `AND records.direction IN (${callDirection.map((item) => "'" + item + "'").toString()}) `
     if (teams) query += `AND team.id IN (${teams.toString()}) `
-    if (callId) query += `AND records.callId LIKE '%${callId.toString()}%' `
+    if (callId) query += `AND records.id LIKE '%${callId.toString()}%' `
     if (sourceName) query += `AND records.sourceName in ('${sourceName.join("','")}') `
 
     // limit time by rule
@@ -233,6 +230,7 @@ exports.getRecording = async (req, res) => {
     }
 
     const ConfigurationColums = await getConfigurationColums(req.user.id)
+    
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums)
     }
@@ -241,8 +239,8 @@ exports.getRecording = async (req, res) => {
       DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
 
       SELECT
-        records.callId AS callId,
-        records.xmlCdrId AS xmlCdrId,
+        records.id AS callId,
+        records.id AS xmlCdrId,
         records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
@@ -403,7 +401,7 @@ function checkLeader(userId) {
     try {
       let teamIds = []
 
-      const resulds = await model.sequelize.query(
+      const results = await model.sequelize.query(
         `
           SELECT
             Teams.id AS teamId,
@@ -416,9 +414,9 @@ function checkLeader(userId) {
         { type: QueryTypes.SELECT }
       )
 
-      teamIds = _.map(resulds, 'teamId')
+      teamIds = _.map(results, 'teamId')
 
-      return resolve({ teams: resulds, teamIds: teamIds })
+      return resolve({ teams: results, teamIds: teamIds })
     } catch (error) {
       return reject(error)
     }
@@ -434,15 +432,16 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
       } else {
         // sup
         if (teamIds.length > 0) {
-          conditionQuery = `team.id IN (${teamIds.join(',')}) and 
-          AgentTeamMembers.role =  ${USER_ROLE.agent.n}`
+          conditionQuery = `team.id IN (${teamIds.join(',')}) AND AgentTeamMembers.role =  ${USER_ROLE.agent.n}`
         } else {
           // agent
           conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`
         }
 
       }
-      conditionQuery += `and team.status = ${TeamStatus.ON}` //get team active
+
+      conditionQuery += `AND team.status = ${TeamStatus.ON}` //get team active
+
       const result = await model.sequelize.query(
         `
             SELECT
@@ -472,7 +471,7 @@ function handleData(data, privatePhoneNumber = false) {
   let newData = []
 
   newData = data.map((el) => {
-    el.origTime = moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
+    el.origTime = _moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
     el.duration = _.hms(el.duration)
     el.recordingFileName = _config.pathRecording + el.recordingFileName
 
@@ -492,8 +491,8 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
   try {
     const dataResult = await model.sequelize.query(`
       SELECT
-        records.callId AS callId,
-        records.xmlCdrId AS xmlCdrId,
+        records.id AS callId,
+        records.id AS xmlCdrId,
 	      records.caller AS caller,
 	      records.called AS called,
 	      records.origTime AS origTime,
@@ -546,8 +545,8 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
   return new Promise(async (resolve, reject) => {
     try {
 
-      let startTime = moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY')
-      let endTime = moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY')
+      let startTime = _moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY')
+      let endTime = _moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY')
 
       let titleExcel = {}
       let dataHeader = {}

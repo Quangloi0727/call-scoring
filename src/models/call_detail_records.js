@@ -17,11 +17,7 @@ class CallDetailRecords extends Model {
           type: 'UNIQUEIDENTIFIER'
         },
         callId: {
-          type: DataTypes.BIGINT,
-          references: {
-            model: "Users",
-            key: "id",
-          },
+          type: DataTypes.BIGINT
         },
         called: DataTypes.STRING(25),
         caller: DataTypes.STRING(25),
@@ -39,19 +35,23 @@ class CallDetailRecords extends Model {
         xmlCdrId: DataTypes.STRING(36),
         node: DataTypes.STRING(20),
         lastUpdateTime: DataTypes.BIGINT,
+        share: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false
+        },
         teamId: {
           type: DataTypes.INTEGER,
           references: {
             model: "Teams",
             key: "id",
-          },
+          }
         },
         agentId: {
           type: DataTypes.INTEGER,
           references: {
             model: "Users",
             key: "id",
-          },
+          }
         },
         recordingFileName: DataTypes.STRING(100),
       },
@@ -59,6 +59,28 @@ class CallDetailRecords extends Model {
         sequelize,
         timestamps: false,
         modelName: "call_detail_records",
+        indexes: [
+          {
+            unique: false,
+            fields: ['callId']
+          },
+          {
+            unique: false,
+            fields: ['called']
+          },
+          {
+            unique: false,
+            fields: ['caller']
+          },
+          {
+            unique: false,
+            fields: ['share']
+          },
+          {
+            unique: false,
+            fields: ['agentId']
+          }
+        ]
       }
     )
   }
@@ -69,6 +91,7 @@ class CallDetailRecords extends Model {
       foreignKey: "agentId",
       as: "agent",
     })
+
     models.CallDetailRecords.belongsTo(models.Team, {
       foreignKey: "teamId",
       as: "team"

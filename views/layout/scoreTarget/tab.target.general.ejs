@@ -69,11 +69,11 @@
             <label for="effectiveTime" class="col-sm-3 form-check-label">Thời gian hiệu lực</label>
             <div class="col-sm-3">
                 <select class="form-control selectpicker input" id="effectiveTimeType" name="effectiveTimeType">
-                    <% for (const [key, value] of Object.entries(CONST_EFFECTIVE_TIME_TYPE)) {%>
-                        <option value="<%- value %>">
-                            <%- key %>
+                    <% Object.keys(CONST_EFFECTIVE_TIME_TYPE).forEach((item)=> { %>
+                        <option value="<%= CONST_EFFECTIVE_TIME_TYPE[item].value %>">
+                            <%= CONST_EFFECTIVE_TIME_TYPE[item].text %>
                         </option>
-                        <% } %>
+                    <% }); %>
                 </select>
             </div>
             <div class="col-sm-3 effectiveTimeStart">
@@ -92,13 +92,12 @@
         <div class="form-group row">
             <label for="status" class="col-sm-3 form-check-label">Trạng thái</label>
             <div class="col-sm-6">
-                <select class="form-control selectpicker input" id="status" name="status" <%- ScoreTarget ? ""
-                    : 'disabled' %>>
-                    <% for (const [key, value] of Object.entries(CONST_STATUS)) {%>
-                        <option value="<%- value %>">
-                            <%- key %>
+                <select class="form-control selectpicker input" id="status" name="status" <%- ScoreTarget ? "" : 'disabled' %>>
+                    <% Object.keys(CONST_STATUS).forEach((item)=> { %>
+                        <option value="<%= CONST_STATUS[item].value %>">
+                            <%= CONST_STATUS[item].text %>
                         </option>
-                        <% } %>
+                    <% }); %>
                 </select>
             </div>
         </div>
@@ -128,8 +127,7 @@
         <div class="form-group row">
             <label for="conditionSearch" class="col-sm-3 form-check-label">Điều kiện lọc</label>
             <div class="col-sm-6">
-                <select class="form-control selectpicker input" id="conditionSearch" name="conditionSearch"
-                    data-live-search="true">
+                <select class="form-control selectpicker input" id="conditionSearch" name="conditionSearch" data-live-search="true">
                     <option value="and">Và</option>
                     <option value="or">Hoặc</option>
                 </select>

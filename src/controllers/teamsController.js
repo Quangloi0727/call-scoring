@@ -3,14 +3,11 @@ const pagination = require('pagination')
 const moment = require('moment')
 const UserModel = require('../models/user')
 const UserRoleModel = require('../models/userRole')
-const TeamModel = require('../models/team').Team
+const TeamModel = require('../models/team')
 const AgentTeamMemberModel = require('../models/agentTeamMember')
 const model = require('../models')
 const { TeamStatus } = require('../helpers/constants/fileTeam')
-const {
-  SUCCESS_200,
-  ERR_500
-} = require("../helpers/constants/statusCodeHTTP")
+const { SUCCESS_200, ERR_500 } = require("../helpers/constants/statusCodeHTTP")
 
 const titlePage = 'Danh sách đội ngũ'
 
@@ -56,7 +53,7 @@ exports.getTeams = async (req, res, next) => {
     const offset = (pageNumber * limit) - limit
     let query = ''
 
-    if (name) query += `AND (team.name LIKE '%${name}%' OR memberOfTeam.fullName LIKE '%${name}%' OR memberOfTeam.userName LIKE '%${name}%')`
+    if (name) query += `AND (team.name LIKE N'%${name}%' OR memberOfTeam.fullName LIKE N'%${name}%' OR memberOfTeam.userName LIKE N'%${name}%')`
 
     let queryDataString = `
       SELECT
@@ -174,7 +171,7 @@ exports.createGroup = async (req, res) => {
   }
 }
 
-exports.detail = async (req, res) => {
+exports.detail = async (req, res, next) => {
   try {
     const { id } = req.params
 
@@ -435,7 +432,7 @@ exports.userOfTeam = async (req, res) => {
     let queryName = ''
 
     if (name) {
-      queryName += `AND Users.fullName LIKE '%${name}%'`
+      queryName += `AND Users.fullName LIKE N'%${name}%'`
     }
 
     let queryString = `

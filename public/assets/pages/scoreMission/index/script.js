@@ -16,6 +16,9 @@ var _criteriaGroups = {}
 // CACHE
 var CACHE_CONFIG_COLUMN = null
 
+// data before edir
+var dataEditOrigin = null
+
 function bindClick() {
 
     $(document).on('click', '.zpaging', function () {
@@ -67,7 +70,7 @@ function bindClick() {
                 let html = ``
                 resp.result.forEach(el => {
                     html += `
-                                <p class="font-weight-bold">[${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''}] đã thêm ghi chú lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>
+                                <p class="font-weight-bold">[${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''}] đã thêm một ghi chú lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>
                                 <p>Ghi chú cho :${_genNoteFor(el.criteria, el.criteriaGroup)}</p>
                                 <p>Hiển thị trên file ghi âm tại :${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}</p>
                                 <p>${el.description}</p>
@@ -75,6 +78,42 @@ function bindClick() {
                             `
                 })
                 $("#comment .card-body").html(html)
+            } else {
+                console.log("get call rating note form history fail", resp)
+            }
+        })
+        _AjaxGetData('/scoreMission/' + callId + '/getCallRatingHistory', 'GET', function (resp) {
+            console.log("data edit history", resp)
+            if (resp.code == 200) {
+                if (resp.resultEdit && resp.resultEdit.length == 0 && resp.resultAdd && resp.resultAdd.length == 0) return
+                let html = ``
+                const grouped = _.groupBy(resp.resultEdit, el => el.createdAt)
+                for (let index in grouped) {
+                    const data = grouped[index]
+                    html += `<p class="font-weight-bold">[${data[0].userCreate && data[0].userCreate.fullName ? data[0].userCreate.fullName : ''}] đã sửa chấm điểm lúc ${(moment(data[0].createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>`
+                    data.forEach(el => {
+                        html += `
+                                    <div class = "row">
+                                        <div class="col-6">
+                                            <i class='fas fa-edit'></i>
+                                            ${el.criteria && el.criteria.name ? el.criteria.name : ''} :
+                                        </div>
+                                        <div class="col-6">
+                                            ${el.selectionCriteriaOld && el.selectionCriteriaOld.name ? el.selectionCriteriaOld.name : ''} <i class="fas fa-angle-double-right"></i>
+                                            ${el.selectionCriteriaNew && el.selectionCriteriaNew.name ? el.selectionCriteriaNew.name : ''}
+                                        </div>
+                                    </div>
+                                `
+                    })
+                    html += `<hr></hr>`
+                }
+
+                if (resp.resultAdd && !_.isEmpty(resp.resultAdd)) {
+                    const { userCreate, createdAt } = resp.resultAdd || {}
+                    html += `<p class="font-weight-bold">[${userCreate.fullName}] đã chấm điểm lúc ${(moment(createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>`
+                }
+
+                $("#callScore .card-body").html(html)
             } else {
                 console.log("get call rating note form history fail", resp)
             }
@@ -291,9 +330,19 @@ function bindClick() {
             $('.error-textarea-description').text('Nội dung ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
             return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
         }
-        const action = $(this).attr('method')
-        if (action == 'edit') delete data.note
+
         if (!data.note.timeNoteMinutes && !data.note.timeNoteSecond) delete data.note // case này là case KH k nhập chấm điểm
+
+        const action = $(this).attr('method')
+
+        if (action == 'edit') {
+            delete data.note
+            data.type = 'edit'
+        } else {
+            data.type = 'add'
+        }
+
+        data.dataEditOrigin = dataEditOrigin
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) {
@@ -353,6 +402,11 @@ function bindClick() {
         $(".countValueLength").text("0/500")
     })
 
+    $("#popupHistory").on("hidden.bs.modal", function () {
+        $("#callScore .card-body").html('')
+        $("#comment .card-body").html('')
+    })
+
     $("#popupComment").on("hidden.bs.modal", function () {
         wavesurfer.destroy()
         $('#formCallComment')[0].reset()
@@ -396,6 +450,7 @@ function findData(page) {
         url: '/scoreMission/getData?' + $.param(queryData),
         cache: 'false',
         success: function (result) {
+            console.log("List data score mission", result)
             if (result.configurationColums) {
                 const checkValueFalse = Object.values(result.configurationColums).every((rs) => rs === false)
                 if (checkValueFalse == true) {
@@ -404,7 +459,7 @@ function findData(page) {
             }
             $('.page-loader').hide()
             CACHE_CONFIG_COLUMN = result.configurationColums
-            createTable(result.data, result.scoreScripts, result.configurationColums ? result.configurationColums : headerDefault, result.configurationColums ? false : true)
+            createTable(result.data, result.configurationColums ? result.configurationColums : headerDefault, result.configurationColums ? false : true)
             return $('#paging_table').html(window.location.CreatePaging(result.paginator))
         },
         error: function (error) {
@@ -462,7 +517,7 @@ function itemColumn(key, title, value) {
             </li>`
 }
 ///***** __end__*****
-function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
+function createTable(data, ConfigurationColums, configDefault) {
     let objColums = { ...ConfigurationColums }
     renderPopupCustomColumn(ConfigurationColums)
     renderHeaderTable(ConfigurationColums, configDefault)
@@ -470,20 +525,23 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
     let uuidv4 = window.location.uuidv4()
     let rightTable = ''
     let leftTable = ``
-    data.forEach((item, element) => {
+    data.forEach(item => {
+        const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
+        const { recordingFileName } = item.callInfo
         let check = false
 
-        //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
+        // //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
-        if (item.callRating && item.callRating.length > 0) {
+        if (item.callRatingInfo && item.callRatingInfo.length > 0) {
             check = true
-            idScoreScript = item.callRating[0].idScoreScript
+            idScoreScript = item.callRatingInfo[0].idScoreScript
         }
+
         let dropdown = ''
-        if (scoreScripts.length > 0) {
-            scoreScripts.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.id}" 
-                url-record="${item.recordingFileName}" data-id="${el.scoreScriptId}">${el.ScoreScripts.name}</a>`
+        if (ScoreTarget_ScoreScript.length > 0) {
+            ScoreTarget_ScoreScript.map((el) => {
+                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.callId}" 
+                url-record="${recordingFileName}" data-id="${el.scoreScriptId}">${el.scoreScriptInfo && el.scoreScriptInfo.name ? el.scoreScriptInfo.name : ''}</a>`
             })
         }
 
@@ -491,16 +549,16 @@ function createTable(data, scoreScripts, ConfigurationColums, configDefault) {
 
         rightTable += `<tr>${tdTable}</tr>`
         leftTable += ` <tr class="text-center">
-            <td class="text-center callIdColumn" title=${item.id || ''} style="width:200px; overflow:hidden;">${item.id || ''}</td>
+            <td class="text-center callIdColumn" title="${item.callId || ''}">${item.callId || ''}</td>
             <td class="text-center">    
                 <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${item.recordingFileName}" data-callId="${item.id}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
-                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
-                <i class="fas fa-history mr-2" title="Lịch sử chấm điểm" data-callId=${item.id}></i>
-                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callId=${item.id}></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${recordingFileName}" data-callId="${item.callId}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
+                <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${recordingFileName}" data-callId=${item.callId}></i>
+                <i class="fas fa-history mr-2" title="Lịch sử chấm điểm" data-callId=${item.callId}></i>
+                <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${recordingFileName}" data-callId=${item.callId}></i>
             </td>
         </tr>`
     })
@@ -526,10 +584,11 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 }
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
+    const { callInfo, callRatingInfo } = item
     let resultPointCriteria = 0
-    if (item.callRating && item.callRating.length > 0) {
-        item.callRating.map((el) => {
-            resultPointCriteria += el.SelectionCriteria.score
+    if (callRatingInfo && callRatingInfo.length > 0) {
+        callRatingInfo.map((el) => {
+            resultPointCriteria += el.selectionCriteriaInfo.score
         })
     }
 
@@ -542,20 +601,24 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
             } else if (key == 'agentName') {
 
-                htmlString += ` <td class="text-center agentName ${headerDefault['agentName'].status == 1 ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+                htmlString += ` <td class="text-center agentName ${headerDefault['agentName'].status == 1 ? '' : 'd-none'}">${callInfo['agent'] ? callInfo['agent'].fullName : ''}</td>`
 
             } else if (key == 'teamName') {
 
-                htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
+                htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
-            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
-                let teamsName = ''
-                item['team'].TeamGroup.map((el) => {
-                    teamsName += ('' + el.Group.name)
-                })
-                htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
+            }
+            //else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+            //     let teamsName = ''
+            //     item['team'].TeamGroup.map((el) => {
+            //         teamsName += ('' + el.Group.name)
+            //     })
+            //     htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
 
-            } else htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            // } 
+            else {
+                htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
+            }
         }
     } else {
         for (const [key, value] of Object.entries(dataConfig)) {
@@ -563,21 +626,24 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
                 htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${resultPointCriteria}</td>`
             } else if (key == 'agentName') {
 
-                htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${item['agent'] ? item['agent'].name : ''}</td>`
+                htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${callInfo['agent'] ? callInfo['agent'].fullName : ''}</td>`
 
             } else if (key == 'teamName') {
 
-                htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${item['team'] ? item['team'].name : ''}</td>`
-
-            } else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
-                let teamsName = ''
-                item['team'].TeamGroup.map((el) => {
-                    teamsName += ('' + el.Group.name)
-                })
-                htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
+                htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
             }
-            else htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${item[key] || '&nbsp'}</td>`
+            // else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
+            //     let teamsName = ''
+            //     item['team'].TeamGroup.map((el) => {
+            //         teamsName += ('' + el.Group.name)
+            //     })
+            //     htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
+
+            // }
+            else {
+                htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
+            }
         }
     }
     return htmlString
@@ -604,6 +670,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
             $('#btn-save-modal').attr('data-callId', callId)
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
             //render dữ liệu ra popup
+            dataEditOrigin = resp.resultCallRating
             popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
             return $('#popupCallScore').modal('show')
         }
@@ -680,12 +747,11 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         dataPriority = resultCallRatingNote.find(el => el.createdByForm == CreatedByForm.ADD)
         if (!dataPriority) dataPriority = resultCallRatingNote[0]
 
-        const { idCriteriaGroup, idCriteria, description, timeNoteMinutes, timeNoteSecond } = dataPriority || {}
+        const { idCriteriaGroup, description, timeNoteMinutes, timeNoteSecond } = dataPriority || {}
 
         $('.titlePopupCallSource').text('Sửa chấm điểm cuộc gọi:')
         $('#idCriteriaGroup').val(idCriteriaGroup == null ? 0 : idCriteriaGroup)
-        renderCriteria(idCriteriaGroup == null ? 0 : idCriteriaGroup, "#idCriteria")
-        $('#idCriteria').val(idCriteria)
+        $('#idCriteria').html(`<option>${dataPriority && dataPriority.criteria && dataPriority.criteria.name ? dataPriority.criteria.name : ''}</option>`)
         $('#description').val(description)
         $('#timeNoteMinutes').val(timeNoteMinutes)
         $('#timeNoteSecond').val(timeNoteSecond)

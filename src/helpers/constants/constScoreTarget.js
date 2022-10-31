@@ -20,53 +20,73 @@ const CONST_CALL_TYPE = {
 }
 
 const CONST_EFFECTIVE_TIME_TYPE = {
-  'Mỗi tháng': 1,
-  'Mỗi tuần': 2,
-  'Mỗi ngày': 3,
-  'Khoảng ngày': 4,
+  EVERY_MONTH: {
+    value: 1,
+    text: "Mỗi tháng"
+  },
+  EVERY_WEEK: {
+    value: 2,
+    text: "Mỗi tuần"
+  },
+  EVERY_DAY: {
+    value: 3,
+    text: "Mỗi ngày"
+  },
+  ABOUT_DAY: {
+    value: 4,
+    text: "Khoảng ngày"
+  }
 }
 
 const CONST_STATUS = {
-  "Nháp": 0,
-  "Hoạt động": 1,
-  "Ngừng hoạt động": 2
-
+  DRAFT: {
+    value: 0,
+    text: "Nháp"
+  },
+  ACTIVE: {
+    value: 1,
+    text: "Hoạt động"
+  },
+  UN_ACTIVE: {
+    value: 2,
+    text: "Ngừng hoạt động"
+  }
 }
 
 const CONST_DATA = {
   caller: {
-    n: 0,
-    t: "Số gọi đi",
+    value: 0,
+    text: "Số gọi đi",
     disable: "false"
   },
   called: {
-    n: 1,
-    t: "Số gọi đến",
+    value: 1,
+    text: "Số gọi đến",
     disable: "false"
   },
-  group: {
-    n: 2,
-    t: "Nhóm",
+  groupId: {
+    value: 2,
+    text: "Nhóm",
     disable: "true"
   },
-  team: {
-    n: 3,
-    t: "Đội ngũ",
+  teamId: {
+    value: 3,
+    text: "Đội ngũ",
     disable: "true"
   },
   direction: {
-    n: 4,
-    t: "Hướng gọi",
+    value: 4,
+    text: "Hướng gọi",
     disable: "true"
   },
-  agent: {
-    n: 5,
-    t: "Tên điện thoại viên",
+  agentId: {
+    value: 5,
+    text: "Tên điện thoại viên",
     disable: "true"
   },
   duration: {
-    n: 6,
-    t: "Thời lượng",
+    value: 6,
+    text: "Thời lượng",
     disable: "false"
   }
 }
@@ -76,43 +96,43 @@ const CONST_COND = {
     n: 'substring',
     t: "Chứa"
   },
-  'notContains': {
+  notContains: {
     n: 'notLike',
     t: "Không chứa"
   },
-  'strictEqual': {
+  strictEqual: {
     n: '===',
     t: "Chính xác là", /// bằng tuyệt đối
   },
-  'notNull': {
+  notNull: {
     n: 'not',
     t: "Không trống",
   },
-  'null': {
+  null: {
     n: 'is',
     t: "Trống",
   },
-  'greaterThan': {
+  greaterThan: {
     n: 'gt',
     t: "Lớn hơn",
     p: 'only number'
   },
-  'lessThan': {
+  lessThan: {
     n: 'lt',
     t: "Nhỏ hơn",
     p: 'only number'
   },
-  'greaterThanOrEqual': {
+  greaterThanOrEqual: {
     n: 'gte',
     t: "Lớn hơn hoặc bằng",
     p: 'only number'
   },
-  'lessThanOrEqual': {
+  lessThanOrEqual: {
     n: 'lte',
     t: "Nhỏ hơn hoặc bằng",
     p: 'only number'
   },
-  'abstractEqual': {
+  abstractEqual: {
     n: 'eq',
     t: "Bằng",
     p: 'only number'

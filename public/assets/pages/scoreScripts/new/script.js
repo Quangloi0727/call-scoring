@@ -91,7 +91,7 @@ $(function () {
         error: function (error) {
           $loadingData.hide()
           if (JSON.parse(error.responseText).message == window.location.MESSAGE_ERROR["QA-002"]) return $("#duplicateName").text(window.location.MESSAGE_ERROR["QA-002"])
-          
+
           $("#duplicateName").text("")
           return toastr.error(JSON.parse(error.responseText).message)
         },
@@ -518,18 +518,18 @@ $(function () {
               <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
               <div class="row">
                 ${item.criterias.map((i) => {
-                  const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-                  return `<div class="col-12">
+      const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
+      return `<div class="col-12">
                             <div class="form-group">
                               <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
                               <select class="form-control">
                                 ${i.selectionCriterias.map((j) => {
-                                  return `<option>${j.name}</option>`
-                                }).join("")}
+        return `<option>${j.name}</option>`
+      }).join("")}
                               </select>
                             </div>
                           </div>`
-                  }).join("")}
+    }).join("")}
                 </div>
             </div>`
   }

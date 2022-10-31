@@ -125,44 +125,34 @@ async function handleAgentOfTeam(userIds, users) {
 
 exports.createUser = async (req, res, next) => {
   let transaction
-
   try {
     const data = req.body
 
     transaction = await model.sequelize.transaction()
 
-    if (data.firstName && data.firstName.length > 30) {
-      throw new Error('Họ và tên đệm có độ dài không quá 30 kí tự!')
-    }
+    const { firstName, lastName, userName, password, repeat_password, extension } = data
 
-    if (data.lastName && data.lastName.length > 30) {
-      throw new Error('Tên có độ dài không quá 30 kí tự!')
-    }
+    if (firstName && firstName.length > 30) throw new Error('Họ và tên đệm có độ dài không quá 30 kí tự !')
 
-    if (data.userName && data.userName.length > 30) {
-      throw new Error('Tên đăng nhập đệm có độ dài không quá 30 kí tự!')
-    }
+    if (lastName && lastName.length > 30) throw new Error('Tên có độ dài không quá 30 kí tự !')
 
-    if (data.password.trim() !== data.repeat_password.trim()) {
-      throw new Error('Mật khẩu không trùng khớp!')
-    }
+    if (userName && userName.length > 30) throw new Error('Tên đăng nhập đệm có độ dài không quá 30 kí tự !')
 
-    data.fullName = `${data.firstName.trim()} ${data.lastName.trim()}`
-    data.extension = Number(data.extension)
+    if (password.trim() !== repeat_password.trim()) throw new Error('Mật khẩu không trùng khớp !')
+
+    data.fullName = `${firstName.trim()} ${lastName.trim()}`
+    data.extension = Number(extension)
     data.role = 0
     data.isActive = 1
     data.created = req.user.id
     data.createAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss')
     data.updatedAt = moment(Date.now()).format('YYYY-MM-DD hh:mm:ss')
 
-
-    if (data.extension) {
-      let foundUser = await UserModel.findOne({ where: { extension: Number(data.extension), isActive: 1 } })
-      if (foundUser)
-        return res.status(ERR_400.code).json({
-          message: 'Extension đã được sử dụng!',
-        })
+    if (extension) {
+      let foundUser = await UserModel.findOne({ where: { extension: Number(extension), isActive: 1 } })
+      if (foundUser) throw new Error('Extension đã được sử dụng!')
     }
+
     const user = await UserModel.create(data, { transaction: transaction })
 
     if (data.roles && data.roles.length > 0) {
@@ -178,17 +168,12 @@ exports.createUser = async (req, res, next) => {
 
     await transaction.commit()
 
-    return res.status(SUCCESS_200.code).json({
-      message: 'Success!',
-    })
+    return res.json({ code: SUCCESS_200.code, message: "Thêm mới thành công !" })
+
   } catch (error) {
-    console.log(`------- error ------- getRecording`)
-    console.log(error)
-    console.log(`------- error ------- getRecording`)
-
+    _logger.error("create user errror", error)
     if (transaction) await transaction.rollback()
-
-    return res.status(ERR_500.code).json({ message: error.message })
+    return res.json({ code: ERR_500.code, message: error.message })
   }
 }
 
