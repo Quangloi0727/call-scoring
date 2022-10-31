@@ -25,63 +25,68 @@
                         <div class="card-body">
                             <div class="tab-content">
                                 <div class="tab-pane fade show active" id="manage-source" role="tabpanel">
-                                    <div class="row mb-2">
-                                        <div class="col-sm-6"></div>
-                                        <div class="col-sm-6 d-flex justify-content-end">
-                                            <button type="button" id="btn-cancel-save-file-server"
-                                                class="btn btn-light">Hủy</button>
-                                            <button type="button" id="btn-save-file-server" class="btn btn-primary ml-2"
-                                                data-id="<%- fileServer ? fileServer.id : "" %>">Lưu</button>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>IP Server</label><input type="text" class="form-control input"
-                                                    id="ipServer" name="ipServer"
-                                                    value='<%- fileServer ? fileServer.ipServer : "" %>' />
+                                    <form id="form_file_server" onsubmit="return false">
+                                        <div class="row mb-2">
+                                            <div class="col-sm-6"></div>
+                                            <div class="col-sm-6 d-flex justify-content-end">
+                                                <button type="button" id="btn-cancel-save-file-server"
+                                                    class="btn btn-light">Hủy</button>
+                                                <button type="submit" id="btn-save-file-server"
+                                                    class="btn btn-primary ml-2"
+                                                    data-id="<%- fileServer ? fileServer.id : "" %>">Lưu</button>
                                             </div>
                                         </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Đường dẫn</label><input type="text" class="form-control input"
-                                                    value='<%- fileServer ? fileServer.path : "" %>' id="path"
-                                                    name="path" />
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>IP Server</label><input type="text"
+                                                        class="form-control input" id="ipServer" name="ipServer"
+                                                        value='<%- fileServer ? fileServer.ipServer : "" %>' />
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Đường dẫn</label><input type="text"
+                                                        class="form-control input"
+                                                        value='<%- fileServer ? fileServer.path : "" %>' id="path"
+                                                        name="path" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Username</label>
-                                                <input type="text" class="form-control input " id="username"
-                                                    name="username"
-                                                    value='<%- fileServer ? fileServer.username : "" %>' />
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Username</label>
+                                                    <input type="text" class="form-control input " id="username"
+                                                        name="username"
+                                                        value='<%- fileServer ? fileServer.username : "" %>' />
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Password</label>
+                                                    <input type="text" class="form-control input" id="password"
+                                                        name="password"
+                                                        value='<%- fileServer ? fileServer.password : "" %>' />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Password</label>
-                                                <input type="text" class="form-control input" id="password"
-                                                    name="password"
-                                                    value='<%- fileServer ? fileServer.password : "" %>' />
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <div class="form-group">
+                                                    <label>Port</label>
+                                                    <input type="text" class="form-control input" id="port" name="port"
+                                                        value='<%- fileServer ? fileServer.port : "" %>'>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <div class="form-group">
-                                                <label>Port</label>
-                                                <input type="text" class="form-control input" id="port" name="port"
-                                                    value='<%- fileServer ? fileServer.port : "" %>'>
+                                        <div class="row">
+                                            <div class="col-sm-12 d-flex justify-content-end">
+                                                <button type="button" id="btn-try-to-connect" class="btn btn-info">Thử
+                                                    kết nối</button>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-sm-12 d-flex justify-content-end">
-                                            <button type="button" id="btn-try-to-connect" class="btn btn-info">Thử kết nối</button>
-                                        </div>
-                                    </div>
+                                    </form>
                                 </div>
                                 <div class="tab-pane fade" id="manage-file-server" role="tabpanel">
                                     <div class="row">
@@ -141,6 +146,6 @@
 </div>
 
 <%- include('./popupCreateSource.ejs') %>
-<%- include('./popupUpdateSource.ejs') %>
-<%- include('./popupActiveSource.ejs') %>
-<%- include('./popupUnActiveSource.ejs') %>
+    <%- include('./popupUpdateSource.ejs') %>
+        <%- include('./popupActiveSource.ejs') %>
+            <%- include('./popupUnActiveSource.ejs') %>
