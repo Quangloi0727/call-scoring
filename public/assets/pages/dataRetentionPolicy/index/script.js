@@ -105,11 +105,8 @@ function getDataRetentionPolicy(page, nameDataRetentionPolicy) {
 }
 
 function createTable(data) {
-  console.log(data);
   let html = ''
   data.forEach((item) => {
-    console.log(item.createdAt);
-    console.log(moment(item.createdAt).format("DD/MM/YYYY HH:mm:ss"));
     let teamDropDownItemHTML = '';
     let teamHTML = '';
 
