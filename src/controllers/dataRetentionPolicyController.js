@@ -38,7 +38,7 @@ exports.getDetail = async (req, res, next) => {
         id: id
       }
     }
-    const dataRetentionPolicy = await queryDataRetentionPolicy(query)
+    const dataRetentionPolicy = await queryDataRetentionPolicy(query, null, null, true)
 
     const teams = await model.Team.findAll({
       where: {
@@ -53,7 +53,7 @@ exports.getDetail = async (req, res, next) => {
       TypeDateSaveForCall,
       UnlimitedSaveForCall,
       teams: teams,
-      dataRetentionPolicy: dataRetentionPolicy[0].dataValues
+      dataRetentionPolicy: dataRetentionPolicy.dataValues
     })
   } catch (error) {
     _logger.error("get chi tiết chính sách dữ liệu", error)
@@ -69,7 +69,7 @@ exports.getReplication = async (req, res, next) => {
         id: id
       }
     }
-    const dataRetentionPolicy = await queryDataRetentionPolicy(query)
+    const dataRetentionPolicy = await queryDataRetentionPolicy(query, null, null, true)
 
     const teams = await model.Team.findAll({
       where: {
@@ -84,7 +84,7 @@ exports.getReplication = async (req, res, next) => {
       TypeDateSaveForCall,
       UnlimitedSaveForCall,
       teams: teams,
-      dataRetentionPolicy: dataRetentionPolicy[0].dataValues
+      dataRetentionPolicy: dataRetentionPolicy.dataValues
     })
   } catch (error) {
     _logger.error("get Replication", error)
@@ -275,7 +275,7 @@ exports.updateStatus = async (req, res) => {
   try {
     const { status, id } = req.body
 
-    const findDocUpdate = await model.DataRetentionPolicy.findAll({
+    const findDocUpdate = await model.DataRetentionPolicy.findOne({
       where: { id: id },
       include: [
         {
@@ -285,16 +285,14 @@ exports.updateStatus = async (req, res) => {
         },
       ],
       nest: true,
-      raw: true,
     })
     if (!findDocUpdate) throw new Error(dataRetentionPolicyNotFound)
 
-    const teams = _.uniq(_.pluck(findDocUpdate, 'DataRetentionPolicyTeam'));
-    let teamIds = _.uniq(_.pluck(teams, 'teamId'));
+    let teamIds = _.uniq(_.pluck(findDocUpdate.DataRetentionPolicyTeam, 'teamId'));
 
-    if (teamIds && teamIds.length > 0 && findDocUpdate[0].status == STATUS.UN_ACTIVE.value) {
-      if (findDocUpdate[0].DataRetentionPolicyTeam.teamId == null) {
-        const teams = await model.Team.findAll()
+    if (findDocUpdate.status == STATUS.UN_ACTIVE.value) {
+      if (findDocUpdate.DataRetentionPolicyTeam.length == 0) {
+        const teams = await model.Team.findAll({ where: { status: STATUS.ACTIVE } })
         teamIds = _.uniq(_.pluck(teams, 'id'));
       }
       const check = await model.DataRetentionPolicy.findAll({
@@ -330,7 +328,15 @@ exports.updateStatus = async (req, res) => {
   }
 }
 
-async function queryDataRetentionPolicy(query, offset, limit) {
+/**
+ * * Hàm lấy dữ liệu từ bảng chính sách dữ liệu
+ * @param {*} query tham số truy vấn
+ * @param {*} offset số page
+ * @param {*} limit số lượng mỗi lần query
+ * @param {*} findOneDoc tìm kiếm duy nhất để lấy chi tiết 1 bản ghi
+ * @returns
+ */
+async function queryDataRetentionPolicy(query, offset, limit, findOneDoc) {
   try {
     const _query = {
       where: query ? query.where : {},
@@ -349,8 +355,12 @@ async function queryDataRetentionPolicy(query, offset, limit) {
     }
     if (offset) _query.offset = offset
     if (limit) _query.limit = limit
-    const data = await model.DataRetentionPolicy.findAll(_query)
-    return data
+
+    if (findOneDoc) {
+      return await model.DataRetentionPolicy.findOne(_query)
+    }
+
+    return await model.DataRetentionPolicy.findAll(_query)
   } catch (error) {
     return error
   }
