@@ -1,9 +1,10 @@
-const NUMBER_MAX_VALUE_TXT = "Giá trị phải lớn hơn 0"
-const NUMBER_MIN_VALUE_TXT = "Giá trị không vượt quá 999"
+const NUMBER_MAX_VALUE_TXT = "Giá trị không vượt quá 999"
+const NUMBER_MIN_VALUE_TXT = "Giá trị phải lớn hơn 0"
 const REQUIRED_IS_NUMBER = "Giá trị nhập vào là số"
 const STRING_MAX_LENGTH = "Độ dài không được vượt quá 250"
 const REQUIRED_STRING = "Không được để trống tên chính sách"
 
+let tempTeamGroup = []
 $(function () {
 
   $(document).on('change', '#unlimitedSaveForCallGotPoint', function () {
@@ -131,6 +132,7 @@ $(function () {
         }
 
         if (resp.data && resp.data.length > 0) {
+          tempTeamGroup = resp.data
           return renderTeams(resp.data)
         }
       })
@@ -158,8 +160,22 @@ $(function () {
     let teamIds = _.pluck(teams, 'id')
     $('#selectAddTeams').val(teamIds)
     $('.selectpicker').selectpicker('refresh')
+    tempTeamGroup = resp.data
     return renderTeams(teams)
   }
+
+  $(document).on('click', '#btn_search_member', function () {
+    const found = []
+    console.log(tempTeamGroup);
+    if (!tempTeamGroup || tempTeamGroup.length == 0) return toastr.error("Không tìm thấy thông tin")
+    tempTeamGroup.map((el) => {
+      if (el.name.includes($('#nameTeamGroup').val())) {
+        found.push(el)
+      }
+    })
+    if (found.length == 0) return toastr.error("Không tìm thấy thông tin")
+    return renderTeams(found)
+  })
 })
 
 function renderTeams(teams) {

@@ -47,8 +47,8 @@ exports.getDetail = async (req, res, next) => {
     })
 
     return _render(req, res, 'dataRetentionPolicy/edit', {
-      title: titlePage,
-      titlePage: titlePage,
+      title: null,
+      titlePage: null,
       STATUS,
       TypeDateSaveForCall,
       UnlimitedSaveForCall,
@@ -78,8 +78,8 @@ exports.getReplication = async (req, res, next) => {
     })
 
     return _render(req, res, 'dataRetentionPolicy/replication', {
-      title: titlePage,
-      titlePage: titlePage,
+      title: null,
+      titlePage: null,
       STATUS,
       TypeDateSaveForCall,
       UnlimitedSaveForCall,
@@ -100,16 +100,17 @@ exports.getDataRetentionPolicies = async (req, res, next) => {
     const offset = (pageNumber * Number(limit)) - Number(limit)
 
     const query = {}
+
     if (nameDataRetentionPolicy) {
-      query.nameDataRetentionPolicy = {
-        [Op.like]: '%' + nameDataRetentionPolicy + '%'
+      query.where = {
+        nameDataRetentionPolicy: { [Op.like]: '%' + nameDataRetentionPolicy + '%' }
       }
     }
 
     const rows = await queryDataRetentionPolicy(query, offset, Number(limit))
 
     const count = await model.DataRetentionPolicy.count({
-      where: query ? query : {}
+      where: query ? query.where : {}
     });
     const paginator = new pagination.SearchPaginator({
       current: pageNumber,
@@ -139,8 +140,8 @@ exports.new = async (req, res, next) => {
       }
     })
     return _render(req, res, 'dataRetentionPolicy/new', {
-      title: titlePage,
-      titlePage: titlePage,
+      title: null,
+      titlePage: null,
       TypeDateSaveForCall,
       UnlimitedSaveForCall,
       teams: teams,
@@ -289,9 +290,13 @@ exports.updateStatus = async (req, res) => {
     if (!findDocUpdate) throw new Error(dataRetentionPolicyNotFound)
 
     const teams = _.uniq(_.pluck(findDocUpdate, 'DataRetentionPolicyTeam'));
-    const teamIds = _.uniq(_.pluck(teams, 'teamId'));
+    let teamIds = _.uniq(_.pluck(teams, 'teamId'));
 
     if (teamIds && teamIds.length > 0 && findDocUpdate[0].status == STATUS.UN_ACTIVE.value) {
+      if (findDocUpdate[0].DataRetentionPolicyTeam.teamId == null) {
+        const teams = await model.Team.findAll()
+        teamIds = _.uniq(_.pluck(teams, 'id'));
+      }
       const check = await model.DataRetentionPolicy.findAll({
         where: {
           status: STATUS.ACTIVE.value,
@@ -337,6 +342,9 @@ async function queryDataRetentionPolicy(query, offset, limit) {
           as: 'DataRetentionPolicyTeam',
           include: [{ model: model.Team, as: 'TeamInfo' }]
         },
+      ],
+      order: [
+        ['createdAt', 'DESC'],
       ],
     }
     if (offset) _query.offset = offset

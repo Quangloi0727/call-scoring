@@ -107,7 +107,6 @@ function getDataRetentionPolicy(page, nameDataRetentionPolicy) {
 function createTable(data) {
   let html = ''
   data.forEach((item) => {
-
     let teamDropDownItemHTML = '';
     let teamHTML = '';
 
@@ -151,15 +150,27 @@ function createTable(data) {
     html += `
       <tr>
         <td class="text-center">
-          <a href="/dataRetentionPolicy/detail/${item.id}">${item.nameDataRetentionPolicy}</a>
+          <a class="d-inline-block text-truncate" style="max-width:125px;"
+          title="${item.nameDataRetentionPolicy}"
+           href="/dataRetentionPolicy/detail/${item.id}">${item.nameDataRetentionPolicy}</a>
         </td>
         <td class="text-center">${itemBtn}</td>
         <td class="text-center">${teamHTML}</td>
         <td class="text-center">${renStatus(item.status)}</td>
-        <td class="text-center">${item.createdAt || ''}</td>
-        <td class="text-center">${item.userCreate.userName || ''}</td>
-        <td class="text-center">${item.updatedAt || ''}</td>
-        <td class="text-center">${item.userUpdate.userName || ''}</td>
+        <td class="text-center">${moment(item.createdAt, 'HH:mm:ss DD/MM/YYYY').format("DD/MM/YYYY HH:mm:ss")}</td>
+        <td class="text-center">
+          <div class="d-inline-block text-truncate" style="max-width:125px;"
+              title="${item.userCreate.userName ? item.userCreate.fullName + `  (${item.userCreate.userName || ''})` : ''}">
+            ${item.userCreate.userName ? item.userCreate.fullName + `  (${item.userCreate.userName || ''})` : ''}
+          </div>
+        </td>
+        <td class="text-center">${moment(item.updatedAt, 'HH:mm:ss DD/MM/YYYY').format("DD/MM/YYYY HH:mm:ss")}</td>
+        <td class="text-center">
+          <div class="d-inline-block text-truncate" style="max-width:125px;"
+              title="${item.userUpdate.userName ? item.userUpdate.fullName + `  (${item.userUpdate.userName || ''})` : ''}">
+             ${item.userUpdate.userName ? item.userUpdate.fullName + `  (${item.userUpdate.userName || ''})` : ''}
+          </div>
+        </td>
       </tr>
     `
   })
