@@ -111,7 +111,7 @@ exports.getDataRetentionPolicies = async (req, res, next) => {
 
     const count = await model.DataRetentionPolicy.count({
       where: query ? query.where : {}
-    });
+    })
     const paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
@@ -288,12 +288,12 @@ exports.updateStatus = async (req, res) => {
     })
     if (!findDocUpdate) throw new Error(dataRetentionPolicyNotFound)
 
-    let teamIds = _.uniq(_.pluck(findDocUpdate.DataRetentionPolicyTeam, 'teamId'));
+    let teamIds = _.uniq(_.pluck(findDocUpdate.DataRetentionPolicyTeam, 'teamId'))
 
     if (findDocUpdate.status == STATUS.UN_ACTIVE.value) {
       if (findDocUpdate.DataRetentionPolicyTeam.length == 0) {
         const teams = await model.Team.findAll({ where: { status: STATUS.ACTIVE } })
-        teamIds = _.uniq(_.pluck(teams, 'id'));
+        teamIds = _.uniq(_.pluck(teams, 'id'))
       }
       const check = await model.DataRetentionPolicy.findAll({
         where: {
@@ -356,9 +356,7 @@ async function queryDataRetentionPolicy(query, offset, limit, findOneDoc) {
     if (offset) _query.offset = offset
     if (limit) _query.limit = limit
 
-    if (findOneDoc) {
-      return await model.DataRetentionPolicy.findOne(_query)
-    }
+    if (findOneDoc) return await model.DataRetentionPolicy.findOne(_query)
 
     return await model.DataRetentionPolicy.findAll(_query)
   } catch (error) {
