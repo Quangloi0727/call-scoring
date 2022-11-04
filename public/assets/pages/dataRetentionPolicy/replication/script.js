@@ -166,6 +166,9 @@ $(function () {
   }
 
   $(document).on('click', '#btn_search_member', function () {
+    const found = []
+    console.log("aaaaaa")
+    console.log(tempTeamGroup);
     if (!tempTeamGroup || tempTeamGroup.length == 0) return toastr.error("Không tìm thấy thông tin")
     tempTeamGroup.map((el) => {
       if (el.name.includes($('#nameTeamGroup').val())) {
