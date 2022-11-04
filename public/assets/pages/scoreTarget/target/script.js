@@ -542,9 +542,7 @@ $(function () {
     for (const [key, value] of Object.entries(ScoreTarget)) {
       $(`#${key}`).val(value)
 
-      if (ScoreTarget.effectiveTimeStart && ScoreTarget.effectiveTimeType != 4) {
-        $(`#effectiveTimeStart`).val(moment(ScoreTarget.effectiveTimeStart).format('YYYY-MM-DD'))
-      } else if (ScoreTarget.effectiveTimeType == 4) {
+      if (ScoreTarget.effectiveTimeType == 4) {
         $('.effectiveTimeRange').removeClass('d-none')
         $('.effectiveTimeStart').addClass('d-none')
         $('#effectiveTime').daterangepicker({ startDate: moment(ScoreTarget.effectiveTimeStart).format('MM/DD/YYYY'), endDate: moment(ScoreTarget.effectiveTimeEnd).format('MM/DD/YYYY') })
