@@ -210,7 +210,7 @@ exports.create = async (req, res, next) => {
   try {
 
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrTargetAuto, arrCond, scoreScriptId, numberOfCall } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, arrTargetAuto, arrCond, scoreScriptId, numberOfCall } = req.body
     transaction = await model.sequelize.transaction()
 
     if (callTime) {
@@ -219,12 +219,14 @@ exports.create = async (req, res, next) => {
       data.callStartTime = moment(string[0]).startOf('day')
       data.callEndTime = moment(string[1]).endOf('day')
     }
-    if (effectiveTime && effectiveTimeType == "4") {
+
+    if (effectiveTime && Number(effectiveTimeType) == CONST_EFFECTIVE_TIME_TYPE.ABOUT_DAY.value) {
       let string = effectiveTime.split(' - ')
 
       data.effectiveTimeStart = moment(string[0]).startOf('day')
       data.effectiveTimeEnd = moment(string[1]).endOf('day')
-    } else data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
+    }
+
     if (numberOfCall) {
       data.numberOfCall = Math.abs(numberOfCall)
     }
@@ -298,7 +300,7 @@ exports.update = async (req, res, next) => {
   let transaction
   try {
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, effectiveTimeStart, arrCond, arrTargetAuto, scoreScriptId, numberOfCall, status } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, arrCond, arrTargetAuto, scoreScriptId, numberOfCall, status } = req.body
     transaction = await model.sequelize.transaction()
 
     const foundScoreTarget = await model.ScoreTarget.findOne({ where: { id: { [Op.eq]: data['edit-id'] } } })
@@ -310,13 +312,10 @@ exports.update = async (req, res, next) => {
       data.callEndTime = moment(string[1]).endOf('day')
     }
 
-    if (effectiveTime && effectiveTimeType == "4") {
+    if (effectiveTime && effectiveTimeType == CONST_EFFECTIVE_TIME_TYPE.ABOUT_DAY.value) {
       let string = effectiveTime.split(' - ')
       data.effectiveTimeStart = moment(string[0]).startOf('day')
       data.effectiveTimeEnd = moment(string[1]).endOf('day')
-    } else {
-      data.effectiveTimeStart = moment(effectiveTimeStart).startOf('day')
-      data.effectiveTimeEnd = null
     }
 
     // check trùng tên mục tiêu
