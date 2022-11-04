@@ -132,7 +132,6 @@ $(function () {
         }
 
         if (resp.data && resp.data.length > 0) {
-          console.log(resp);
           tempTeamGroup = resp.data
           return renderTeams(resp.data)
         }
