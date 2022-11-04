@@ -212,4 +212,5 @@ $(window).on('beforeunload', function () {
   $(document).off('change', '#unlimitedSaveForCallNoPoint')
   $(document).off('click', '#btnAddTeams')
   $(document).off('click', '.remove-team')
+  $(document).off('click', '#btn_search_member')
 })
