@@ -1,0 +1,36 @@
+<script>
+
+</script>
+<div class="wrapper">
+  <div>
+    <section class="content-header">
+      <div class="container-fluid">
+        <!-- UI phần thêm đội ngũ vào trong chính sách -->
+        <ul class="nav nav-pills mb-3" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active btn btn-outline-primary" data-toggle="pill" href="#tapCallRating" role="tab"
+              aria-selected="true">Chấm điểm</a>
+          </li>
+          <li class="nav-item ml-5" id="source-recording">
+            <a class="nav-link btn btn-outline-primary" data-toggle="pill" href="#tapScoreScript" role="tab"
+              aria-selected="false">Kịch bản chấm điểm</a>
+          </li>
+        </ul>
+
+
+        <div class="tab-content">
+
+          <!-- tab dữ liệu báo cáo phần chấm điểm cuộc gọi -->
+          <%- include('./tapCallRating.ejs') %>
+            <!-- end tab dữ liệu báo cáo phần chấm điểm cuộc gọi -->
+
+            <!-- tab dữ liệu báo cáo phần kịch bản chấm điểm -->
+            <%- include('./tapScoreScript.ejs') %>
+              <!-- end tab dữ liệu báo cáo phần kịch bản chấm điểm -->
+        </div>
+
+      </div><!-- /.container-fluid -->
+    </section>
+    <!-- /.content -->
+  </div>
+</div>
