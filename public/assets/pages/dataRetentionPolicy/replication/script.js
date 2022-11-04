@@ -160,13 +160,11 @@ $(function () {
     let teamIds = _.pluck(teams, 'id')
     $('#selectAddTeams').val(teamIds)
     $('.selectpicker').selectpicker('refresh')
-    tempTeamGroup = resp.data
-    return renderTeams(teams)
+    tempTeamGroup = teams
+    renderTeams(teams)
   }
 
   $(document).on('click', '#btn_search_member', function () {
-    const found = []
-    console.log(tempTeamGroup);
     if (!tempTeamGroup || tempTeamGroup.length == 0) return toastr.error("Không tìm thấy thông tin")
     tempTeamGroup.map((el) => {
       if (el.name.includes($('#nameTeamGroup').val())) {
@@ -210,4 +208,5 @@ $(window).on('beforeunload', function () {
   $(document).off('change', '#unlimitedSaveForCallNoPoint')
   $(document).off('click', '#btnAddTeams')
   $(document).off('click', '.remove-team')
+  $(document).off('click', '#btn_search_member')
 })
