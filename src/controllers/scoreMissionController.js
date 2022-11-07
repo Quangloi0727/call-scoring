@@ -61,8 +61,16 @@ exports.getScoreMission = async (req, res, next) => {
 
         const arrUserId = await checkRoleUser(roles, id)
 
+        let queryAssignFor = {}
+
+        if (!arrUserId.length) {
+            queryAssignFor = {}
+        } else {
+            queryAssignFor = { assignFor: arrUserId }
+        }
+
         let findList = model.CallShare.findAll({
-            where: { assignFor: arrUserId },
+            where: queryAssignFor,
             include: [
                 {
                     model: model.CallDetailRecords,
@@ -106,7 +114,7 @@ exports.getScoreMission = async (req, res, next) => {
             limit: limit
         })
 
-        let count = model.CallShare.count({ where: { assignFor: arrUserId } })
+        let count = model.CallShare.count({ where: queryAssignFor })
 
         const [listData, totalRecord] = await Promise.all([findList, count])
 
@@ -481,59 +489,66 @@ async function createCallRatingHistory(dataEditOrigin, resultCriteria, userId, t
 
 async function checkRoleUser(roles, id) {
     let arrUserId = []
-    arrUserId = arrUserId.concat(id)
-    for (let i = 0; i < roles.length; i++) {
-        // check role quản lý đội ngũ
-        if (roles[i].role == USER_ROLE.supervisor.n) {
-            const teams = await model.AgentTeamMember.findAll({
-                where: { userId: id, role: USER_ROLE.supervisor.n },
-                include: [{
-                    model: model.Team,
-                    as: 'teams',
-                    where: {
-                        status: { [Op.eq]: TeamStatus.ON }
-                    }
-                }],
-                raw: true,
-                nest: true
-            })
-            const teamId = _.pluck(teams, 'teamId')
-            const findUserIdInTeams = await model.AgentTeamMember.findAll({
-                where: { teamId: { [Op.in]: teamId }, role: USER_ROLE.agent.n },
-                raw: true,
-                nest: true
-            })
-            arrUserId = arrUserId.concat(_.pluck(findUserIdInTeams, 'userId'))
+    const findRoleAdmin = roles.filter(el => el.role == USER_ROLE.admin.n)
+    if (findRoleAdmin) {
+        return arrUserId
+    } else {
+        arrUserId = arrUserId.concat(id)
+        for (let i = 0; i < roles.length; i++) {
+            // check role quản lý đội ngũ
+            if (roles[i].role == USER_ROLE.supervisor.n) {
+                const teams = await model.AgentTeamMember.findAll({
+                    where: { userId: id, role: USER_ROLE.supervisor.n },
+                    include: [{
+                        model: model.Team,
+                        as: 'teams',
+                        where: {
+                            status: { [Op.eq]: TeamStatus.ON }
+                        }
+                    }],
+                    raw: true,
+                    nest: true
+                })
+                const teamId = _.pluck(teams, 'teamId')
+                const findUserIdInTeams = await model.AgentTeamMember.findAll({
+                    where: { teamId: { [Op.in]: teamId }, role: USER_ROLE.agent.n },
+                    raw: true,
+                    nest: true
+                })
+                arrUserId = arrUserId.concat(_.pluck(findUserIdInTeams, 'userId'))
+            }
+            // check role quản lý nhóm
+            if (roles[i].role == USER_ROLE.groupmanager.n) {
+                const groups = await model.UserGroupMember.findAll({
+                    where: { userId: id, role: USER_ROLE.groupmanager.n },
+                    raw: true,
+                    nest: true
+                })
+                const groupId = _.pluck(groups, 'groupId')
+                const findTeamByGroup = await model.TeamGroup.findAll({
+                    where: { groupId: { [Op.in]: groupId } },
+                    include: [{
+                        model: model.Team,
+                        as: 'Team',
+                        where: {
+                            status: { [Op.eq]: TeamStatus.ON }
+                        }
+                    }],
+                    raw: true,
+                    nest: true
+                })
+                const teamId = _.pluck(findTeamByGroup, 'teamId')
+                const findUserIdInTeams = await model.AgentTeamMember.findAll({
+                    where: { teamId: { [Op.in]: teamId }, role: USER_ROLE.agent.n },
+                    raw: true,
+                    nest: true
+                })
+                arrUserId = arrUserId.concat(_.pluck(findUserIdInTeams, 'userId'))
+            }
+            continue
         }
-        // check role quản lý nhóm
-        if (roles[i].role == USER_ROLE.groupmanager.n) {
-            const groups = await model.UserGroupMember.findAll({
-                where: { userId: id, role: USER_ROLE.groupmanager.n },
-                raw: true,
-                nest: true
-            })
-            const groupId = _.pluck(groups, 'groupId')
-            const findTeamByGroup = await model.TeamGroup.findAll({
-                where: { groupId: { [Op.in]: groupId } },
-                include: [{
-                    model: model.Team,
-                    as: 'Team',
-                    where: {
-                        status: { [Op.eq]: TeamStatus.ON }
-                    }
-                }],
-                raw: true,
-                nest: true
-            })
-            const teamId = _.pluck(findTeamByGroup, 'teamId')
-            const findUserIdInTeams = await model.AgentTeamMember.findAll({
-                where: { teamId: { [Op.in]: teamId }, role: USER_ROLE.agent.n },
-                raw: true,
-                nest: true
-            })
-            arrUserId = arrUserId.concat(_.pluck(findUserIdInTeams, 'userId'))
-        }
-        continue
+        return arrUserId
     }
-    return arrUserId
+
 }
+
