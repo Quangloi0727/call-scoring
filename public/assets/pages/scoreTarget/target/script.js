@@ -71,7 +71,7 @@ function bindClick() {
       const arr = $('#scoreScriptId option[disabled]').val()
       formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
       if (formData['scoreScriptId']) {
-        formData['scoreScriptId'] = formData['scoreScriptId'].concat(arr.split(','))
+        formData['scoreScriptId'] = arr ? formData['scoreScriptId'].concat(arr.split(',')) : formData['scoreScriptId']
       }
       return saveData(formData, 'PUT')
     }
@@ -487,6 +487,7 @@ function setConfigView() {
     $("#status").attr("disabled", "disabled")
     $("#assignStart").val("00:00:00")
     $("#assignEnd").val("23:59:59")
+    $("#btn_duplicate_scoreTarget").remove()
   } else {
     if (ScoreTarget.status == 1) {
       disableOrEnableButton()
