@@ -51,11 +51,16 @@ cron.schedule("*/1 * * * *", async () => {
 
                         const KPIRemaining = scoreTarget.numberOfCall - checkKPI
 
+                        let _queryCallSatisfy = {}
+
+                        if (!queryCall.length) {
+                            _queryCallSatisfy = { share: false }
+                        } else {
+                            _queryCallSatisfy = { [Op[queryCall.conditionSearch]]: queryCall.query, share: false }
+                        }
+
                         const dataShare = await model.CallDetailRecords.findAll({
-                            where: {
-                                [Op[queryCall.conditionSearch]]: queryCall.query,
-                                share: false
-                            },
+                            where: _queryCallSatisfy,
                             order: [
                                 ['lastUpdateTime', 'ASC']
                             ],
