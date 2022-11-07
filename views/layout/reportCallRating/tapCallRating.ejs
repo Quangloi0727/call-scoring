@@ -81,8 +81,176 @@
         </div>
       </div>
 
+      <div class="row mb-3">
+        <div class="col-lg-6 col-6">
+          <div id="pieChartReport"></div>
+        </div>
+        <div class="col-lg-6 col-6">
+          <div id="pieChartReport"></div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-lg-6 col-6">
+          <div id="pieChartReport"></div>
+        </div>
+        <div class="col-lg-6 col-6">
+          <div id="pieChartReport"></div>
+        </div>
+      </div>
+
     </div>
 
   </div>
 
+</div>
+
+
+<div class="modal fade" id="modal_search">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Tìm kiếm nâng cao</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_advanced_search">
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>Ngày chấm điểm</label>
+                <div class="input-group">
+                  <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
+                    title="Chọn..." id="gradingDate" name="gradingDate">
+                  <div class="input-group-append">
+                    <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Người chấm điểm</label>
+                <select class="form-control selectpicker input" id="idEvaluator" name="idEvaluator" title="Chọn...">
+                  <% evaluators.forEach((evaluator)=> { %>
+                    <option value="<%= evaluator.id %>">
+                      <%= evaluator.fullName %> (<%= evaluator.userName %>)
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Điện thoại viên</label>
+                <select class="form-control selectpicker input" id="idAgent" name="idAgent" title="Chọn...">
+                  <% agents.forEach((agent)=> { %>
+                    <option value="<%= agent.id %>">
+                      <%= agent.fullName %> (<%= agent.userName %>)
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Đội ngũ</label>
+                <select class="form-control selectpicker input" id="idTeam" name="idTeam" title="Chọn...">
+                  <% teams.forEach((team)=> { %>
+                    <option value="<%= team.id %>">
+                      <%= team.name %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Nhóm</label>
+                <select class="form-control selectpicker input" id="idGroup" name="idGroup" title="Chọn...">
+                  <% groups.forEach((group)=> { %>
+                    <option value="<%= group.id %>">
+                      <%= group.name %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Nguồn</label>
+                <select class="form-control selectpicker input" title="Chọn..." name="sourceType">
+                  <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
+                    <option value="<%= SOURCE_NAME[item].code %>">
+                      <%= SOURCE_NAME[item].text %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Ngày gọi</label>
+                <div class="input-group">
+                  <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
+                    title="Chọn..." id="origDate" name="origDate">
+                  <div class="input-group-append">
+                    <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Mục tiêu chấm điểm</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="idScoreTarget"
+                  id="idScoreTarget" data-live-search="true" title="Chọn..." multiple>
+                  <% scoreTargets.forEach((scoreTarget)=> { %>
+                    <option value="<%= scoreTarget.id %>">
+                      <%= scoreTarget.name %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="form-group">
+                <label>Kịch bản chấm điểm</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="idScoreScript"
+                  id="idScoreScript" data-live-search="true" title="Chọn..." multiple>
+                  <% scoreScripts.forEach((scoreScript)=> { %>
+                    <option value="<%= scoreScript.id %>">
+                      <%= scoreScript.name %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer justify-content-between">
+            <div>
+              <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
+                id="clear_local_storage">
+                <i class="far fa-trash-alt"></i>
+                <span>Xóa bộ lọc</span>
+              </button>
+            </div>
+            <div>
+              <button type="button" class="btn btn-outline-danger" id="btn_cancel">
+                <span>Hủy</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="btn_advanced_search">
+                <i class="fas fa-search p-0"></i>
+                <span>Lưu</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>

@@ -1,4 +1,13 @@
+<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <script>
+  var evaluators = JSON.parse('<%- JSON.stringify(evaluators)%>');
+  var agents = JSON.parse('<%- JSON.stringify(agents)%>');
+  var groups = JSON.parse('<%- JSON.stringify(groups)%>');
+  var teams = JSON.parse('<%- JSON.stringify(teams)%>');
+  var scoreTargets = JSON.parse('<%- JSON.stringify(scoreTargets)%>');
+  var scoreScripts = JSON.parse('<%- JSON.stringify(scoreScripts)%>');
 
 </script>
 <div class="wrapper">
