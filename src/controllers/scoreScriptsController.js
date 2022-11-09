@@ -109,7 +109,7 @@ exports.gets = async (req, res, next) => {
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
-      totalResult: total && total.length || 0,
+      totalResult: total && total[0].total || 0,
     })
 
     return res.status(SUCCESS_200.code).json({
