@@ -54,6 +54,16 @@ class CallDetailRecords extends Model {
           }
         },
         recordingFileName: DataTypes.STRING(100),
+        var1: DataTypes.STRING(30),
+        var2: DataTypes.STRING(30),
+        var3: DataTypes.STRING(30),
+        var4: DataTypes.STRING(30),
+        var5: DataTypes.STRING(30),
+        var6: DataTypes.STRING(30),
+        var7: DataTypes.STRING(30),
+        var8: DataTypes.STRING(30),
+        var9: DataTypes.STRING(30),
+        var10: DataTypes.STRING(30)
       },
       {
         sequelize,
