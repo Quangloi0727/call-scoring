@@ -95,8 +95,7 @@ function getDataRetentionPolicy(page, nameDataRetentionPolicy) {
     if (resp.code != 200) {
       return toastr.error(resp.message)
     }
-
-    if (resp.data && resp.data.length > 0) {
+    if (resp.data && resp.data.length >= 0) {
 
       createTable(resp.data)
       return $('#paging_table').html(window.location.CreatePaging(resp.paginator))

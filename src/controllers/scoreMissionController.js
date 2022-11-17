@@ -61,8 +61,16 @@ exports.getScoreMission = async (req, res, next) => {
 
         const arrUserId = await checkRoleUser(roles, id)
 
+        let queryAssignFor = {}
+
+        if (!arrUserId.length) {
+            queryAssignFor = {}
+        } else {
+            queryAssignFor = { assignFor: arrUserId }
+        }
+
         let findList = model.CallShare.findAll({
-            where: { assignFor: arrUserId },
+            where: queryAssignFor,
             include: [
                 {
                     model: model.CallDetailRecords,
@@ -106,7 +114,7 @@ exports.getScoreMission = async (req, res, next) => {
             limit: limit
         })
 
-        let count = model.CallShare.count({ where: { assignFor: arrUserId } })
+        let count = model.CallShare.count({ where: queryAssignFor })
 
         const [listData, totalRecord] = await Promise.all([findList, count])
 
@@ -481,6 +489,8 @@ async function createCallRatingHistory(dataEditOrigin, resultCriteria, userId, t
 
 async function checkRoleUser(roles, id) {
     let arrUserId = []
+    const findRoleAdmin = roles.filter(el => el.role == USER_ROLE.admin.n)
+    if (findRoleAdmin.length) return arrUserId
     arrUserId = arrUserId.concat(id)
     for (let i = 0; i < roles.length; i++) {
         // check role quản lý đội ngũ
@@ -537,3 +547,4 @@ async function checkRoleUser(roles, id) {
     }
     return arrUserId
 }
+

@@ -1,9 +1,9 @@
-'use strict';
+'use strict'
 
-let { TYPE_ROLETYPE } = require('../../helpers/constants/statusField');
+let { TYPE_ROLETYPE } = require('../../helpers/constants/statusField')
 
 module.exports = {
-  async up (queryInterface, Sequelize) {
+  async up(queryInterface, Sequelize) {
     /**
      * Add seed commands here.
      *
@@ -17,30 +17,27 @@ module.exports = {
       return {
         name: TYPE_ROLETYPE[i].t,
         type: TYPE_ROLETYPE[i].n
-      };
-    });
+      }
+    })
 
-    // console.log(dataMapping);
-    // return; // debug
-    await queryInterface.bulkInsert('RuleTypes', dataMapping, {});
+    await queryInterface.bulkInsert('RuleTypes', dataMapping, {})
   },
 
-  async down (queryInterface, Sequelize) {
-    const { Op } = Sequelize;
+  async down(queryInterface, Sequelize) {
+    const { Op } = Sequelize
     /**
      * Add commands to revert seed here.
      *
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-    // console.log('co vao ady');
     let dataMapping = Object.keys(TYPE_ROLETYPE).map(i => {
       return {
         name: TYPE_ROLETYPE[i].t,
         type: TYPE_ROLETYPE[i].n
-      };
-    });
-    await queryInterface.bulkDelete('RuleTypes', {name: {[Op.in]: dataMapping.map(i => i.name)}}, {});
+      }
+    })
+    await queryInterface.bulkDelete('RuleTypes', { name: { [Op.in]: dataMapping.map(i => i.name) } }, {})
 
   }
-};
+}

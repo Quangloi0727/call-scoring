@@ -292,8 +292,8 @@ exports.updateStatus = async (req, res) => {
 
     if (findDocUpdate.status == STATUS.UN_ACTIVE.value) {
       if (findDocUpdate.DataRetentionPolicyTeam.length == 0) {
-        const teams = await model.Team.findAll({ where: { status: STATUS.ACTIVE } })
-        teamIds = _.uniq(_.pluck(teams, 'id'))
+        const teams = await model.Team.findAll({ where: { status: TeamStatus.ON } })
+        teamIds = _.uniq(_.pluck(teams, 'id'));
       }
       const check = await model.DataRetentionPolicy.findAll({
         where: {
