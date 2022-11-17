@@ -26,6 +26,12 @@ class CallShare extends Model {
                         key: "id"
                     }
                 },
+                pointResultCallRating: {
+                    type: DataTypes.INTEGER,
+                },
+                typeResultCallRating: {
+                    type: DataTypes.STRING,
+                },
                 createdAt: {
                     type: DataTypes.DATE,
                     get() {

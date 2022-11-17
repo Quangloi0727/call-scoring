@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "sa",
+    "username": "qa.dbadmin",
     "password": "123456@A",
     "database": "mcredit_recording",
-    "host": "172.16.88.221",
+    "host": "172.16.86.139",
     "dialect": "mssql",
     "seederStorage": "sequelize",
     "seederStorageTableName": "sequelize_data"

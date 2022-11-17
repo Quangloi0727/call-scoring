@@ -10,6 +10,7 @@ const { Op } = require('sequelize')
 const model = require('../models')
 const pagination = require('pagination')
 const { SUCCESS_200, ERR_400 } = require("../helpers/constants/statusCodeHTTP")
+const { default: async } = require('async')
 
 exports.index = async (req, res, next) => {
   try {
@@ -52,6 +53,47 @@ exports.index = async (req, res, next) => {
     console.log(error)
     console.log(`------- error ------- `)
     return next(error)
+  }
+}
+
+exports.queryReport = async (req, res) => {
+  try {
+
+    let {
+      page,
+      limit,
+      query
+    } = req.query
+
+    if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
+
+    limit = Number(limit)
+
+    const pageNumber = page ? Number(page) : 1
+    const offset = (pageNumber * limit) - limit
+
+    const [countCallShare, callRatingGroupByCallId, callRatingHistoryGroupByCallId] = await Promise.all([
+      model.CallShare.count({
+      }),
+      model.CallRating.findAll({
+        group: ['callId']
+      }),
+      model.CallRatingHistory.findAll({
+        group: ['callId']
+      }),
+    ])
+
+
+    return res.json({
+      code: SUCCESS_200.code,
+      countCallShare: countCallShare,
+      countCallRatingGroupByCallId: callRatingGroupByCallId.length,
+      countCallRatingHistoryGroupByCallId: callRatingHistoryGroupByCallId.length
+    })
+
+  } catch (error) {
+    _logger.error(titlePage + " - chấm điểm", error)
+    return res.json({ code: ERR_400.code, message: error.message })
   }
 }
 

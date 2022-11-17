@@ -6,8 +6,8 @@
     <div class="card-header row">
       <div class="col-11 d-flex">
         <div class="mr-2">
-          <button type="button" class="form-control btn btn-primary btn-sm" id="popup_search" data-toggle="modal"
-            data-target="#modal_search" title="Tùy chỉnh bảng">
+          <button type="button" class="form-control btn btn-primary btn-sm" id="btn_show_modal_search"
+            data-toggle="modal" data-target="#modal_search" title="Tùy chỉnh bảng">
             <i class="fas fa-filter"></i>
           </button>
         </div>
@@ -31,7 +31,7 @@
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
+              <p class="text-center mt-2">Số cuộc gọi đã đánh giá</p>
               <h3 class="text-center">100</h3>
             </div>
             <!-- <div class="icon">
@@ -44,7 +44,7 @@
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
+              <p class="text-center mt-2">Số cuộc gọi được phân công</p>
               <h3 class="text-center">100</h3>
             </div>
             <!-- <div class="icon">
@@ -57,7 +57,7 @@
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
+              <p class="text-center mt-2">Tỷ lệ chấm lại</p>
               <h3 class="text-center">100</h3>
             </div>
             <!-- <div class="icon">
@@ -70,7 +70,7 @@
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
+              <p class="text-center mt-2">Số cuộc gọi chấm lại</p>
               <h3 class="text-center">100</h3>
             </div>
             <!-- <div class="icon">
@@ -133,7 +133,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Người chấm điểm</label>
-                <select class="form-control selectpicker input" id="idEvaluator" name="idEvaluator" title="Chọn...">
+                <select class="form-control selectpicker input" id="idEvaluator" name="idEvaluator" title="Chọn..."
+                  multiple data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
                   <% evaluators.forEach((evaluator)=> { %>
                     <option value="<%= evaluator.id %>">
                       <%= evaluator.fullName %> (<%= evaluator.userName %>)
@@ -145,7 +147,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Điện thoại viên</label>
-                <select class="form-control selectpicker input" id="idAgent" name="idAgent" title="Chọn...">
+                <select class="form-control selectpicker input" id="idAgent" name="idAgent" title="Chọn..." multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
                   <% agents.forEach((agent)=> { %>
                     <option value="<%= agent.id %>">
                       <%= agent.fullName %> (<%= agent.userName %>)
@@ -157,7 +161,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Đội ngũ</label>
-                <select class="form-control selectpicker input" id="idTeam" name="idTeam" title="Chọn...">
+                <select class="form-control selectpicker input" id="idTeam" name="idTeam" title="Chọn..." multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
                   <% teams.forEach((team)=> { %>
                     <option value="<%= team.id %>">
                       <%= team.name %>
@@ -169,7 +175,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Nhóm</label>
-                <select class="form-control selectpicker input" id="idGroup" name="idGroup" title="Chọn...">
+                <select class="form-control selectpicker input" id="idGroup" name="idGroup" title="Chọn..." multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
                   <% groups.forEach((group)=> { %>
                     <option value="<%= group.id %>">
                       <%= group.name %>
@@ -181,7 +189,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Nguồn</label>
-                <select class="form-control selectpicker input" title="Chọn..." name="sourceType">
+                <select class="form-control selectpicker input" title="Chọn..." name="sourceType" multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
                   <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
                     <option value="<%= SOURCE_NAME[item].code %>">
                       <%= SOURCE_NAME[item].text %>
@@ -205,8 +215,8 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Mục tiêu chấm điểm</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="idScoreTarget"
-                  id="idScoreTarget" data-live-search="true" title="Chọn..." multiple>
+                <select class="form-control selectpicker input" name="idScoreTarget" id="idScoreTarget"
+                  data-live-search="true" title="Chọn..." multiple>
                   <% scoreTargets.forEach((scoreTarget)=> { %>
                     <option value="<%= scoreTarget.id %>">
                       <%= scoreTarget.name %>
@@ -219,8 +229,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Kịch bản chấm điểm</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="idScoreScript"
-                  id="idScoreScript" data-live-search="true" title="Chọn..." multiple>
+                <select class="form-control selectpicker input" name="idScoreScript" id="idScoreScript"
+                  data-live-search="true" title="Chọn..." multiple data-actions-box="true" data-select-all-text="Tất cả"
+                  data-deselect-all-text="Xóa tất cả" data-live-search="true">
                   <% scoreScripts.forEach((scoreScript)=> { %>
                     <option value="<%= scoreScript.id %>">
                       <%= scoreScript.name %>
@@ -234,13 +245,13 @@
           <div class="modal-footer justify-content-between">
             <div>
               <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
-                id="clear_local_storage">
+                id="btn_clear_local_storage">
                 <i class="far fa-trash-alt"></i>
                 <span>Xóa bộ lọc</span>
               </button>
             </div>
             <div>
-              <button type="button" class="btn btn-outline-danger" id="btn_cancel">
+              <button type="button" class="btn btn-outline-danger" id="btn_hide_modal_search">
                 <span>Hủy</span>
               </button>
               <button type="button" class="btn btn-primary" id="btn_advanced_search">
