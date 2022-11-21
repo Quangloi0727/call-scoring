@@ -212,6 +212,12 @@ function bindClick() {
     $(this).parent().parent().remove()
   })
 
+  // remove nội dung của row
+  $(document).on('change', '#ratingBy', function () {
+    $('.row-conditions').html('')
+    $('.selectpicker').selectpicker('refresh')
+  })
+
   // validate ô input "Dữ liệu"
   $(document).on('change', '.conditionsData', function (e) {
     e.stopImmediatePropagation()
@@ -603,6 +609,7 @@ $(window).on('beforeunload', function () {
   $(document).off('click', 'input[name="callTime"]')
   $(document).off('click', 'input:text[name="effectiveTime"]')
   $(document).off('change', '#effectiveTimeType')
+  $(document).off('change', '#ratingBy')
   $(document).off('click', '#btn-add-conditions')
   $(document).off('click', '.btn-remove-row')
   $(document).off('change', '.conditionsData')

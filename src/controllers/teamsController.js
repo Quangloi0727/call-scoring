@@ -15,7 +15,7 @@ exports.index = async (req, res, next) => {
   try {
     const users = await UserModel.findAll({
       where: {
-        [Op.not]: [{ userName: { [Op.substring]: 'admin' } }]
+        [Op.and]: [{ [Op.not]: [{ userName: { [Op.substring]: 'admin' } }] }, { isActive: 1 }]
       },
       include: [{
         model: UserRoleModel,
