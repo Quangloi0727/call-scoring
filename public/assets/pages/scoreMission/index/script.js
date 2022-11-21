@@ -529,7 +529,6 @@ function createTable(data, ConfigurationColums, configDefault) {
         const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
         const { recordingFileName } = item.callInfo
         let check = false
-
         // //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
         if (item.callRatingInfo && item.callRatingInfo.length > 0) {
@@ -585,19 +584,23 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
     const { callInfo, callRatingInfo } = item
-    let resultPointCriteria = 0
-    if (callRatingInfo && callRatingInfo.length > 0) {
-        callRatingInfo.map((el) => {
-            resultPointCriteria += el.selectionCriteriaInfo.score
-        })
-    }
+    console.log(item);
+    let resultReviewScore = ''
 
+    if (item.typeResultCallRating) {
+        resultReviewScore = constTypeResultCallRating[`point${item.typeResultCallRating}`].txt
+    }
     let htmlString = ``
     if (configDefault) {
         for (const [key] of Object.entries(dataConfig)) {
             if (key == 'manualReviewScore') {
 
-                htmlString += ` <td class="text-center manualReviewScore ${headerDefault['manualReviewScore'].status == 1 ? '' : 'd-none'}">${resultPointCriteria}</td>`
+                htmlString += ` <td class="text-center manualReviewScore ${headerDefault['manualReviewScore'].status == 1 ? '' : 'd-none'}">${item.pointResultCallRating || 0}</td>`
+
+            } else if (key == 'resultReviewScore') {
+
+                htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'].status == 1 ? '' : 'd-none'}">
+                ${resultReviewScore}</td>`
 
             } else if (key == 'agentName') {
 
@@ -623,7 +626,14 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
     } else {
         for (const [key, value] of Object.entries(dataConfig)) {
             if (key == 'manualReviewScore') {
-                htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${resultPointCriteria}</td>`
+
+                htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">
+                ${item.pointResultCallRating}</td>`
+
+            } else if (key == 'resultReviewScore') {
+                htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'] == true ? '' : 'd-none'}">
+                ${resultReviewScore}</td>`
+
             } else if (key == 'agentName') {
 
                 htmlString += ` <td class="text-center agentName ${dataConfig['agentName'] == true ? '' : 'd-none'}">${callInfo['agent'] ? callInfo['agent'].fullName : ''}</td>`

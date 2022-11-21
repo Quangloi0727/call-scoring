@@ -10,7 +10,8 @@ const {
     CONST_COND,
     CONST_STATUS,
     USER_ROLE,
-    TeamStatus
+    TeamStatus,
+    constTypeResultCallRating
 } = require('../helpers/constants/index')
 
 const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
@@ -19,6 +20,7 @@ const { cheSo } = require("../helpers/functions")
 
 const model = require('../models')
 const moment = require('moment')
+const Criteria = require('../models/criterias')
 
 exports.index = async (req, res, next) => {
     try {
@@ -33,7 +35,8 @@ exports.index = async (req, res, next) => {
             title: titlePage,
             titlePage: titlePage,
             headerDefault: headerDefault,
-            CreatedByForm
+            CreatedByForm,
+            constTypeResultCallRating
         })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -69,7 +72,7 @@ exports.getScoreMission = async (req, res, next) => {
             queryAssignFor = { assignFor: arrUserId }
         }
 
-        let findList = model.CallShare.findAll({
+        let findList = await model.CallShare.findAll({
             where: queryAssignFor,
             include: [
                 {
@@ -385,7 +388,13 @@ exports.saveCallRating = async (req, res) => {
             const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })
             const ids = _.pluck(findCallRating, 'id')
             if (ids.length > 0) await model.CallRating.destroy({ where: { id: { [Op.in]: ids } } }, { transaction: transaction })
-            await model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
+
+            const idSelectionCriterias = _.pluck(resultCriteria, 'idSelectionCriteria')
+
+            await Promise.all([
+                updateCallShare(idSelectionCriterias, idScoreScript, callId, transaction),
+                model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
+            ])
         }
 
         if (note) {
@@ -546,5 +555,82 @@ async function checkRoleUser(roles, id) {
         continue
     }
     return arrUserId
+}
+/**
+ * update vào bảng callShare dữ liệu chấm điểm của cuộc gọi
+ * @param {Array} idSelectionCriterias mảng id của SelectionCriteria
+ * @param {String} idScoreScript id kịch bản
+ * @param {String} callId mã cuộc gọi
+ * 
+ */
+async function updateCallShare(idSelectionCriterias, idScoreScript, callId, transaction) {
+    let [point, scoreScript] = await Promise.all([
+        model.SelectionCriteria.sum('score', { where: { id: { [Op.in]: idSelectionCriterias } } }),
+        model.ScoreScript.findOne({ where: { id: idScoreScript } })
+    ])
+
+
+    // tìm kiếm điểm liệt của nhóm tiêu chí
+    const unScoreCriteriaGroup = await model.SelectionCriteria.findAll({
+        where: {
+            id: { [Op.in]: idSelectionCriterias },
+            unScoreCriteriaGroup: 1
+        }
+    })
+
+    // nếu tồn tại thì loại bỏ toàn bỏ điểm của nhóm tiêu chí đó
+    if (unScoreCriteriaGroup.length > 0) {
+        const unScoreCriteriaId = _.pluck(unScoreCriteriaGroup, 'criteriaId')
+
+        const criteriaGroupIds = await model.Criteria.findAll({
+            where: { id: { [Op.in]: unScoreCriteriaId } },
+            attributes: ['criteriaGroupId'],
+            raw: true
+        })
+
+        const criterias = await model.Criteria.findAll({
+            where: { criteriaGroupId: { [Op.in]: _.pluck(criteriaGroupIds, 'criteriaGroupId') } },
+            raw: true
+        })
+
+        // lấy ra ds các id thuộc nhóm tiêu chí đã bị chọn liệt`
+        const criteriaId = _.pluck(criterias, 'id')
+        point = await model.SelectionCriteria.sum('score', {
+            where: {
+                id: { [Op.in]: idSelectionCriterias },
+                criteriaId: { [Op.notIn]: criteriaId }
+            }
+        })
+    }
+
+    // tìm kiếm điểm liệt của Kich bản
+    const unScoreScript = await model.SelectionCriteria.findAll({
+        where: {
+            id: { [Op.in]: idSelectionCriterias },
+            unScoreScript: 1
+        }
+    })
+    if (unScoreScript && unScoreScript.length > 0) {
+        point = 0
+    }
+
+    let typeResultCallRating = ''
+    switch (true) {
+        case scoreScript.needImproveMin <= point && scoreScript.needImproveMax >= point:
+            typeResultCallRating = constTypeResultCallRating.pointNeedImprove.code;
+            break;
+        case scoreScript.standardMin <= point && scoreScript.standardMax >= point:
+            typeResultCallRating = constTypeResultCallRating.pointStandard.code;
+            break;
+        case scoreScript.passStandardMin <= point:
+            typeResultCallRating = constTypeResultCallRating.pointPassStandard.code;
+            break;
+    }
+
+    const updateCallShare = {
+        pointResultCallRating: point,
+        typeResultCallRating: typeResultCallRating
+    }
+    return await model.CallShare.update(updateCallShare, { where: { callId: callId } }, { transaction: transaction });
 }
 
