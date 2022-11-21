@@ -3,7 +3,8 @@ const model = require('../models')
 const { CONST_STATUS, CONST_COND, CONST_EFFECTIVE_TIME_TYPE } = require('../helpers/constants/constScoreTarget')
 const { Op } = require('sequelize')
 
-cron.schedule("*/5 * * * *", async () => {
+// job share call
+cron.schedule("*/1 * * * *", async () => {
     try {
         _logger.info('start job share data for mission at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
         const findScoreTarget = await model.ScoreTarget.findAll({ where: { status: CONST_STATUS.ACTIVE.value } })
@@ -53,12 +54,24 @@ cron.schedule("*/5 * * * *", async () => {
 
                         let _queryCallSatisfy = {}
 
-                        if (!queryCall.length) {
-                            _queryCallSatisfy = { share: false }
-                        } else {
-                            _queryCallSatisfy = { [Op[queryCall.conditionSearch]]: queryCall.query, share: false }
+                        const { callStartTime, callEndTime } = scoreTarget
+
+                        if (callStartTime && callEndTime) {
+                            const callStartTimeFormat = _moment(callStartTime).format("DD/MM/YYYY")
+                            const callEndTimeFormat = _moment(callEndTime).format("DD/MM/YYYY")
+                            const callStartTimeQuery = _moment(callStartTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
+                            const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
+                            _queryCallSatisfy[Op.and] = []
+                            _queryCallSatisfy[Op.and].push({ origTime: { [Op.gte]: (callStartTimeQuery / 1000) } })
+                            _queryCallSatisfy[Op.and].push({ origTime: { [Op.lte]: (callEndTimeQuery / 1000) } })
                         }
 
+                        if (!queryCall.length) {
+                            _queryCallSatisfy = { ..._queryCallSatisfy, share: false }
+                        } else {
+                            _queryCallSatisfy = { ..._queryCallSatisfy, [Op[queryCall.conditionSearch]]: queryCall.query, share: false }
+                        }
+                        
                         const dataShare = await model.CallDetailRecords.findAll({
                             where: _queryCallSatisfy,
                             order: [
@@ -95,6 +108,46 @@ cron.schedule("*/5 * * * *", async () => {
         }
     } catch (error) {
         _logger.error('job share data for mission at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss") + "fail " + error)
+    }
+})
+
+// job enable status score target ('0 0 * * *')
+cron.schedule("0 0 * * *", async () => {
+    try {
+        _logger.info('start job enable status score target at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
+        const queryDate = _moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+        const findScoreTarget = await model.ScoreTarget.findAll({
+            where: { status: CONST_STATUS.DRAFT.value, effectiveTimeType: CONST_EFFECTIVE_TIME_TYPE.ABOUT_DAY.value, effectiveTimeStart: { [Op.lte]: queryDate } },
+            raw: true
+        })
+        if (!findScoreTarget.length) return _logger.info("Find not score target to update status active")
+
+        const arrayIdUpdate = _.pluck(findScoreTarget, 'id')
+        await model.ScoreTarget.update({ status: CONST_STATUS.ACTIVE.value }, { where: { id: { [Op.in]: arrayIdUpdate } } })
+
+        _logger.info("Update success id " + arrayIdUpdate + " to status active")
+    } catch (error) {
+        _logger.error('job enable status score target at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss") + "fail " + error)
+    }
+})
+
+// job disable status score target ('0 0 * * *')
+cron.schedule("0 0 * * *", async () => {
+    try {
+        _logger.info('start job disable status score target at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
+        const queryDate = _moment(new Date()).format("YYYY-MM-DD HH:mm:ss")
+        const findScoreTarget = await model.ScoreTarget.findAll({
+            where: { status: CONST_STATUS.ACTIVE.value, effectiveTimeType: CONST_EFFECTIVE_TIME_TYPE.ABOUT_DAY.value, effectiveTimeEnd: { [Op.gte]: queryDate } },
+            raw: true
+        })
+        if (!findScoreTarget.length) return _logger.info("Find not score target to update status disable")
+
+        const arrayIdUpdate = _.pluck(findScoreTarget, 'id')
+        await model.ScoreTarget.update({ status: CONST_STATUS.UN_ACTIVE.value }, { where: { id: { [Op.in]: arrayIdUpdate } } })
+
+        _logger.info("Update success id " + arrayIdUpdate + " to status disable")
+    } catch (error) {
+        _logger.error('job disable status score target at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss") + "fail " + error)
     }
 })
 

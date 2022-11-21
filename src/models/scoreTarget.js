@@ -20,38 +20,18 @@ class ScoreTarget extends Model {
         },
         callStartTime: {
           type: DataTypes.DATE,     //Áp dụng cho cuộc gọi trong
-          get() {
-            return moment(this.getDataValue("updatedAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            )
-          },
         },
         callEndTime: {
           type: DataTypes.DATE,     //Áp dụng cho cuộc gọi trong
-          get() {
-            return moment(this.getDataValue("updatedAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            )
-          },
         },
         effectiveTimeType: {
           type: DataTypes.INTEGER     // thời gian hiệu lực theo tháng tuần , ngày, 
         },
         effectiveTimeStart: {
-          type: DataTypes.DATE,
-          get() {
-            return moment(this.getDataValue("updatedAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            )
-          },   // thời gian hiệu lực theo tháng tuần , ngày, 
+          type: DataTypes.DATE // thời gian hiệu lực theo tháng tuần , ngày, 
         },
         effectiveTimeEnd: {
-          type: DataTypes.DATE,
-          get() {
-            return moment(this.getDataValue("updatedAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            )
-          },   // thời gian hiệu lực theo tháng tuần , ngày, 
+          type: DataTypes.DATE // thời gian hiệu lực theo tháng tuần , ngày, 
         },
         assignStart: {
           type: DataTypes.STRING
@@ -80,23 +60,7 @@ class ScoreTarget extends Model {
             model: "Users",
             key: "id",
           },
-        },
-        createdAt: {
-          type: DataTypes.DATE,
-          get() {
-            return moment(this.getDataValue("createdAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            )
-          },
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          get() {
-            return moment(this.getDataValue("updatedAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            )
-          },
-        },
+        }
       },
       {
         sequelize,

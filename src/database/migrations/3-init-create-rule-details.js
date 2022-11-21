@@ -27,14 +27,6 @@ module.exports = {
       },
       unLimited: {
         type: Sequelize.INTEGER, // xem giới hạn: 0, xem không giới hạn: 1
-      },
-      createdAt: {
-        allowNull: true,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: true,
-        type: Sequelize.DATE
       }
     });
   },
