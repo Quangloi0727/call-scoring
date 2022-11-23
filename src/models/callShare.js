@@ -26,6 +26,20 @@ class CallShare extends Model {
                         key: "id"
                     }
                 },
+                teamIdOfCall: {
+                    type: DataTypes.INTEGER,
+                    references: {
+                        model: "Teams",
+                        key: "id",
+                    }
+                },
+                agentIdOfCall: {
+                    type: DataTypes.INTEGER,
+                    references: {
+                        model: "Users",
+                        key: "id",
+                    }
+                },
                 createdAt: {
                     type: DataTypes.DATE,
                     get() {

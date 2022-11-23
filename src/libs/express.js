@@ -49,6 +49,7 @@ function initServer() {
   _.mixin(_.extend(require('underscore.string').exports(), require(path.join(_rootPath, 'src', 'libs', 'function'))))
 
   require(path.join(_rootPath, 'src', 'jobs', 'job-share-data-for-mission'))
+  require(path.join(_rootPath, 'src', 'jobs', 'job-change-status-score-target'))
 
   // Config socket.io version 3.0.4
   const server = http.createServer(app)

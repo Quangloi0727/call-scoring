@@ -1,6 +1,5 @@
 const { Op } = require('sequelize')
 const pagination = require('pagination')
-const moment = require('moment')
 const titlePage = 'Mục tiêu chấm điểm'
 const {
   SUCCESS_200,
@@ -216,15 +215,15 @@ exports.create = async (req, res, next) => {
     if (callTime) {
       let string = callTime.split(' - ')
 
-      data.callStartTime = moment(string[0]).startOf('day')
-      data.callEndTime = moment(string[1]).endOf('day')
+      data.callStartTime = _moment(string[0], "MM/DD/YYYY").startOf('d')
+      data.callEndTime = _moment(string[1], "MM/DD/YYYY").endOf('d')
     }
 
     if (effectiveTime && Number(effectiveTimeType) == CONST_EFFECTIVE_TIME_TYPE.ABOUT_DAY.value) {
       let string = effectiveTime.split(' - ')
 
-      data.effectiveTimeStart = moment(string[0]).startOf('day')
-      data.effectiveTimeEnd = moment(string[1]).endOf('day')
+      data.effectiveTimeStart = _moment(string[0], "MM/DD/YYYY").startOf('d')
+      data.effectiveTimeEnd = _moment(string[1], "MM/DD/YYYY").endOf('d')
     }
 
     if (numberOfCall) {
@@ -308,14 +307,14 @@ exports.update = async (req, res, next) => {
 
     if (callTime) {
       let string = callTime.split(' - ')
-      data.callStartTime = moment(string[0]).startOf('day')
-      data.callEndTime = moment(string[1]).endOf('day')
+      data.callStartTime = _moment(string[0], "MM/DD/YYYY").startOf('d')
+      data.callEndTime = _moment(string[1], "MM/DD/YYYY").endOf('d')
     }
 
     if (effectiveTime && effectiveTimeType == CONST_EFFECTIVE_TIME_TYPE.ABOUT_DAY.value) {
       let string = effectiveTime.split(' - ')
-      data.effectiveTimeStart = moment(string[0]).startOf('day')
-      data.effectiveTimeEnd = moment(string[1]).endOf('day')
+      data.effectiveTimeStart = _moment(string[0], "MM/DD/YYYY").startOf('d')
+      data.effectiveTimeEnd = _moment(string[1], "MM/DD/YYYY").endOf('d')
     }
 
     // check trùng tên mục tiêu
