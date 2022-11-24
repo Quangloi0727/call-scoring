@@ -28,14 +28,8 @@ module.exports = {
           key: "id",
         },
       },
-      createdAt: {
-        allowNull: true,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: true,
-        type: Sequelize.DATE
-      }
+      createdAt: { type: Sequelize.DATE, defaultValue: new Date() },
+      updatedAt: { type: Sequelize.DATE, defaultValue: new Date() }
     });
   },
   async down(queryInterface, Sequelize) {

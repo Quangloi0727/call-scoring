@@ -1,13 +1,15 @@
-const express = require('express');
-const recordingController = require('../controllers/recordingController');
-const router = express.Router();
+const express = require('express')
+const recordingController = require('../controllers/recordingController')
+const router = express.Router()
+const { isLoggedIn } = require('../libs/passport')
 
 router.route('/')
-  .get(recordingController.index);
+  .get(isLoggedIn, recordingController.index)
 
 router.route('/list')
-  .get(recordingController.getRecording);
+  .get(isLoggedIn, recordingController.getRecording)
 router.route('/SaveConfigurationColums')
-  .post(recordingController.SaveConfigurationColums)
-  .delete(recordingController.deleteConfigurationColums)
-module.exports = router;
+  .post(isLoggedIn, recordingController.SaveConfigurationColums)
+  .delete(isLoggedIn, recordingController.deleteConfigurationColums)
+
+module.exports = router

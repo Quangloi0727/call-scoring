@@ -1,43 +1,40 @@
 const express = require('express')
 const teamsController = require('../controllers/teamsController')
 const router = express.Router()
-const libsPassport = require('../libs/passport')
+const { isLoggedIn, isAdmin } = require('../libs/passport')
 
 
 router.route('/')
-  .get(libsPassport.isAdmin, teamsController.index)
+  .get(isLoggedIn, isAdmin, teamsController.index)
 
 router.route('/insert')
-  .post(teamsController.createGroup)
+  .post(isLoggedIn, isAdmin, teamsController.createGroup)
 
 router.route('/getTeams')
-  .get(teamsController.getTeams)
+  .get(isLoggedIn, isAdmin, teamsController.getTeams)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin, teamsController.detail)
+  .get(isLoggedIn, isAdmin, teamsController.detail)
 
 router.route('/')
-  .put(teamsController.update)
-
-// router.route('/')
-//   .delete(teamsController.delete);
+  .put(isLoggedIn, isAdmin, teamsController.update)
 
 router.route('/search')
-  .get(teamsController.search)
+  .get(isLoggedIn, isAdmin, teamsController.search)
 
 router.route('/add-user')
-  .post(teamsController.addUser)
+  .post(isLoggedIn, isAdmin, teamsController.addUser)
 
 router.route('/remove-user')
-  .delete(teamsController.removeUser)
+  .delete(isLoggedIn, isAdmin, teamsController.removeUser)
 
 router.route('/user-of-team')
-  .get(teamsController.userOfTeam)
+  .get(isLoggedIn, isAdmin, teamsController.userOfTeam)
 
 router.route('/get-user-available')
-  .get(teamsController.getUserAvailable)
+  .get(isLoggedIn, isAdmin, teamsController.getUserAvailable)
 
 router.route('/:id/updateStatus')
-  .put(teamsController.updateStatus)
+  .put(isLoggedIn, isAdmin, teamsController.updateStatus)
 
 module.exports = router

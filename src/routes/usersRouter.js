@@ -1,41 +1,42 @@
 const express = require('express')
 const usersController = require('../controllers/usersController')
 const router = express.Router()
+const { isLoggedIn, isAdmin } = require('../libs/passport')
 
 router.route('/')
-    .get(usersController.index)
+    .get(isLoggedIn, isAdmin, usersController.index)
 
 router.route('/insert')
-    .post(usersController.createUser)
+    .post(isLoggedIn, isAdmin, usersController.createUser)
 
 router.route('/getUsers')
-    .get(usersController.getUsers)
+    .get(isLoggedIn, isAdmin, usersController.getUsers)
 
 router.route('/changePassword')
-    .get(usersController.getChangePassword)
+    .get(isLoggedIn, isAdmin, usersController.getChangePassword)
 
 router.route('/resetPassWord')
-    .post(usersController.postResetPassWord)
+    .post(isLoggedIn, isAdmin, usersController.postResetPassWord)
 
 router.route('/changePassword')
-    .post(usersController.postChangePassword)
+    .post(isLoggedIn, isAdmin, usersController.postChangePassword)
 
 router.route('/importUser')
-    .get(usersController.getImportUser)
+    .get(isLoggedIn, isAdmin, usersController.getImportUser)
 
 router.route('/checkDataUser')
-    .post(usersController.postCheckDataUser)
+    .post(isLoggedIn, isAdmin, usersController.postCheckDataUser)
 
 router.route('/importUser')
-    .post(usersController.postImportUser)
+    .post(isLoggedIn, isAdmin, usersController.postImportUser)
 
 router.route('/search')
-    .get(usersController.search)
+    .get(isLoggedIn, isAdmin, usersController.search)
 
 router.route('/blockUser')
-    .post(usersController.postBlockUser)
+    .post(isLoggedIn, isAdmin, usersController.postBlockUser)
 
 router.route('/updateUser')
-    .post(usersController.updateUser)
+    .post(isLoggedIn, isAdmin, usersController.updateUser)
 
 module.exports = router

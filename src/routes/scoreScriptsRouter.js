@@ -1,28 +1,29 @@
 const express = require('express')
 const scoreScriptsController = require('../controllers/scoreScriptsController')
 const router = express.Router()
-const libsPassport = require('../libs/passport')
+const { isLoggedIn, isAdmin } = require('../libs/passport')
+const { checkRoleScoreScript } = require('../libs/menu-decentralization')
 
 router.route('/')
-  .get(libsPassport.isAdmin, scoreScriptsController.index)
-  .post(scoreScriptsController.create)
+  .get(isLoggedIn, checkRoleScoreScript, scoreScriptsController.index)
+  .post(isLoggedIn, checkRoleScoreScript, scoreScriptsController.create)
 
 router.route('/new')
-  .get(libsPassport.isAdmin, scoreScriptsController.new)
+  .get(isLoggedIn, checkRoleScoreScript, scoreScriptsController.new)
 
 router.route('/:id/replication')
-  .get(libsPassport.isAdmin, scoreScriptsController.replication)
+  .get(isLoggedIn, checkRoleScoreScript, scoreScriptsController.replication)
 
 router.route('/gets')
-  .get(scoreScriptsController.gets)
+  .get(isLoggedIn, checkRoleScoreScript, scoreScriptsController.gets)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin, scoreScriptsController.detail)
+  .get(isLoggedIn, checkRoleScoreScript, scoreScriptsController.detail)
 
 router.route('/:id')
-  .put(scoreScriptsController.update)
+  .put(isLoggedIn, checkRoleScoreScript, scoreScriptsController.update)
 
 router.route('/:id/updateStatus')
-  .put(scoreScriptsController.updateStatus)
+  .put(isLoggedIn, checkRoleScoreScript, scoreScriptsController.updateStatus)
 
 module.exports = router

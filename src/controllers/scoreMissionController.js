@@ -495,7 +495,6 @@ async function createCallRatingHistory(dataEditOrigin, resultCriteria, userId, t
     await model.CallRatingHistory.bulkCreate(resultInsert, { transaction: transaction })
 }
 
-
 async function checkRoleUser(roles, id) {
     let arrUserId = []
     const findRoleAdmin = roles.filter(el => el.role == USER_ROLE.admin.n)

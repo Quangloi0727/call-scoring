@@ -9,7 +9,7 @@ const userRole = [
 ]
 
 const teams = [
-  { id: 1, name: 'Default', description: 'Đây là nhóm mặc định', created: 1 },
+  { id: 1, name: 'Default', description: 'Đây là nhóm mặc định', created: 1, status: 1 },
 ]
 
 

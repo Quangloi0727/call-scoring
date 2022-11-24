@@ -35,7 +35,7 @@ const UnlimitedSaveForCall = {
   }
 }
 const dataRetentionPolicyNotFound = 'Không tìm thấy chính sách dữ liệu vui lòng thử lại sau !'
-const statusUpdateFail = 'Đội ngũ đã tồn tại ở chính sách đang hoạt động khác !'
+const statusUpdateFail = 'Trạng thái update không hợp lệ !'
 const statusUpdateSuccess = 'Thay đổi trạng thái Chính sách thành công !'
 const deleteSuccess = 'Xóa Chính sách thành công !'
 

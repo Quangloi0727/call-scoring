@@ -1,39 +1,39 @@
-const express = require('express');
-const groupsController = require('../controllers/groupsController');
-const router = express.Router();
-const libsPassport = require('../libs/passport');
+const express = require('express')
+const groupsController = require('../controllers/groupsController')
+const router = express.Router()
+const { isLoggedIn, isAdmin } = require('../libs/passport')
 
 router.route('/')
-  .get(libsPassport.isAdmin, groupsController.index);
+  .get(isLoggedIn, isAdmin, groupsController.index)
 
 router.route('/insert')
-  .post(groupsController.createGroup);
+  .post(isLoggedIn, groupsController.createGroup)
 
 router.route('/getgroups')
-  .get(groupsController.getgroups);
+  .get(isLoggedIn, groupsController.getgroups)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin, groupsController.detail);
+  .get(isLoggedIn, isAdmin, groupsController.detail)
 
 router.route('/')
-  .put(groupsController.update);
+  .put(isLoggedIn, groupsController.update)
 
 router.route('/')
-  .delete(groupsController.delete);
+  .delete(isLoggedIn, groupsController.delete)
 
 router.route('/search')
-  .get(groupsController.search);
+  .get(isLoggedIn, groupsController.search)
 
 router.route('/add-team')
-  .post(groupsController.addTeam);
+  .post(isLoggedIn, groupsController.addTeam)
 
 router.route('/remove-team')
-  .delete(groupsController.removeTeam);
+  .delete(isLoggedIn, groupsController.removeTeam)
 
 router.route('/team-of-group')
-  .get(groupsController.teamOfGroup);
+  .get(isLoggedIn, groupsController.teamOfGroup)
 
-  router.route('/get-team-available')
-  .get(groupsController.getTeamAvailable);
+router.route('/get-team-available')
+  .get(isLoggedIn, groupsController.getTeamAvailable)
 
-module.exports = router;
+module.exports = router

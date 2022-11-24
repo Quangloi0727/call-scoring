@@ -1,7 +1,4 @@
-const moment = require("moment");
-const { Model, DataTypes, Op } = require("sequelize");
-
-const { MESSAGE_ERROR, USER_ROLE } = require("../helpers/constants");
+const { Model, DataTypes } = require("sequelize")
 class RuleDetail extends Model {
   static init(sequelize) {
     return super.init(
@@ -12,7 +9,7 @@ class RuleDetail extends Model {
             model: "Rules",
             key: "id",
           },
-        },      
+        },
         role: {
           type: DataTypes.INTEGER,
           allowNull: false
@@ -26,44 +23,31 @@ class RuleDetail extends Model {
         unLimited: {
           type: DataTypes.INTEGER, // xem giới hạn: 0, xem không giới hạn: 1
         },
-        createdAt: {
-          type: DataTypes.DATE,
-          //note here this is the guy that you are looking for
-          get() {
-            return moment(this.getDataValue("createdAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            );
-          },
-        },
-        updatedAt: {
-          type: DataTypes.DATE,
-          get() {
-            return moment(this.getDataValue("updatedAt")).format(
-              "HH:mm:ss DD/MM/YYYY"
-            );
-          },
-        },
+        unTick: {
+          type: DataTypes.INTEGER,
+          defaultValue: 1 // 1 là được phép bỏ chọn , 0 là không được phép bỏ chọn
+        }
       },
       {
         sequelize,
         modelName: "RuleDetails",
-        indexes:[
+        indexes: [
           {
             unique: true,
-            fields:['ruleId', 'role']
+            fields: ['ruleId', 'role']
           }
-         ]
+        ]
       }
-    );
+    )
   }
 
   static associate(models) {
     models.RuleDetail.belongsTo(models.Rule, {
       foreignKey: "ruleId",
       as: "Rule",
-    });
+    })
 
   }
 }
 
-module.exports = RuleDetail;
+module.exports = RuleDetail

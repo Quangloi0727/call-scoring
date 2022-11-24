@@ -1,37 +1,37 @@
 const express = require('express')
 const scoreMissionController = require('../controllers/scoreMissionController')
 const router = express.Router()
-const libsPassport = require('../libs/passport')
-
+const { isLoggedIn, isAdmin } = require('../libs/passport')
+const { checkRoleScoreMission } = require('../libs/menu-decentralization')
 
 router.route('/')
-    .get(scoreMissionController.index)
+    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.index)
 router.route('/getData')
-    .get(scoreMissionController.getScoreMission)
+    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getScoreMission)
 
 router.route('/getScoreScript')
-    .get(scoreMissionController.getDetailScoreScript)
+    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getDetailScoreScript)
 
 router.route('/configurationColums')
-    .post(scoreMissionController.SaveConfigurationColums)
-    .delete(scoreMissionController.deleteConfigurationColums)
+    .post(isLoggedIn, checkRoleScoreMission, scoreMissionController.SaveConfigurationColums)
+    .delete(isLoggedIn, checkRoleScoreMission, scoreMissionController.deleteConfigurationColums)
 
 router.route('/saveCallRating')
-    .post(scoreMissionController.saveCallRating)
+    .post(isLoggedIn, checkRoleScoreMission, scoreMissionController.saveCallRating)
 
 router.route('/:callId/getCallRatingNotes')
-    .get(scoreMissionController.getCallRatingNotes)
+    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getCallRatingNotes)
 
 router.route('/:callId/getCallRatingHistory')
-    .get(scoreMissionController.getCallRatingHistory)
+    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getCallRatingHistory)
 
 router.route('/:criteriaGroupId/getCriteriaByCriteriaGroup')
-    .get(scoreMissionController.getCriteriaByCriteriaGroup)
+    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getCriteriaByCriteriaGroup)
 
 router.route('/:callId/getCriteriaGroupByCallRatingId')
-    .get(scoreMissionController.getCriteriaGroupByCallRatingId)
+    .get(isLoggedIn, isAdmin, scoreMissionController.getCriteriaGroupByCallRatingId)
 
 router.route('/:id/checkScored')
-    .get(scoreMissionController.checkScored)
+    .get(isLoggedIn, isAdmin, scoreMissionController.checkScored)
 
 module.exports = router

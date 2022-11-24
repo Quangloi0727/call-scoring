@@ -73,15 +73,10 @@ passport.deserializeUser(async (id, done) => {
             }
           }
           if (element.unLimited == true && element.Rule.code == SYSTEM_RULE.XUAT_EXCEL.code) {
-
             rules[SYSTEM_RULE.XUAT_EXCEL.code] = SYSTEM_RULE.XUAT_EXCEL
-            // break;
           }
-
         }
-
       }
-      // rules = {};
     }
 
     console.log(`deserializeUser user.name: ${user.userName}`, roles, { rules })
@@ -115,7 +110,7 @@ passport.use('local-login', new LocalStrategy({
 
     if (user.isActive != 1) {
       const _error = new Error()
-      _error.message = "Tài khoản bị khóa. Vui lòng liên hệ quản trị viên!"
+      _error.message = "Tài khoản bị khóa. Vui lòng liên hệ quản trị viên !"
       _error.statusCode = 401
       _error.status = 'api'
       throw _error
@@ -175,9 +170,7 @@ exports.isLoggedIn = (req, res, next) => {
 
 exports.isAdmin = (req, res, next) => {
   let { user } = req
-  if (user && user.roles.find(i => i.role == USER_ROLE.admin.n)) {
-    return next()
-  }
+  if (user && user.roles.find(i => i.role == USER_ROLE.admin.n)) return next()
   return next(new Error('Không có quyền truy cập'))
 }
 

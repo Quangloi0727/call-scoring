@@ -1,7 +1,5 @@
 const model = require("../models");
-const { SUCCESS_200, ERR_500, TYPE_ROLETYPE, USER_ROLE_NOT_ADMIN, OP_TIME_DEFINE  } = require("../helpers/constants");
-
-const titlePage = "Quyền nâng cao";
+const { SUCCESS_200, ERR_500 } = require("../helpers/constants");
 
 exports.create = async (req, res) => {
   let transaction;

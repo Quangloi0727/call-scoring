@@ -343,7 +343,7 @@ exports.SaveConfigurationColums = async (req, res) => {
       { transaction: transaction }
     )
     if (result[0] == 0) {
-      const _result = await ConfigurationColumsModel.create(data, { transaction: transaction })
+      await ConfigurationColumsModel.create(data, { transaction: transaction })
     }
     await transaction.commit()
     return res.status(SUCCESS_200.code).json({
@@ -608,18 +608,9 @@ async function getTeamOfGroup(userId) {
       as: 'Group',
       include: [{
         model: model.TeamGroup,
-        as: 'TeamGroup',
-        // required: false,
-        // where: {
-
-        // }
-      }],
-      // required: false,
-      // where: {
-
-      // }
+        as: 'TeamGroup'
+      }]
     }],
-    // raw: true,
     nest: true
   })
 

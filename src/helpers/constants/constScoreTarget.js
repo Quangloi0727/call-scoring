@@ -1,7 +1,7 @@
 const CONST_RATING_BY = {
   supervisor: {
     n: 1,
-    t: "Quản lý đội ngũ",
+    t: "Đội ngũ",
   },
   agent: {
     n: 0,
