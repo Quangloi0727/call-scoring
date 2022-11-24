@@ -117,7 +117,7 @@ exports.getScoreMission = async (req, res, next) => {
             limit: limit
         })
 
-        let count = model.CallShare.count({ where: queryAssignFor })
+        let count = await model.CallShare.count({ where: queryAssignFor })
 
         const [listData, totalRecord] = await Promise.all([findList, count])
 
@@ -629,7 +629,9 @@ async function updateCallShare(idSelectionCriterias, idScoreScript, callId, tran
 
     const updateCallShare = {
         pointResultCallRating: point,
-        typeResultCallRating: typeResultCallRating
+        typeResultCallRating: typeResultCallRating,
+        idScoreScript: idScoreScript,
+        idUserReview: req.user.id,
     }
     return await model.CallShare.update(updateCallShare, { where: { callId: callId } }, { transaction: transaction });
 }

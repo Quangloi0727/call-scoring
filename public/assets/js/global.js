@@ -108,7 +108,7 @@
             region.element.title = region.attributes.title
         })
         return wavesurfer
-    }, window._hightChart = function (idContainer, title) {
+    }, window._hightChart = function (idContainer, title, data) {
         // Create the chart
         Highcharts.chart(`${idContainer}`, {
             chart: {
@@ -141,25 +141,7 @@
             series: [{
                 name: 'Brands',
                 colorByPoint: true,
-                data: [{
-                    name: 'Chrome',
-                    y: 74.77,
-                }, {
-                    name: 'Edge',
-                    y: 12.82
-                }, {
-                    name: 'Firefox',
-                    y: 4.63
-                }, {
-                    name: 'Safari',
-                    y: 2.44
-                }, {
-                    name: 'Internet Explorer',
-                    y: 2.02
-                }, {
-                    name: 'Other',
-                    y: 3.28
-                }]
+                data: data
             }]
         });
     }

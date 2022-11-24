@@ -584,18 +584,18 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
     const { callInfo, callRatingInfo } = item
-    console.log(item);
     let resultReviewScore = ''
-
+    let pointResultCallRating = ''
     if (item.typeResultCallRating) {
         resultReviewScore = constTypeResultCallRating[`point${item.typeResultCallRating}`].txt
+        pointResultCallRating = item.pointResultCallRating
     }
     let htmlString = ``
     if (configDefault) {
         for (const [key] of Object.entries(dataConfig)) {
             if (key == 'manualReviewScore') {
 
-                htmlString += ` <td class="text-center manualReviewScore ${headerDefault['manualReviewScore'].status == 1 ? '' : 'd-none'}">${item.pointResultCallRating || 0}</td>`
+                htmlString += ` <td class="text-center manualReviewScore ${headerDefault['manualReviewScore'].status == 1 ? '' : 'd-none'}">${pointResultCallRating}</td>`
 
             } else if (key == 'resultReviewScore') {
 
@@ -628,7 +628,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
             if (key == 'manualReviewScore') {
 
                 htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">
-                ${item.pointResultCallRating}</td>`
+                ${pointResultCallRating}</td>`
 
             } else if (key == 'resultReviewScore') {
                 htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'] == true ? '' : 'd-none'}">

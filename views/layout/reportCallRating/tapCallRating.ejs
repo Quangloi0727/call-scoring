@@ -32,7 +32,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Số cuộc gọi đã đánh giá</p>
-              <h3 class="text-center">100</h3>
+              <h3 class="text-center" id="txtCountCallReviewed">0</h3>
             </div>
             <!-- <div class="icon">
               <i class="ion ion-bag"></i>
@@ -45,7 +45,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Số cuộc gọi được phân công</p>
-              <h3 class="text-center">100</h3>
+              <h3 class="text-center" id="txtCountCallShare">0</h3>
             </div>
             <!-- <div class="icon">
               <i class="ion ion-bag"></i>
@@ -58,7 +58,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Tỷ lệ chấm lại</p>
-              <h3 class="text-center">100</h3>
+              <h3 class="text-center" id="txtPercentCallRatingHistory">0 %</h3>
             </div>
             <!-- <div class="icon">
               <i class="ion ion-bag"></i>
@@ -71,7 +71,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Số cuộc gọi chấm lại</p>
-              <h3 class="text-center">100</h3>
+              <h3 class="text-center" id="txtCountCallRatingHistory">0</h3>
             </div>
             <!-- <div class="icon">
               <i class="ion ion-bag"></i>
@@ -83,19 +83,45 @@
 
       <div class="row mb-3">
         <div class="col-lg-6 col-6">
-          <div id="pieChartReport"></div>
+          <div id="pieChartTypeResultCallRating"></div>
         </div>
         <div class="col-lg-6 col-6">
-          <div id="pieChartReport"></div>
+          <div id="pieChartCallShare"></div>
         </div>
       </div>
 
       <div class="row mb-3">
         <div class="col-lg-6 col-6">
-          <div id="pieChartReport"></div>
+          <div id="pieChartCallReviewed"></div>
         </div>
         <div class="col-lg-6 col-6">
-          <div id="pieChartReport"></div>
+          <div id="pieChartGradingAssign"></div>
+        </div>
+      </div>
+
+      <div class="card-body mb-3">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th class="text-center">Mã cuộc gọi</th>
+              <th class="text-center">Hướng gọi</th>
+              <th class="text-center">Điện thoại viên</th>
+              <th class="text-center">Đội ngũ</th>
+              <th class="text-center">Nhóm</th>
+              <th class="text-center">Mục tiêu chấm điểm</th>
+              <th class="text-center">Điểm đánh giá tự động</th>
+              <th class="text-center">Kịch bản chấm điểm</th>
+              <th class="text-center">Điểm đánh giá thủ công</th>
+              <th class="text-center">Kết quả đánh giá</th>
+              <th class="text-center">Người chấm</th>
+              <th class="text-center">Ngày chấm</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <div class="card-footer text-center">
+        <div class="col-12 d-flex justify-content-center" id="paging_table">
         </div>
       </div>
 
@@ -167,20 +193,6 @@
                   <% teams.forEach((team)=> { %>
                     <option value="<%= team.id %>">
                       <%= team.name %>
-                    </option>
-                    <% }); %>
-                </select>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label>Nhóm</label>
-                <select class="form-control selectpicker input" id="idGroup" name="idGroup" title="Chọn..." multiple
-                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
-                  data-live-search="true">
-                  <% groups.forEach((group)=> { %>
-                    <option value="<%= group.id %>">
-                      <%= group.name %>
                     </option>
                     <% }); %>
                 </select>
