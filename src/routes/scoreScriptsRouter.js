@@ -1,7 +1,7 @@
 const express = require('express')
 const scoreScriptsController = require('../controllers/scoreScriptsController')
 const router = express.Router()
-const { isLoggedIn, isAdmin } = require('../libs/passport')
+const { isLoggedIn } = require('../libs/passport')
 const { checkRoleScoreScript } = require('../libs/menu-decentralization')
 
 router.route('/')

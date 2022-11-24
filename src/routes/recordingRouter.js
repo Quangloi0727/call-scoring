@@ -2,9 +2,10 @@ const express = require('express')
 const recordingController = require('../controllers/recordingController')
 const router = express.Router()
 const { isLoggedIn } = require('../libs/passport')
+const { checkRoleViewData } = require('../libs/menu-decentralization')
 
 router.route('/')
-  .get(isLoggedIn, recordingController.index)
+  .get(isLoggedIn, checkRoleViewData, recordingController.index)
 
 router.route('/list')
   .get(isLoggedIn, recordingController.getRecording)

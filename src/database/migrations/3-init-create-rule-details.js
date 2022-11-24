@@ -32,6 +32,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         defaultValue: 1 // 1 là được phép bỏ chọn , 0 là không được phép bỏ chọn
       },
+      isActive: {
+        type: Sequelize.INTEGER,
+        defaultValue: 1 // 1 là true , 0 là false
+      },
       createdAt: { type: Sequelize.DATE, defaultValue: new Date() },
       updatedAt: { type: Sequelize.DATE, defaultValue: new Date() }
     })

@@ -26,6 +26,10 @@ class RuleDetail extends Model {
         unTick: {
           type: DataTypes.INTEGER,
           defaultValue: 1 // 1 là được phép bỏ chọn , 0 là không được phép bỏ chọn
+        },
+        isActive: {
+          type: DataTypes.INTEGER,
+          defaultValue: 1 // 1 true, 0 là false
         }
       },
       {
