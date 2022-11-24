@@ -1,36 +1,36 @@
-const express = require('express');
-const retentionPolicyController = require('../controllers/dataRetentionPolicyController');
-const router = express.Router();
-const libsPassport = require('../libs/passport');
+const express = require('express')
+const retentionPolicyController = require('../controllers/dataRetentionPolicyController')
+const router = express.Router()
+const { isLoggedIn, isAdmin } = require('../libs/passport')
 
 router.route('/')
-  .get(libsPassport.isAdmin, retentionPolicyController.index);
+  .get(isLoggedIn, isAdmin, retentionPolicyController.index)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin, retentionPolicyController.getDetail);
+  .get(isLoggedIn, isAdmin, retentionPolicyController.getDetail)
 
 router.route('/replication/:id')
-  .get(libsPassport.isAdmin, retentionPolicyController.getReplication);
+  .get(isLoggedIn, isAdmin, retentionPolicyController.getReplication)
 
 router.route('/new')
-  .get(libsPassport.isAdmin, retentionPolicyController.new);
+  .get(isLoggedIn, isAdmin, retentionPolicyController.new)
 
 router.route('/')
-  .post(libsPassport.isAdmin, retentionPolicyController.save);
+  .post(isLoggedIn, isAdmin, retentionPolicyController.save)
 
 router.route('/update/:id')
-  .put(libsPassport.isAdmin, retentionPolicyController.update);
+  .put(isLoggedIn, isAdmin, retentionPolicyController.update)
 
 router.route('/:id')
-  .delete(libsPassport.isAdmin, retentionPolicyController.delete)
+  .delete(isLoggedIn, isAdmin, retentionPolicyController.delete)
 
 router.route('/getTeamByIds')
-  .get(retentionPolicyController.getTeamByIds)
+  .get(isLoggedIn, isAdmin, retentionPolicyController.getTeamByIds)
 
 router.route('/getDataRetentionPolicies')
-  .get(retentionPolicyController.getDataRetentionPolicies)
+  .get(isLoggedIn, isAdmin, retentionPolicyController.getDataRetentionPolicies)
 
 router.route('/updateStatus')
-  .put(libsPassport.isAdmin, retentionPolicyController.updateStatus);
+  .put(isLoggedIn, isAdmin, retentionPolicyController.updateStatus)
 
-module.exports = router;
+module.exports = router

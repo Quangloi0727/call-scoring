@@ -1,11 +1,11 @@
 const express = require('express')
 const tenantController = require('../controllers/tenantController')
 const router = express.Router()
-const libsPassport = require('../libs/passport')
-
+const { isLoggedIn, isAdmin } = require('../libs/passport')
 
 router.route('/')
-    .get(libsPassport.isAdmin, tenantController.index)
+    .get(isLoggedIn, isAdmin, tenantController.index)
 router.route('/uploadLogo')
-    .post(tenantController.uploadLogo)
+    .post(isLoggedIn, isAdmin, tenantController.uploadLogo)
+
 module.exports = router

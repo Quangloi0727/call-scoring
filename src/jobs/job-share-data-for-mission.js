@@ -5,7 +5,7 @@ const { TeamStatus } = require('../helpers/constants/index')
 const { Op } = require('sequelize')
 
 // job share call
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
     try {
         _logger.info('start job share data for mission at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
         const findScoreTarget = await model.ScoreTarget.findAll({ where: { status: CONST_STATUS.ACTIVE.value } })

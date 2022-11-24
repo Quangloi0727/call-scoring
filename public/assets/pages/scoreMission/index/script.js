@@ -607,16 +607,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
                 htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
-            }
-            //else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
-            //     let teamsName = ''
-            //     item['team'].TeamGroup.map((el) => {
-            //         teamsName += ('' + el.Group.name)
-            //     })
-            //     htmlString += ` <td class="text-center groupName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${teamsName}</td>`
-
-            // } 
-            else {
+            }else {
                 htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
             }
         }
@@ -632,16 +623,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
                 htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
-            }
-            // else if (key == 'groupName' && item['team'].TeamGroup && item['team'].TeamGroup.length > 0) {
-            //     let teamsName = ''
-            //     item['team'].TeamGroup.map((el) => {
-            //         teamsName += ('' + el.Group.name)
-            //     })
-            //     htmlString += ` <td class="text-center groupName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${teamsName}</td>`
-
-            // }
-            else {
+            }else {
                 htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
             }
         }

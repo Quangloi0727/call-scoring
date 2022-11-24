@@ -1,11 +1,7 @@
 const { Op } = require('sequelize')
 const pagination = require('pagination')
 const titlePage = 'Mục tiêu chấm điểm'
-const {
-  SUCCESS_200,
-  ERR_500
-} = require("../helpers/constants/statusCodeHTTP")
-
+const { SUCCESS_200, ERR_500 } = require("../helpers/constants/statusCodeHTTP")
 const model = require('../models')
 const UserRoleModel = require('../models/userRole')
 const { TeamStatus } = require('../helpers/constants/fileTeam')
@@ -21,7 +17,7 @@ const {
   CONST_DATA,
   CONST_COND,
   MESSAGE_ERROR,
-  USER_ROLE } = require('../helpers/constants/index')
+  USER_ROLE, SYSTEM_RULE } = require('../helpers/constants/index')
 
 exports.index = async (req, res, next) => {
   try {
@@ -509,16 +505,24 @@ exports.replication = async (req, res, next) => {
   }
 }
 
-function getListUserAssignment() {
+async function getListUserAssignment() {
+  const findRuleScoreScript = await model.Rule.findOne({ where: { code: { [Op.eq]: SYSTEM_RULE.CHAM_DIEM_CUOC_GOI.code } } })
+  if (!findRuleScoreScript) return []
+
+  const findRuleDetailScoreScript = await model.RuleDetail.findAll({ where: { ruleId: { [Op.eq]: findRuleScoreScript.id } }, raw: true })
+  if (!findRuleDetailScoreScript.length) return []
+
+  const roleScoreScriptIds = _.pluck(findRuleDetailScoreScript, 'role')
+  const userRole = await model.UserRole.findAll({ where: { role: { [Op.in]: roleScoreScriptIds } }, raw: true })
+  if (!userRole.length) return []
+  const idsUserReview = _.pluck(userRole, 'userId')
+
   return model.User.findAll({
-    where: { isActive: 1 },
+    where: { isActive: 1, id: { [Op.in]: idsUserReview } },
     attributes: ['id', 'fullName', 'userName'],
     include: [{
       model: UserRoleModel,
       as: 'roles',
-      where: {
-        role: USER_ROLE.evaluator.n
-      },
       attributes: ['id', 'userId']
     }]
   })

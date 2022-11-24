@@ -1,11 +1,12 @@
 const express = require('express')
 const additionalFieldController = require('../controllers/additionalFieldController')
 const router = express.Router()
+const { isLoggedIn, isAdmin } = require('../libs/passport')
 
 router.route('/')
-    .get(additionalFieldController.index)
+    .get(isLoggedIn, isAdmin, additionalFieldController.index)
 
 router.route('/:id/edit')
-    .put(additionalFieldController.edit)
+    .put(isLoggedIn, isAdmin, additionalFieldController.edit)
 
 module.exports = router

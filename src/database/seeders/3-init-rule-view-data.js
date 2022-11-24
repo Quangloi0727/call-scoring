@@ -7,7 +7,7 @@ let {
 } = require("../../helpers/constants")
 
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface) {
     /**
      * Add seed commands here.
      *
@@ -36,7 +36,7 @@ module.exports = {
           ruleTypeId: typeFound,
         }
       ]
-      console.log(ruleData, typeFound)
+      
       await queryInterface.bulkInsert('Rules', ruleData, {})
 
       let ruleIdFound = await queryInterface.rawSelect(

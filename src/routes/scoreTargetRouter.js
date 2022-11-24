@@ -1,30 +1,30 @@
 const express = require('express')
 const scoreTargetController = require('../controllers/scoreTargetController')
 const router = express.Router()
-const libsPassport = require('../libs/passport')
-
+const { isLoggedIn, isAdmin } = require('../libs/passport')
+const { checkRoleScoreTarget } = require('../libs/menu-decentralization')
 
 router.route('/')
-  .get(libsPassport.isAdmin, scoreTargetController.index)
-  .post(libsPassport.isAdmin, scoreTargetController.create)
-  .put(libsPassport.isAdmin, scoreTargetController.update)
+  .get(isLoggedIn, checkRoleScoreTarget, scoreTargetController.index)
+  .post(isLoggedIn, checkRoleScoreTarget, scoreTargetController.create)
+  .put(isLoggedIn, checkRoleScoreTarget, scoreTargetController.update)
 
 router.route('/newTarget')
-  .get(libsPassport.isAdmin, scoreTargetController.new)
+  .get(isLoggedIn, checkRoleScoreTarget, scoreTargetController.new)
 
 router.route('/detail/:id')
-  .get(libsPassport.isAdmin,libsPassport.isAdmin, scoreTargetController.detail)
+  .get(isLoggedIn, checkRoleScoreTarget, scoreTargetController.detail)
 
 router.route('/gets')
-  .get(libsPassport.isAdmin,scoreTargetController.gets)
+  .get(isLoggedIn, checkRoleScoreTarget, scoreTargetController.gets)
 
 router.route('/:id/updateStatus')
-  .put(libsPassport.isAdmin,scoreTargetController.updateStatus)
+  .put(isLoggedIn, checkRoleScoreTarget, scoreTargetController.updateStatus)
 
 router.route('/:id/assignment')
-  .put(libsPassport.isAdmin,scoreTargetController.assignment)
+  .put(isLoggedIn, checkRoleScoreTarget, scoreTargetController.assignment)
 
 router.route('/replication/:id')
-  .get(libsPassport.isAdmin, scoreTargetController.replication)
+  .get(isLoggedIn, checkRoleScoreTarget, scoreTargetController.replication)
 
 module.exports = router

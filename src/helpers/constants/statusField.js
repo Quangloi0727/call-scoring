@@ -7,7 +7,7 @@ const TYPE_ADS = {
     number: 1,
     text: "Ảnh từ hệ thống",
   },
-};
+}
 const TYPE_NOTE = {
   header: {
     number: 0,
@@ -17,7 +17,7 @@ const TYPE_NOTE = {
     number: 1,
     text: "Body list",
   },
-};
+}
 
 const USER_ROLE = {
   agent: {
@@ -40,9 +40,9 @@ const USER_ROLE = {
     n: 4,
     t: "Quản lý nhóm",
   },
-};
+}
 
-const { admin, ...USER_ROLE_NOT_ADMIN } = USER_ROLE;
+const { admin, ...USER_ROLE_NOT_ADMIN } = USER_ROLE
 
 const MESSAGE_ERROR = {
   "QA-001": "Không được bỏ trống",
@@ -57,7 +57,7 @@ const MESSAGE_ERROR = {
   "QA-010": "Khoảng vượt chỉ tiêu cần lớn hơn và nằm ngoài khoảng đạt chỉ tiêu",
   "QA-011": "Điểm lựa chọn phải nhỏ hơn hoặc bằng điểm tối đa",
   "QA-012": "Đã tồn tại ghi chú tại thời điểm này",
-};
+}
 
 const TYPE_ROLETYPE = {
   hasExpires: {
@@ -68,7 +68,7 @@ const TYPE_ROLETYPE = {
     t: "Chỉ tích chọn",
     n: 1,
   },
-};
+}
 
 const SYSTEM_RULE = {
   XEM_DU_LIEU: {
@@ -79,7 +79,23 @@ const SYSTEM_RULE = {
     name: "Xuất Excel",
     code: "XUAT_EXCEL",
   },
-};
+  CHAM_DIEM_CUOC_GOI: {
+    name: "Chấm điểm cuộc gọi",
+    code: "CHAM_DIEM_CUOC_GOI",
+  },
+  CAU_HINH_MUC_TIEU_CHAM_DIEM: {
+    name: "Cấu hình mục tiêu chấm điểm",
+    code: "CAU_HINH_MUC_TIEU_CHAM_DIEM",
+  },
+  CAU_HINH_KICH_BAN_CHAM_DIEM: {
+    name: "Cấu hình kịch bản chấm điểm",
+    code: "CAU_HINH_KICH_BAN_CHAM_DIEM",
+  },
+  GHI_CHU_CUOC_GOI: {
+    name: "Ghi chú cuộc gọi",
+    code: "GHI_CHU_CUOC_GOI",
+  }
+}
 
 const OP_TIME_DEFINE = {
   ngay: {
@@ -97,7 +113,7 @@ const OP_TIME_DEFINE = {
     n: 2,
     day: 365,
   },
-};
+}
 
 const OP_UNIT_DISPLAY = {
   phanTram: {
@@ -108,24 +124,24 @@ const OP_UNIT_DISPLAY = {
     t: "Điểm",
     n: 1,
   },
-};
+}
 
 const STATUS_SCORE_SCRIPT = {
-    nhap: {
-      t: "Nháp",
-      n: 0,
-    },
-    hoatDong: {
-      t: "Hoạt động",
-      n: 1,
-      default: 'disabled'
-    },
-    ngungHoatDong: {
-      t: "Ngừng hoạt động",
-      n: 2,
-      default: 'disabled'
-    },
-  };
+  nhap: {
+    t: "Nháp",
+    n: 0,
+  },
+  hoatDong: {
+    t: "Hoạt động",
+    n: 1,
+    default: 'disabled'
+  },
+  ngungHoatDong: {
+    t: "Ngừng hoạt động",
+    n: 2,
+    default: 'disabled'
+  },
+}
 
 const FIELD_CONFIG = {
   name: {
@@ -148,4 +164,4 @@ module.exports = {
   OP_UNIT_DISPLAY,
   STATUS_SCORE_SCRIPT,
   FIELD_CONFIG
-};
+}
