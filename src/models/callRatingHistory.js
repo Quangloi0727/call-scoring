@@ -57,7 +57,7 @@ class CallRatingHistory extends Model {
 
         models.CallRatingHistory.belongsTo(models.CallDetailRecords, {
             foreignKey: "callId",
-            as: "rateNotes",
+            as: "callInfo",
         })
 
         models.CallRatingHistory.belongsTo(models.Criteria, {

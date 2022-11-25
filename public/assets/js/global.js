@@ -108,5 +108,41 @@
             region.element.title = region.attributes.title
         })
         return wavesurfer
+    }, window._hightChart = function (idContainer, title, data) {
+        // Create the chart
+        Highcharts.chart(`${idContainer}`, {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: `${title}`
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: false
+                    },
+                    showInLegend: true
+                }
+            },
+            series: [{
+                name: 'Brands',
+                colorByPoint: true,
+                data: data
+            }]
+        });
     }
 }(jQuery)

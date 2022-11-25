@@ -40,6 +40,32 @@ class CallShare extends Model {
                         key: "id",
                     }
                 },
+                pointResultCallRating: {
+                    type: DataTypes.INTEGER,
+                },
+                typeResultCallRating: {
+                    type: DataTypes.STRING,
+                },
+                idScoreScript: {
+                    type: DataTypes.INTEGER,
+                    references: {
+                        model: "ScoreScripts",
+                        key: "id"
+                    }
+                },
+                idUserReview: {
+                    type: DataTypes.INTEGER,
+                    references: {
+                        model: "UserReview",
+                        key: "id"
+                    }
+                },
+                reviewedAt: {
+                    type: DataTypes.DATE
+                },
+                updateReviewedAt: {
+                    type: DataTypes.DATE
+                },
                 createdAt: {
                     type: DataTypes.DATE,
                     get() {
@@ -56,7 +82,7 @@ class CallShare extends Model {
 
             {
                 sequelize,
-                modelName: "callShares",
+                modelName: "callShares_bk",
                 indexes: [
                     {
                         unique: true,
@@ -90,6 +116,11 @@ class CallShare extends Model {
         models.CallShare.belongsTo(models.ScoreTarget, {
             foreignKey: "scoreTargetId",
             as: "scoreTargetInfo",
+        })
+
+        models.CallShare.belongsTo(models.ScoreScript, {
+            foreignKey: "idScoreScript",
+            as: "scoreScriptInfo",
         })
 
         models.CallShare.hasMany(models.CallRating, {
