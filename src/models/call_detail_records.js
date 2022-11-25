@@ -116,11 +116,6 @@ class CallDetailRecords extends Model {
       foreignKey: "callId",
       as: "callRatingNote",
     })
-
-    models.CallDetailRecords.belongsTo(models.CallShare, {
-      foreignKey: "callId",
-      as: "CallShare",
-    })
   }
 }
 

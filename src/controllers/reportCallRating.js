@@ -187,17 +187,12 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
     }),
 
     //tổng cuộc đã chấm lại 
-    model.CallRatingHistory.findAll({
-      include: [{
-        model: model.CallDetailRecords,
-        as: 'callInfo',
-        where: whereCallInfo
-      }],
-      attributes: [
-        'callId',
-        [model.Sequelize.literal(`CASE WHEN COUNT(1) > 1 THEN 1 ELSE 0 END`), 're_scored']
-      ],
-      group: ['callId'],
+    model.CallShare.count({
+      where: Object.assign(
+        whereCallShare,
+        { pointResultCallRating: { [Op.ne]: null } },
+        { }
+        ),
       raw: true
     }),
 
