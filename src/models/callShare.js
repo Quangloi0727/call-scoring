@@ -60,6 +60,12 @@ class CallShare extends Model {
                         key: "id"
                     }
                 },
+                reviewedAt: {
+                    type: DataTypes.DATE
+                },
+                updateReviewedAt: {
+                    type: DataTypes.DATE
+                },
                 createdAt: {
                     type: DataTypes.DATE,
                     get() {

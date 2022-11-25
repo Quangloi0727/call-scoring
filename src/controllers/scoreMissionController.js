@@ -392,7 +392,7 @@ exports.saveCallRating = async (req, res) => {
             const idSelectionCriterias = _.pluck(resultCriteria, 'idSelectionCriteria')
 
             await Promise.all([
-                updateCallShare(idSelectionCriterias, idScoreScript, callId, transaction),
+                updateCallShare(req, idSelectionCriterias, idScoreScript, callId, transaction),
                 model.CallRating.bulkCreate(resultCriteria, { transaction: transaction })
             ])
         }
@@ -562,12 +562,11 @@ async function checkRoleUser(roles, id) {
  * @param {String} callId mã cuộc gọi
  * 
  */
-async function updateCallShare(idSelectionCriterias, idScoreScript, callId, transaction) {
+async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId, transaction) {
     let [point, scoreScript] = await Promise.all([
         model.SelectionCriteria.sum('score', { where: { id: { [Op.in]: idSelectionCriterias } } }),
         model.ScoreScript.findOne({ where: { id: idScoreScript } })
     ])
-
 
     // tìm kiếm điểm liệt của nhóm tiêu chí
     const unScoreCriteriaGroup = await model.SelectionCriteria.findAll({
@@ -579,10 +578,9 @@ async function updateCallShare(idSelectionCriterias, idScoreScript, callId, tran
 
     // nếu tồn tại thì loại bỏ toàn bỏ điểm của nhóm tiêu chí đó
     if (unScoreCriteriaGroup.length > 0) {
-        const unScoreCriteriaId = _.pluck(unScoreCriteriaGroup, 'criteriaId')
 
         const criteriaGroupIds = await model.Criteria.findAll({
-            where: { id: { [Op.in]: unScoreCriteriaId } },
+            where: { id: { [Op.in]: _.pluck(unScoreCriteriaGroup, 'criteriaId') } },
             attributes: ['criteriaGroupId'],
             raw: true
         })
@@ -593,11 +591,10 @@ async function updateCallShare(idSelectionCriterias, idScoreScript, callId, tran
         })
 
         // lấy ra ds các id thuộc nhóm tiêu chí đã bị chọn liệt`
-        const criteriaId = _.pluck(criterias, 'id')
         point = await model.SelectionCriteria.sum('score', {
             where: {
                 id: { [Op.in]: idSelectionCriterias },
-                criteriaId: { [Op.notIn]: criteriaId }
+                criteriaId: { [Op.notIn]: _.pluck(criterias, 'id') }
             }
         })
     }
@@ -613,25 +610,42 @@ async function updateCallShare(idSelectionCriterias, idScoreScript, callId, tran
         point = 0
     }
 
-    let typeResultCallRating = ''
-    switch (true) {
-        case scoreScript.needImproveMin <= point && scoreScript.needImproveMax >= point:
-            typeResultCallRating = constTypeResultCallRating.pointNeedImprove.code;
-            break;
-        case scoreScript.standardMin <= point && scoreScript.standardMax >= point:
-            typeResultCallRating = constTypeResultCallRating.pointStandard.code;
-            break;
-        case scoreScript.passStandardMin <= point:
-            typeResultCallRating = constTypeResultCallRating.pointPassStandard.code;
-            break;
-    }
-
     const updateCallShare = {
         pointResultCallRating: point,
-        typeResultCallRating: typeResultCallRating,
+        typeResultCallRating: renderTypeResultCallRating(scoreScript, point),
         idScoreScript: idScoreScript,
         idUserReview: req.user.id,
     }
-    return await model.CallShare.update(updateCallShare, { where: { callId: callId } }, { transaction: transaction });
+
+    // create history
+    switch (req.body.type) {
+        case 'add':
+            updateCallShare.reviewedAt = _moment(new Date())
+            updateCallShare.updateReviewedAt = _moment(new Date())
+            break
+        case 'edit':
+            updateCallShare.updateReviewedAt = _moment(new Date())
+            break
+        default:
+            break
+    }
+    return await model.CallShare.update(updateCallShare, { where: { callId: callId } }, { transaction: transaction })
+}
+
+
+function renderTypeResultCallRating(scoreScript, point) {
+    let typeResultCallRating = ''
+    switch (true) {
+        case scoreScript.needImproveMin <= point && scoreScript.needImproveMax >= point:
+            typeResultCallRating = constTypeResultCallRating.pointNeedImprove.code
+            break
+        case scoreScript.standardMin <= point && scoreScript.standardMax >= point:
+            typeResultCallRating = constTypeResultCallRating.pointStandard.code
+            break
+        case scoreScript.passStandardMin <= point:
+            typeResultCallRating = constTypeResultCallRating.pointPassStandard.code
+            break
+    }
+    return typeResultCallRating
 }
 
