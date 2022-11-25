@@ -182,23 +182,23 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
 
     // tổng cuộc gọi đã được chấm điểm
     model.CallShare.count({
-      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
+      where: Object.assign({ pointResultCallRating: { [Op.ne]: null } }, whereCallShare),
       raw: true
     }),
 
     //tổng cuộc đã chấm lại 
     model.CallShare.count({
       where: Object.assign(
-        whereCallShare,
         { pointResultCallRating: { [Op.ne]: null } },
-        { }
-        ),
+        { updateReviewedAt: { [Op.gt]: model.sequelize.col('reviewedAt') } },
+        whereCallShare
+      ),
       raw: true
     }),
 
     //dữ liệu chấm điểm theo loại đánh giá
     model.CallShare.findAll({
-      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
+      where: Object.assign({ pointResultCallRating: { [Op.ne]: null } }, whereCallShare),
       attributes: [
         ['typeResultCallRating', 'name'],
         [model.Sequelize.literal(`COUNT(1)`), 'y']

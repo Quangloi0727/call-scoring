@@ -66,6 +66,10 @@ class CallShare extends Model {
                 updateReviewedAt: {
                     type: DataTypes.DATE
                 },
+                isMark: {
+                    type: DataTypes.BOOLEAN,
+                    defaultValue: false
+                },
                 createdAt: {
                     type: DataTypes.DATE,
                     get() {
@@ -79,10 +83,9 @@ class CallShare extends Model {
                     }
                 }
             },
-
             {
                 sequelize,
-                modelName: "callShares_bk",
+                modelName: "callShares",
                 indexes: [
                     {
                         unique: true,

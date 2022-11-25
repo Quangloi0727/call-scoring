@@ -7,12 +7,10 @@ const {
 } = require("../helpers/constants/statusCodeHTTP")
 
 const {
-    CONST_COND,
     CONST_STATUS,
     USER_ROLE,
     TeamStatus,
-    constTypeResultCallRating,
-    statusSelectionCriteria
+    constTypeResultCallRating
 } = require('../helpers/constants/index')
 
 const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
@@ -571,7 +569,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreCriteriaGroup = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreCriteriaGroup: statusSelectionCriteria.unScoreCriteriaGroup.isUnScore
+            unScoreCriteriaGroup: false
         }
     })
 
@@ -602,7 +600,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreScript = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreScript: statusSelectionCriteria.unScoreScript.isUnScore
+            unScoreScript: false
         }
     })
 
@@ -615,10 +613,11 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
         idUserReview: req.user.id,
     }
 
-    // create history
+    // update thời gian đánh giá review
     switch (req.body.type) {
         case 'add':
             updateCallShare.reviewedAt = _moment(new Date())
+            updateCallShare.isMark = true
             updateCallShare.updateReviewedAt = _moment(new Date())
             break
         case 'edit':
