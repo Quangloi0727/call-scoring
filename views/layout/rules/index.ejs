@@ -28,29 +28,34 @@
                         >
                         
                         <div class="description-block">
-                          <h5 class="description-header"><%- (USER_ROLE_NOT_ADMIN[item].t ) %> </h5>
-                          
+                          <h5 class="description-header">
+                            <div class="row mb-2">
+                              <div class="col-sm-4"></div>
+                              <div class="col-sm-4">
+                                <%- (USER_ROLE_NOT_ADMIN[item].t ) %>
+                              </div>
+                              <div class="col-sm-4">
+                                <input class="cb-isActive" type="checkbox" <%- ruleDetailFound && ruleDetailFound.isActive == 0 ? "" : "checked" %> >
+                              </div>
+                            </div>
+                          </h5>
                           <div class="form-group row">
                             <label for="" class="col-sm-4 col-form-label">Trong vòng</label>
-                            
                             <div class="col-sm-8">
-  
                               <div class="input-group">
-                                <input type="text" class="form-control expires "
-                                <%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "disabled" %>
-                                value="<%- ruleDetailFound && ruleDetailFound.expires %>" 
-                                aria-label="Text input with dropdown button">
+                                <input type="text" class="form-control expires 
+                                  "<%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "disabled" %>
+                                  value="<%- ruleDetailFound && ruleDetailFound.expires %>">
                                 <div class="input-group-append">
                                   <select class="form-control expires-type" <%- ruleDetailFound && ruleDetailFound.unLimited == 0 ? "": "disabled" %> >
                                     <% Object.keys(OP_TIME_DEFINE).forEach((item2, index2) => { %>
-                                      <option value=<%- OP_TIME_DEFINE[item2].n%> data-day=<%- OP_TIME_DEFINE[item2].day%> 
+                                      <option 
+                                        value=<%- OP_TIME_DEFINE[item2].n%> 
+                                        data-day=<%- OP_TIME_DEFINE[item2].day%> 
                                         <%- ruleDetailFound && OP_TIME_DEFINE[item2].n == ruleDetailFound.expiresType ? "selected": "" %>
-                                        >
-                                        <%- OP_TIME_DEFINE[item2].t%>
+                                      ><%- OP_TIME_DEFINE[item2].t%>
                                       </option>
-                                    
                                     <% }) %> 
-                                    
                                   </select>
                                 </div>
                               </div>

@@ -51,3 +51,19 @@ exports.checkRoleScoreScript = async (req, res, next) => {
     if (filterRole.length) return next()
     return next(new Error('Không có quyền truy cập'))
 }
+
+exports.checkRoleViewData = async (req, res, next) => {
+    let { user } = req
+    if (user && user.roles.find(i => i.role == USER_ROLE.admin.n)) return next()
+    const findRuleViewData = await model.Rule.findOne({ where: { code: { [Op.eq]: SYSTEM_RULE.XEM_DU_LIEU.code } } })
+    if (!findRuleViewData) return next(new Error('Đường dẫn menu đã bị thay đổi,vui lòng liên hệ quản trị để sửa đổi !'))
+    const findRuleDetailViewData = await model.RuleDetail.findAll({ where: { ruleId: { [Op.eq]: findRuleViewData.id } }, raw: true })
+    const roles = user.roles
+    let filterRole = []
+    for (let i = 0; i < roles.length; i++) {
+        const findRole = findRuleDetailViewData.filter(el => el.role == roles[i].role && el.isActive == true)
+        if (findRole.length) filterRole.push(findRole)
+    }
+    if (filterRole.length) return next()
+    return res.redirect('/default')
+}

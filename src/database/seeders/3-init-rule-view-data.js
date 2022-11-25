@@ -1,5 +1,4 @@
 "use strict"
-
 let {
   USER_ROLE_NOT_ADMIN,
   TYPE_ROLETYPE,
@@ -56,7 +55,8 @@ module.exports = {
         return {
           role: USER_ROLE_NOT_ADMIN[i].n,
           ruleId: ruleIdFound,
-          unLimited: true
+          unLimited: true,
+          isActive: true
         }
       })
 

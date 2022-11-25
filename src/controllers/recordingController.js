@@ -26,7 +26,7 @@ exports.index = async (req, res, next) => {
     let isAdmin = false
     let { user } = req
 
-    if (req.user.roles.find((item) => item.role == 2)) {
+    if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
       isAdmin = true
     }
 
@@ -230,7 +230,7 @@ exports.getRecording = async (req, res) => {
     }
 
     const ConfigurationColums = await getConfigurationColums(req.user.id)
-    
+
     if (exportExcel && exportExcel == 1) {
       return await exportExcelHandle(req, res, startTimeMilisecond, endTimeMilisecond, query, order, ConfigurationColums)
     }
