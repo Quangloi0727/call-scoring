@@ -327,7 +327,7 @@ async function buildQueryCall(scoreTargetId, callStartTime, callEndTime) {
         const callStartTimeFormat = _moment(callStartTime).format("DD/MM/YYYY")
         const callEndTimeFormat = _moment(callEndTime).format("DD/MM/YYYY")
         const callStartTimeQuery = _moment(callStartTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
-        const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
+        const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").endOf("d").valueOf()
         query.push({ origTime: { [Op.gte]: (callStartTimeQuery / 1000) } })
         query.push({ origTime: { [Op.lte]: (callEndTimeQuery / 1000) } })
     }
