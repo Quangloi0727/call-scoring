@@ -585,7 +585,7 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
     const { callInfo, callRatingInfo } = item
     let resultReviewScore = ''
-    let pointResultCallRating = ''
+    let pointResultCallRating = 0
     if (item.typeResultCallRating) {
         resultReviewScore = constTypeResultCallRating[`point${item.typeResultCallRating}`].txt
         pointResultCallRating = item.pointResultCallRating
@@ -610,7 +610,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
                 htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
-            }else {
+            } else {
                 htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
             }
         }
@@ -633,7 +633,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
                 htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
-            }else {
+            } else {
                 htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
             }
         }

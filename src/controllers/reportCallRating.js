@@ -164,6 +164,103 @@ function getUserByRole(idRole) {
 }
 
 async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, idScoreTarget, idTeam, oriDate, sourceType) {
+
+  const whereCallInfo = funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType)
+  const whereCallShare = funcWhereCallShare(gradingDate, idEvaluator, idScoreScript, idScoreTarget)
+
+  return await Promise.all([
+    // lấy tổng số cuộc gọi đã phân công
+    model.CallShare.count({
+      where: whereCallShare,
+      include: [{
+        model: model.CallDetailRecords,
+        as: 'callInfo',
+        where: whereCallInfo
+      }],
+      raw: true
+    }),
+
+    // tổng cuộc gọi đã được chấm điểm
+    model.CallShare.count({
+      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
+      raw: true
+    }),
+
+    //tổng cuộc đã chấm lại 
+    model.CallRatingHistory.findAll({
+      include: [{
+        model: model.CallDetailRecords,
+        as: 'callInfo',
+        where: whereCallInfo
+      }],
+      attributes: [
+        'callId',
+        [model.Sequelize.literal(`CASE WHEN COUNT(1) > 1 THEN 1 ELSE 0 END`), 're_scored']
+      ],
+      group: ['callId'],
+      raw: true
+    }),
+
+    //dữ liệu chấm điểm theo loại đánh giá
+    model.CallShare.findAll({
+      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
+      attributes: [
+        ['typeResultCallRating', 'name'],
+        [model.Sequelize.literal(`COUNT(1)`), 'y']
+      ],
+      group: ['typeResultCallRating'],
+      raw: true
+    }),
+
+    // tổng cuộc gọi có trong hệ thống
+    model.CallDetailRecords.findAll({
+      attributes: [
+        [model.Sequelize.literal(`COUNT(1)`), 'CallDetailRecords'],
+      ],
+      raw: true
+    })
+
+  ])
+}
+
+
+// func tạo bộ lọc cho model callShare
+function funcWhereCallShare(gradingDate, idEvaluator, idScoreScript, idScoreTarget) {
+  let whereCallShare = {}
+  if (gradingDate) {
+    let stringDate = gradingDate.split(' - ')
+    let _where = {
+      [Op.and]: [
+        { reviewedAt: { [Op.gte]: moment(stringDate[0], "DD/MM/YYYY").startOf('day') } },
+        { reviewedAt: { [Op.lte]: moment(stringDate[1], "DD/MM/YYYY").endOf('day') } },
+      ]
+    }
+
+    whereCallShare = Object.assign(whereCallShare, _where)
+  }
+
+  if (idEvaluator) {
+    whereCallShare.idUserReview = {
+      [Op.in]: idEvaluator
+    }
+  }
+
+  if (idScoreScript) {
+    whereCallShare.idScoreScript = {
+      [Op.in]: idScoreScript
+    }
+  }
+
+  if (idScoreTarget) {
+    whereCallShare.scoreTargetId = {
+      [Op.in]: idScoreTarget
+    }
+  }
+  return whereCallShare
+}
+
+// func tạo bộ lọc cho model CallDetailRecords
+function funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType) {
   let whereCallInfo = {}
 
   if (oriDate) {
@@ -196,84 +293,5 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
     }
   }
 
-
-  let whereCallShare = {}
-  if (gradingDate) {
-    let stringDate = gradingDate.split(' - ')
-    let _where = {
-      [Op.and]: [
-        { reviewedAt: { [Op.gte]: moment(stringDate[0], "DD/MM/YYYY").startOf('day') } },
-        { reviewedAt: { [Op.lte]: moment(stringDate[1], "DD/MM/YYYY").endOf('day') } },
-      ]
-    }
-
-    whereCallShare = Object.assign(whereCallShare, _where)
-  }
-
-  if (idEvaluator) {
-    whereCallShare.idUserReview = {
-      [Op.in]: idEvaluator
-    }
-  }
-
-  if (idScoreScript) {
-    whereCallShare.idScoreScript = {
-      [Op.in]: idScoreScript
-    }
-  }
-
-  if (idScoreTarget) {
-    whereCallShare.scoreTargetId = {
-      [Op.in]: idScoreTarget
-    }
-  }
-
-  return await Promise.all([
-    // lấy tổng số cuộc gọi đã phân công
-    model.CallShare.count({
-      where: whereCallShare,
-      include: [{
-        model: model.CallDetailRecords,
-        as: 'callInfo',
-        where: whereCallInfo
-      }],
-      raw: true
-    }),
-
-    // tổng cuộc gọi đã được chấm điểm
-    model.CallShare.count({
-      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
-      raw: true
-    }),
-
-    //tổng cuộc đã chấm lại 
-    model.CallRatingHistory.findAll({
-      attributes: [
-        'callId',
-        [model.Sequelize.literal(`CASE WHEN COUNT(1) > 1 THEN 1 ELSE 0 END`), 're_scored']
-      ],
-      group: ['callId'],
-      raw: true
-    }),
-
-    //dữ liệu chấm điểm theo loại đánh giá
-    model.CallShare.findAll({
-      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
-      attributes: [
-        ['typeResultCallRating', 'name'],
-        [model.Sequelize.literal(`COUNT(1)`), 'y']
-      ],
-      group: ['typeResultCallRating'],
-      raw: true
-    }),
-
-    // tổng cuộc gọi có trong hệ thống
-    model.CallDetailRecords.findAll({
-      attributes: [
-        [model.Sequelize.literal(`COUNT(1)`), 'CallDetailRecords'],
-      ],
-      raw: true
-    })
-
-  ])
+  return whereCallInfo
 }

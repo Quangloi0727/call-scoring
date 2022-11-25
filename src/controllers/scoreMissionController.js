@@ -11,7 +11,8 @@ const {
     CONST_STATUS,
     USER_ROLE,
     TeamStatus,
-    constTypeResultCallRating
+    constTypeResultCallRating,
+    statusSelectionCriteria
 } = require('../helpers/constants/index')
 
 const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
@@ -19,8 +20,6 @@ const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, Create
 const { cheSo } = require("../helpers/functions")
 
 const model = require('../models')
-const moment = require('moment')
-const Criteria = require('../models/criterias')
 
 exports.index = async (req, res, next) => {
     try {
@@ -72,7 +71,7 @@ exports.getScoreMission = async (req, res, next) => {
             queryAssignFor = { assignFor: arrUserId }
         }
 
-        let findList = await model.CallShare.findAll({
+        let findList = model.CallShare.findAll({
             where: queryAssignFor,
             include: [
                 {
@@ -117,7 +116,7 @@ exports.getScoreMission = async (req, res, next) => {
             limit: limit
         })
 
-        let count = await model.CallShare.count({ where: queryAssignFor })
+        let count = model.CallShare.count({ where: queryAssignFor })
 
         const [listData, totalRecord] = await Promise.all([findList, count])
 
@@ -460,7 +459,7 @@ function handleData(data, privatePhoneNumber = false) {
 
         const { origTime, duration, recordingFileName, caller, called } = el.callInfo
 
-        el.callInfo.origTime = moment(origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
+        el.callInfo.origTime = _moment(origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
         el.callInfo.duration = _.hms(duration)
         el.callInfo.recordingFileName = _config.pathRecording + recordingFileName
 
@@ -572,7 +571,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreCriteriaGroup = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreCriteriaGroup: 1
+            unScoreCriteriaGroup: statusSelectionCriteria.unScoreCriteriaGroup.isUnScore
         }
     })
 
@@ -603,12 +602,11 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreScript = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreScript: 1
+            unScoreScript: statusSelectionCriteria.unScoreScript.isUnScore
         }
     })
-    if (unScoreScript && unScoreScript.length > 0) {
-        point = 0
-    }
+
+    if (unScoreScript.length) point = 0
 
     const updateCallShare = {
         pointResultCallRating: point,

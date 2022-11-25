@@ -21,7 +21,18 @@ const constTypeResultCallRating = {
         code: 'PassStandard'
     },
 }
-
+const statusSelectionCriteria = {
+    unScoreCriteriaGroup: {
+        text: "Điểm liệt của nhóm",
+        isUnScore: 1,
+        notUnScore: 0
+    },
+    unScoreScript: {
+        text: "Điểm liệt của kịch bản",
+        isUnScore: 1,
+        notUnScore: 0
+    },
+}
 module.exports = {
     scoreScriptNotNull,
     criteriaNameNull,
@@ -30,5 +41,6 @@ module.exports = {
     criteriaGroupCriteriaNull,
     scoreScriptNotFound,
     statusUpdateFail,
-    constTypeResultCallRating
+    constTypeResultCallRating,
+    statusSelectionCriteria
 }
