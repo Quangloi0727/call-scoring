@@ -203,10 +203,16 @@ exports.create = async (req, res, next) => {
   let transaction
 
   try {
-
     let data = req.body
-    const { callTime, name, effectiveTime, effectiveTimeType, arrTargetAuto, arrCond, scoreScriptId, numberOfCall } = req.body
+    const { callTime, name, effectiveTime, effectiveTimeType, arrTargetAuto, arrCond, numberOfCall } = req.body
+    let scoreScriptId = req.body.scoreScriptId
     transaction = await model.sequelize.transaction()
+
+    //nếu k chọn kịch bản mặc định lấy tất cả các kich bản đang hoạt động
+    if (!scoreScriptId) {
+      const scoreScripts = await model.ScoreScript.findAll({ where: { status: CONST_STATUS.ACTIVE.value }, attributes: ['name', 'id'], raw: true })
+      if (scoreScripts.length) scoreScriptId = _.pluck(scoreScripts, "id")
+    }
 
     if (callTime) {
       let string = callTime.split(' - ')
