@@ -594,7 +594,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreCriteriaGroup = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreCriteriaGroup: false
+            unScoreCriteriaGroup: true
         }
     })
 
@@ -625,7 +625,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreScript = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreScript: false
+            unScoreScript: true
         }
     })
 
@@ -638,7 +638,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
         idUserReview: req.user.id,
     }
 
-    // create history
+    // update thời gian đánh giá review
     switch (req.body.type) {
         case 'add':
             updateCallShare.reviewedAt = _moment(new Date())
