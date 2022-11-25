@@ -18,6 +18,9 @@ class configurationColums extends Model {
         },
         nameTable: {
           type: DataTypes.STRING   // trường này để phân biệt giữa config của các table
+        },
+        generalSetting: {
+          type: DataTypes.INTEGER   // dùng cho màn thiết lập chung nhiệm vụ chấm điểm
         }
       },
       {

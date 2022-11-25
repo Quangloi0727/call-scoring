@@ -52,11 +52,23 @@ const CreatedByForm = {
     COMMENT: 3
 }
 
+const generalSetting = {
+    HIDE: {
+        text: "Không hiển thị cuộc gọi đã hoàn tất chấm điểm",
+        value: 1
+    },
+    SHOW: {
+        text: "Hiển thị cuộc gọi đã hoàn tất chấm điểm",
+        value: 2
+    }
+}
+
 const idCallNotFound = "Id cuộc gọi không tồn tại !"
 const callHasBeenScored = "Cuộc gọi đã được chấm điểm !"
 const timeNoteExists = "Đã tồn tại ghi chú tại thời điểm này !"
 
 module.exports = {
+    generalSetting,
     timeNoteExists,
     callHasBeenScored,
     idCallNotFound,

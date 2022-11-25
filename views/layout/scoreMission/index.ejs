@@ -12,13 +12,10 @@
                         <div class="card">
                             <div class="card-header col-12 row">
                                 <div class="col-6 d-flex justify-content-start">
-                                    <select class="col-4 selectpicker input" name="scoreTargetId" id="scoreTargetId"
-                                        multiple>
+                                    <select class="col-4 selectpicker input" name="scoreTargetId" id="scoreTargetId" multiple data-live-search="true">
                                         <% scoreTarget.forEach((ele,index)=> { %>
-                                            <option <%- index==0 ? 'selected' :'' %> value="<%- ele.id %>">
-                                                    <%- ele.name %>
-                                            </option>
-                                            <% }) %>
+                                            <option value="<%- ele.id %>"><%- ele.name %></option>
+                                        <% }) %>
                                     </select>
                                 </div>
                                 <div class="col-6 d-flex justify-content-end">
@@ -137,20 +134,20 @@
                                 </button>
                             </div>
                             <div class="modal-body ">
-                                <form id="formBlockUser" autocomplete="off">
-                                    <div class="form-group mb-5 ml-2">
-                                        <span>Danh sách nhiệm vụ chấm điểm gồm</span>
-                                        <select class=" selectpicker form-control input">
-                                            <option selected value="">Không hiển thị cuộc gọi đã hoàn tất chấm điểm
+                                <div class="form-group mb-5 ml-2">
+                                    <span>Danh sách nhiệm vụ chấm điểm gồm</span>
+                                    <select class="selectpicker form-control input" id="generalSetting">
+                                        <% Object.keys(generalSetting).forEach((item)=> { %>
+                                            <option value="<%= generalSetting[item].value %>" <%- findConfigGeneralSetting && findConfigGeneralSetting.generalSetting == generalSetting[item].value ? "selected" : "" %>>
+                                                <%= generalSetting[item].text %>
                                             </option>
-                                            <option value="">Hiển thị cuộc gọi đã hoàn tất chấm điểm</option>
-                                        </select>
-                                    </div>
-                                    <div class="modal-footer justify-content-end">
-                                        <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
-                                        <button type="button" class="btn btn-primary">Lưu</button>
-                                    </div>
-                                </form>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                                <div class="modal-footer justify-content-end">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Hủy</button>
+                                    <button type="button" class="btn btn-primary" id="submitGeneralSetting">Lưu</button>
+                                </div>
                             </div>
                         </div>
                     </div>

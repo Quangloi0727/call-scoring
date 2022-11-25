@@ -385,6 +385,16 @@ function bindClick() {
     })
 
 
+    $('#scoreTargetId').on('change', function () {
+        const arrValue = $(this).val()
+        findData(1, arrValue)
+    })
+
+    $('#submitGeneralSetting').on('click', function () {
+        const idChange = $("#generalSetting").val()
+        SaveConfigurationColums({ generalSetting: idChange })
+    })
+
     $('.dropdown-item').on('click', function () {
         var val = $(this).attr("data-val")
         console.log("value play speed", val)
@@ -439,10 +449,10 @@ function getFormData(formId) {
     return filter
 }
 
-function findData(page) {
+function findData(page, arrScoreTargetId) {
     let queryData = {}
     if (page) queryData.page = page
-    queryData.scoreTargetId = $('#scoreTargetId').val()
+    queryData.scoreTargetId = arrScoreTargetId ? arrScoreTargetId : $("#scoreTargetId").val()
     queryData.limit = $('.sl-limit-page').val() || 10
     $('.page-loader').show()
     $.ajax({
@@ -886,5 +896,7 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '#downloadFile-popupCallScore')
     $(document).off('click', '#downloadFile-popupComment')
     $(document).off('click', '#btn-save-modal')
+    $(document).off('click', '#submitGeneralSetting')
+    $(document).off('change', '#scoreTargetId')
 
 })

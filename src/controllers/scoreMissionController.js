@@ -1,6 +1,7 @@
 const { Op } = require('sequelize')
 const pagination = require('pagination')
 const titlePage = 'Danh sách nhiệm vụ chấm điểm'
+const titleGeneralSetting = 'Thiết lập chung'
 const {
     SUCCESS_200,
     ERR_500,
@@ -10,7 +11,8 @@ const {
     CONST_STATUS,
     USER_ROLE,
     TeamStatus,
-    constTypeResultCallRating
+    constTypeResultCallRating,
+    generalSetting
 } = require('../helpers/constants/index')
 
 const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
@@ -27,13 +29,18 @@ exports.index = async (req, res, next) => {
             raw: true,
             nest: true
         })
+
+        const findConfigGeneralSetting = await model.ConfigurationColums.findOne({ where: { nameTable: titleGeneralSetting, userId: req.user.id } })
+
         return _render(req, res, 'scoreMission/index', {
             scoreTarget: scoreTarget,
             title: titlePage,
             titlePage: titlePage,
             headerDefault: headerDefault,
             CreatedByForm,
-            constTypeResultCallRating
+            constTypeResultCallRating,
+            generalSetting,
+            findConfigGeneralSetting
         })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -47,7 +54,8 @@ exports.getScoreMission = async (req, res, next) => {
     try {
         let {
             page,
-            limit
+            limit,
+            scoreTargetId
         } = req.query
 
         if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
@@ -67,6 +75,18 @@ exports.getScoreMission = async (req, res, next) => {
             queryAssignFor = {}
         } else {
             queryAssignFor = { assignFor: arrUserId }
+        }
+
+        if (scoreTargetId) {
+            queryAssignFor = { ...queryAssignFor, scoreTargetId: { [Op.in]: scoreTargetId } }
+        }
+
+        const getGeneralSetting = await model.ConfigurationColums.findOne({ where: { nameTable: titleGeneralSetting, userId: req.user.id } })
+
+        if (getGeneralSetting) {
+            if (getGeneralSetting.generalSetting == generalSetting.HIDE.value) {
+                queryAssignFor = { ...queryAssignFor, isMark: { [Op.ne]: true } }
+            }
         }
 
         let findList = model.CallShare.findAll({
@@ -334,11 +354,16 @@ exports.SaveConfigurationColums = async (req, res) => {
     try {
         const data = {}
         data.userId = req.user.id
-        data.configurationColums = JSON.stringify(req.body)
-        data.nameTable = titlePage
+        if (req.body.generalSetting) {
+            data.nameTable = titleGeneralSetting
+            data.generalSetting = req.body.generalSetting
+        } else {
+            data.configurationColums = JSON.stringify(req.body)
+            data.nameTable = titlePage
+        }
 
         const findConfig = await model.ConfigurationColums.findOne(
-            { where: { userId: Number(req.user.id), nameTable: titlePage } }
+            { where: { userId: Number(req.user.id), nameTable: req.body.generalSetting ? titleGeneralSetting : titlePage } }
         )
 
         if (findConfig) {
@@ -380,6 +405,16 @@ exports.saveCallRating = async (req, res) => {
         const { timeNoteMinutes, timeNoteSecond } = note || {}
         const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
+        //đồng bộ kịch bản chấm điểm
+        if (callId && idScoreScript) {
+            const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } }, { transaction: transaction })
+            if (findCallRatingNote.length) {
+                for (const note of findCallRatingNote) {
+                    note.update({ idScoreScript })
+                    await note.save()
+                }
+            }
+        }
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
             const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })
@@ -404,16 +439,6 @@ exports.saveCallRating = async (req, res) => {
             const getIdScoreScript = await model.CallRatingNote.findOne({ where: { callId: note.callId, idScoreScript: { [Op.ne]: null } } }, { transaction: transaction })
             note.idScoreScript = idScoreScript ? idScoreScript : (getIdScoreScript ? getIdScoreScript.idScoreScript : null)
             await model.CallRatingNote.create(note, { transaction: transaction })
-            //đồng bộ kịch bản chấm điểm
-            if (callId && idScoreScript) {
-                const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } }, { transaction: transaction })
-                if (findCallRatingNote.length) {
-                    for (const note of findCallRatingNote) {
-                        note.update({ idScoreScript })
-                        await note.save()
-                    }
-                }
-            }
         }
 
         // create history

@@ -10,4 +10,5 @@ module.exports = {
     ...require("./filedScoreScript"),
     ...require("./constDataRetentionPolicy"),
     ...require("./fileTeam"),
+    ...require("./fieldScoreMission"),
 }
