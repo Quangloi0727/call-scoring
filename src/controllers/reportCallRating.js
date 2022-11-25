@@ -127,7 +127,7 @@ exports.queryReport = async (req, res) => {
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
-      totalResult: countCallShare[0].CallShares
+      totalResult: countCallShare
     })
 
     return res.json({
@@ -170,8 +170,8 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
     let stringDate = oriDate.split(' - ')
     let _where = {
       [Op.and]: [
-        { oriDate: { [Op.gte]: moment(stringDate[0]).endOf('day') } },
-        { oriDate: { [Op.lte]: moment(stringDate[1]).endOf('day') } },
+        { oriDate: { [Op.gte]: moment(stringDate[0], "DD/MM/YYYY").endOf('day') } },
+        { oriDate: { [Op.lte]: moment(stringDate[1], "DD/MM/YYYY").endOf('day') } },
       ]
     }
 
@@ -202,9 +202,8 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
     let stringDate = gradingDate.split(' - ')
     let _where = {
       [Op.and]: [
-        { updatedAt: { [Op.gte]: moment(stringDate[0]).endOf('day') } },
-        { updatedAt: { [Op.lte]: moment(stringDate[1]).endOf('day') } },
-        { pointResultCallRating: { [Op.ne]: null } }
+        { reviewedAt: { [Op.gte]: moment(stringDate[0], "DD/MM/YYYY").startOf('day') } },
+        { reviewedAt: { [Op.lte]: moment(stringDate[1], "DD/MM/YYYY").endOf('day') } },
       ]
     }
 
@@ -217,7 +216,7 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
     }
   }
 
-  if (idEvaluator) {
+  if (idScoreScript) {
     whereCallShare.idScoreScript = {
       [Op.in]: idScoreScript
     }
@@ -231,25 +230,19 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
 
   return await Promise.all([
     // lấy tổng số cuộc gọi đã phân công
-    model.CallShare.findAll({
+    model.CallShare.count({
       where: whereCallShare,
       include: [{
         model: model.CallDetailRecords,
         as: 'callInfo',
-        where: whereCallInfo,
-
+        where: whereCallInfo
       }],
-      attributes: [
-        [model.Sequelize.literal(`COUNT(1)`), 'CallShares'],
-      ],
       raw: true
     }),
 
     // tổng cuộc gọi đã được chấm điểm
-    model.CallShare.findAll({
-      attributes: [
-        [model.Sequelize.literal(`SUM(CASE WHEN pointResultCallRating IS NOT NULL THEN 1 ELSE 0 END)`), 'CallReviewed'],
-      ],
+    model.CallShare.count({
+      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
       raw: true
     }),
 
@@ -265,7 +258,7 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
 
     //dữ liệu chấm điểm theo loại đánh giá
     model.CallShare.findAll({
-      where: { typeResultCallRating: { [Op.ne]: null } },
+      where: Object.assign(whereCallShare, { pointResultCallRating: { [Op.ne]: null } }),
       attributes: [
         ['typeResultCallRating', 'name'],
         [model.Sequelize.literal(`COUNT(1)`), 'y']

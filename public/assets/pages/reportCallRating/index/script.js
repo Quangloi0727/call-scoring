@@ -24,7 +24,7 @@ $(function () {
 function bindClick() {
   $(document).on('click', '#btn_advanced_search', function (event) {
     let formData = getFormData('form_advanced_search')
-    console.log(formData);
+    console.log(formData)
 
     localStorage.setItem(nameItemStorage, JSON.stringify(formData))
     return queryData(formData)
@@ -37,20 +37,20 @@ function bindClick() {
       for (const [key, value] of Object.entries(itemStorage)) {
         $(`#${key}`).val(value)
       }
-      $('.selectpicker').selectpicker('refresh');
+      $('.selectpicker').selectpicker('refresh')
     }
   })
 
   $(document).on('click', '#btn_hide_modal_search', function (event) {
-    $('#form_advanced_search').trigger('reset');
+    $('#form_advanced_search').trigger('reset')
     $('.selectpicker').selectpicker('refresh')
     return $('#modal_search').modal('hide')
   })
 
   $(document).on('click', '#btn_clear_local_storage', function (event) {
-    $('#form_advanced_search').trigger('reset');
-    $('.selectpicker').selectpicker('refresh');
-    localStorage.removeItem(nameItemStorage);
+    $('#form_advanced_search').trigger('reset')
+    $('.selectpicker').selectpicker('refresh')
+    localStorage.removeItem(nameItemStorage)
     return $('#modal_search').modal('hide')
   })
 
@@ -99,22 +99,22 @@ function queryData() {
     if (resp.code != 200) {
       return toastr.error(resp.error)
     }
-    console.log(resp);
-    renderHightChart(resp);
+    console.log(resp)
+    renderHightChart(resp)
 
-    renderTable(resp.callShareDetail, resp.constTypeResultCallRating);
+    renderTable(resp.callShareDetail, resp.constTypeResultCallRating)
     return $('#paging_table').html(window.location.CreatePaging(resp.paginator))
   })
 }
 
 function renderHightChart(resp) {
-  $('#txtCountCallReviewed').text(resp.countCallReviewed[0].CallReviewed);
-  $('#txtCountCallShare').text(resp.countCallShare[0].CallShares);
+  $('#txtCountCallReviewed').text(resp.countCallReviewed)
+  $('#txtCountCallShare').text(resp.countCallShare)
 
   if (resp.callRatingHistory.length > 0) {
-    var countCallRatingHistory = _.filter(resp.callRatingHistory, function (callRatingHistory) { return callRatingHistory.re_scored == 1 }).length;
-    $('#txtCountCallRatingHistory').text(countCallRatingHistory);
-    $('#txtPercentCallRatingHistory').text(((countCallRatingHistory / resp.countCallReviewed[0].CallReviewed) * 100).toFixed(0) + '%');
+    var countCallRatingHistory = _.filter(resp.callRatingHistory, function (callRatingHistory) { return callRatingHistory.re_scored == 1 }).length
+    $('#txtCountCallRatingHistory').text(countCallRatingHistory)
+    $('#txtPercentCallRatingHistory').text(((countCallRatingHistory / resp.countCallReviewed) * 100).toFixed(0) + '%')
   }
 
   const constTypeResultCallRating = resp.constTypeResultCallRating
@@ -122,7 +122,7 @@ function renderHightChart(resp) {
 
   let keyObj = []
   percentTypeCallRating.map((el) => {
-    keyObj.push(`point${el.name}`);
+    keyObj.push(`point${el.name}`)
     el.name = constTypeResultCallRating[`point${el.name}`].txt
 
   })
@@ -143,11 +143,11 @@ function renderHightChart(resp) {
   percentCallShare.push(
     {
       name: CALL_ASSIGNED_TXT,
-      y: resp.countCallShare[0].CallShares
+      y: resp.countCallShare
     },
     {
       name: CALL_UN_ASSIGNED_TXT,
-      y: resp.callDetailRecords[0].CallDetailRecords - resp.countCallShare[0].CallShares
+      y: resp.callDetailRecords[0].CallDetailRecords - resp.countCallShare
 
     })
   _hightChart('pieChartCallShare', CALL_PERCENT_REPORT_TXT, percentCallShare)
@@ -157,11 +157,11 @@ function renderHightChart(resp) {
   percentGradingCompletion.push(
     {
       name: CALL_REVIEWED_TXT,
-      y: resp.countCallReviewed[0].CallReviewed
+      y: resp.countCallReviewed
     },
     {
       name: CALL_UN_REVIEWED_TXT,
-      y: resp.countCallShare[0].CallShares - resp.countCallReviewed[0].CallReviewed
+      y: resp.countCallShare - resp.countCallReviewed
 
     })
   _hightChart('pieChartCallReviewed', GRADING_COMPLETION_PERCENT_TXT, percentGradingCompletion)
@@ -171,16 +171,16 @@ function renderHightChart(resp) {
   percentGradingAssign.push(
     {
       name: CALL_REVIEWED_TXT,
-      y: resp.countCallReviewed[0].CallReviewed
+      y: resp.countCallReviewed
     },
     {
       name: CALL_UN_REVIEWED_TXT,
-      y: resp.callDetailRecords[0].CallDetailRecords - resp.countCallReviewed[0].CallReviewed
+      y: resp.callDetailRecords[0].CallDetailRecords - resp.countCallReviewed
 
     })
   _hightChart('pieChartGradingAssign', GRADING_ASSIGNED_PERCENT_TXT, percentGradingAssign)
 
-  return;
+  return
 }
 
 function renderTable(data, constTypeResultCallRating) {
