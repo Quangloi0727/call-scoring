@@ -569,7 +569,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreCriteriaGroup = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreCriteriaGroup: false
+            unScoreCriteriaGroup: true
         }
     })
 
@@ -600,7 +600,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     const unScoreScript = await model.SelectionCriteria.findAll({
         where: {
             id: { [Op.in]: idSelectionCriterias },
-            unScoreScript: false
+            unScoreScript: true
         }
     })
 
