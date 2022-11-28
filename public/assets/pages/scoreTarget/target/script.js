@@ -494,6 +494,7 @@ function setConfigView() {
     $("#assignStart").val("00:00:00")
     $("#assignEnd").val("23:59:59")
     $("#btn_duplicate_scoreTarget").remove()
+    $('.selectpicker').selectpicker('refresh')
   } else {
     if (ScoreTarget.status == 1) {
       disableOrEnableButton()
@@ -504,6 +505,8 @@ function setConfigView() {
       $("#btn_assignment_scoreTarget").prop("disabled", true)
       $("#btn_save_scoreTarget").prop("disabled", true)
     }
+    $("#callTime").attr('disabled', 'disabled')
+    $('.selectpicker').selectpicker('refresh')
   }
 }
 

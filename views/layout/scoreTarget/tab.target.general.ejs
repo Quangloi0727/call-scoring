@@ -15,7 +15,7 @@
                         <option value="<%- ele.id %>">
                             <%- ele.name %>
                         </option>
-                        <% }) %>
+                    <% }) %>
                 </select>
             </div>
         </div>
@@ -28,7 +28,7 @@
                         <option value="<%- CONST_RATING_BY[ele].n %>">
                             <%- CONST_RATING_BY[ele].t%>
                         </option>
-                        <% }) %>
+                    <% }) %>
                 </select>
             </div>
         </div>
@@ -41,7 +41,7 @@
                         <option value="<%- value %>">
                             <%- key %>
                         </option>
-                        <% } %>
+                    <% } %>
                 </select>
             </div>
         </div>
@@ -73,7 +73,7 @@
                         <option value="<%= CONST_EFFECTIVE_TIME_TYPE[item].value %>">
                             <%= CONST_EFFECTIVE_TIME_TYPE[item].text %>
                         </option>
-                        <% }); %>
+                    <% }); %>
                 </select>
             </div>
             <div class="col-sm-3 input-group effectiveTimeRange d-none">
@@ -88,13 +88,12 @@
         <div class="form-group row">
             <label for="status" class="col-sm-3 form-check-label">Trạng thái</label>
             <div class="col-sm-6">
-                <select class="form-control selectpicker input" id="status" name="status" <%- ScoreTarget ? ""
-                    : 'disabled' %>>
+                <select class="form-control selectpicker input" id="status" name="status" <%- ScoreTarget ? "" : 'disabled' %>>
                     <% Object.keys(CONST_STATUS).forEach((item)=> { %>
                         <option value="<%= CONST_STATUS[item].value %>">
                             <%= CONST_STATUS[item].text %>
                         </option>
-                        <% }); %>
+                    <% }); %>
                 </select>
             </div>
         </div>
