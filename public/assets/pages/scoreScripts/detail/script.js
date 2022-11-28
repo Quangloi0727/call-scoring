@@ -389,6 +389,7 @@ var loadData = function () {
     if (statusScoreScript == STATUS_SCORE_SCRIPT.hoatDong.n) $('#hoatDong').attr('selected', 'selected')
     if (statusScoreScript == STATUS_SCORE_SCRIPT.ngungHoatDong.n) $('#ngungHoatDong').attr('selected', 'selected')
   }
+  $('.selectpicker').selectpicker('refresh')
 }
 
 function loadCriteria(el) {
@@ -748,18 +749,18 @@ function htmlItemCriteriaGroup(item, totalScore) {
             <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
             <div class="row">
               ${item.criterias.map((i) => {
-                const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-                return `<div class="col-12">
+    const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
+    return `<div class="col-12">
                           <div class="form-group">
                             <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
                             <select class="form-control">
                               ${i.selectionCriterias.map((j) => {
-                                return `<option>${j.name}</option>`
-                              }).join("")}
+      return `<option>${j.name}</option>`
+    }).join("")}
                             </select>
                           </div>
                         </div>`
-                }).join("")}
+  }).join("")}
             </div>
           </div>`
 }

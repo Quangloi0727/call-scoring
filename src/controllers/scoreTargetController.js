@@ -17,7 +17,7 @@ const {
   CONST_DATA,
   CONST_COND,
   MESSAGE_ERROR,
-  USER_ROLE, SYSTEM_RULE } = require('../helpers/constants/index')
+  SYSTEM_RULE } = require('../helpers/constants/index')
 
 exports.index = async (req, res, next) => {
   try {
@@ -226,6 +226,11 @@ exports.create = async (req, res, next) => {
 
       data.effectiveTimeStart = _moment(string[0], "MM/DD/YYYY").startOf('d')
       data.effectiveTimeEnd = _moment(string[1], "MM/DD/YYYY").endOf('d')
+
+      const currentDate = _moment(new Date(), "MM/DD/YYYY").startOf('d').valueOf()
+      const effectiveTimeStartTemp = _moment(string[0], "MM/DD/YYYY").startOf('d').valueOf()
+
+      if (effectiveTimeStartTemp == currentDate) data.status = CONST_STATUS.ACTIVE.value
     }
 
     if (numberOfCall) {
@@ -317,6 +322,11 @@ exports.update = async (req, res, next) => {
       let string = effectiveTime.split(' - ')
       data.effectiveTimeStart = _moment(string[0], "MM/DD/YYYY").startOf('d')
       data.effectiveTimeEnd = _moment(string[1], "MM/DD/YYYY").endOf('d')
+
+      const currentDate = _moment(new Date(), "MM/DD/YYYY").startOf('d').valueOf()
+      const effectiveTimeStartTemp = _moment(string[0], "MM/DD/YYYY").startOf('d').valueOf()
+
+      if (effectiveTimeStartTemp == currentDate) data.status = CONST_STATUS.ACTIVE.value
     }
 
     // check trùng tên mục tiêu
