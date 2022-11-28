@@ -238,6 +238,7 @@ async function shareCallEachSupervisor(scoreTarget, findScoreTargetAssign, query
     if (!idsTeam.length) return _logger.info("Not found team satisfy")
 
     for (let t = 0; t < idsTeam.length; t++) {
+        _logger.info("Start share for team", idsTeam[t])
         // số cuộc gọi mỗi nhân sự phải chấm theo cấu hình
         const KPIOrigin = calculateKPI(findScoreTargetAssign, Number(numberOfCall))
 
@@ -296,7 +297,7 @@ async function actionShareCall(scoreTargetId, userIdAssign, countKPI, _queryCall
 
     const dataShare = await model.CallDetailRecords.findAll({
         //phân công cuộc gọi thỏa mãn điều kiện và không phân công cuộc gọi của chính agent đó
-        where: { [Op.and]: [_queryCallSatisfy, { agentId: { [Op.ne]: userIdAssign } }] },
+        where: { [Op.and]: [_queryCallSatisfy, { [Op.or]: [{ agentId: { [Op.ne]: userIdAssign } }, { agentId: { [Op.eq]: null } }] }] },
         order: [
             ['lastUpdateTime', 'ASC']
         ],
