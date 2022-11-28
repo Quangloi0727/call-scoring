@@ -295,7 +295,8 @@ async function shareCallEachSupervisor(scoreTarget, findScoreTargetAssign, query
 async function actionShareCall(scoreTargetId, userIdAssign, countKPI, _queryCallSatisfy) {
 
     const dataShare = await model.CallDetailRecords.findAll({
-        where: _queryCallSatisfy,
+        //phân công cuộc gọi thỏa mãn điều kiện và không phân công cuộc gọi của chính agent đó
+        where: { [Op.and]: [_queryCallSatisfy, { agentId: { [Op.ne]: userIdAssign } }] },
         order: [
             ['lastUpdateTime', 'ASC']
         ],

@@ -399,22 +399,13 @@ exports.deleteConfigurationColums = async (req, res) => {
 }
 
 exports.saveCallRating = async (req, res) => {
-    let transaction
+    let transaction, idCallRatingNoteIfFail
     try {
         const { resultCriteria, note, type, dataEditOrigin } = req.body
         const { timeNoteMinutes, timeNoteSecond } = note || {}
         const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
-        //đồng bộ kịch bản chấm điểm
-        if (callId && idScoreScript) {
-            const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } }, { transaction: transaction })
-            if (findCallRatingNote.length) {
-                for (const note of findCallRatingNote) {
-                    note.update({ idScoreScript })
-                    await note.save()
-                }
-            }
-        }
+
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
             const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })
@@ -438,7 +429,18 @@ exports.saveCallRating = async (req, res) => {
             note.idCriteriaGroup == 0 ? note.idCriteriaGroup = null : ''
             const getIdScoreScript = await model.CallRatingNote.findOne({ where: { callId: note.callId, idScoreScript: { [Op.ne]: null } } }, { transaction: transaction })
             note.idScoreScript = idScoreScript ? idScoreScript : (getIdScoreScript ? getIdScoreScript.idScoreScript : null)
-            await model.CallRatingNote.create(note, { transaction: transaction })
+            const createCallRatingNote = await model.CallRatingNote.create(note, { raw: true, nest: true })
+            idCallRatingNoteIfFail = createCallRatingNote.id
+            //đồng bộ kịch bản chấm điểm
+            if (callId && idScoreScript) {
+                const findCallRatingNote = await model.CallRatingNote.findAll({ where: { callId: callId, idScoreScript: { [Op.eq]: null } } }, { transaction: transaction })
+                if (findCallRatingNote.length) {
+                    for (const note of findCallRatingNote) {
+                        note.update({ idScoreScript })
+                        await note.save()
+                    }
+                }
+            }
         }
 
         // create history
@@ -456,6 +458,8 @@ exports.saveCallRating = async (req, res) => {
         await transaction.commit()
         return res.json({ code: SUCCESS_200.code, message: 'Success!' })
     } catch (error) {
+        _logger.info("idCallRatingNoteIfFail: ", idCallRatingNoteIfFail)
+        await model.CallRatingNote.destroy({ where: { id: idCallRatingNoteIfFail } })
         _logger.error("Tạo mới chấm điểm: ", error)
         return res.json({ code: ERR_500.code, message: error.message })
     }
