@@ -18,6 +18,7 @@ $(function () {
   eventDateRangePicker(ORIG_DATE)
   eventDateRangePicker(GRADING_DATE)
   queryData()
+  queryDataByScoreScript()
   bindClick()
 })
 
@@ -54,6 +55,18 @@ function bindClick() {
     return $('#modal_search').modal('hide')
   })
 
+  $(document).on('change', '.sl-limit-page', function () {
+    return queryData(1)
+  })
+
+  $(document).on('click', '.zpaging', function () {
+    let page = $(this).attr('data-link')
+    return queryData(page)
+  })
+
+  $(document).on('click', '#btn_refresh', function () {
+    return location.reload()
+  })
 }
 
 /**
@@ -92,18 +105,30 @@ function getFormData(formId) {
   return filter
 }
 
-function queryData() {
+function queryData(page) {
   $('#modal_search').modal('hide')
   const formData = JSON.parse(localStorage.getItem(nameItemStorage))
+  formData.page = page || 1
+  formData.limit = $('.sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReport?' + $.param(formData), 'GET', function (resp) {
     if (resp.code != 200) {
       return toastr.error(resp.error)
     }
-    console.log(resp)
     renderHightChart(resp)
 
     renderTable(resp.callShareDetail, resp.constTypeResultCallRating)
     return $('#paging_table').html(window.location.CreatePaging(resp.paginator))
+  })
+}
+
+function queryDataByScoreScript() {
+  const formData = {}
+  formData.idScoreScript = $('#idScoreScript').val()
+  _AjaxGetData('/reportCallRating/queryReportByScoreScript?' + $.param(formData), 'GET', function (resp) {
+    if (resp.code != 200) {
+      return toastr.error(resp.error)
+    }
+    console.log(resp)
   })
 }
 
@@ -126,6 +151,7 @@ function renderHightChart(resp) {
     el.name = constTypeResultCallRating[`point${el.name}`].txt
 
   })
+
   if (keyObj.length > 0) {
     const keyNullValue = _.difference(Object.keys(constTypeResultCallRating), keyObj)
     if (keyNullValue.length > 0) {
@@ -152,7 +178,6 @@ function renderHightChart(resp) {
     })
   _hightChart('pieChartCallShare', CALL_PERCENT_REPORT_TXT, percentCallShare)
 
-
   const percentGradingCompletion = []
   percentGradingCompletion.push(
     {
@@ -165,7 +190,6 @@ function renderHightChart(resp) {
 
     })
   _hightChart('pieChartCallReviewed', GRADING_COMPLETION_PERCENT_TXT, percentGradingCompletion)
-
 
   const percentGradingAssign = []
   percentGradingAssign.push(
@@ -192,12 +216,12 @@ function renderTable(data, constTypeResultCallRating) {
         <td class = "text-center">${el.callInfo.agent ? el.callInfo.agent.name : ''}</td>
         <td class = "text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
         <td class = "text-center"></td>
-        <td class = "text-center">${el.scoreTargetInfo.name}</td>
+        <td class = "text-center">${el.scoreTargetInfo ? el.scoreTargetInfo.name : ''}</td>
         <td class = "text-center"></td>
         <td class = "text-center">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</td>
         <td class = "text-center">${el.pointResultCallRating ? el.pointResultCallRating : ''}</td>
         <td class = "text-center">${el.typeResultCallRating ? constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
-        <td class = "text-center">${el.UserReview ? el.UserReview.name : ''}</td>
+        <td class = "text-center">${el.userReview ? el.userReview.fullName + ' ' + `(${el.userReview.userName})` : ''}</td>
         <td class = "text-center">${(el.updatedAt != el.createdAt) && el.pointResultCallRating ? moment(el.updatedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''}</td>
     </tr>`
   })

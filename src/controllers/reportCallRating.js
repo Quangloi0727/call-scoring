@@ -34,19 +34,20 @@ exports.index = async (req, res, next) => {
       where: {
         status: { [Op.ne]: CONST_STATUS.DRAFT.value }
       },
+      order: [['createdAt', 'DESC']],
       attributes: ['id', 'name'],
     })
     return _render(req, res, 'reportCallRating/index', {
       title: titlePage,
       titlePage: titlePage,
       STATUS,
-      evaluators,
-      agents,
-      groups,
-      teams,
+      evaluators: evaluators || [],
+      agents: agents || [],
+      groups: groups || [],
+      teams: teams || [],
       SOURCE_NAME,
-      scoreTargets,
-      scoreScripts,
+      scoreTargets: scoreTargets || [],
+      scoreScripts: scoreScripts || [],
     })
 
   } catch (error) {
@@ -80,13 +81,14 @@ exports.queryReport = async (req, res) => {
     const pageNumber = page ? Number(page) : 1
     const offset = (pageNumber * limit) - limit
 
-
+    const whereCallInfo = funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType)
+    const whereCallShare = funcWhereCallShare(gradingDate, idEvaluator, idScoreScript, idScoreTarget)
     // lấy dữ liệu tổng hợp 
     const [countCallShare, countCallReviewed, CallRatingHistory, percentTypeCallRating, callDetailRecords] =
-      await getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, idScoreTarget, idTeam, oriDate, sourceType)
+      await getSummaryData(whereCallInfo, whereCallShare)
 
     const CallShareDetail = await model.CallShare.findAll({
-      // where: queryAssignFor,
+      where: whereCallShare,
       include: [
         {
           model: model.CallDetailRecords,
@@ -100,7 +102,8 @@ exports.queryReport = async (req, res) => {
               model: model.User,
               as: 'agent'
             }
-          ]
+          ],
+          where: whereCallInfo
         },
         {
           model: model.ScoreTarget,
@@ -117,6 +120,10 @@ exports.queryReport = async (req, res) => {
             model: model.SelectionCriteria,
             as: 'selectionCriteriaInfo'
           }
+        },
+        {
+          model: model.User,
+          as: 'userReview'
         }
       ],
       order: [['id']],
@@ -143,7 +150,51 @@ exports.queryReport = async (req, res) => {
     })
 
   } catch (error) {
-    _logger.error(titlePage + " - chấm điểm", error)
+    _logger.error(titlePage + " - truy vấn chấm điểm", error)
+    return res.json({ code: ERR_400.code, message: error.message })
+  }
+}
+
+exports.queryReportByScoreScript = async (req, res) => {
+  try {
+    const {
+      page,
+      limit,
+      gradingDate, // ngày chấm điểm
+      idAgent,
+      idEvaluator,
+      idScoreScript,
+      idScoreTarget,
+      idTeam,
+      oriDate,  // thời gian thực hiện cuộc gọi
+      sourceType
+    } = req.query
+
+    const countCallReviewed = await model.CallShare.count({
+      where: {
+        isMark: true,
+        idScoreScript: idScoreScript
+      }
+    })
+
+    const avgPointByCall = await model.CallShare.findOne({
+      where: {
+        isMark: true,
+        idScoreScript: idScoreScript
+      },
+      attributes: [
+        [sequelize.fn('AVG', sequelize.col('pointResultCallRating')), 'avgPoint'],
+      ],
+    })
+
+
+    return res.json({
+      code: SUCCESS_200.code,
+      countCallReviewed: countCallReviewed,
+      avgPointByCall: avgPointByCall
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - truy vấn chấm điểm", error)
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
@@ -163,11 +214,7 @@ function getUserByRole(idRole) {
   })
 }
 
-async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, idScoreTarget, idTeam, oriDate, sourceType) {
-
-  const whereCallInfo = funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType)
-  const whereCallShare = funcWhereCallShare(gradingDate, idEvaluator, idScoreScript, idScoreTarget)
-
+async function getSummaryData(whereCallInfo, whereCallShare) {
   return await Promise.all([
     // lấy tổng số cuộc gọi đã phân công
     model.CallShare.count({
@@ -209,6 +256,7 @@ async function getSummaryData(gradingDate, idAgent, idEvaluator, idScoreScript, 
 
     // tổng cuộc gọi có trong hệ thống
     model.CallDetailRecords.findAll({
+      where: whereCallInfo,
       attributes: [
         [model.Sequelize.literal(`COUNT(1)`), 'CallDetailRecords'],
       ],
