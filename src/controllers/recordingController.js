@@ -245,6 +245,7 @@ exports.getRecording = async (req, res) => {
 	      records.called AS called,
 	      records.origTime AS origTime,
 	      records.duration AS duration,
+        records.teamId AS teamId,
 	      records.var1 AS var1,
 	      records.var2 AS var2,
 	      records.var3 AS var3,
@@ -316,7 +317,7 @@ exports.getRecording = async (req, res) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult && handleData(recordResult, _config.privatePhoneNumberWebView) || [],
+      data: recordResult && await handleData(recordResult, _config.privatePhoneNumberWebView) || [],
       ConfigurationColums: ConfigurationColums,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
     })
@@ -467,10 +468,8 @@ function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
   })
 }
 
-function handleData(data, privatePhoneNumber = false) {
-  let newData = []
-
-  newData = data.map((el) => {
+async function handleData(data, privatePhoneNumber = false) {
+  const newData = await Promise.all(data.map(async el => {
     el.origTime = _moment(el.origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
     el.duration = _.hms(el.duration)
     el.recordingFileName = _config.pathRecording + el.recordingFileName
@@ -481,9 +480,17 @@ function handleData(data, privatePhoneNumber = false) {
       if (el.called && el.called.length >= 10) el.called = cheSo(el.called, 4)
     }
 
+    // map group
+    if (el.teamId) {
+      const findTeamGroup = await model.TeamGroup.findAll({ where: { teamId: el.teamId }, nest: true })
+      if (!findTeamGroup.length) return el
+      const idsGroup = _.pluck(findTeamGroup, "groupId")
+      const findGroup = await model.Group.findAll({ where: { id: { [Op.in]: idsGroup } }, nest: true })
+      const nameGroups = _.pluck(findGroup, "name")
+      el.groupName = nameGroups.join(",")
+    }
     return el
-  })
-
+  }))
   return newData
 }
 
@@ -507,6 +514,7 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
 	      records.var8 AS var8,
 	      records.var9 AS var9,
 	      records.var10 AS var10,
+        records.teamId AS teamId,
 	      records.recordingFileName AS recordingFileName,
         records.direction AS direction,
         records.sourceName AS sourceName,
@@ -531,7 +539,7 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
         ${order}
     `, { type: QueryTypes.SELECT })
 
-    const dataHandleResult = handleData(dataResult, _config.privatePhoneNumberExcel)
+    const dataHandleResult = await handleData(dataResult, _config.privatePhoneNumberExcel)
 
     const linkFile = await createExcelFile(startTime, endTime, dataHandleResult, ConfigurationColums)
 

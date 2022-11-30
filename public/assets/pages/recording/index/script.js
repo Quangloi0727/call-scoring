@@ -359,15 +359,18 @@ function renderHeaderTable(ConfigurationColums, queryData, init = false) {
   let headerTable = ''
   // debugger
   for (const [key, value] of Object.entries(ConfigurationColums)) {
-    // console.log(key, value);
-    let fixed = (key == 'callId' ? 'fix' : '')
     let sorting = (key == 'duration' ? 'sorting' : '')
     if (queryData.sort && queryData.sort.sort_by == key) {
       sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
     }
-    headerTable += `<th class="text-center sortHeader ${key} ${(value == 'true' || (init == true && key != "sourceName")) ? '' : 'd-none'} ${fixed} ${sorting}" id-sort="${key}">${headerDefault[key]}</th>`
+    headerTable += `<th class="text-center sortHeader ${key} ${(value == 'true' || (init == true && key != "sourceName")) ? '' : 'd-none'} 
+                      ${key == "callId" || key == "action" ? "tableFixColumn" : ""} 
+                      ${key == "callId" ? "first-col" : ""} 
+                      ${key == "action" ? "second-col" : ""} 
+                      ${sorting}" id-sort="${key}">
+                        ${headerDefault[key]}
+                    </th>`
   }
-
   $('#tableRecording thead tr').html(headerTable)
 
 }
@@ -402,7 +405,19 @@ function createTable(data, ConfigurationColums, queryData) {
         } else if (key == 'agentName' && value == 'true') {
           tdTable += ` <td class="text-center agentName">${agentName}</td>`
         } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
-          tdTable += ` <th class="text-center callId fix"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+          tdTable += ` <th class="text-center callId tableFixColumn first-col"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+        } else if (key == 'action') {
+          tdTable += ` <th class="text-center ${key} tableFixColumn second-col">
+                            <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
+                            <i class="fas fa-check mr-2" title="Chấm điểm"></i>
+                            <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="menuDropDownAdvanced">
+                                  <a class="dropdown-item" href="#">Sửa chấm điểm</a>
+                                  <a class="dropdown-item" href="#">Ghi chú chấm điểm</a>
+                                  <a class="dropdown-item" href="#">Xem lịch sửa chấm điểm</a>
+                                </div>
+                            </i>
+                       </th>`
         } else {
           tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>`
         }
@@ -438,15 +453,19 @@ function createTable(data, ConfigurationColums, queryData) {
           } else if (key == 'agentName') {
             tdTable += ` <td class="text-center agentName">${agentName}</td>`
           } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
-            tdTable += ` <th class="text-center callId"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+            tdTable += ` <th class="text-center tableFixColumn first-col"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
           } else if (key == 'action') {
-            tdTable += ` <th class="text-center ${key}">
-                            <i class="fas fa-check mr-2" title="Chấm điểm"></i>
-                            <i class="fas fa-pen-square mr-2" title="Sửa chấm điểm"></i>
-                            <i class="fas fa-comment-alt mr-2" title="Ghi chú"></i>
-                            <i class="fas fa-history mr-2" title="Lịch sử chấm điểm"></i>
+            tdTable += ` <th class="text-center ${key} tableFixColumn second-col">
                             <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
-                          </th>`
+                            <i class="fas fa-check mr-2" title="Chấm điểm"></i>
+                            <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="menuDropDownAdvanced">
+                                  <a class="dropdown-item" href="#">Sửa chấm điểm</a>
+                                  <a class="dropdown-item" href="#">Ghi chú chấm điểm</a>
+                                  <a class="dropdown-item" href="#">Xem lịch sửa chấm điểm</a>
+                                </div>
+                            </i>
+                         </th>`
           } else {
             tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>`
           }

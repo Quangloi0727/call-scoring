@@ -78,15 +78,23 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="primary">
-          <table id="tableRecording" class="table table-bordered table-hover tableFixColumn">
+        <div class="primary wrapperRecording">
+          <table id="tableRecording" class="table table-bordered table-hover">
             <thead>
               <tr>
                 <% Object.keys(headerDefault).forEach((i)=> { %>
                   <%
                     if(i != "sourceName"){ %>
                       <% let sorting=['duration'].includes(i) ? 'sorting' : '' %>
-                        <th class="text-center sortHeader <%= i %> <%= sorting %>" id-sort="<%= i %>">
+                        <th class="text-center sortHeader 
+                          <%= i %> 
+                          <%= sorting %> 
+                          <%- (i == "callId" || i == "action" ? "tableFixColumn" : "") %>
+                          <%- (i=="callId" ? "first-col" : "" ) %>
+                          <%- (i=="action" ? "second-col" : "" ) %>
+                          " 
+                          id-sort="<%= i %>"
+                        >
                           <%= headerDefault[i] %>
                         </th>
                       <%}

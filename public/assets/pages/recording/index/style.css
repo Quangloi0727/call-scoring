@@ -6,12 +6,15 @@
   margin-top: 30px;
   width: 100px !important;
 }
-#popup_search{
+
+#popup_search {
   margin-top: 30px;
 }
-#customs_table{
+
+#customs_table {
   margin-top: 30px;
 }
+
 .btn-circle {
   width: 30px;
   height: 30px;
@@ -40,6 +43,7 @@
   line-height: 1.33;
   border-radius: 25px;
 }
+
 .btn-circle.btn-xl {
   width: 70px;
   height: 70px;
@@ -70,6 +74,7 @@ td.audioHtml {
   /* Misc */
   border: 1px solid #cbd5e0;
 }
+
 .placeholder {
   background-color: #edf2f7;
   border: 2px dashed #cbd5e0;
@@ -98,67 +103,60 @@ table thead .sorting_desc {
   background-image: url(/dist/img/sort_desc.png) !important;
 }
 
-.ui-sortable li{
+.ui-sortable li {
   cursor: pointer;
   list-style-type: none;
 }
 
-.ui-sortable li.unsortable{
+.ui-sortable li.unsortable {
   cursor: not-allowed;
 }
 
-/*
-table {
- border-collapse: collapse;
-  border: 0;
+.tableFixColumn {
+  position: -webkit-sticky;
+  position: sticky;
+  background-color: white !important;
+  z-index: 999;
+}
+
+.wrapperRecording {
+  position: relative;
+  overflow: auto;
+  border: 1px solid black;
+  white-space: nowrap;
+}
+
+.first-col {
+  left: 0px;
+  min-width: 328px;
+  max-width: 328px;
+}
+
+.second-col {
+  left: 328px;
+  min-width: 100px;
+  max-width: 100px;
+}
+
+.fas {
+  cursor: pointer;
+}
+
+#menuDropDownAdvanced {
+  top: -20px !important;
+  left: 26px !important;
+}
+
+/* .first-col {
+  width: 100px;
+  min-width: 100px;
+  max-width: 100px;
+  left: 0px;
+}
+
+.second-col {
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
+  left: 100px;
 } */
-
-.tableFixColumn 
-th,
-td {
-  /* border: 1px solid #aaa; */
-  background-clip: padding-box;
-  scroll-snap-align: start;
-}
-.tableFixColumn tbody tr:last-child th,
-.tableFixColumn tbody tr:last-child td {
-  border-bottom: 0;
-}
-
-.tableFixColumn thead {
-  z-index: 10;
-  position: relative;
-}
-.tableFixColumn th, .tableFixColumn td {
-  padding: 0.6rem;
-  min-width: 6rem;
-  text-align: left;
-  margin: 0;
-}
-.tableFixColumn thead th {
-  position: sticky;
-  top: 0;
-  border-top: 0;
-  background-clip: padding-box;
-}
-.tableFixColumn thead th.fix {
-  left: 0;
-  z-index: 1001;
-  border-left: 0;
-}
-.tableFixColumn tbody th {
-  background-clip: padding-box;
-  border-left: 0;
-}
-.tableFixColumn tbody {
-  z-index: 10;
-  position: relative;
-}
-.tableFixColumn tbody th {
-  position: sticky;
-  left: 0;
-}
-.tableFixColumn thead th,
-.tableFixColumn tbody th {
-  background-color: #f8f8f8;
-}

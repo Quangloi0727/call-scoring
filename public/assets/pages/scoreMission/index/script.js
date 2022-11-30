@@ -550,7 +550,8 @@ function createTable(data, ConfigurationColums, configDefault) {
         if (ScoreTarget_ScoreScript.length > 0) {
             ScoreTarget_ScoreScript.map((el) => {
                 dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.callId}" 
-                url-record="${recordingFileName}" data-id="${el.scoreScriptId}">${el.scoreScriptInfo && el.scoreScriptInfo.name ? el.scoreScriptInfo.name : ''}</a>`
+                                url-record="${recordingFileName}" data-id="${el.scoreScriptId}">${el.scoreScriptInfo && el.scoreScriptInfo.name ? el.scoreScriptInfo.name : ''}
+                            </a>`
             })
         }
 
@@ -593,7 +594,7 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 }
 
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
-    const { callInfo, callRatingInfo } = item
+    const { callInfo } = item
     let resultReviewScore = ''
     let pointResultCallRating = 0
     if (item.typeResultCallRating) {

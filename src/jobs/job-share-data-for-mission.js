@@ -59,19 +59,22 @@ cron.schedule("*/5 * * * *", async () => {
 async function shareCallAllSystem(scoreTarget, findScoreTargetAssign, queryCountImplement) {
     const { callStartTime, callEndTime, numberOfCall, name, id } = scoreTarget
 
-    const queryCall = await buildQueryCall(id, callStartTime, callEndTime)
+    const queryCall = await buildQueryCall(id)
     _logger.info("Query implement", scoreTarget.name, queryCall)
 
-    let _queryCallSatisfy
-
+    let _queryCallSatisfy = {}
     if (Array.isArray(queryCall)) {
-        if (queryCall.length) {
-            _queryCallSatisfy = { [Op.and]: queryCall, share: false }
-        } else {
-            _queryCallSatisfy = { share: false }
-        }
+        _queryCallSatisfy = { share: false }
     } else {
         _queryCallSatisfy = { [Op[queryCall.conditionSearch]]: queryCall.query, share: false }
+    }
+
+    if (callStartTime && callEndTime) {
+        const callStartTimeFormat = _moment(callStartTime).format("DD/MM/YYYY")
+        const callEndTimeFormat = _moment(callEndTime).format("DD/MM/YYYY")
+        const callStartTimeQuery = _moment(callStartTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
+        const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").endOf("d").valueOf()
+        _queryCallSatisfy = { ..._queryCallSatisfy, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
     }
 
     _logger.info("Query implement final", scoreTarget.name, _queryCallSatisfy)
@@ -127,19 +130,22 @@ async function shareCallAllSystem(scoreTarget, findScoreTargetAssign, queryCount
 async function shareCallEachAgent(scoreTarget, findScoreTargetAssign, queryCountImplement) {
     const { callStartTime, callEndTime, numberOfCall, name, id } = scoreTarget
 
-    const queryCall = await buildQueryCall(id, callStartTime, callEndTime)
+    const queryCall = await buildQueryCall(id)
     _logger.info("Query implement", scoreTarget.name, queryCall)
 
-    let _queryCallSatisfy
-
+    let _queryCallSatisfy = {}
     if (Array.isArray(queryCall)) {
-        if (queryCall.length) {
-            _queryCallSatisfy = { [Op.and]: queryCall, share: false }
-        } else {
-            _queryCallSatisfy = { share: false }
-        }
+        _queryCallSatisfy = { share: false }
     } else {
         _queryCallSatisfy = { [Op[queryCall.conditionSearch]]: queryCall.query, share: false }
+    }
+
+    if (callStartTime && callEndTime) {
+        const callStartTimeFormat = _moment(callStartTime).format("DD/MM/YYYY")
+        const callEndTimeFormat = _moment(callEndTime).format("DD/MM/YYYY")
+        const callStartTimeQuery = _moment(callStartTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
+        const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").endOf("d").valueOf()
+        _queryCallSatisfy = { ..._queryCallSatisfy, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
     }
 
     _logger.info("Query implement final", scoreTarget.name, _queryCallSatisfy)
@@ -211,19 +217,22 @@ async function shareCallEachAgent(scoreTarget, findScoreTargetAssign, queryCount
 async function shareCallEachSupervisor(scoreTarget, findScoreTargetAssign, queryCountImplement) {
     const { callStartTime, callEndTime, numberOfCall, name, id } = scoreTarget
 
-    const queryCall = await buildQueryCall(id, callStartTime, callEndTime)
+    const queryCall = await buildQueryCall(id)
     _logger.info("Query implement", scoreTarget.name, queryCall)
 
-    let _queryCallSatisfy
-
+    let _queryCallSatisfy = {}
     if (Array.isArray(queryCall)) {
-        if (queryCall.length) {
-            _queryCallSatisfy = { [Op.and]: queryCall, share: false }
-        } else {
-            _queryCallSatisfy = { share: false }
-        }
+        _queryCallSatisfy = { share: false }
     } else {
         _queryCallSatisfy = { [Op[queryCall.conditionSearch]]: queryCall.query, share: false }
+    }
+
+    if (callStartTime && callEndTime) {
+        const callStartTimeFormat = _moment(callStartTime).format("DD/MM/YYYY")
+        const callEndTimeFormat = _moment(callEndTime).format("DD/MM/YYYY")
+        const callStartTimeQuery = _moment(callStartTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
+        const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").endOf("d").valueOf()
+        _queryCallSatisfy = { ..._queryCallSatisfy, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
     }
 
     _logger.info("Query implement final", scoreTarget.name, _queryCallSatisfy)
@@ -323,19 +332,9 @@ async function actionShareCall(scoreTargetId, userIdAssign, countKPI, _queryCall
     await model.CallDetailRecords.update({ share: true }, { where: { id: { [Op.in]: arrayId } } })
 }
 
-async function buildQueryCall(scoreTargetId, callStartTime, callEndTime) {
+async function buildQueryCall(scoreTargetId) {
     let query = []
-    if (callStartTime && callEndTime) {
-        const callStartTimeFormat = _moment(callStartTime).format("DD/MM/YYYY")
-        const callEndTimeFormat = _moment(callEndTime).format("DD/MM/YYYY")
-        const callStartTimeQuery = _moment(callStartTimeFormat, "DD/MM/YYYY").startOf("d").valueOf()
-        const callEndTimeQuery = _moment(callEndTimeFormat, "DD/MM/YYYY").endOf("d").valueOf()
-        query.push({ origTime: { [Op.gte]: (callStartTimeQuery / 1000) } })
-        query.push({ origTime: { [Op.lte]: (callEndTimeQuery / 1000) } })
-    }
     const findConditions = await model.ScoreTargetCond.findAll({ where: { scoreTargetId: scoreTargetId }, raw: true })
-    console.log("Query implement_1", query)
-
     if (!findConditions.length) return query
     await Promise.all(
         findConditions.map(async el => {
