@@ -60,7 +60,7 @@ async function shareCallAllSystem(scoreTarget, findScoreTargetAssign, queryCount
     const { callStartTime, callEndTime, numberOfCall, name, id } = scoreTarget
 
     const queryCall = await buildQueryCall(id)
-    _logger.info("Query implement", scoreTarget.name, queryCall)
+    console.log("Query implement", scoreTarget.name, queryCall)
 
     let _queryCallSatisfy = {}
     if (Array.isArray(queryCall)) {
@@ -77,7 +77,7 @@ async function shareCallAllSystem(scoreTarget, findScoreTargetAssign, queryCount
         _queryCallSatisfy = { ..._queryCallSatisfy, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
     }
 
-    _logger.info("Query implement final", scoreTarget.name, _queryCallSatisfy)
+    console.log("Query implement final", scoreTarget.name, _queryCallSatisfy)
 
     // số cuộc gọi mỗi nhân sự phải chấm theo cấu hình
     const KPIOrigin = calculateKPI(findScoreTargetAssign, Number(numberOfCall))
@@ -107,16 +107,17 @@ async function shareCallAllSystem(scoreTarget, findScoreTargetAssign, queryCount
 
 
             if (KPIOrigin[i].countKPI <= KPIReality[i].countKPI) {
-                _logger.info('Satisfy call > KPI call')
+                _logger.info(`Satisfy call ${KPIReality[i].countKPI} > KPI call ${KPIOrigin[i].countKPI}`)
                 await actionShareCall(id, KPIOrigin[i].userId, KPIOrigin[i].countKPI, _queryCallSatisfy)
             } else {
                 _logger.info('Satisfy call < KPI call')
                 if (checkKPI + KPIReality[i].countKPI <= KPIOrigin[i].countKPI) {
-                    _logger.info('Satisfy call find + callShare < KPI origin')
+                    _logger.info(`Satisfy call find ${KPIReality[i].countKPI} + callShare ${checkKPI} < KPI origin ${KPIOrigin[i].countKPI}`)
                     await actionShareCall(id, KPIReality[i].userId, KPIReality[i].countKPI, _queryCallSatisfy)
                 } else {
-                    _logger.info('Satisfy call find + callShare > KPI origin')
+                    _logger.info(`Satisfy call find ${KPIReality[i].countKPI} + callShare ${checkKPI}  > KPI origin ${KPIOrigin[i].countKPI}`)
                     const KPIRemaining = KPIOrigin[i].countKPI - checkKPI
+                    _logger.info(`KPIRemaining ${KPIRemaining}`)
                     await actionShareCall(id, KPIReality[i].userId, KPIRemaining, _queryCallSatisfy)
                 }
             }
@@ -131,7 +132,7 @@ async function shareCallEachAgent(scoreTarget, findScoreTargetAssign, queryCount
     const { callStartTime, callEndTime, numberOfCall, name, id } = scoreTarget
 
     const queryCall = await buildQueryCall(id)
-    _logger.info("Query implement", scoreTarget.name, queryCall)
+    console.log("Query implement", scoreTarget.name, queryCall)
 
     let _queryCallSatisfy = {}
     if (Array.isArray(queryCall)) {
@@ -148,7 +149,7 @@ async function shareCallEachAgent(scoreTarget, findScoreTargetAssign, queryCount
         _queryCallSatisfy = { ..._queryCallSatisfy, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
     }
 
-    _logger.info("Query implement final", scoreTarget.name, _queryCallSatisfy)
+    console.log("Query implement final", scoreTarget.name, _queryCallSatisfy)
 
     // lấy số agent đang hoạt động
     const users = await model.User.findAll({ where: { isActive: 1 }, raw: true })
@@ -193,16 +194,17 @@ async function shareCallEachAgent(scoreTarget, findScoreTargetAssign, queryCount
 
 
                 if (KPIOrigin[i].countKPI <= KPIReality[i].countKPI) {
-                    _logger.info('Satisfy call > KPI call')
+                    _logger.info(`Satisfy call ${KPIReality[i].countKPI} > KPI call ${KPIOrigin[i].countKPI}`)
                     await actionShareCall(id, KPIOrigin[i].userId, KPIOrigin[i].countKPI, _queryCallSatisfy)
                 } else {
                     _logger.info('Satisfy call < KPI call')
                     if (checkKPI + KPIReality[i].countKPI <= KPIOrigin[i].countKPI) {
-                        _logger.info('Satisfy call find + callShare < KPI origin')
+                        _logger.info(`Satisfy call find ${KPIReality[i].countKPI} + callShare ${checkKPI} < KPI origin ${KPIOrigin[i].countKPI}`)
                         await actionShareCall(id, KPIReality[i].userId, KPIReality[i].countKPI, _queryCallSatisfy)
                     } else {
-                        _logger.info('Satisfy call find + callShare > KPI origin')
+                        _logger.info(`Satisfy call find ${KPIReality[i].countKPI} + callShare ${checkKPI}  > KPI origin ${KPIOrigin[i].countKPI}`)
                         const KPIRemaining = KPIOrigin[i].countKPI - checkKPI
+                        _logger.info(`KPIRemaining ${KPIRemaining}`)
                         await actionShareCall(id, KPIReality[i].userId, KPIRemaining, _queryCallSatisfy)
                     }
                 }
@@ -218,7 +220,7 @@ async function shareCallEachSupervisor(scoreTarget, findScoreTargetAssign, query
     const { callStartTime, callEndTime, numberOfCall, name, id } = scoreTarget
 
     const queryCall = await buildQueryCall(id)
-    _logger.info("Query implement", scoreTarget.name, queryCall)
+    console.log("Query implement", scoreTarget.name, queryCall)
 
     let _queryCallSatisfy = {}
     if (Array.isArray(queryCall)) {
@@ -235,7 +237,7 @@ async function shareCallEachSupervisor(scoreTarget, findScoreTargetAssign, query
         _queryCallSatisfy = { ..._queryCallSatisfy, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
     }
 
-    _logger.info("Query implement final", scoreTarget.name, _queryCallSatisfy)
+    console.log("Query implement final", scoreTarget.name, _queryCallSatisfy)
 
     // lấy số đội ngũ đang hoạt động
     const teams = await model.Team.findAll({ where: { status: TeamStatus.ON }, raw: true })
@@ -281,16 +283,17 @@ async function shareCallEachSupervisor(scoreTarget, findScoreTargetAssign, query
 
 
                 if (KPIOrigin[i].countKPI <= KPIReality[i].countKPI) {
-                    _logger.info('Satisfy call > KPI call')
+                    _logger.info(`Satisfy call ${KPIReality[i].countKPI} > KPI call ${KPIOrigin[i].countKPI}`)
                     await actionShareCall(id, KPIOrigin[i].userId, KPIOrigin[i].countKPI, _queryCallSatisfy)
                 } else {
                     _logger.info('Satisfy call < KPI call')
                     if (checkKPI + KPIReality[i].countKPI <= KPIOrigin[i].countKPI) {
-                        _logger.info('Satisfy call find + callShare < KPI origin')
+                        _logger.info(`Satisfy call find ${KPIReality[i].countKPI} + callShare ${checkKPI} < KPI origin ${KPIOrigin[i].countKPI}`)
                         await actionShareCall(id, KPIReality[i].userId, KPIReality[i].countKPI, _queryCallSatisfy)
                     } else {
-                        _logger.info('Satisfy call find + callShare > KPI origin')
+                        _logger.info(`Satisfy call find ${KPIReality[i].countKPI} + callShare ${checkKPI}  > KPI origin ${KPIOrigin[i].countKPI}`)
                         const KPIRemaining = KPIOrigin[i].countKPI - checkKPI
+                        _logger.info(`KPIRemaining ${KPIRemaining}`)
                         await actionShareCall(id, KPIReality[i].userId, KPIRemaining, _queryCallSatisfy)
                     }
                 }
