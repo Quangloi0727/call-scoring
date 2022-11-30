@@ -56,7 +56,7 @@ class CallShare extends Model {
                 idUserReview: {
                     type: DataTypes.INTEGER,
                     references: {
-                        model: "UserReview",
+                        model: "Users",
                         key: "id"
                     }
                 },
@@ -124,6 +124,11 @@ class CallShare extends Model {
         models.CallShare.belongsTo(models.ScoreScript, {
             foreignKey: "idScoreScript",
             as: "scoreScriptInfo",
+        })
+
+        models.CallShare.belongsTo(models.User, {
+            foreignKey: "idUserReview",
+            as: "userReview",
         })
 
         models.CallShare.hasMany(models.CallRating, {

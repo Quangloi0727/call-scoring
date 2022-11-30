@@ -10,15 +10,15 @@ $(function () {
   })
 
   $(document).on('change', '.sl-limit-page', function () {
-    console.log('change sl-limit-page');
+    console.log('change sl-limit-page')
     const nameDataRetentionPolicy = $('#nameDataRetentionPolicy').val()
-    return getDataRetentionPolicy(1, nameDataRetentionPolicy);
+    return getDataRetentionPolicy(1, nameDataRetentionPolicy)
   })
 
   $(document).on('click', '.zpaging', function () {
     let page = $(this).attr('data-link')
     const nameDataRetentionPolicy = $('#nameDataRetentionPolicy').val()
-    return getDataRetentionPolicy(page, nameDataRetentionPolicy);
+    return getDataRetentionPolicy(page, nameDataRetentionPolicy)
   })
 
   $(document).on('click', '.btn-modal-status', function () {
@@ -37,7 +37,7 @@ $(function () {
       $('#btn-change-status').addClass('btn-danger')
     }
 
-    $('#modal-change-status').modal('show');
+    $('#modal-change-status').modal('show')
   })
 
   $(document).on('click', '#btn-change-status', function () {
@@ -50,14 +50,14 @@ $(function () {
       if (resp.code != 200) return toastr.error(resp.message)
 
       toastr.success(resp.message)
-      $('#modal-change-status').modal('hide');
+      $('#modal-change-status').modal('hide')
       return refreshPage()
     })
   })
 
   $(document).on('click', '.btn-modal-delete', function () {
     $('#btn-delete-doc').attr('data-id', $(this).attr('data-id'))
-    $('#modal-delete-doc').modal('show');
+    $('#modal-delete-doc').modal('show')
   })
 
   $(document).on('click', '#btn-delete-doc', function () {
@@ -67,7 +67,7 @@ $(function () {
       if (resp.code != 200) return toastr.error(resp.message)
 
       toastr.success(resp.message)
-      $('#modal-delete-doc').modal('hide');
+      $('#modal-delete-doc').modal('hide')
       return refreshPage()
     })
   })
@@ -105,19 +105,20 @@ function getDataRetentionPolicy(page, nameDataRetentionPolicy) {
 
 function createTable(data) {
   let html = ''
+  console.log(data)
   data.forEach((item) => {
-    let teamDropDownItemHTML = '';
-    let teamHTML = '';
+    let teamDropDownItemHTML = ''
+    let teamHTML = ''
 
     item.DataRetentionPolicyTeam.forEach((team) => {
       teamDropDownItemHTML += `
         <a class="dropdown-item">
           ${team.TeamInfo.name}
         </a>
-      `;
-    });
+      `
+    })
 
-    if (item.DataRetentionPolicyTeam.length > 2) {
+    if (item.DataRetentionPolicyTeam.length >= 2) {
       teamHTML = `<div class="dropdown show ${item.DataRetentionPolicyTeam.length > 0 ? '' : 'd-none'}">
         <a class="dropdown-custom dropdown-toggle text-dark role="button" id="dropdown" 
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -126,12 +127,12 @@ function createTable(data) {
         <div class="dropdown-menu" aria-labelledby="dropdown">
           ${teamDropDownItemHTML}
         </div>
-      </div>`;
+      </div>`
     } else if (item.DataRetentionPolicyTeam.length == 1) {
       teamHTML = `<div class="dropdown show">
         ${item.DataRetentionPolicyTeam[0].TeamInfo.name}
-      </div>`;
-    } else teamHTML = `<div class="dropdown show">Tất cả</div>`;
+      </div>`
+    } else teamHTML = `<div class="dropdown show">Tất cả</div>`
 
     let itemBtn = `
     <span class="p-1 btn-modal-status" title="${item.status == STATUS.UN_ACTIVE.value ? 'Kích hoạt' : 'Ngừng hoạt động'}" 
