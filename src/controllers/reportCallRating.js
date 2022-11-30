@@ -177,21 +177,58 @@ exports.queryReportByScoreScript = async (req, res) => {
       }
     })
 
-    const avgPointByCall = await model.CallShare.findOne({
+    const avgPointByCall = await model.CallShare.findAll({
       where: {
         isMark: true,
         idScoreScript: idScoreScript
       },
       attributes: [
-        [sequelize.fn('AVG', sequelize.col('pointResultCallRating')), 'avgPoint'],
+        [model.sequelize.fn('AVG', model.sequelize.col('pointResultCallRating')), 'avgPoint'],
       ],
+      raw: true
     })
 
+
+
+    const criterias = await model.ScoreScript.findAll({
+      where: { id: idScoreScript },
+      include: [{
+        model: model.CriteriaGroup,
+        as: 'CriteriaGroup',
+        include: [{
+          model: model.Criteria,
+          as: 'Criteria',
+        }]
+      }],
+      raw: true
+    })
+    const sumScoreMax = _.reduce(_.pluck(criterias, 'CriteriaGroup.Criteria.scoreMax'), function (memo, num) { return memo + num }, 0)
+    const unScoreCriteriaGroup = await getUnScore('unScoreCriteriaGroup', idScoreScript)
+    const unScoreScript = await getUnScore('unScoreScript', idScoreScript)
+
+    const percentSelectionCriteria = await model.CallRating.findAll({
+      include: [{
+        model: model.SelectionCriteria,
+        as: 'selectionCriteriaInfo',
+        attributes: ['name']
+      }],
+      attributes: [
+        ['idSelectionCriteria', 'idSelectionCriteria'],
+        [model.Sequelize.literal(`COUNT(1)`), 'y']
+      ],
+      group: ['selectionCriteriaInfo.name', 'idSelectionCriteria'],
+      raw: true
+    })
 
     return res.json({
       code: SUCCESS_200.code,
       countCallReviewed: countCallReviewed,
-      avgPointByCall: avgPointByCall
+      avgPointByCall: avgPointByCall,
+      sumScoreMax: sumScoreMax,
+      unScoreCriteriaGroup: unScoreCriteriaGroup.length || 0,
+      unScoreScript: unScoreScript.length || 0,
+      percentSelectionCriteria: percentSelectionCriteria
+
     })
   } catch (error) {
     _logger.error(titlePage + " - truy vấn chấm điểm", error)
@@ -337,4 +374,57 @@ function funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType) {
   }
 
   return whereCallInfo
+}
+
+/**
+ * Tổng cuộc gọi bị liệt kịch bản hoặc liệt nhóm tiêu chí
+ * @param {String} typeUnScore loại điểm liệt: Liệt kịch bản - Liệt tiêu chí
+ *  @param {String} idScoreScript id của kịch bản chấm điểm
+ */
+async function getUnScore(typeUnScore, idScoreScript) {
+  try {
+    let where = {}
+
+    // check cuộc gọi điều kiện liệt theo kịch bản
+    if (typeUnScore == 'unScoreScript') {
+      where = { unScoreScript: true }
+    }
+    // check cuộc gọi điều kiện liệt theo trong nhóm tiêu chí 
+    else if (typeUnScore == 'unScoreCriteriaGroup') {
+      where = { unScoreCriteriaGroup: true }
+    }
+
+    const selectionUnScore = await model.ScoreScript.findAll({
+      where: { id: idScoreScript },
+      include: [{
+        model: model.CriteriaGroup,
+        as: 'CriteriaGroup',
+        include: [{
+          model: model.Criteria,
+          as: 'Criteria',
+          include: [{
+            model: model.SelectionCriteria,
+            as: 'SelectionCriteria',
+            where: where
+          }]
+        }]
+      }],
+      raw: true
+    })
+
+    const idSelectionUnScore = _.pluck(selectionUnScore, 'CriteriaGroup.Criteria.SelectionCriteria.id')
+    return await model.CallRating.findAll({
+      where: {
+        idSelectionCriteria: { [Op.in]: idSelectionUnScore }
+      },
+      attributes: [
+        ['callId', 'callId']
+      ],
+      group: ['callId'],
+      raw: true
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - truy vấn chấm điểm", error)
+    return 0
+  }
 }

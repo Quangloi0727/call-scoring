@@ -103,7 +103,7 @@ exports.getDataRetentionPolicies = async (req, res, next) => {
 
     if (nameDataRetentionPolicy) {
       query.where = {
-        nameDataRetentionPolicy: { [Op.like]: '%' + nameDataRetentionPolicy + '%' }
+        nameDataRetentionPolicy: { [Op.like]: '%' + nameDataRetentionPolicy.trim() + '%' }
       }
     }
 
@@ -293,7 +293,7 @@ exports.updateStatus = async (req, res) => {
     if (findDocUpdate.status == STATUS.UN_ACTIVE.value) {
       if (findDocUpdate.DataRetentionPolicyTeam.length == 0) {
         const teams = await model.Team.findAll({ where: { status: TeamStatus.ON } })
-        teamIds = _.uniq(_.pluck(teams, 'id'));
+        teamIds = _.uniq(_.pluck(teams, 'id'))
       }
       const check = await model.DataRetentionPolicy.findAll({
         where: {
@@ -305,8 +305,9 @@ exports.updateStatus = async (req, res) => {
             model: model.DataRetentionPolicyTeam,
             as: 'DataRetentionPolicyTeam',
             where: {
-              teamId: teamIds,
-            }
+              teamId: { [Op.in]: teamIds },
+            },
+            required: false
           },
         ],
       })
