@@ -6,8 +6,8 @@
     <div class="card-header row">
       <div class="col-11 d-flex">
         <div class="mr-2">
-          <button type="button" class="form-control btn btn-primary btn-sm" id="popup_search" data-toggle="modal"
-            data-target="#modal_search" title="Tùy chỉnh bảng">
+          <button type="button" class="form-control btn btn-primary btn-sm" id="btn_show_modal_search_tapScoreScript"
+            data-toggle="modal" data-target="#modal_search_tapScoreScript" title="Tùy chỉnh bảng">
             <i class="fas fa-filter"></i>
           </button>
         </div>
@@ -28,8 +28,12 @@
 
       <div class="row mb-3">
         <div class="row mb-3">
-          <select class="form-control selectpicker input" multiple>
-            <option value="">Kịch bản chấm điểm tháng 6</option>
+          <select class="form-control selectpicker input" multiple id="idScoreScript">
+            <% scoreScripts.forEach((scoreScript, el)=> { %>
+              <option value="<%= scoreScript.id %>" <%- el==0 ? 'selected' :'' %> >
+                <%= scoreScript.name %>
+              </option>
+              <% }); %>
           </select>
         </div>
       </div>
@@ -39,57 +43,209 @@
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
-              <h3 class="text-center">100</h3>
+              <p class="text-center mt-2">Số cuộc gọi đã đánh giá</p>
+              <h3 class="text-center" id="">0</h3>
             </div>
-            <!-- <div class="icon">
-              <i class="ion ion-bag"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a> -->
           </div>
         </div>
         <div class="col-lg-3 col-6">
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
-              <h3 class="text-center">100</h3>
+              <p class="text-center mt-2">Điểm trung bình</p>
+              <h3 class="text-center" id="">0</h3>
             </div>
-            <!-- <div class="icon">
-              <i class="ion ion-bag"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a> -->
           </div>
         </div>
         <div class="col-lg-3 col-6">
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
-              <h3 class="text-center">100</h3>
+              <p class="text-center mt-2">Tỷ lệ điểm liệt kịch bản</p>
+              <h3 class="text-center" id="">0 %</h3>
             </div>
-            <!-- <div class="icon">
-              <i class="ion ion-bag"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a> -->
           </div>
         </div>
         <div class="col-lg-3 col-6">
 
           <div class="small-box">
             <div class="inner">
-              <p class="text-center mt-2">Số cuộc gọi đã được đánh giá</p>
-              <h3 class="text-center">100</h3>
+              <p class="text-center mt-2">Tỷ lệ điểm liệt nhóm tiêu chí</p>
+              <h3 class="text-center" id="">0</h3>
             </div>
-            <!-- <div class="icon">
-              <i class="ion ion-bag"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a> -->
           </div>
         </div>
       </div>
+
+      <div class="row mb-3">
+        <div class="col-lg-6 col-6">
+          <div id=""></div>
+        </div>
+        <div class="col-lg-6 col-6">
+          <div id=""></div>
+        </div>
+      </div>
+
+      <div class="card-body mb-3">
+        <table class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th class="text-center">Mã cuộc gọi</th>
+              <th class="text-center">Hướng gọi</th>
+              <th class="text-center">Điện thoại viên</th>
+              <th class="text-center">Đội ngũ</th>
+              <th class="text-center">Nhóm</th>
+              <th class="text-center">Mục tiêu chấm điểm</th>
+              <th class="text-center">Điểm đánh giá tự động</th>
+              <th class="text-center">Kịch bản chấm điểm</th>
+              <th class="text-center">Điểm đánh giá thủ công</th>
+              <th class="text-center">Kết quả đánh giá</th>
+              <th class="text-center">Người chấm</th>
+              <th class="text-center">Ngày chấm</th>
+            </tr>
+          </thead>
+          <tbody id=""></tbody>
+        </table>
+      </div>
+      <div class="card-footer text-center">
+        <div class="col-12 d-flex justify-content-center" id="">
+        </div>
+      </div>
+
     </div>
 
   </div>
 
+</div>
+
+
+<div class="modal fade" id="modal_search_tapScoreScript">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Tìm kiếm nâng cao</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="form_advanced_search_tapScoreScript">
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>Ngày chấm điểm</label>
+                <div class="input-group">
+                  <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
+                    title="Chọn..." id="gradingDate" name="gradingDate">
+                  <div class="input-group-append">
+                    <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Người chấm điểm</label>
+                <select class="form-control selectpicker input" id="idEvaluator" name="idEvaluator" title="Chọn..."
+                  multiple data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
+                  <% evaluators.forEach((evaluator)=> { %>
+                    <option value="<%= evaluator.id %>">
+                      <%= evaluator.fullName %> (<%= evaluator.userName %>)
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Điện thoại viên</label>
+                <select class="form-control selectpicker input" id="idAgent" name="idAgent" title="Chọn..." multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
+                  <% agents.forEach((agent)=> { %>
+                    <option value="<%= agent.id %>">
+                      <%= agent.fullName %> (<%= agent.userName %>)
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Đội ngũ</label>
+                <select class="form-control selectpicker input" id="idTeam" name="idTeam" title="Chọn..." multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
+                  <% teams.forEach((team)=> { %>
+                    <option value="<%= team.id %>">
+                      <%= team.name %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Nguồn</label>
+                <select class="form-control selectpicker input" title="Chọn..." name="sourceType" multiple
+                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                  data-live-search="true">
+                  <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
+                    <option value="<%= SOURCE_NAME[item].code %>">
+                      <%= SOURCE_NAME[item].text %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Ngày gọi</label>
+                <div class="input-group">
+                  <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
+                    title="Chọn..." id="origDate_tapScoreScript" name="origDate">
+                  <div class="input-group-append">
+                    <div class="input-group-text"><i class="far fa-calendar"></i></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Mục tiêu chấm điểm</label>
+                <select class="form-control selectpicker input" name="idScoreTarget" id="idScoreTarget"
+                  data-live-search="true" title="Chọn..." multiple>
+                  <% scoreTargets.forEach((scoreTarget)=> { %>
+                    <option value="<%= scoreTarget.id %>">
+                      <%= scoreTarget.name %>
+                    </option>
+                    <% }); %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer justify-content-between">
+            <div>
+              <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
+                id="btn_clear_local_storage_tapScoreScript">
+                <i class="far fa-trash-alt"></i>
+                <span>Xóa bộ lọc</span>
+              </button>
+            </div>
+            <div>
+              <button type="button" class="btn btn-outline-danger" id="btn_hide_modal_search_tapScoreScript">
+                <span>Hủy</span>
+              </button>
+              <button type="button" class="btn btn-primary" id="btn_advanced_search_tapScoreScript">
+                <i class="fas fa-search p-0"></i>
+                <span>Lưu</span>
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
