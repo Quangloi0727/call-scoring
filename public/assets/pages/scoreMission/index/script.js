@@ -395,6 +395,10 @@ function bindClick() {
         SaveConfigurationColums({ generalSetting: idChange })
     })
 
+    $('#cancelGeneralSetting').on('click', function () {
+        window.location.href = "/scoreMission"
+    })
+
     $('.dropdown-item').on('click', function () {
         var val = $(this).attr("data-val")
         console.log("value play speed", val)
@@ -898,6 +902,7 @@ $(window).on('beforeunload', function () {
     $(document).off('click', '#downloadFile-popupComment')
     $(document).off('click', '#btn-save-modal')
     $(document).off('click', '#submitGeneralSetting')
+    $(document).off('click', '#cancelGeneralSetting')
     $(document).off('change', '#scoreTargetId')
 
 })
