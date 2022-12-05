@@ -13,6 +13,7 @@ const model = require('../models')
 const pagination = require('pagination')
 const { SUCCESS_200, ERR_400 } = require("../helpers/constants/statusCodeHTTP")
 const { createExcelPromise } = require('../common/createExcel')
+const CallRating = require('../models/callRating')
 
 exports.index = async (req, res, next) => {
   try {
@@ -299,7 +300,33 @@ exports.getPercentSelectionCriteria = async (req, res) => {
 exports.exportExcelData = async (req, res) => {
   try {
     const callShareDetail = await queryCallShareDetail(req.query)
-    const linkFile = await createExcelFile(callShareDetail)
+    let titleExcel = {}
+    let dataHeader = {}
+
+    for (const [key, value] of Object.entries(headerReportCallRating)) {
+      titleExcel[`TXT_${key.toUpperCase()}`] = value
+      dataHeader[`TXT_${key.toUpperCase()}`] = key
+    }
+
+
+    let newData = callShareDetail.map((item) => {
+      return {
+        ...item,
+        callId: item.callInfo.id || '',
+        direction: item.callInfo.direction || '',
+        agentName: item.callInfo.agent ? item.callInfo.agent.name : '',
+        teamName: item.callInfo.team ? item.callInfo.team.name : '',
+        groupName: '',
+        scoreTarget: item.scoreTargetInfo ? item.scoreTargetInfo.name : '',
+        scoreScriptAuto: '',
+        scoreScript: item.scoreScriptInfo ? item.scoreScriptInfo.name : '',
+        scoreScriptHandle: item.pointResultCallRating ? item.pointResultCallRating : '',
+        scoreScriptResult: item.typeResultCallRating ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : '',
+        userReview: item.userReview ? item.userReview.fullName + ' ' + `(${item.userReview.userName})` : '',
+        reviewedAt: item.reviewedAt ? _moment(item.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : '',
+      }
+    })
+    const linkFile = await createExcelFile(newData, titleExcel, dataHeader)
     return res.json({
       code: SUCCESS_200.code,
       linkFile: linkFile
@@ -309,6 +336,102 @@ exports.exportExcelData = async (req, res) => {
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
+
+
+exports.exportExcelDataByScoreScript = async (req, res) => {
+  try {
+    const callShareDetail = await queryCallShareDetail(req.query)
+    const detailScoreScript = await model.ScoreScript.findOne({
+      where: { id: { [Op.in]: req.query.idScoreScript } },
+      include: [{
+        model: model.CriteriaGroup,
+        as: 'CriteriaGroup',
+        include: [{
+          model: model.Criteria,
+          as: 'Criteria',
+          include: [{
+            model: model.SelectionCriteria,
+            as: 'SelectionCriteria',
+          }],
+        }]
+      }]
+    })
+
+    let titleExcel = {}
+    let dataHeader = {}
+
+    for (const [key, value] of Object.entries(headerReportCallRating)) {
+      titleExcel[`TXT_${key.toUpperCase()}`] = value
+      dataHeader[`TXT_${key.toUpperCase()}`] = key
+    }
+
+    callShareDetail.map((callShare) => {
+      // callShare.callRatingInfo.map((callRating) => {
+      //   console.log(callRating)
+      // })
+      detailScoreScript.CriteriaGroup.map((CriteriaGroup) => {
+        let resultScoreCriteriaGroup = 0
+        let scoreMax = 0
+        let criteriaGroup = {}
+        let criteria = {}
+        let checkIsUnScoreCriteriaGroup = false
+        let tempTitleExcel = {}
+        let tempDataHeader = {}
+        CriteriaGroup.Criteria.map((Criteria) => {
+          scoreMax += Criteria.scoreMax
+          const found = callShare.callRatingInfo.find(element => element.idCriteria == Criteria.id)
+          if (found) {
+            if (found.selectionCriteriaInfo.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
+            resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
+          }
+          criteria[`criteria_${Criteria.id}`] = `${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}`
+          tempTitleExcel[`TXT_${`criteria_${Criteria.id}`.toUpperCase()}`] = Criteria.name
+          tempDataHeader[`TXT_${`criteria_${Criteria.id}`.toUpperCase()}`] = `criteria_${Criteria.id}`
+        })
+        if (checkIsUnScoreCriteriaGroup) {
+          resultScoreCriteriaGroup = 0
+        }
+
+        criteriaGroup[`criteriaGroup_${CriteriaGroup.id}`] = `${resultScoreCriteriaGroup} - ${((resultScoreCriteriaGroup / scoreMax) * 100).toFixed(0) + '%'}`
+        titleExcel[`TXT_${`criteriaGroup_${CriteriaGroup.id}`.toUpperCase()}`] = CriteriaGroup.name
+        dataHeader[`TXT_${`criteriaGroup_${CriteriaGroup.id}`.toUpperCase()}`] = `criteriaGroup_${CriteriaGroup.id}`
+
+        Object.assign(titleExcel, tempTitleExcel)
+        Object.assign(dataHeader, tempDataHeader)
+
+        Object.assign(criteriaGroup, criteria)
+        Object.assign(callShare, criteriaGroup)
+
+      })
+
+      return {
+        ...callShare,
+        callId: callShare.callInfo.id || '',
+        direction: callShare.callInfo.direction || '',
+        agentName: callShare.callInfo.agent ? callShare.callInfo.agent.name : '',
+        teamName: callShare.callInfo.team ? callShare.callInfo.team.name : '',
+        groupName: '',
+        scoreTarget: callShare.scoreTargetInfo ? callShare.scoreTargetInfo.name : '',
+        scoreScriptAuto: '',
+        scoreScript: callShare.scoreScriptInfo ? callShare.scoreScriptInfo.name : '',
+        scoreScriptHandle: callShare.pointResultCallRating ? callShare.pointResultCallRating : '',
+        scoreScriptResult: callShare.typeResultCallRating ? constTypeResultCallRating[`point${callShare.typeResultCallRating}`].txt : '',
+        userReview: callShare.userReview ? callShare.userReview.fullName + ' ' + `(${callShare.userReview.userName})` : '',
+        reviewedAt: callShare.reviewedAt ? _moment(callShare.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : '',
+      }
+    })
+
+    const linkFile = await createExcelFile(callShareDetail, titleExcel, dataHeader)
+    return res.json({
+      code: SUCCESS_200.code,
+      linkFile: linkFile
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - Xuất excel lỗi", error)
+    return res.json({ code: ERR_400.code, message: error.message })
+  }
+}
+
 
 function getUserByRole(idRole) {
   return model.User.findAll({
@@ -576,44 +699,16 @@ async function queryCallShareDetail(query, limit, offset) {
 }
 
 
-function createExcelFile(data) {
+function createExcelFile(data, titleExcel, dataHeader) {
   return new Promise(async (resolve, reject) => {
     try {
-
-      let titleExcel = {}
-      let dataHeader = {}
-
-      for (const [key, value] of Object.entries(headerReportCallRating)) {
-        titleExcel[`TXT_${key.toUpperCase()}`] = value
-        dataHeader[`TXT_${key.toUpperCase()}`] = key
-      }
-
-
-      let newData = data.map((item) => {
-        return {
-          ...item,
-          callId: item.callInfo.id || '',
-          direction: el.callInfo.direction || '',
-          agentName: item.callInfo.agent ? item.callInfo.agent.name : '',
-          teamName: item.callInfo.team ? item.callInfo.team.name : '',
-          groupName: '',
-          scoreTarget: item.scoreTargetInfo ? item.scoreTargetInfo.name : '',
-          scoreScriptAuto: '',
-          scoreScript: item.scoreScriptInfo ? item.scoreScriptInfo.name : '',
-          scoreScriptHandle: item.pointResultCallRating ? item.pointResultCallRating : '',
-          scoreScriptResult: item.typeResultCallRating ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : '',
-          userReview: item.userReview ? item.userReview.fullName + ' ' + `(${item.userReview.userName})` : '',
-          reviewedAt: item.reviewedAt ? _moment(item.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : '',
-        }
-      })
-
       const linkFileExcel = await createExcelPromise({
         startTime: null,
         endTime: null,
         titleTable: titlePage,
         excelHeader: dataHeader,
         titlesHeader: titleExcel,
-        data: newData,
+        data: data,
         opts: {
           valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
         }

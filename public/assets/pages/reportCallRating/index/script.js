@@ -159,10 +159,20 @@ function bindClick() {
   })
 
   $(document).on('click', '#export_excel', function () {
-    $('#modal_search').modal('hide')
     let formData = getFormData('form_advanced_search')
-
     _AjaxGetData('/reportCallRating/exportExcelData?' + $.param(formData), 'GET', function (resp) {
+      if (resp.code != 200) {
+        return toastr.error(resp.error)
+      }
+      return downloadFromUrl(resp.linkFile)
+    })
+  })
+
+  $(document).on('click', '#export_excel_tapScoreScript', function () {
+    const formData = getFormData('form_advanced_search_tapScoreScript')
+    formData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
+
+    _AjaxGetData('/reportCallRating/exportExcelDataByScoreScript?' + $.param(formData), 'GET', function (resp) {
       if (resp.code != 200) {
         return toastr.error(resp.error)
       }
@@ -276,7 +286,7 @@ function renderData(resp) {
     $('#txtPercentCallRatingHistory').text(((countCallRatingHistory / resp.countCallReviewed) * 100).toFixed(0) + '%')
   }
 
-  renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRatingTapScoreScript')
+  renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRating')
 
   _hightChart(
     'pieChartCallShare',
@@ -354,51 +364,81 @@ function renderDataTapScoreScript(resp) {
   $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
   $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
 
-  renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRating')
+  renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRatingTapScoreScript')
 
-
-  let tableHeadTapScoreScript = $('#tableHeadTapScoreScript').prop('innerHTML')
-
-  if (resp.detailScoreScript.CriteriaGroup) {
-    resp.detailScoreScript.CriteriaGroup.map((criteriaGroup) => {
-      tableHeadTapScoreScript += `<th class ="text-center">${criteriaGroup.name}</th>`
-      if (criteriaGroup.Criteria) {
-        criteriaGroup.Criteria.map((criteria) => {
-          tableHeadTapScoreScript += `<th class ="text-center">${criteria.name}</th>`
-        })
-      }
-    })
-  }
-  tableHeadTapScoreScript += `
-  <th class="text-center">Người chấm</th>
-  <th class="text-center">Ngày chấm</th>`
-  $('#tableHeadTapScoreScript').html(tableHeadTapScoreScript)
-
+  // hiển thị các tiêu chí, nhóm tiêu chí trên table theo kịch bản
+  renderHeaderTableTapScoreScript(resp.detailScoreScript.CriteriaGroup)
 
   let html = ''
   resp.callShareDetail.map((el) => {
+
+    let rowCriteriaGroup = ''
     if (resp.detailScoreScript.CriteriaGroup) {
       resp.detailScoreScript.CriteriaGroup.map((CriteriaGroup) => {
-        let idCriterias = []
+        let resultScoreCriteriaGroup = 0
+        let scoreMax = 0
+        let rowCriteria = ''
+        let checkIsUnScoreCriteriaGroup = false
         CriteriaGroup.Criteria.map((Criteria) => {
-          idCriterias.push(el.callRatingInfo.find(element => element.idCriteria = CriteriaGroup.id))
+          scoreMax += Criteria.scoreMax
+          const found = el.callRatingInfo.find(element => element.idCriteria == Criteria.id)
+          if (found) {
+            if (found.selectionCriteriaInfo.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
+            resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
+          }
+          rowCriteria += `
+          <td class = "text-center">
+            <span class="d-inline-block text-truncate">
+              ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
+            </span>
+          </td>`
         })
-        console.log(idCriterias)
+
+        if (checkIsUnScoreCriteriaGroup) {
+          resultScoreCriteriaGroup = 0
+        }
+
+        rowCriteriaGroup += `
+        <td class = "text-center">
+          <span class="d-inline-block text-truncate">
+            ${resultScoreCriteriaGroup} - ${((resultScoreCriteriaGroup / scoreMax) * 100).toFixed(0) + '%'}
+          </span>
+        </td>`
+
+        rowCriteriaGroup += rowCriteria
       })
     }
+
+    let reviewedAt = el.reviewedAt ? moment(el.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''
+    let scoreTargetInfoName = el.scoreTargetInfo ? el.scoreTargetInfo.name : ''
+    let pointResultCallRating = el.pointResultCallRating ? el.pointResultCallRating : 0
+
     html += `<tr>
-        <td class = "text-center">${el.callInfo.id}</td>
-        <td class = "text-center">${el.callInfo.direction}</td>
-        <td class = "text-center">${el.callInfo.agent ? el.callInfo.agent.name : ''}</td>
-        <td class = "text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
-        <td class = "text-center"></td>
-        <td class = "text-center">${el.scoreTargetInfo ? el.scoreTargetInfo.name : ''}</td>
-        <td class = "text-center"></td>
-        <td class = "text-center">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</td>
-        <td class = "text-center">${el.pointResultCallRating ? el.pointResultCallRating : ''}</td>
-        <td class = "text-center">${el.typeResultCallRating ? resp.constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
+        <td class="text-center">
+          <span class="d-inline-block text-truncate" title="${el.callInfo.id}">${el.callInfo.id}</span>
+        </td>
+        <td class="text-center">${el.callInfo.direction}</td>
+        <td class="text-center">${el.callInfo.agent ? el.callInfo.agent.name : ''}</td>
+        <td class="text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
+        <td class="text-center"></td>
+        <td class="text-center">
+          <span class="d-inline-block text-truncate" title="${scoreTargetInfoName}">${scoreTargetInfoName}</span>
+        </td>
+        <td class="text-center">
+          <span class="d-inline-block text-truncate"></span>
+        </td>
+        <td class="text-center">
+          <span class="d-inline-block text-truncate" title="${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</span>
+        </td>
+        <td class="text-center"> ${pointResultCallRating} </td>
+        <td class="text-center">${el.typeResultCallRating ? resp.constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
+
+        ${rowCriteriaGroup}
+
         <td class = "text-center">${el.userReview ? el.userReview.fullName + ' ' + `(${el.userReview.userName})` : ''}</td>
-        <td class = "text-center">${el.reviewedAt ? moment(el.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+        <td class = "text-center">
+          <span class="d-inline-block text-truncate" title="${reviewedAt}">${reviewedAt}</span>
+        </td>
     </tr>`
   })
 
@@ -424,4 +464,23 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
     }
   }
   _hightChart(idChart, RATING_PERCENT_REPORT_TXT, percentTypeCallRating)
+}
+
+
+function renderHeaderTableTapScoreScript(CriteriaGroup) {
+  let tableHeadTapScoreScript = $('#tableHeadTapScoreScript').prop('innerHTML')
+
+  if (CriteriaGroup) {
+    CriteriaGroup.map((criteriaGroup) => {
+      tableHeadTapScoreScript += `<th class ="text-center">${criteriaGroup.name}</th>`
+      if (criteriaGroup.Criteria) {
+        criteriaGroup.Criteria.map((criteria) => {
+          tableHeadTapScoreScript += `<th class ="text-center">${criteria.name}</th>`
+        })
+      }
+    })
+  }
+  tableHeadTapScoreScript += `<th class="text-center">Người chấm</th>
+  <th class="text-center">Ngày chấm</th>`
+  $('#tableHeadTapScoreScript').html(tableHeadTapScoreScript)
 }
