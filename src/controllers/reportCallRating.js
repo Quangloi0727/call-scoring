@@ -5,14 +5,15 @@ const {
   TeamStatus,
   SOURCE_NAME,
   CONST_STATUS,
-  constTypeResultCallRating
+  constTypeResultCallRating,
+  headerReportCallRating,
 } = require('../helpers/constants/index')
 const { Op } = require('sequelize')
 const model = require('../models')
 const pagination = require('pagination')
 const { SUCCESS_200, ERR_400 } = require("../helpers/constants/statusCodeHTTP")
-const { default: async } = require('async')
-const moment = require('moment')
+const { createExcelPromise } = require('../common/createExcel')
+
 exports.index = async (req, res, next) => {
   try {
     const evaluators = await getUserByRole(USER_ROLE.evaluator.n)
@@ -64,14 +65,6 @@ exports.queryReport = async (req, res) => {
     let {
       page,
       limit,
-      gradingDate, // ngày chấm điểm
-      idAgent,
-      idEvaluator,
-      idScoreScript,
-      idScoreTarget,
-      idTeam,
-      oriDate,  // thời gian thực hiện cuộc gọi
-      sourceType
     } = req.query
 
     if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
@@ -81,55 +74,11 @@ exports.queryReport = async (req, res) => {
     const pageNumber = page ? Number(page) : 1
     const offset = (pageNumber * limit) - limit
 
-    const whereCallInfo = funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType)
-    const whereCallShare = funcWhereCallShare(gradingDate, idEvaluator, idScoreScript, idScoreTarget)
     // lấy dữ liệu tổng hợp 
     const [countCallShare, countCallReviewed, CallRatingHistory, percentTypeCallRating, callDetailRecords] =
-      await getSummaryData(whereCallInfo, whereCallShare)
+      await getSummaryData(whereCallInfo(req.query), whereCallShare(req.query))
 
-    const CallShareDetail = await model.CallShare.findAll({
-      where: whereCallShare,
-      include: [
-        {
-          model: model.CallDetailRecords,
-          as: 'callInfo',
-          include: [
-            {
-              model: model.Team,
-              as: 'team'
-            },
-            {
-              model: model.User,
-              as: 'agent'
-            }
-          ],
-          where: whereCallInfo
-        },
-        {
-          model: model.ScoreTarget,
-          as: 'scoreTargetInfo'
-        },
-        {
-          model: model.ScoreScript,
-          as: 'scoreScriptInfo'
-        },
-        {
-          model: model.CallRating,
-          as: 'callRatingInfo',
-          include: {
-            model: model.SelectionCriteria,
-            as: 'selectionCriteriaInfo'
-          }
-        },
-        {
-          model: model.User,
-          as: 'userReview'
-        }
-      ],
-      order: [['id']],
-      offset: offset,
-      limit: limit
-    })
+    const CallShareDetail = await queryCallShareDetail(req.query, limit, offset)
 
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
@@ -157,56 +106,166 @@ exports.queryReport = async (req, res) => {
 
 exports.queryReportByScoreScript = async (req, res) => {
   try {
-    const {
+    let {
       page,
       limit,
-      gradingDate, // ngày chấm điểm
-      idAgent,
-      idEvaluator,
       idScoreScript,
-      idScoreTarget,
-      idTeam,
-      oriDate,  // thời gian thực hiện cuộc gọi
-      sourceType
     } = req.query
 
-    const countCallReviewed = await model.CallShare.count({
-      where: {
-        isMark: true,
-        idScoreScript: idScoreScript
-      }
+    if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
+
+    limit = Number(limit)
+
+    const pageNumber = page ? Number(page) : 1
+    const offset = (pageNumber * limit) - limit
+
+    const countCallShare = await model.CallShare.count({
+      where: whereCallShare(req.query),
+      include: [{
+        model: model.CallDetailRecords,
+        as: 'callInfo',
+        where: whereCallInfo(req.query)
+      }],
+      raw: true
+    })
+    const CallShareDetail = await queryCallShareDetail(req.query, limit, offset)
+
+    let paginator = new pagination.SearchPaginator({
+      current: pageNumber,
+      rowsPerPage: limit,
+      totalResult: countCallShare
     })
 
-    const avgPointByCall = await model.CallShare.findAll({
-      where: {
+    const countCallReviewed = await model.CallShare.count({
+      where: Object.assign({
         isMark: true,
         idScoreScript: idScoreScript
-      },
+      }, whereCallShare(req.query))
+    })
+
+    // tính điểm trung bình theo kịch bản
+    const avgPointByCall = await model.CallShare.findAll({
+      where: Object.assign({
+        isMark: true,
+        idScoreScript: idScoreScript
+      }, whereCallShare(req.query)),
       attributes: [
         [model.sequelize.fn('AVG', model.sequelize.col('pointResultCallRating')), 'avgPoint'],
       ],
       raw: true
     })
 
+    const sumScoreMax = await getSumScoreMax(idScoreScript)
 
+    const unScoreCriteriaGroup = await getUnScore('unScoreCriteriaGroup', idScoreScript)
 
-    const criterias = await model.ScoreScript.findAll({
-      where: { id: idScoreScript },
+    const unScoreScript = await getUnScore('unScoreScript', idScoreScript)
+
+    //dữ liệu chấm điểm theo loại đánh giá
+    const percentTypeCallRating = await model.CallShare.findAll({
+      where: {
+        isMark: true,
+        idScoreScript: idScoreScript
+      },
+      attributes: [
+        ['typeResultCallRating', 'name'],
+        [model.Sequelize.literal(`COUNT(1)`), 'y']
+      ],
+      group: ['typeResultCallRating'],
+      raw: true
+    })
+
+    const detailScoreScript = await model.ScoreScript.findOne({
+      where: { id: { [Op.in]: idScoreScript } },
       include: [{
         model: model.CriteriaGroup,
         as: 'CriteriaGroup',
         include: [{
           model: model.Criteria,
           as: 'Criteria',
+          include: [{
+            model: model.SelectionCriteria,
+            as: 'SelectionCriteria',
+          }],
+        }]
+      }]
+    })
+
+    return res.json({
+      code: SUCCESS_200.code,
+      countCallReviewed: countCallReviewed,
+      avgPointByCall: avgPointByCall,
+      sumScoreMax: sumScoreMax,
+      unScoreCriteriaGroup: unScoreCriteriaGroup.length || 0,
+      unScoreScript: unScoreScript.length || 0,
+      percentTypeCallRating: percentTypeCallRating,
+      constTypeResultCallRating: constTypeResultCallRating,
+      callShareDetail: CallShareDetail,
+      detailScoreScript: detailScoreScript,
+      paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - truy vấn chấm điểm", error)
+    return res.json({ code: ERR_400.code, message: error.message })
+  }
+}
+
+exports.getCriteriaGroup = async (req, res) => {
+  try {
+    const scoreScriptId = req.query.scoreScriptId.split(",")
+    return res.json({
+      code: SUCCESS_200.code,
+      criteriaGroup: await model.CriteriaGroup.findAll({ where: { scoreScriptId: { [Op.in]: scoreScriptId } } })
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - Lấy nhóm tiêu chí lỗi", error)
+    return res.json({ code: ERR_400.code, message: error.message })
+  }
+}
+
+exports.getCriteria = async (req, res) => {
+  try {
+    const criteriaGroupId = req.query.criteriaGroupId.split(",")
+    return res.json({
+      code: SUCCESS_200.code,
+      criteria: await model.Criteria.findAll({ where: { criteriaGroupId: { [Op.in]: criteriaGroupId } } })
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - Lấy tiêu chí lỗi", error)
+    return res.json({ code: ERR_400.code, message: error.message })
+  }
+}
+
+exports.getPercentSelectionCriteria = async (req, res) => {
+  try {
+
+    // const { criteriaGroupId, idCriteria, idScoreScript } = req.query
+    const idScoreScript = req.query.idScoreScript
+    const criteriaGroupId = req.query.criteriaGroupId
+    const idCriteria = req.query.idCriteria
+
+    const selectionCriteria = await model.ScoreScript.findAll({
+      where: { id: { [Op.in]: idScoreScript } },
+      include: [{
+        model: model.CriteriaGroup,
+        as: 'CriteriaGroup',
+        where: { id: criteriaGroupId },
+        include: [{
+          model: model.Criteria,
+          as: 'Criteria',
+          where: { id: idCriteria },
+          include: [{
+            model: model.SelectionCriteria,
+            as: 'SelectionCriteria',
+          }],
         }]
       }],
       raw: true
     })
-    const sumScoreMax = _.reduce(_.pluck(criterias, 'CriteriaGroup.Criteria.scoreMax'), function (memo, num) { return memo + num }, 0)
-    const unScoreCriteriaGroup = await getUnScore('unScoreCriteriaGroup', idScoreScript)
-    const unScoreScript = await getUnScore('unScoreScript', idScoreScript)
 
-    const percentSelectionCriteria = await model.CallRating.findAll({
+
+    let percentSelectionCriteria = await model.CallRating.findAll({
+      where: { idSelectionCriteria: { [Op.in]: _.pluck(selectionCriteria, 'CriteriaGroup.Criteria.SelectionCriteria.id') } },
       include: [{
         model: model.SelectionCriteria,
         as: 'selectionCriteriaInfo',
@@ -220,18 +279,33 @@ exports.queryReportByScoreScript = async (req, res) => {
       raw: true
     })
 
+    if (percentSelectionCriteria) {
+      percentSelectionCriteria.map((el) => {
+        el.name = el['selectionCriteriaInfo.name']
+        delete el.idSelectionCriteria
+        delete el['selectionCriteriaInfo.name']
+      })
+    }
     return res.json({
       code: SUCCESS_200.code,
-      countCallReviewed: countCallReviewed,
-      avgPointByCall: avgPointByCall,
-      sumScoreMax: sumScoreMax,
-      unScoreCriteriaGroup: unScoreCriteriaGroup.length || 0,
-      unScoreScript: unScoreScript.length || 0,
       percentSelectionCriteria: percentSelectionCriteria
-
     })
   } catch (error) {
-    _logger.error(titlePage + " - truy vấn chấm điểm", error)
+    _logger.error(titlePage + " - Lấy tiêu chí lỗi", error)
+    return res.json({ code: ERR_400.code, message: error.message })
+  }
+}
+
+exports.exportExcelData = async (req, res) => {
+  try {
+    const callShareDetail = await queryCallShareDetail(req.query)
+    const linkFile = await createExcelFile(callShareDetail)
+    return res.json({
+      code: SUCCESS_200.code,
+      linkFile: linkFile
+    })
+  } catch (error) {
+    _logger.error(titlePage + " - Xuất excel lỗi", error)
     return res.json({ code: ERR_400.code, message: error.message })
   }
 }
@@ -292,11 +366,8 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
     }),
 
     // tổng cuộc gọi có trong hệ thống
-    model.CallDetailRecords.findAll({
+    model.CallDetailRecords.count({
       where: whereCallInfo,
-      attributes: [
-        [model.Sequelize.literal(`COUNT(1)`), 'CallDetailRecords'],
-      ],
       raw: true
     })
 
@@ -305,71 +376,71 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
 
 
 // func tạo bộ lọc cho model callShare
-function funcWhereCallShare(gradingDate, idEvaluator, idScoreScript, idScoreTarget) {
+function whereCallShare(query) {
   let whereCallShare = {}
-  if (gradingDate) {
-    let stringDate = gradingDate.split(' - ')
+  if (query.gradingDate) {
+    let stringDate = query.gradingDate.split(' - ')
     let _where = {
       [Op.and]: [
-        { reviewedAt: { [Op.gte]: moment(stringDate[0], "DD/MM/YYYY").startOf('day') } },
-        { reviewedAt: { [Op.lte]: moment(stringDate[1], "DD/MM/YYYY").endOf('day') } },
+        { reviewedAt: { [Op.gte]: _moment(stringDate[0], "DD/MM/YYYY").startOf('day').format('YYYY-MM-DD HH:mm:ss') } },
+        { reviewedAt: { [Op.lte]: _moment(stringDate[1], "DD/MM/YYYY").endOf('day').format('YYYY-MM-DD HH:mm:ss') } },
       ]
     }
 
     whereCallShare = Object.assign(whereCallShare, _where)
   }
 
-  if (idEvaluator) {
+  if (query.idEvaluator) {
     whereCallShare.idUserReview = {
-      [Op.in]: idEvaluator
+      [Op.in]: query.idEvaluator
     }
   }
 
-  if (idScoreScript) {
+  if (query.idScoreScript) {
     whereCallShare.idScoreScript = {
-      [Op.in]: idScoreScript
+      [Op.in]: query.idScoreScript
     }
   }
 
-  if (idScoreTarget) {
+  if (query.idScoreTarget) {
     whereCallShare.scoreTargetId = {
-      [Op.in]: idScoreTarget
+      [Op.in]: query.idScoreTarget
     }
   }
   return whereCallShare
 }
 
 // func tạo bộ lọc cho model CallDetailRecords
-function funcWhereCallInfo(oriDate, idAgent, idTeam, sourceType) {
+function whereCallInfo(query) {
   let whereCallInfo = {}
 
-  if (oriDate) {
-    let stringDate = oriDate.split(' - ')
+  if (query.oriDate) {
+    let stringDate = query.oriDate.split(' - ')
     let _where = {
       [Op.and]: [
-        { oriDate: { [Op.gte]: moment(stringDate[0], "DD/MM/YYYY").endOf('day') } },
-        { oriDate: { [Op.lte]: moment(stringDate[1], "DD/MM/YYYY").endOf('day') } },
+        { oriDate: { [Op.gte]: _moment(stringDate[0], "DD/MM/YYYY").endOf('day').format('YYYY-MM-DD HH:mm:ss') } },
+        { oriDate: { [Op.lte]: _moment(stringDate[1], "DD/MM/YYYY").endOf('day'.format('YYYY-MM-DD HH:mm:ss')) } },
       ]
     }
 
     whereCallInfo = Object.assign(whereCallInfo, _where)
   }
 
-  if (idAgent) {
+  if (query.idAgent) {
     whereCallInfo.agentId = {
-      [Op.in]: idAgent
+      [Op.in]: query.idAgent
     }
   }
 
-  if (idTeam) {
+  if (query.idTeam) {
     whereCallInfo.teamId = {
-      [Op.in]: idTeam
+      [Op.in]: query.idTeam
     }
   }
 
-  if (sourceType) {
+  if (query.sourceType) {
     whereCallInfo.sourceType = {
-      [Op.in]: sourceType
+      [Op.in]: query.sourceType
     }
   }
 
@@ -424,7 +495,132 @@ async function getUnScore(typeUnScore, idScoreScript) {
       raw: true
     })
   } catch (error) {
-    _logger.error(titlePage + " - truy vấn chấm điểm", error)
+    _logger.error(titlePage + " - lấy ds cuộc gọi bị liệt", error)
     return 0
   }
+}
+
+/**
+ * Tổng điểm tối đa theo kịch bản
+ * @param {String} idScoreScript id của kịch bản chấm điểm
+ */
+async function getSumScoreMax(idScoreScript) {
+  try {
+    const criterias = await model.ScoreScript.findAll({
+      where: { id: idScoreScript },
+      include: [{
+        model: model.CriteriaGroup,
+        as: 'CriteriaGroup',
+        include: [{
+          model: model.Criteria,
+          as: 'Criteria',
+        }]
+      }],
+      raw: true
+    })
+    return _.reduce(_.pluck(criterias, 'CriteriaGroup.Criteria.scoreMax'), function (memo, num) { return memo + num }, 0)
+  } catch (error) {
+    _logger.error(titlePage + " - Lấy tổng điểm theo kịch bản", error)
+    return 0
+  }
+}
+
+async function queryCallShareDetail(query, limit, offset) {
+
+  let objectQuery = {
+    where: whereCallShare(query),
+    include: [
+      {
+        model: model.CallDetailRecords,
+        as: 'callInfo',
+        include: [
+          {
+            model: model.Team,
+            as: 'team'
+          },
+          {
+            model: model.User,
+            as: 'agent'
+          }
+        ],
+        where: whereCallInfo(query)
+      },
+      {
+        model: model.ScoreTarget,
+        as: 'scoreTargetInfo'
+      },
+      {
+        model: model.ScoreScript,
+        as: 'scoreScriptInfo'
+      },
+      {
+        model: model.CallRating,
+        as: 'callRatingInfo',
+        include: [{
+          model: model.SelectionCriteria,
+          as: 'selectionCriteriaInfo'
+        }]
+      },
+      {
+        model: model.User,
+        as: 'userReview'
+      }
+    ],
+    order: [['id']]
+  }
+  if (limit || offset) {
+    objectQuery.limit = limit
+    objectQuery.offset = offset
+  }
+  return await model.CallShare.findAll(objectQuery)
+}
+
+
+function createExcelFile(data) {
+  return new Promise(async (resolve, reject) => {
+    try {
+
+      let titleExcel = {}
+      let dataHeader = {}
+
+      for (const [key, value] of Object.entries(headerReportCallRating)) {
+        titleExcel[`TXT_${key.toUpperCase()}`] = value
+        dataHeader[`TXT_${key.toUpperCase()}`] = key
+      }
+
+
+      let newData = data.map((item) => {
+        return {
+          ...item,
+          callId: item.callInfo.id || '',
+          direction: el.callInfo.direction || '',
+          agentName: item.callInfo.agent ? item.callInfo.agent.name : '',
+          teamName: item.callInfo.team ? item.callInfo.team.name : '',
+          groupName: '',
+          scoreTarget: item.scoreTargetInfo ? item.scoreTargetInfo.name : '',
+          scoreScriptAuto: '',
+          scoreScript: item.scoreScriptInfo ? item.scoreScriptInfo.name : '',
+          scoreScriptHandle: item.pointResultCallRating ? item.pointResultCallRating : '',
+          scoreScriptResult: item.typeResultCallRating ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : '',
+          userReview: item.userReview ? item.userReview.fullName + ' ' + `(${item.userReview.userName})` : '',
+          reviewedAt: item.reviewedAt ? _moment(item.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : '',
+        }
+      })
+
+      const linkFileExcel = await createExcelPromise({
+        startTime: null,
+        endTime: null,
+        titleTable: titlePage,
+        excelHeader: dataHeader,
+        titlesHeader: titleExcel,
+        data: newData,
+        opts: {
+          valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
+        }
+      })
+      return resolve(linkFileExcel)
+    } catch (error) {
+      return reject(error)
+    }
+  })
 }

@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="col-sm-1 d-flex  justify-content-end">
-        <button type="button" class="form-control btn btn-primary" id="export_excel">
+        <button type="button" class="form-control btn btn-primary" id="export_excel_tapScoreScript">
           Xuất Excel
         </button>
       </div>
@@ -27,8 +27,8 @@
     <div class="card-body">
 
       <div class="row mb-3">
-        <div class="row mb-3">
-          <select class="form-control selectpicker input" multiple id="idScoreScript">
+        <div class="col-lg-3 col-">
+          <select class="form-control selectpicker input" multiple id="idScoreScript_tapScoreScript">
             <% scoreScripts.forEach((scoreScript, el)=> { %>
               <option value="<%= scoreScript.id %>" <%- el==0 ? 'selected' :'' %> >
                 <%= scoreScript.name %>
@@ -44,7 +44,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Số cuộc gọi đã đánh giá</p>
-              <h3 class="text-center" id="">0</h3>
+              <h3 class="text-center" id="txtCountCallReviewedTapScoreScript">0</h3>
             </div>
           </div>
         </div>
@@ -53,7 +53,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Điểm trung bình</p>
-              <h3 class="text-center" id="">0</h3>
+              <h3 class="text-center" id="txtAvgScoreScript">0/0</h3>
             </div>
           </div>
         </div>
@@ -62,7 +62,7 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Tỷ lệ điểm liệt kịch bản</p>
-              <h3 class="text-center" id="">0 %</h3>
+              <h3 class="text-center" id="txtPercentUnScoreScript">0 %</h3>
             </div>
           </div>
         </div>
@@ -71,25 +71,34 @@
           <div class="small-box">
             <div class="inner">
               <p class="text-center mt-2">Tỷ lệ điểm liệt nhóm tiêu chí</p>
-              <h3 class="text-center" id="">0</h3>
+              <h3 class="text-center" id="txtPercentUnScoreCriteriaGroup">0</h3>
             </div>
           </div>
         </div>
       </div>
 
       <div class="row mb-3">
+        <div class="col-lg-6 col-6 row">
+          <select class="form-control selectpicker col-lg-6 col-6 p-1" title="Chọn nhóm tiêu chí"
+            id="criteriaGroupId"></select>
+          <select class="form-control selectpicker col-lg-6 col-6 p-1" title="Chọn tiêu chí" id="idCriteria"
+            disabled></select>
+        </div>
+      </div>
+
+      <div class="row mb-3">
         <div class="col-lg-6 col-6">
-          <div id=""></div>
+          <div id="pieChartSelectionCriteria"></div>
         </div>
         <div class="col-lg-6 col-6">
-          <div id=""></div>
+          <div id="pieChartTypeResultCallRatingTapScoreScript"></div>
         </div>
       </div>
 
       <div class="card-body mb-3">
         <table class="table table-bordered table-hover">
           <thead>
-            <tr>
+            <tr id="tableHeadTapScoreScript">
               <th class="text-center">Mã cuộc gọi</th>
               <th class="text-center">Hướng gọi</th>
               <th class="text-center">Điện thoại viên</th>
@@ -100,11 +109,9 @@
               <th class="text-center">Kịch bản chấm điểm</th>
               <th class="text-center">Điểm đánh giá thủ công</th>
               <th class="text-center">Kết quả đánh giá</th>
-              <th class="text-center">Người chấm</th>
-              <th class="text-center">Ngày chấm</th>
             </tr>
           </thead>
-          <tbody id=""></tbody>
+          <tbody id="tableBodyTapScoreScript"></tbody>
         </table>
       </div>
       <div class="card-footer text-center">
@@ -136,7 +143,7 @@
                 <label>Ngày chấm điểm</label>
                 <div class="input-group">
                   <input type="text" value="" class="input form-control" placeholder="VD: 08/10/2022 - 08/10/2022"
-                    title="Chọn..." id="gradingDate" name="gradingDate">
+                    title="Chọn..." id="gradingDate_tapScoreScript" name="gradingDate">
                   <div class="input-group-append">
                     <div class="input-group-text"><i class="far fa-calendar"></i></div>
                   </div>
@@ -146,9 +153,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Người chấm điểm</label>
-                <select class="form-control selectpicker input" id="idEvaluator" name="idEvaluator" title="Chọn..."
-                  multiple data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
-                  data-live-search="true">
+                <select class="form-control selectpicker input" id="idEvaluator_tapScoreScript" name="idEvaluator"
+                  title="Chọn..." multiple data-actions-box="true" data-select-all-text="Tất cả"
+                  data-deselect-all-text="Xóa tất cả" data-live-search="true">
                   <% evaluators.forEach((evaluator)=> { %>
                     <option value="<%= evaluator.id %>">
                       <%= evaluator.fullName %> (<%= evaluator.userName %>)
@@ -160,9 +167,9 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Điện thoại viên</label>
-                <select class="form-control selectpicker input" id="idAgent" name="idAgent" title="Chọn..." multiple
-                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
-                  data-live-search="true">
+                <select class="form-control selectpicker input" id="idAgent_tapScoreScript" name="idAgent"
+                  title="Chọn..." multiple data-actions-box="true" data-select-all-text="Tất cả"
+                  data-deselect-all-text="Xóa tất cả" data-live-search="true">
                   <% agents.forEach((agent)=> { %>
                     <option value="<%= agent.id %>">
                       <%= agent.fullName %> (<%= agent.userName %>)
@@ -174,8 +181,8 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Đội ngũ</label>
-                <select class="form-control selectpicker input" id="idTeam" name="idTeam" title="Chọn..." multiple
-                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                <select class="form-control selectpicker input" id="idTeam_tapScoreScript" name="idTeam" title="Chọn..."
+                  multiple data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
                   data-live-search="true">
                   <% teams.forEach((team)=> { %>
                     <option value="<%= team.id %>">
@@ -188,8 +195,8 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Nguồn</label>
-                <select class="form-control selectpicker input" title="Chọn..." name="sourceType" multiple
-                  data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
+                <select class="form-control selectpicker input" title="Chọn..." name="sourceType_tapScoreScript"
+                  multiple data-actions-box="true" data-select-all-text="Tất cả" data-deselect-all-text="Xóa tất cả"
                   data-live-search="true">
                   <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
                     <option value="<%= SOURCE_NAME[item].code %>">
@@ -214,7 +221,7 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Mục tiêu chấm điểm</label>
-                <select class="form-control selectpicker input" name="idScoreTarget" id="idScoreTarget"
+                <select class="form-control selectpicker input" name="idScoreTarget_tapScoreScript" id="idScoreTarget"
                   data-live-search="true" title="Chọn..." multiple>
                   <% scoreTargets.forEach((scoreTarget)=> { %>
                     <option value="<%= scoreTarget.id %>">

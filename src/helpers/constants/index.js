@@ -11,4 +11,5 @@ module.exports = {
     ...require("./constDataRetentionPolicy"),
     ...require("./fileTeam"),
     ...require("./fieldScoreMission"),
+    ...require("./fieldReportCallRating"),
 }
