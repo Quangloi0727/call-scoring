@@ -37,5 +37,10 @@ module.exports = {
         var newSeconds = _seconds - newMinutes * 60
 
         return { newMinutes: newMinutes, newSeconds: newSeconds }
+    },
+    removeElementDuplicate: function (arr) {
+        let s = new Set(arr)
+        let it = s.values()
+        return Array.from(it)
     }
 }
