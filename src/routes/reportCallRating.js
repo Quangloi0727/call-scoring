@@ -11,6 +11,16 @@ router.route('/queryReport')
 router.route('/queryReportByScoreScript')
   .get(reportCallRating.queryReportByScoreScript)
 
+router.route('/getCriteria')
+  .get(reportCallRating.getCriteria)
 
+router.route('/getCriteriaGroup')
+  .get(reportCallRating.getCriteriaGroup)
+
+router.route('/getPercentSelectionCriteria')
+  .get(reportCallRating.getPercentSelectionCriteria)
+
+router.route('/exportExcelData')
+  .get(reportCallRating.exportExcelData)
 
 module.exports = router
