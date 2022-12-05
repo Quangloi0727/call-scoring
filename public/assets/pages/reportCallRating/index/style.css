@@ -1,3 +1,12 @@
 .card-header {
   border-bottom: 0px !important;
 }
+
+td>span.text-truncate {
+  max-width: 100px;
+}
+
+.wrapper-table {
+  display: flex;
+  overflow: auto;
+}

@@ -23,4 +23,8 @@ router.route('/getPercentSelectionCriteria')
 router.route('/exportExcelData')
   .get(reportCallRating.exportExcelData)
 
+
+router.route('/exportExcelDataByScoreScript')
+  .get(reportCallRating.exportExcelDataByScoreScript)
+
 module.exports = router
