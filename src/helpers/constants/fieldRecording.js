@@ -1,8 +1,7 @@
 // cấu hình bảng mặc định
-const headerDefault = {
+const headerDefaultRecording = {
     callId: "ID cuộc gọi",
     action: "Thao tác",
-    scoreScript: "Điểm đánh giá",
     direction: "Hướng gọi",
     agentName: "Điện thoại viên",
     teamName: "Đội ngũ",
@@ -19,7 +18,7 @@ const headerDefault = {
     sourceName: "Nguồn ghi âm"
 }
 
-const keysTitleExcel = [
+const keysTitleExcelRecording = [
     "direction",
     "agentName",
     "teamName",
@@ -52,7 +51,7 @@ const SOURCE_NAME = {
 }
 
 module.exports = {
-    headerDefault,
-    keysTitleExcel,
+    headerDefaultRecording,
+    keysTitleExcelRecording,
     SOURCE_NAME
 }

@@ -3,22 +3,11 @@ const pagination = require('pagination')
 const { Op, QueryTypes } = require('sequelize')
 const lodash = require('lodash')
 const { createExcelPromise } = require('../common/createExcel')
-const {
-  SUCCESS_200,
-  ERR_500,
-  ERR_400,
-  ERR_403
-} = require("../helpers/constants/statusCodeHTTP")
-const {
-  USER_ROLE,
-  SYSTEM_RULE
-} = require("../helpers/constants")
-
+const { SUCCESS_200, ERR_500, ERR_400, ERR_403 } = require("../helpers/constants/statusCodeHTTP")
+const { USER_ROLE, SYSTEM_RULE, constTypeResultCallRating, headerDefaultRecording, keysTitleExcelRecording, SOURCE_NAME } = require("../helpers/constants/index")
 const { cheSo } = require("../helpers/functions")
-
 const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
-const { headerDefault, keysTitleExcel, SOURCE_NAME } = require('../helpers/constants/fieldRecording')
 const { TeamStatus } = require('../helpers/constants/fileTeam')
 
 exports.index = async (req, res, next) => {
@@ -52,7 +41,7 @@ exports.index = async (req, res, next) => {
       title: titlePage,
       titlePage: titlePage,
       rules: user.rules,
-      headerDefault: _.mapHeaderDefault(headerDefault, JSON.parse(additionalField)),
+      headerDefault: _.mapHeaderDefault(headerDefaultRecording, JSON.parse(additionalField)),
       additionalField: JSON.parse(additionalField),
       SOURCE_NAME,
       SYSTEM_RULE,
@@ -236,7 +225,6 @@ exports.getRecording = async (req, res) => {
     }
 
     let queryData = `
-      DECLARE @df_AFTER_DAY VARCHAR(100) = '7'; -- recording cach ngay hien tai 7 ngay thi file goc .wav da duoc convert sang .mp3 de giam dung luong file
 
       SELECT
         records.id AS callId,
@@ -257,18 +245,20 @@ exports.getRecording = async (req, res) => {
 	      records.var9 AS var9,
 	      records.var10 AS var10,
         records.recordingFileName AS recordingFileName,
-        -- case 
-        --   when records.recordingFileName IS NOT null AND DATEDIFF(day, dateadd(SS, records.connectTime + 7*60*60, '1970-01-01'), CAST(CURRENT_TIMESTAMP AS DATE)) >=  @df_AFTER_DAY then LEFT(records.recordingFileName, LEN(records.recordingFileName) - 4) + '.mp3'
-        --   else records.recordingFileName
-        -- end as recordingFileName,
         records.direction AS direction,
         records.sourceName AS sourceName,
 	      agent.fullName AS fullName,
 	      agent.userName AS userName,
-        team.name AS teamName
+        team.name AS teamName,
+        callShare.pointResultCallRating AS scoreScriptHandle,
+				callShare.idUserReview AS idUserReview,
+				userReviews.fullName + ' ( ' + userReviews.userName + ' ) ' AS scoreScriptCreatedBy,
+        callShare.typeResultCallRating AS scoreScriptResult
       FROM dbo.call_detail_records records 
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
+      LEFT JOIN dbo.callShares callShare ON records.id = callShare.callId
+			LEFT JOIN dbo.Users userReviews ON idUserReview = userReviews.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
         AND records.origTime <= ${Number(endTimeMilisecond)}
         AND (
@@ -489,6 +479,13 @@ async function handleData(data, privatePhoneNumber = false) {
       const nameGroups = _.pluck(findGroup, "name")
       el.groupName = nameGroups.join(",")
     }
+
+    if (el.scoreScriptResult) {
+      if (el.scoreScriptResult == constTypeResultCallRating.pointNeedImprove.code) el.scoreScriptResult = constTypeResultCallRating.pointNeedImprove.txt
+      if (el.scoreScriptResult == constTypeResultCallRating.pointStandard.code) el.scoreScriptResult = constTypeResultCallRating.pointStandard.txt
+      if (el.scoreScriptResult == constTypeResultCallRating.pointPassStandard.code) el.scoreScriptResult = constTypeResultCallRating.pointPassStandard.txt
+    }
+
     return el
   }))
   return newData
@@ -519,11 +516,17 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
         records.direction AS direction,
         records.sourceName AS sourceName,
 	      agent.fullName AS fullName,
-	      agent.userName AS userName,
-        team.name AS teamName
+        agent.userName AS userName,
+        team.name AS teamName,
+        callShare.pointResultCallRating AS pointResultCallRating,
+				callShare.idUserReview AS idUserReview,
+				userReviews.fullName AS fullNameReview,
+        userReviews.userName AS userNameReview
       FROM dbo.call_detail_records records 
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
+      LEFT JOIN dbo.callShares callShare ON records.id = callShare.callId
+			LEFT JOIN dbo.Users userReviews ON idUserReview = userReviews.id
       WHERE records.origTime >= ${Number(startTime)}  
         AND records.origTime <= ${Number(endTime)}
         AND (
@@ -564,13 +567,13 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
 
           if (i == 'audioHtml' || ConfigurationColums[i] == 'false') return // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
 
-          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i]
+          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefaultRecording[i]
           dataHeader[`TXT_${i.toUpperCase()}`] = i
         })
       } else {
-        Object.keys(keysTitleExcel).forEach(i => {
-          let nameField = keysTitleExcel[i]
-          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField]
+        Object.keys(keysTitleExcelRecording).forEach(i => {
+          let nameField = keysTitleExcelRecording[i]
+          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefaultRecording[nameField]
           dataHeader[`TXT_${nameField.toUpperCase()}`] = nameField
         })
       }

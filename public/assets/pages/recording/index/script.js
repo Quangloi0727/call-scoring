@@ -27,6 +27,9 @@ let searchType = DEFAULT_SEARCH
 // CACHE
 let CACHE_CONFIG_COLUMN = null
 
+//init wavesurfer
+var wavesurfer = null
+
 function bindClick() {
   $buttonSearch.on('click', function (e) {
     let page = 1
@@ -250,6 +253,24 @@ function bindClick() {
     }
   })
 
+  $(document).on('click', '.fa-play-circle', function () {
+    const urlRecord = $(this).attr('url-record')
+    const callId = $(this).attr('data-callId')
+    $(".callId").text(callId)
+    $("#formDetailRecord").html('')
+    $('#showDetailRecord').modal('show')
+    //$("#downloadFile").attr("url-record", "https://qa.metechvn.com/static/call.metechvn.com/archive/2022/Aug/17/d6a4f7a2-1dce-11ed-b31a-95f7e31f94c6.wav")
+    $("#downloadFile").attr("url-record", urlRecord)
+    _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+      if (resp.code == 200) {
+        wavesurfer = _configWaveSurfer(resp.result, urlRecord, null)
+      } else {
+        console.log("get list note callId " + callId + " error")
+        wavesurfer = _configWaveSurfer([], urlRecord, null)
+      }
+    })
+  })
+
 
 }
 
@@ -408,7 +429,7 @@ function createTable(data, ConfigurationColums, queryData) {
           tdTable += ` <th class="text-center callId tableFixColumn first-col"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
         } else if (key == 'action') {
           tdTable += ` <th class="text-center ${key} tableFixColumn second-col">
-                            <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
+                            <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callid="${item.callId}"></i>
                             <i class="fas fa-check mr-2" title="Chấm điểm"></i>
                             <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="menuDropDownAdvanced">
@@ -560,4 +581,5 @@ $(window).on('beforeunload', function () {
   $resetColumnCustom.off('click')
   $(document).off('click', '.sorting')
   $(document).off('click', '.zpaging')
+  $(document).off('click', '.fa-play-circle')
 })

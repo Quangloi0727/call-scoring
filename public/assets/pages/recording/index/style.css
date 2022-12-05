@@ -160,3 +160,21 @@ table thead .sorting_desc {
   max-width: 150px;
   left: 100px;
 } */
+
+.modal-dialog.showDetailRecord {
+  max-width: 40% !important;
+  height: 100%;
+}
+
+.wavesurfer-handle {
+  background-color: red !important;
+}
+
+.fa-play-circle {
+  cursor: pointer;
+}
+
+.row {
+  margin-right: 0;
+  margin-left: 0;
+}
