@@ -305,9 +305,13 @@ exports.getRecording = async (req, res) => {
       totalResult: totalData && totalData[0] && totalData[0].total || 0
     })
 
+    const dataHandle = await handleData(recordResult, _config.privatePhoneNumberWebView)
+
+    const dataFinal = await mapScoreScript(dataHandle)
+
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: recordResult && await handleData(recordResult, _config.privatePhoneNumberWebView) || [],
+      data: dataFinal,
       ConfigurationColums: ConfigurationColums,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
     })
@@ -319,6 +323,7 @@ exports.getRecording = async (req, res) => {
     return res.status(ERR_500.code).json({ message: error.message })
   }
 }
+
 exports.SaveConfigurationColums = async (req, res) => {
   let transaction
   try {
@@ -624,5 +629,14 @@ async function getTeamOfGroup(userId) {
     }],
     nest: true
   })
+
+}
+
+async function mapScoreScript(data) {
+  // cuộc gọi đã được phân công thì lấy luôn kịch bản
+  const dataMapScoreScript = Promise.all(data.map(async el => {
+    const findInCallShare = await model.CallShare.findOne({ where: { callId: { [Op.eq]: el.callId || el.xmlCdrId } } })
+    console.log(1111, findInCallShare);
+  }))
 
 }

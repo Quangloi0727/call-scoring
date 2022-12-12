@@ -271,6 +271,28 @@ function bindClick() {
     })
   })
 
+  $(`.controls .btn`).on('click', function () {
+    var action = $(this).data('action')
+    console.log("action", action)
+    switch (action) {
+      case 'play':
+        wavesurfer.playPause()
+        break
+      case 'back':
+        wavesurfer.skipBackward(10)
+        _updateTimer(wavesurfer)
+        break
+      case 'forward':
+        wavesurfer.skipForward(10)
+        _updateTimer(wavesurfer)
+        break
+    }
+  })
+
+  $(document).on('click', '#downloadFile', function () {
+    let src_file = $(this).attr("url-record")
+    window.location = src_file
+  })
 
 }
 
@@ -384,7 +406,7 @@ function renderHeaderTable(ConfigurationColums, queryData, init = false) {
     if (queryData.sort && queryData.sort.sort_by == key) {
       sorting += ` sorting_${queryData.sort.sort_type.toLowerCase()}`
     }
-    headerTable += `<th class="text-center sortHeader ${key} ${(value == 'true' || (init == true && key != "sourceName")) ? '' : 'd-none'} 
+    headerTable += `<th class="text-center sortHeader ${key != "callId" ? key : ""} ${(value == 'true' || (init == true && key != "sourceName")) ? '' : 'd-none'} 
                       ${key == "callId" || key == "action" ? "tableFixColumn" : ""} 
                       ${key == "callId" ? "first-col" : ""} 
                       ${key == "action" ? "second-col" : ""} 
@@ -426,7 +448,7 @@ function createTable(data, ConfigurationColums, queryData) {
         } else if (key == 'agentName' && value == 'true') {
           tdTable += ` <td class="text-center agentName">${agentName}</td>`
         } else if (key == 'callId' && (item[key] || item['xmlCdrId'])) {
-          tdTable += ` <th class="text-center callId tableFixColumn first-col"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
+          tdTable += ` <th class="text-center tableFixColumn first-col"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
         } else if (key == 'action') {
           tdTable += ` <th class="text-center ${key} tableFixColumn second-col">
                             <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callid="${item.callId}"></i>
@@ -581,5 +603,10 @@ $(window).on('beforeunload', function () {
   $resetColumnCustom.off('click')
   $(document).off('click', '.sorting')
   $(document).off('click', '.zpaging')
+
+
   $(document).off('click', '.fa-play-circle')
+  $(document).off('click', '.controls .btn')
+  $(document).off('click', '#downloadFile')
+
 })

@@ -87,11 +87,11 @@
                     if(i != "sourceName"){ %>
                       <% let sorting=['duration'].includes(i) ? 'sorting' : '' %>
                         <th class="text-center sortHeader 
-                          <%= i %> 
+                          <%= i != "callId" ? i : "" %> 
                           <%= sorting %> 
                           <%- (i == "callId" || i == "action" ? "tableFixColumn" : "") %>
-                          <%- (i=="callId" ? "first-col" : "" ) %>
-                          <%- (i=="action" ? "second-col" : "" ) %>
+                          <%- (i == "callId" ? "first-col" : "" ) %>
+                          <%- (i == "action" ? "second-col" : "" ) %>
                           " 
                           id-sort="<%= i %>"
                         >
