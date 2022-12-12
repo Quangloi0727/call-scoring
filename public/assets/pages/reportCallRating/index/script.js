@@ -103,6 +103,7 @@ function bindClick() {
     if ($(this).val().length == 0) {
       return toastr.error('Chưa chọn kịch bản')
     }
+    queryDataByScoreScript()
     getCriteriaGroup($(this).val())
   })
 
@@ -280,14 +281,14 @@ function renderData(resp) {
   $('#txtCountCallReviewed').text(resp.countCallReviewed)
   $('#txtCountCallShare').text(resp.countCallShare)
 
-  if (resp.callRatingHistory.length > 0) {
-    var countCallRatingHistory = _.filter(resp.callRatingHistory, function (callRatingHistory) { return callRatingHistory.re_scored == 1 }).length
-    $('#txtCountCallRatingHistory').text(countCallRatingHistory)
-    $('#txtPercentCallRatingHistory').text(((countCallRatingHistory / resp.countCallReviewed) * 100).toFixed(0) + '%')
+  if (resp.callRatingReScore > 0) {
+    $('#txtCountCallRatingHistory').text(resp.callRatingReScore)
+    $('#txtPercentCallRatingHistory').text(((resp.callRatingReScore / resp.countCallReviewed) * 100).toFixed(0) + '%')
   }
 
   renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRating')
 
+  //Tỷ lệ loại cuộc gọi
   _hightChart(
     'pieChartCallShare',
     CALL_PERCENT_REPORT_TXT,
@@ -298,11 +299,12 @@ function renderData(resp) {
       },
       {
         name: CALL_UN_ASSIGNED_TXT,
-        y: resp.callDetailRecords - resp.countCallShare
+        y: resp.totalCall - resp.countCallShare
       }
     ]
   )
 
+  //Tỷ lệ hoàn thành chấm điểm
   _hightChart(
     'pieChartCallReviewed',
     GRADING_COMPLETION_PERCENT_TXT,
@@ -313,12 +315,13 @@ function renderData(resp) {
       },
       {
         name: CALL_UN_REVIEWED_TXT,
-        y: resp.countCallShare - resp.countCallReviewed
+        y: resp.totalCall - resp.countCallReviewed
 
       }
     ]
   )
 
+  //Tỷ lệ hoàn thành chấm điểm được phân công
   _hightChart(
     'pieChartGradingAssign',
     GRADING_ASSIGNED_PERCENT_TXT, [
@@ -328,7 +331,7 @@ function renderData(resp) {
     },
     {
       name: CALL_UN_REVIEWED_TXT,
-      y: resp.callDetailRecord - resp.countCallReviewed
+      y: resp.countCallShare - resp.countCallReviewed
 
     }
   ])
