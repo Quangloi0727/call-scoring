@@ -109,6 +109,16 @@
         })
         return wavesurfer
     }, window._hightChart = function (idContainer, title, data) {
+        let series = []
+        // if(data.length > 0){
+        //     data.map((el) =>{
+        //         series.push({
+        //             name: el,
+        //             colorByPoint: true,
+        //             data: data
+        //         })
+        //     })
+        // }
         // Create the chart
         Highcharts.chart(`${idContainer}`, {
             chart: {
@@ -121,7 +131,7 @@
                 text: `${title}`
             },
             tooltip: {
-                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                pointFormat: '{point.y} ({point.percentage:.1f}%)'
             },
             accessibility: {
                 point: {
@@ -139,7 +149,6 @@
                 }
             },
             series: [{
-                name: 'Brands',
                 colorByPoint: true,
                 data: data
             }]
