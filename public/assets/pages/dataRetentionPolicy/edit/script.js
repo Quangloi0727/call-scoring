@@ -171,7 +171,7 @@ $(function () {
     const found = []
     if (!teams || teams.length == 0) return toastr.error("Không tìm thấy thông tin")
     teams.map((el) => {
-      if (el.name.includes($('#nameTeamGroup').val())) {
+      if (el.name.normalize('NFC').search($('#nameTeamGroup').val().trim().normalize('NFC')) >= 0) {
         found.push(el)
       }
     })

@@ -76,7 +76,7 @@ exports.queryReport = async (req, res) => {
     const offset = (pageNumber * limit) - limit
 
     // lấy dữ liệu tổng hợp 
-    const [countCallShare, countCallReviewed, CallRatingHistory, percentTypeCallRating, callDetailRecords] =
+    const [countCallShare, countCallReviewed, CallRatingReScore, percentTypeCallRating, totalCall] =
       await getSummaryData(whereCallInfo(req.query), whereCallShare(req.query))
 
     const CallShareDetail = await queryCallShareDetail(req.query, limit, offset)
@@ -90,10 +90,10 @@ exports.queryReport = async (req, res) => {
     return res.json({
       code: SUCCESS_200.code,
       countCallShare: countCallShare,
-      callRatingHistory: CallRatingHistory,
+      callRatingReScore: CallRatingReScore,
       countCallReviewed: countCallReviewed,
       percentTypeCallRating: percentTypeCallRating,
-      callDetailRecords: callDetailRecords,
+      totalCall: totalCall,
       callShareDetail: CallShareDetail,
       constTypeResultCallRating: constTypeResultCallRating,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
@@ -177,7 +177,7 @@ exports.queryReportByScoreScript = async (req, res) => {
     })
 
     const detailScoreScript = await model.ScoreScript.findOne({
-      where: { id: { [Op.in]: idScoreScript } },
+      where: { id: idScoreScript },
       include: [{
         model: model.CriteriaGroup,
         as: 'CriteriaGroup',
@@ -246,7 +246,7 @@ exports.getPercentSelectionCriteria = async (req, res) => {
     const idCriteria = req.query.idCriteria
 
     const selectionCriteria = await model.ScoreScript.findAll({
-      where: { id: { [Op.in]: idScoreScript } },
+      where: { id: idScoreScript },
       include: [{
         model: model.CriteriaGroup,
         as: 'CriteriaGroup',
@@ -520,8 +520,9 @@ function whereCallShare(query) {
   }
 
   if (query.idScoreScript) {
+    const OpTypes = typeof query.idScoreScript == 'string' ? 'eq' : 'in'
     whereCallShare.idScoreScript = {
-      [Op.in]: query.idScoreScript
+      [Op[OpTypes]]: query.idScoreScript
     }
   }
 

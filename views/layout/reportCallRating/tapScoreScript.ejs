@@ -28,7 +28,7 @@
 
       <div class="row mb-3">
         <div class="col-lg-3 col-">
-          <select class="form-control selectpicker input" multiple id="idScoreScript_tapScoreScript">
+          <select class="form-control selectpicker input" id="idScoreScript_tapScoreScript">
             <% scoreScripts.forEach((scoreScript, el)=> { %>
               <option value="<%= scoreScript.id %>" <%- el==0 ? 'selected' :'' %> >
                 <%= scoreScript.name %>
