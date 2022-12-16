@@ -311,7 +311,7 @@ exports.getRecording = async (req, res) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: dataFinal,
+      data: dataHandle,
       ConfigurationColums: ConfigurationColums,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
     })
