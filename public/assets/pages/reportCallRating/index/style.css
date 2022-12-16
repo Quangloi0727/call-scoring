@@ -3,10 +3,19 @@
 }
 
 td>span.text-truncate {
-  max-width: 100px;
+  max-width: 170px;
 }
 
 .wrapper-table {
   display: flex;
   overflow: auto;
+}
+
+.table thead tr th {
+  margin: 15px 5px;
+  max-width: 200px;
+  min-width: 200px;
+  border: 1px solid #dee2e6;
+  padding: 0.75rem;
+  background-color: #ffff;
 }

@@ -12,7 +12,7 @@
           </button>
         </div>
         <div class="mr-2">
-          <button type="button" class="form-control btn" title="Làm mới">
+          <button type="button" class="form-control btn" title="Làm mới" id="btn_refresh_tapScoreScript">
             <i class="fas fa-sync"></i>
           </button>
         </div>
@@ -28,7 +28,8 @@
 
       <div class="row mb-3">
         <div class="col-lg-3 col-">
-          <select class="form-control selectpicker input" id="idScoreScript_tapScoreScript">
+          <select class="form-control selectpicker input" id="idScoreScript_tapScoreScript" data-live-search="true"
+            data-actions-box="true">
             <% scoreScripts.forEach((scoreScript, el)=> { %>
               <option value="<%= scoreScript.id %>" <%- el==0 ? 'selected' :'' %> >
                 <%= scoreScript.name %>
@@ -79,10 +80,10 @@
 
       <div class="row mb-3">
         <div class="col-lg-6 col-6 row">
-          <select class="form-control selectpicker col-lg-6 col-6 p-1" title="Chọn nhóm tiêu chí"
-            id="criteriaGroupId"></select>
-          <select class="form-control selectpicker col-lg-6 col-6 p-1" title="Chọn tiêu chí" id="idCriteria"
-            disabled></select>
+          <select class="form-control selectpicker col-lg-6 col-6 p-1" data-actions-box="true" data-live-search="true"
+            title="Chọn nhóm tiêu chí" id="criteriaGroupId"></select>
+          <select class="form-control selectpicker col-lg-6 col-6 p-1" data-actions-box="true" data-live-search="true"
+            title="Chọn tiêu chí" id="idCriteria" disabled></select>
         </div>
       </div>
 
@@ -117,7 +118,7 @@
         </div>
       </div>
       <div class="card-footer text-center">
-        <div class="col-12 d-flex justify-content-center" id="">
+        <div class="col-12 d-flex justify-content-center" id="paging_table_tapScoreScript">
         </div>
       </div>
 
