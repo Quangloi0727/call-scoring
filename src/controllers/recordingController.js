@@ -492,6 +492,7 @@ async function handleData(data, privatePhoneNumber = false) {
     }
 
     return el
+    
   }))
   return newData
 }

@@ -518,19 +518,20 @@ $(function () {
               <h4>${item.nameCriteriaGroup} ${htmlTotalScore}</h4>
               <div class="row">
                 ${item.criterias.map((i) => {
-      const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
-      return `<div class="col-12">
+                const htmlScoreCtiteria = i.isActive == true ? `(${i.scoreMax})` : ""
+                return `<div class="col-12">
                             <div class="form-group">
                               <label> ${i.nameCriteria} ${htmlScoreCtiteria}</label>
                               <select class="form-control">
                                 ${i.selectionCriterias.map((j) => {
-        return `<option>${j.name}</option>`
-      }).join("")}
+                                  return `<option>${j.name}</option>`
+                                }).join("")}
+                                <option>Không đủ thông tin để chấm</option>
                               </select>
                             </div>
                           </div>`
-    }).join("")}
-                </div>
+                }).join("")}
+              </div>
             </div>`
   }
 })

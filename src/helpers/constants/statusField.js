@@ -116,14 +116,14 @@ const OP_TIME_DEFINE = {
 }
 
 const OP_UNIT_DISPLAY = {
-  phanTram: {
-    t: "Phần trăm",
-    n: 0,
-  },
   diem: {
     t: "Điểm",
     n: 1,
   },
+  phanTram: {
+    t: "Phần trăm",
+    n: 0
+  }
 }
 
 const STATUS_SCORE_SCRIPT = {

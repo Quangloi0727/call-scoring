@@ -3,7 +3,6 @@
     <div class="form-group row">
         <label for="description" class="col-sm-2 col-form-label">Trạng thái <span class="text-danger">*</span></label>
         <div class="col-sm-3">
-
             <select class="form-control selectpicker input" name="status" id="status">
                 <% Object.keys(STATUS_SCORE_SCRIPT).forEach((item)=> { %>
                 <option 
@@ -12,10 +11,9 @@
                     id="<%- item %>"
                     data-id='<%- scoreScript ? scoreScript.id : '' %>'
                 >
-                    <%= STATUS_SCORE_SCRIPT[item].t %>
+                  <%= STATUS_SCORE_SCRIPT[item].t %>
                 </option>
                 <% }); %>
-
             </select>
         </div>
     </div>

@@ -701,6 +701,7 @@ function htmlItemCriteriaGroup(item, totalScore) {
                               ${i.selectionCriterias.map((j) => {
                                 return `<option>${j.name}</option>`
                               }).join("")}
+                              <option>Không đủ thông tin để chấm</option>
                             </select>
                           </div>
                         </div>`
