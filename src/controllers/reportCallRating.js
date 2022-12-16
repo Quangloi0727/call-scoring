@@ -144,18 +144,11 @@ exports.queryReportByScoreScript = async (req, res) => {
       }, whereCallShare(req.query))
     })
 
-    // tính điểm trung bình theo kịch bản
-    const avgPointByCall = await model.CallShare.findAll({
-      where: Object.assign({
-        isMark: true,
-        idScoreScript: idScoreScript
-      }, whereCallShare(req.query)),
-      attributes: [
-        [model.sequelize.fn('AVG', model.sequelize.col('pointResultCallRating')), 'avgPoint'],
-      ],
-      raw: true
-    })
-
+    const avgPointByCall = await model.sequelize.query(`
+    SELECT ROUND(AVG(CAST([pointResultCallRating] AS FLOAT)), 1) AS [avgPoint] 
+    FROM [callShares] AS [callShares] 
+    WHERE [callShares].[isMark] = 1 AND [callShares].[idScoreScript] = N'${idScoreScript}'`
+    )
     const sumScoreMax = await getSumScoreMax(idScoreScript)
 
     const unScoreCriteriaGroup = await getUnScore('unScoreCriteriaGroup', idScoreScript)
@@ -195,7 +188,7 @@ exports.queryReportByScoreScript = async (req, res) => {
     return res.json({
       code: SUCCESS_200.code,
       countCallReviewed: countCallReviewed,
-      avgPointByCall: avgPointByCall,
+      avgPointByCall: avgPointByCall[0],
       sumScoreMax: sumScoreMax,
       unScoreCriteriaGroup: unScoreCriteriaGroup.length || 0,
       unScoreScript: unScoreScript.length || 0,
@@ -264,7 +257,6 @@ exports.getPercentSelectionCriteria = async (req, res) => {
       raw: true
     })
 
-
     let percentSelectionCriteria = await model.CallRating.findAll({
       where: { idSelectionCriteria: { [Op.in]: _.pluck(selectionCriteria, 'CriteriaGroup.Criteria.SelectionCriteria.id') } },
       include: [{
@@ -323,7 +315,7 @@ exports.exportExcelData = async (req, res) => {
         scoreScriptHandle: item.pointResultCallRating ? item.pointResultCallRating : '',
         scoreScriptResult: item.typeResultCallRating ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : '',
         userReview: item.userReview ? item.userReview.fullName + ' ' + `(${item.userReview.userName})` : '',
-        reviewedAt: item.reviewedAt ? _moment(item.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : '',
+        reviewedAt: item.reviewedAt ? _moment(item.reviewedAt).format('DD/MM/YYYY HH:mm:ss') : '',
       }
     })
     const linkFile = await createExcelFile(newData, titleExcel, dataHeader)
@@ -342,7 +334,7 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
   try {
     const callShareDetail = await queryCallShareDetail(req.query)
     const detailScoreScript = await model.ScoreScript.findOne({
-      where: { id: { [Op.in]: req.query.idScoreScript } },
+      where: { id: req.query.idScoreScript },
       include: [{
         model: model.CriteriaGroup,
         as: 'CriteriaGroup',
@@ -365,7 +357,7 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
       dataHeader[`TXT_${key.toUpperCase()}`] = key
     }
 
-    callShareDetail.map((callShare) => {
+    let newData = callShareDetail.map((callShare) => {
       // callShare.callRatingInfo.map((callRating) => {
       //   console.log(callRating)
       // })
@@ -385,8 +377,12 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
             resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
           }
           criteria[`criteria_${Criteria.id}`] = `${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}`
+          criteria[`selectionCriteria_${Criteria.id}`] = `${found.selectionCriteriaInfo.name}`
           tempTitleExcel[`TXT_${`criteria_${Criteria.id}`.toUpperCase()}`] = Criteria.name
           tempDataHeader[`TXT_${`criteria_${Criteria.id}`.toUpperCase()}`] = `criteria_${Criteria.id}`
+          tempTitleExcel[`TXT_${`selectionCriteria_${Criteria.id}`.toUpperCase()}`] = 'Lựa chọn của tiêu chí'
+          tempDataHeader[`TXT_${`selectionCriteria_${Criteria.id}`.toUpperCase()}`] = `selectionCriteria_${Criteria.id}`
+
         })
         if (checkIsUnScoreCriteriaGroup) {
           resultScoreCriteriaGroup = 0
@@ -417,11 +413,11 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
         scoreScriptHandle: callShare.pointResultCallRating ? callShare.pointResultCallRating : '',
         scoreScriptResult: callShare.typeResultCallRating ? constTypeResultCallRating[`point${callShare.typeResultCallRating}`].txt : '',
         userReview: callShare.userReview ? callShare.userReview.fullName + ' ' + `(${callShare.userReview.userName})` : '',
-        reviewedAt: callShare.reviewedAt ? _moment(callShare.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : '',
+        reviewedAt: callShare.reviewedAt ? _moment(callShare.reviewedAt).format('DD/MM/YYYY HH:mm:ss') : '',
       }
     })
 
-    const linkFile = await createExcelFile(callShareDetail, titleExcel, dataHeader)
+    const linkFile = await createExcelFile(newData, titleExcel, dataHeader)
     return res.json({
       code: SUCCESS_200.code,
       linkFile: linkFile
@@ -496,7 +492,6 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
 
   ])
 }
-
 
 // func tạo bộ lọc cho model callShare
 function whereCallShare(query) {
@@ -698,7 +693,6 @@ async function queryCallShareDetail(query, limit, offset) {
   }
   return await model.CallShare.findAll(objectQuery)
 }
-
 
 function createExcelFile(data, titleExcel, dataHeader) {
   return new Promise(async (resolve, reject) => {

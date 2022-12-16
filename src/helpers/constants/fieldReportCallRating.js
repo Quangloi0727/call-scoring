@@ -4,7 +4,7 @@ const headerReportCallRating = {
   agentName: "Điện thoại viên",
   teamName: "Đội ngũ",
   groupName: "Nhóm",
-  scoreTarget: "Kịch bản chấm điểm",
+  scoreTarget: "Mục tiêu chấm điểm",
   scoreScriptAuto: "Điểm đánh giá tự động",
   scoreScript: "Kịch bản chấm điểm",
   scoreScriptHandle: "Điểm đánh giá thủ công",
