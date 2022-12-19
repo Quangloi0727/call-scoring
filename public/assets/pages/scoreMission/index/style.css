@@ -53,10 +53,6 @@
   width: 80%;
 }
 
-.dropdown-toggle::after {
-  display: none;
-}
-
 .border-content {
   /* background-color: red !important; */
   border-top: solid 2px rgba(0, 0, 0, 0.125);

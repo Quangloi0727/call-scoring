@@ -148,10 +148,11 @@ exports.getScoreMission = async (req, res, next) => {
 
         return res.status(SUCCESS_200.code).json({
             message: 'Success!',
-            data: handleData(listData, _config.privatePhoneNumberWebView) || [],
+            data: await handleData(listData, _config.privatePhoneNumberWebView) || [],
             configurationColums: configurationColums,
             paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
         })
+
     } catch (error) {
         _logger.error("Lấy danh sách Nhiệm vụ chấm điểm lỗi", error)
         return res.status(ERR_500.code).json({ message: error.message })
@@ -479,12 +480,10 @@ function getConfigurationColums(userId) {
     })
 }
 
-function handleData(data, privatePhoneNumber = false) {
-    let newData = []
-
-    newData = data.map((el) => {
-
-        const { origTime, duration, recordingFileName, caller, called } = el.callInfo
+async function handleData(data, privatePhoneNumber = false) {
+    const convertData = JSON.parse(JSON.stringify(data))
+    const newData = await Promise.all(convertData.map(async el => {
+        const { origTime, duration, recordingFileName, caller, called, teamId } = el.callInfo
 
         el.callInfo.origTime = _moment(origTime * 1000).format('HH:mm:ss DD/MM/YYYY')
         el.callInfo.duration = _.hms(duration)
@@ -496,8 +495,17 @@ function handleData(data, privatePhoneNumber = false) {
             if (called && called.length >= 10) el.callInfo.called = cheSo(called, 4)
         }
 
+        // map group
+        if (teamId) {
+            const findTeamGroup = await model.TeamGroup.findAll({ where: { teamId: teamId }, nest: true })
+            if (!findTeamGroup.length) return el
+            const idsGroup = _.pluck(findTeamGroup, "groupId")
+            const findGroup = await model.Group.findAll({ where: { id: { [Op.in]: idsGroup } }, nest: true })
+            const nameGroups = _.pluck(findGroup, "name")
+            el.callInfo.groupName = nameGroups
+        }
         return el
-    })
+    }))
 
     return newData
 }

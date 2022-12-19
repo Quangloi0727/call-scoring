@@ -565,7 +565,7 @@ function createTable(data, ConfigurationColums, configDefault) {
         leftTable += ` <tr class="text-center">
             <td class="text-center callIdColumn" title="${item.callId || ''}">${item.callId || ''}</td>
             <td class="text-center">    
-                <i class="fas fa-check mr-2 dropdown-toggle " id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
+                <i class="fas fa-check mr-2" id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
                     ${dropdown}
                 </div>
@@ -603,7 +603,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
     let pointResultCallRating = 0
     if (item.typeResultCallRating) {
         resultReviewScore = constTypeResultCallRating[`point${item.typeResultCallRating}`].txt
-        pointResultCallRating = item.pointResultCallRating
+        pointResultCallRating = item.pointResultCallRating || 0
     }
     let htmlString = ``
     if (configDefault) {
@@ -614,8 +614,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
             } else if (key == 'resultReviewScore') {
 
-                htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'].status == 1 ? '' : 'd-none'}">
-                ${resultReviewScore}</td>`
+                htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'].status == 1 ? '' : 'd-none'}">${resultReviewScore}</td>`
 
             } else if (key == 'agentName') {
 
@@ -625,6 +624,10 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
                 htmlString += ` <td class="text-center teamName ${headerDefault['teamName'].status == 1 ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
+            } else if (key == 'groupName') {
+
+                htmlString += ` <td class="text-center teamName ${headerDefault['groupName'].status == 1 ? '' : 'd-none'}">${genGroupOfAgent(callInfo['groupName'])}</td>`
+
             } else {
                 htmlString += ` <td class="text-center ${key} ${headerDefault[key].status == 1 ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
             }
@@ -633,12 +636,10 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
         for (const [key, value] of Object.entries(dataConfig)) {
             if (key == 'manualReviewScore') {
 
-                htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">
-                ${pointResultCallRating}</td>`
+                htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${pointResultCallRating}</td>`
 
             } else if (key == 'resultReviewScore') {
-                htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'] == true ? '' : 'd-none'}">
-                ${resultReviewScore}</td>`
+                htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'] == true ? '' : 'd-none'}">${resultReviewScore}</td>`
 
             } else if (key == 'agentName') {
 
@@ -648,12 +649,39 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
 
                 htmlString += ` <td class="text-center teamName ${dataConfig['teamName'] == true ? '' : 'd-none'}">${callInfo['team'] ? callInfo['team'].name : ''}</td>`
 
+            } else if (key == 'groupName') {
+
+                htmlString += ` <td class="text-center teamName ${dataConfig['groupName'] == true ? '' : 'd-none'}">${genGroupOfAgent(callInfo['groupName'])}</td>`
+
             } else {
                 htmlString += ` <td class="text-center ${key} ${value == true ? '' : 'd-none'}">${callInfo[key] || '&nbsp'}</td>`
             }
         }
     }
     return htmlString
+}
+
+function genGroupOfAgent(groupName) {
+    if (!groupName || !groupName.length) return ''
+    if (groupName.length == 1) return groupName[0]
+    return `
+            <div class="dropdown">
+                <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    ${groupName.length} nhóm
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdown">
+                    ${genEachGroup(groupName)}
+                </div>
+            </div>
+    `
+}
+
+function genEachGroup(groupName) {
+    let html = ''
+    groupName.forEach(el => {
+        html += `<a class="dropdown-item" type="button">${el}</a>`
+    })
+    return html
 }
 
 // lấy thông tin chi tiết của kịch bản chấm điểm

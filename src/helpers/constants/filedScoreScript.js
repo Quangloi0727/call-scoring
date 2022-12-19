@@ -13,7 +13,7 @@ const constTypeResultCallRating = {
         code: 'NeedImprove'
     },
     pointStandard: {
-        txt: 'Tiêu chuẩn',
+        txt: 'Đạt tiêu chuẩn',
         code: 'Standard'
     },
     pointPassStandard: {
