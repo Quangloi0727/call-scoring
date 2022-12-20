@@ -142,9 +142,14 @@ table thead .sorting_desc {
   cursor: pointer;
 }
 
-#menuDropDownAdvanced {
+.menuDropDownAdvancedCss2 {
   top: -20px !important;
   left: 26px !important;
+}
+
+.menuDropDownAdvancedCss1 {
+  top: -20px !important;
+  left: 53px !important;
 }
 
 /* .first-col {

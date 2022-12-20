@@ -4,7 +4,7 @@ const { Op, QueryTypes } = require('sequelize')
 const lodash = require('lodash')
 const { createExcelPromise } = require('../common/createExcel')
 const { SUCCESS_200, ERR_500, ERR_400, ERR_403 } = require("../helpers/constants/statusCodeHTTP")
-const { USER_ROLE, SYSTEM_RULE, constTypeResultCallRating, headerDefaultRecording, keysTitleExcelRecording, SOURCE_NAME } = require("../helpers/constants/index")
+const { USER_ROLE, SYSTEM_RULE, constTypeResultCallRating, headerDefaultRecording, keysTitleExcelRecording, SOURCE_NAME, CreatedByForm, STATUS_SCORE_SCRIPT } = require("../helpers/constants/index")
 const { cheSo } = require("../helpers/functions")
 const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
@@ -37,6 +37,13 @@ exports.index = async (req, res, next) => {
 
     let { teams: teamsDetail } = await getAgentTeamMemberDetail(isAdmin, teamIds, req.user.id)
 
+    const groups = await model.Group.findAll()
+
+    const getRoleEvaluator = await model.UserRole.findAll({ where: { role: USER_ROLE.evaluator.n } })
+    const idsRoleEvaluator = _.pluck(getRoleEvaluator, 'userId')
+
+    const getUserEvaluator = await model.User.findAll({ where: { id: { [Op.in]: idsRoleEvaluator } }, nest: true, raw: true })
+
     return _render(req, res, 'recording/index', {
       title: titlePage,
       titlePage: titlePage,
@@ -45,8 +52,12 @@ exports.index = async (req, res, next) => {
       additionalField: JSON.parse(additionalField),
       SOURCE_NAME,
       SYSTEM_RULE,
+      constTypeResultCallRating,
+      CreatedByForm,
       teamsDetail: lodash.uniqBy(teamsDetail, 'memberId'), // master data
       teams: lodash.uniqBy(teamsDetail, 'teamId') || [],
+      groups,
+      getUserEvaluator
     })
   } catch (error) {
     console.log(`------- error ------- `)
@@ -83,6 +94,9 @@ exports.getRecording = async (req, res) => {
       var8,
       var9,
       var10,
+      resultCallRating,
+      evaluators,
+      groups,
       sort // sort: {sort_by: target.attr('id-sort'), sort_type: 'ASC' }
     } = req.query
     let { limit } = req.query
@@ -190,6 +204,19 @@ exports.getRecording = async (req, res) => {
     if (var8) query += `AND records.var8 LIKE '%${var8.toString()}%' `
     if (var9) query += `AND records.var9 LIKE '%${var9.toString()}%' `
     if (var10) query += `AND records.var10 LIKE '%${var10.toString()}%' `
+    if (resultCallRating) {
+      let str = ``
+      for (let i = 0; i < resultCallRating.length; i++) {
+        str += `'${resultCallRating[i]}'`
+      }
+      query += `AND callShare.typeResultCallRating IN (${str}) `
+    }
+    if (evaluators) query += `AND callShare.idUserReview IN (${evaluators.toString()}) `
+    if (groups) {
+      const findTeamGroup = await model.TeamGroup.findAll({ where: { groupId: { [Op.in]: groups } }, nest: true, raw: true })
+      const idsTeam = _.pluck(findTeamGroup, 'teamId')
+      query += `AND records.teamId in (${idsTeam.toString()}) `
+    }
 
     if (fullName) {
       userIdFilter = _.concat(userIdFilter, fullName)
@@ -280,6 +307,8 @@ exports.getRecording = async (req, res) => {
       FROM dbo.call_detail_records records 
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
+      LEFT JOIN dbo.callShares callShare ON records.id = callShare.callId
+			LEFT JOIN dbo.Users userReviews ON idUserReview = userReviews.id
       WHERE records.origTime >= ${Number(startTimeMilisecond)}  
         AND records.origTime <= ${Number(endTimeMilisecond)}
         AND (
@@ -311,7 +340,7 @@ exports.getRecording = async (req, res) => {
 
     return res.status(SUCCESS_200.code).json({
       message: 'Success!',
-      data: dataHandle,
+      data: dataFinal,
       ConfigurationColums: ConfigurationColums,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
     })
@@ -492,7 +521,7 @@ async function handleData(data, privatePhoneNumber = false) {
     }
 
     return el
-    
+
   }))
   return newData
 }
@@ -524,10 +553,10 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
 	      agent.fullName AS fullName,
         agent.userName AS userName,
         team.name AS teamName,
-        callShare.pointResultCallRating AS pointResultCallRating,
+        callShare.pointResultCallRating AS scoreScriptHandle,
 				callShare.idUserReview AS idUserReview,
-				userReviews.fullName AS fullNameReview,
-        userReviews.userName AS userNameReview
+				userReviews.fullName + ' ( ' + userReviews.userName + ' ) ' AS scoreScriptCreatedBy,
+        callShare.typeResultCallRating AS scoreScriptResult
       FROM dbo.call_detail_records records 
       LEFT JOIN dbo.Users agent ON records.agentId = agent.id
       LEFT JOIN dbo.Teams team ON records.teamId = team.id
@@ -571,24 +600,24 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
       if (ConfigurationColums) {
         Object.keys(ConfigurationColums).forEach(i => {
 
-          if (i == 'audioHtml' || ConfigurationColums[i] == 'false') return // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
+          if (i == 'audioHtml' || i == 'action' || ConfigurationColums[i] == 'false') return // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
 
           titleExcel[`TXT_${i.toUpperCase()}`] = headerDefaultRecording[i]
           dataHeader[`TXT_${i.toUpperCase()}`] = i
         })
       } else {
+        const additionalField = fs.readFileSync(_pathFileAdditionField)
+        const headerDefault = _.mapHeaderDefault(headerDefaultRecording, JSON.parse(additionalField))
         Object.keys(keysTitleExcelRecording).forEach(i => {
           let nameField = keysTitleExcelRecording[i]
-          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefaultRecording[nameField]
+          titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField]
           dataHeader[`TXT_${nameField.toUpperCase()}`] = nameField
         })
       }
 
       let newData = data.map((item) => {
         item.callId = item.callId || item.xmlCdrId
-
         agentName = item.fullName && `${item.fullName} (${item.userName})` || ''
-
         return {
           ...item,
           duration: item.duration || '',
@@ -634,10 +663,40 @@ async function getTeamOfGroup(userId) {
 }
 
 async function mapScoreScript(data) {
-  // cuộc gọi đã được phân công thì lấy luôn kịch bản
+  // cuộc gọi đã được phân công thì lấy luôn kịch bản ngược lại chưa phân công thì lấy toàn bộ kịch bản đang active
   const dataMapScoreScript = Promise.all(data.map(async el => {
-    const findInCallShare = await model.CallShare.findOne({ where: { callId: { [Op.eq]: el.callId || el.xmlCdrId } } })
-    console.log(1111, findInCallShare);
+    const findInCallShare = await model.CallShare.findOne({ where: { callId: { [Op.eq]: el.callId || el.xmlCdrId } }, raw: true })
+    if (findInCallShare && findInCallShare.isMark == false) {
+      //case đã phân công nhưng chưa chấm
+      const findScoreScript = await model.ScoreTarget.findOne({
+        where: { id: { [Op.eq]: findInCallShare.scoreTargetId } },
+        include: [
+          {
+            model: model.ScoreTarget_ScoreScript,
+            as: 'ScoreTarget_ScoreScript',
+            include: {
+              model: model.ScoreScript,
+              as: 'scoreScriptInfo'
+            }
+          }
+        ]
+      })
+      el.isMark = false
+      el.ScoreTarget_ScoreScript = findScoreScript.ScoreTarget_ScoreScript || []
+    } else if (findInCallShare && findInCallShare.isMark == true) {
+      //case đã phân công nhưng chấm rồi (màn edit)
+      el.isMark = true
+      el.ScoreTarget_ScoreScript = []
+      const findScoreScriptMarked = await model.CallRating.findOne({ where: { callId: el.callId || el.xmlCdrId } })
+      if (findScoreScriptMarked && findScoreScriptMarked.idScoreScript) el.idScoreScript = findScoreScriptMarked.idScoreScript
+    } else {
+      // chưa phân công và lấy toàn bộ kịch bản đang active
+      const findListScoreScriptActive = await model.ScoreScript.findAll({ where: { status: STATUS_SCORE_SCRIPT.hoatDong.n }, raw: true })
+      el.isMark = false
+      el.ScoreTarget_ScoreScript = findListScoreScriptActive
+    }
+    return el
   }))
+  return dataMapScoreScript
 
 }

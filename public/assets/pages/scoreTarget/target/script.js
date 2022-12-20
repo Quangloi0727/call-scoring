@@ -14,14 +14,14 @@ $form_target_general.validate({
   },
   messages: {
     description: {
-      maxlength: 'Độ dài không quá 500 kí tự'
+      maxlength: 'Độ dài không quá 500 kí tự !'
     },
     name: {
-      required: "Không được bỏ trống",
-      maxlength: "Độ dài không được quá 100 kí tự"
+      required: "Không được bỏ trống !",
+      maxlength: "Độ dài không được quá 100 kí tự !"
     },
     numberOfCall: {
-      digits: "Chỉ nhận giá trị số nguyên (>= 0)"
+      digits: "Chỉ nhận giá trị số nguyên (>= 0) !"
     }
   },
   ignore: ":hidden",
