@@ -47,7 +47,6 @@ function bindClick() {
 
     return findData(page, null, formData)
   })
-
   // enter
   $('#form_search input[name="caller"],#form_search input[name="called"]').keypress('enter', function (e) {
     if (e.which == 13) {
@@ -141,26 +140,6 @@ function bindClick() {
     renderHeaderTable(headerDefault, formData, true)
     return findData(1, null, formData)
   })
-
-  function deleteSaveColumn() {
-    return new Promise((resolve, reject) => {
-      $('.page-loader').show()
-
-      $.ajax({
-        type: 'DELETE',
-        url: '/recording/SaveConfigurationColums',
-        cache: 'false',
-        success: function (result) {
-          $('.page-loader').hide()
-          resolve('success')
-        },
-        error: function (error) {
-          $('.page-loader').hide()
-          reject(error.responseJSON.message)
-        },
-      })
-    })
-  }
 
   // event popup custom table
   $("#sortable").sortable({
@@ -271,6 +250,67 @@ function bindClick() {
     })
   })
 
+  $(document).on('click', '.commentCallScore', function () {
+    $('#popupComment').modal('show')
+    const urlRecord = $(this).attr('url-record')
+    const callId = $(this).attr('data-callId')
+    $('#btn-add-comment').attr('data-callId', callId)
+    $("#downloadFile-popupComment").attr("url-record", urlRecord)
+    $(".callId").text(callId)
+    _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
+      if (resp.code == 401) {
+        $("#btn-add-comment").attr("disabled", true)
+        return $("#elmRecordCommentParent").html(resp.message)
+      }
+      if (resp.code == 200) {
+        $("#idCriteriaGroupComment").attr("disabled", true)
+        $("#idCriteriaComment").attr("disabled", true)
+        $('.selectpicker').selectpicker('refresh')
+      } else {
+        $("#idCriteriaGroupComment").attr("disabled", false)
+        $("#idCriteriaComment").attr("disabled", false)
+        $('.selectpicker').selectpicker('refresh')
+        _AjaxGetData('/scoreMission/' + callId + '/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
+          renderCriteriaGroup(resp.result.CriteriaGroup)
+          $('.selectpicker').selectpicker('refresh')
+        })
+      }
+      _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+        if (resp.code == 200) {
+          wavesurfer = _configWaveSurfer(resp.result, urlRecord, "#recordComment")
+        } else {
+          console.log("get list note callId " + callId + " error")
+          wavesurfer = _configWaveSurfer([], urlRecord, "#recordComment")
+        }
+      })
+    })
+
+  })
+
+  $(document).on('click', '#btn-add-comment', function () {
+    let data = {}
+    let callId = $(this).attr('data-callId')
+    data.note = getFormData('formCallComment')
+    data.note.callId = callId
+    data.note.idCriteria = data.note.idCriteriaComment
+    data.note.idCriteriaGroup = data.note.idCriteriaGroupComment
+    data.note.createdByForm = CreatedByForm.COMMENT
+    _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        return toastr.error(resp.message)
+      }
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        window.location.href = "/recording"
+      }, 2500)
+    })
+  })
+
+  // xử lí chọn option ghi chú của mục tiêu
+  $(document).on('change', '#idCriteriaGroupComment', function () {
+    renderCriteria($(this).val(), '#idCriteriaComment')
+  })
+
   $(`.controls .btn`).on('click', function () {
     var action = $(this).data('action')
     console.log("action", action)
@@ -294,6 +334,198 @@ function bindClick() {
     window.location = src_file
   })
 
+  $(document).on('click', '.showCallScore', function () {
+    if ($(this).attr('data-isMark') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm !")
+    let callId = $(this).attr('data-callId')
+    $(".callId").text(callId)
+    let idScoreScript = $(this).attr('data-id')
+    let url = $(this).attr('url-record')
+    return getDetailScoreScript(idScoreScript, callId, url)
+  })
+
+  $("#showDetailRecord").on("hidden.bs.modal", function () {
+    wavesurfer.destroy()
+  })
+
+  $("#popupCallScore").on("hidden.bs.modal", function () {
+    wavesurfer.destroy()
+    $('#recordCallScore').html('')
+    $(".countValueLength").text("0/500")
+  })
+
+  $("#popupHistory").on("hidden.bs.modal", function () {
+    $("#callScore .card-body").html('')
+    $("#comment .card-body").html('')
+  })
+
+  $("#popupComment").on("hidden.bs.modal", function () {
+    wavesurfer ? wavesurfer.destroy() : ''
+    $('#formCallComment')[0] ? $('#formCallComment')[0].reset() : ''
+    $("#idCriteriaComment").html('')
+    $(".countValueLength").text("0/500")
+  })
+
+  $(document).on('click', '#btn-save-modal', function () {
+    let data = {}
+    let callId = $(this).attr('data-callId')
+    let idScoreScript = $(this).attr('data-idScoreScript')
+    let arr = []
+    let checkSelectNull = false
+    $(".error-non-select").remove()
+    $(".selectpicker.criteria").each(function () {
+      if ($(this).val() == '') {
+        checkSelectNull = true
+        $(this).closest('.form-group').append(`<span class="error-non-select mr-1">${window.location.MESSAGE_ERROR["QA-001"]}</span>`)
+      }
+      arr.push({
+        idSelectionCriteria: $(this).val(),
+        idCriteria: $(this).attr('data-criteriaId'),
+        callId: callId,
+        idScoreScript: idScoreScript
+      })
+    })
+
+    if (checkSelectNull) return toastr.error("Không được để trống tiêu chí")
+
+    data.note = getFormData('formCallScore')
+    data.note.callId = callId
+    data.note.idScoreScript = idScoreScript
+    data.note.createdByForm = CreatedByForm.ADD
+    data.resultCriteria = arr
+
+
+    if (data.note.description && (!data.note.timeNoteMinutes && !data.note.timeNoteSecond)) {
+      $('.error-input-timeNote').removeClass('d-none')
+      $('.error-input-timeNote').text(window.location.MESSAGE_ERROR["QA-001"])
+      return toastr.error('Thời gian ghi chú không được bỏ trống !')
+    }
+
+    if (data.note.timeNoteMinutes || data.note.timeNoteSecond) {
+      let timeNoteMinutes = data.note.timeNoteMinutes ? data.note.timeNoteMinutes : 0
+      let timeNoteSecond = data.note.timeNoteSecond ? data.note.timeNoteSecond : 0
+      let totalSeconds = _convertTime(timeNoteMinutes, timeNoteSecond)
+      if (totalSeconds > wavesurfer.getDuration()) {
+        $('.error-input-timeNote').removeClass('d-none')
+        $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ")
+        return toastr.error("Thời gian ghi chú không hợp lệ")
+      }
+    }
+
+    if (!data.note.description && (data.note.timeNoteMinutes || data.note.timeNoteSecond)) {
+      $('.error-textarea-description').removeClass('d-none')
+      $('.error-textarea-description').text('Nội dung ghi chú không được bỏ trống !')
+      return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
+    }
+
+    if (!data.note.timeNoteMinutes && !data.note.timeNoteSecond) delete data.note // case này là case KH k nhập chấm điểm
+
+    const action = $(this).attr('method')
+
+    if (action == 'edit') {
+      delete data.note
+      data.type = 'edit'
+    } else {
+      data.type = 'add'
+    }
+
+    data.dataEditOrigin = dataEditOrigin
+
+    _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
+      if (resp.code != 200) {
+        return toastr.error(resp.message)
+      }
+      toastr.success('Lưu thành công !')
+      return setTimeout(() => {
+        window.location.href = "/recording"
+      }, 2500)
+    })
+  })
+
+  $(document).on('click', '.historyCallScore', function () {
+    $('#popupHistory').modal('show')
+    const callId = $(this).attr('data-callId')
+    _AjaxGetData('/scoreMission/' + callId + '/getCallRatingNotes', 'GET', function (resp) {
+      if (resp.code == 200) {
+        if (resp.result && resp.result.length == 0) return
+        let html = ``
+        resp.result.forEach(el => {
+          html += `
+                    <p class="font-weight-bold">[${el.userCreate && el.userCreate.fullName ? el.userCreate.fullName : ''}] đã thêm một ghi chú lúc ${(moment(el.createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>
+                    <p>Ghi chú cho :${_genNoteFor(el.criteria, el.criteriaGroup)}</p>
+                    <p>Hiển thị trên file ghi âm tại :${_secondsToTimestamp(_convertTime(el.timeNoteMinutes || 0, el.timeNoteSecond || 0))}</p>
+                    <p>${el.description}</p>
+                    <hr></hr>
+                  `
+        })
+        $("#comment .card-body").html(html)
+      } else {
+        console.log("get call rating note form history fail", resp)
+      }
+    })
+    _AjaxGetData('/scoreMission/' + callId + '/getCallRatingHistory', 'GET', function (resp) {
+      console.log("data edit history", resp)
+      if (resp.code == 200) {
+        if (resp.resultEdit && resp.resultEdit.length == 0 && resp.resultAdd && resp.resultAdd.length == 0) return
+        let html = ``
+        const grouped = _.groupBy(resp.resultEdit, el => el.createdAt)
+        for (let index in grouped) {
+          const data = grouped[index]
+          html += `<p class="font-weight-bold">[${data[0].userCreate && data[0].userCreate.fullName ? data[0].userCreate.fullName : ''}] đã sửa chấm điểm lúc ${(moment(data[0].createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>`
+          data.forEach(el => {
+            html += `
+                      <div class = "row">
+                          <div class="col-6">
+                              <i class='fas fa-edit'></i>
+                              ${el.criteria && el.criteria.name ? el.criteria.name : ''} :
+                          </div>
+                          <div class="col-6">
+                              ${el.selectionCriteriaOld && el.selectionCriteriaOld.name ? el.selectionCriteriaOld.name : ''} <i class="fas fa-angle-double-right"></i>
+                              ${el.selectionCriteriaNew && el.selectionCriteriaNew.name ? el.selectionCriteriaNew.name : ''}
+                          </div>
+                      </div>
+                    `
+          })
+          html += `<hr></hr>`
+        }
+
+        if (resp.resultAdd && !_.isEmpty(resp.resultAdd)) {
+          const { userCreate, createdAt } = resp.resultAdd || {}
+          html += `<p class="font-weight-bold">[${userCreate.fullName}] đã chấm điểm lúc ${(moment(createdAt).format("DD/MM/YYYY HH:mm:ss"))}</p>`
+        }
+
+        $("#callScore .card-body").html(html)
+      } else {
+        console.log("get call rating note form history fail", resp)
+      }
+    })
+  })
+
+  // xử lí chọn option ghi chú của mục tiêu
+  $(document).on('change', '#idCriteriaGroup', function () {
+    renderCriteria($(this).val(), '#idCriteria')
+  })
+
+
+}
+
+function deleteSaveColumn() {
+  return new Promise((resolve, reject) => {
+    $('.page-loader').show()
+
+    $.ajax({
+      type: 'DELETE',
+      url: '/recording/SaveConfigurationColums',
+      cache: 'false',
+      success: function (result) {
+        $('.page-loader').hide()
+        resolve('success')
+      },
+      error: function (error) {
+        $('.page-loader').hide()
+        reject(error.responseJSON.message)
+      },
+    })
+  })
 }
 
 function SaveConfigurationColums(data) {
@@ -319,6 +551,219 @@ function SaveConfigurationColums(data) {
       return toastr.error(JSON.parse(error.responseText).message)
     },
   })
+}
+
+function getFormData(formId) {
+  let filter = {}
+
+  filter = _.chain($(`#${formId} .input`)).reduce(function (memo, el) {
+    let value = $(el).val()
+    if (value != '' && value != null) memo[el.name] = value
+    return memo
+  }, {}).value()
+
+  return filter
+}
+
+function renderCriteriaGroup(data) {
+  let html = `<option value="0" selected>Toàn bộ kịch bản</option>`
+  data.forEach(el => {
+    html += `<option value="${el.id}">${el.name}</option>`
+  })
+  $('#idCriteriaGroupComment').html(html)
+  $('.selectpicker').selectpicker('refresh')
+}
+
+function renderCriteria(idCriteriaGroup, idAddCriteria) {
+  let html = ``
+  _AjaxGetData('/scoreMission/' + idCriteriaGroup + '/getCriteriaByCriteriaGroup', 'GET', function (resp) {
+    if (resp.code == 200) {
+      resp.result.forEach((el, index) => {
+        html += `<option value="${el.id}" ${index == 0 ? 'selected' : ''}>${el.name}</option>`
+      })
+      $(`${idAddCriteria}`).html(html)
+      $('.selectpicker').selectpicker('refresh')
+      $(`${idAddCriteria}`).prop("disabled", html ? false : true)
+      $('.selectpicker').selectpicker('refresh')
+    }
+  })
+}
+
+// lấy thông tin chi tiết của kịch bản chấm điểm
+function getDetailScoreScript(idScoreScript, callId, url) {
+  let queryData = {}
+  queryData.idScoreScript = idScoreScript
+  queryData.callId = callId
+  _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
+    console.log("data kịch bản chấm điểm", resp)
+    if (resp.code != 200) return toastr.error(resp.message)
+    if (resp.data.CriteriaGroup.length > 0) {
+      $('.nameScoreScript').text(resp.data.name)
+      // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
+      _criteriaGroups = resp.data.CriteriaGroup
+
+      $("#downloadFile-popupCallScore").attr("url-record", url)
+      wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
+
+      $('#btn-save-modal').attr('data-callId', callId)
+      $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
+      //render dữ liệu ra popup
+      dataEditOrigin = resp.resultCallRating
+      popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
+      return $('#popupCallScore').modal('show')
+    }
+  })
+}
+
+// xử lí dữ liệu ra popup
+function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
+  let navHTML = ``
+  $('#formCallScore')[0].reset()
+  $('.tab-content').html('')
+  let optionIdCriteriaGroup = `<option value="0">Toàn bộ kịch bản</option>`
+  let totalPoint = 0
+  criteriaGroups.map((criteriaGroup, index) => {
+    let uuidv4 = window.location.uuidv4()
+    let pointCriteria = 0
+    let navTabContent
+    if (criteriaGroup.Criteria && criteriaGroup.Criteria.length > 0) {
+      let criteriaHtml = ``
+      criteriaGroup.Criteria.map((criteria) => {
+        let _uuidv4 = window.location.uuidv4()
+        let htmlSelectionCriteria = ``
+        if (criteria.SelectionCriteria.length > 0) {
+          criteria.SelectionCriteria.map((el) => {
+            htmlSelectionCriteria += `<option data-point="${el.score}" value="${el.id}">${el.name + ': ' + (el.score)}</option>`
+          })
+        }
+        criteriaHtml += `
+                <div class="form-group">
+                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
+                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
+                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
+                        ${htmlSelectionCriteria}
+                    </select>
+                </div>`
+        pointCriteria += parseInt(criteria.scoreMax)
+        totalPoint += parseInt(criteria.scoreMax)
+      })
+      // giao diện từng tiêu chí của mỗi Nhóm tiêu chí
+      navTabContent = `
+            <div class="tab-pane fade mb-4 ${index == 0 ? "show active" : ""}" id="tab-criteria-group-${uuidv4}" role="tabpanel"
+                aria-labelledby="custom-tabs-three-home-tab">
+                ${criteriaHtml}
+            </div>
+            `
+    }
+    // tạo thanh nav cho Nhóm tiêu chí
+    navHTML += `
+        <li class="nav-item border-bottom">
+            <a class="nav-link nav-criteria-group group-${criteriaGroup.id} ${index == 0 ? "active" : ""}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+            aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
+        </li>`
+    optionIdCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
+    $('.tab-content').append(navTabContent)
+
+  })
+
+  $('#idCriteriaGroup').html(optionIdCriteriaGroup)
+  console.log('resultCallRating', resultCallRating)
+  console.log('resultCallRatingNote', resultCallRatingNote)
+  // xử lí dữ liệu cho phần ghi chú chấm điểm
+  if (resultCallRating && resultCallRating.length > 0) {
+    //ưu tiên hiển thị ở màn tạo mới 
+    let dataPriority
+    dataPriority = resultCallRatingNote.find(el => el.createdByForm == CreatedByForm.ADD)
+    if (!dataPriority) dataPriority = resultCallRatingNote[0]
+
+    const { idCriteriaGroup, description, timeNoteMinutes, timeNoteSecond } = dataPriority || {}
+
+    $('.titlePopupCallSource').text('Sửa chấm điểm cuộc gọi:')
+    $('#idCriteriaGroup').val(idCriteriaGroup == null ? 0 : idCriteriaGroup)
+    $('#idCriteria').html(`<option>${dataPriority && dataPriority.criteria && dataPriority.criteria.name ? dataPriority.criteria.name : ''}</option>`)
+    $('#description').val(description)
+    $('#timeNoteMinutes').val(timeNoteMinutes)
+    $('#timeNoteSecond').val(timeNoteSecond)
+
+    showDisableElement(true)
+    $("#btn-save-modal").attr('method', 'edit')
+    $(".countValueLength").text(description && description.length + "/500")
+  } else {
+    $('.titlePopupCallSource').text('Tạo chấm điểm cuộc gọi:')
+    $('#idCriteria').val("")
+    $('#idCriteriaGroup').val('0')
+
+    $('#progress-scoreCriteria').html('')
+    $('.nameCriteriaGroup').text('')
+    $('.scoreCriteria').text('')
+
+    showDisableElement(false)
+    $("#btn-save-modal").attr('method', 'add')
+    $('#idCriteria').prop("disabled", true)
+    $('.scoreScript').text(`Tổng điểm: 0/${totalPoint} - 0%`)
+  }
+
+  // xử lí dữ liệu cho phần kịch bản và tính tổng điểm
+  $('.selectpicker').selectpicker('refresh')
+  $('.nav-scoreScript').html(navHTML)
+  $('#progress-scoreScript').html('')
+  let resultPointCriteria = 0
+  if (resultCallRating) {
+    resultCallRating.map((el) => {
+      // tìm các mục tiêu có id tương ứng và cộng điểm
+      resultPointCriteria += parseInt($(`.selectpicker.criteria option[value="${el.idSelectionCriteria}"]`).attr('data-point'))
+      //gán giá trị cho ô select
+      $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria)
+    })
+
+    criteriaGroups.map((criteriaGroup) => {
+      let resultPointCriteriaGroup = 0
+      resultCallRating.map((el) => {
+        let point = $(`.selectpicker.criteriaGroup-${criteriaGroup.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
+        resultPointCriteriaGroup += point ? parseInt(point) : 0
+      })
+      $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
+    })
+
+
+    // phần trăm điểm
+    var perc = ((resultPointCriteria / totalPoint) * 100).toFixed(0)
+    // gán phần trăm điểm
+    let html = `
+        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+        aria-valuemax="100">Hoàn thành ${perc}%</div>`
+    $('#progress-scoreScript').html(html)
+    $('.scoreScript').text(`Tổng điểm: ${resultPointCriteria}/${totalPoint} - ${perc}%`)
+  }
+  // hiển thị điểm của mục tiêu đầu tiên
+  let $firstElm = $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}`)
+  $('.nameCriteriaGroup').text($firstElm.text())
+  if ($firstElm.attr('resultPointCriteriaGroup') || $firstElm.attr('resultPointCriteriaGroup') == 0) {
+    let point = $firstElm.attr('resultPointCriteriaGroup')
+
+    let total = $firstElm.attr('data-point')
+    var perc = ((point / total) * 100).toFixed(0)
+    let html = `
+        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
+        aria-valuemax="100">Hoàn thành ${perc}%</div>`
+    $('#progress-scoreCriteria').html(html)
+    $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
+
+  } else {
+    $('#progress-scoreCriteria').html('')
+    $('.scoreCriteria').text(`Tổng điểm: 0/${$firstElm.attr('data-point')} - 0%`)
+  }
+
+  $('.selectpicker').selectpicker('refresh')
+}
+
+function showDisableElement(check) {
+  $('#idCriteriaGroup').prop('disabled', check)
+  $('#idCriteria').prop('disabled', check)
+  $('#timeNoteMinutes').prop('disabled', check)
+  $('#timeNoteSecond').prop('disabled', check)
+  $('#description').prop('disabled', check)
+  return
 }
 
 function getFormData(formId) {
@@ -430,6 +875,7 @@ function createTable(data, ConfigurationColums, queryData) {
     data.forEach((item, element) => {
       let audioHtml = ''
       let agentName = item.fullName && `${item.fullName} (${item.userName})` || ''
+      let uuidv4 = window.location.uuidv4()
 
       if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
@@ -452,14 +898,22 @@ function createTable(data, ConfigurationColums, queryData) {
         } else if (key == 'action') {
           tdTable += ` <th class="text-center ${key} tableFixColumn second-col">
                             <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callid="${item.callId}"></i>
-                            <i class="fas fa-check mr-2" title="Chấm điểm"></i>
-                            <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="menuDropDownAdvanced">
-                                  <a class="dropdown-item" href="#">Sửa chấm điểm</a>
-                                  <a class="dropdown-item" href="#">Ghi chú chấm điểm</a>
-                                  <a class="dropdown-item" href="#">Xem lịch sửa chấm điểm</a>
+
+                            <div class="btn-group">
+                              <i class="fas fa-check mr-2" title="Chấm điểm" id="dropdownMenuAdvanced-${uuidv4}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown-menu menuDropDownAdvancedCss1" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
+                                    ${genDropDownList(item.callId, item.recordingFileName, item.ScoreTarget_ScoreScript, item.isMark)}
                                 </div>
-                            </i>
+                            </div>
+                            
+                            <div class="btn-group">
+                              <i class="fas fa-ellipsis-v" id="dropdownMenuAdvanced-${uuidv4}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown-menu menuDropDownAdvancedCss2" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
+                                  <a class="dropdown-item showCallScore" data-isMark = ${item.isMark ? item.isMark : false} data-id = ${item.idScoreScript} url-record="${item.recordingFileName}" data-callid="${item.callId}">Sửa chấm điểm</a>
+                                  <a class="dropdown-item commentCallScore" url-record="${item.recordingFileName}" data-callid="${item.callId}">Ghi chú chấm điểm</a>
+                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sửa chấm điểm</a>
+                                </div>
+                            </div>
                        </th>`
         } else {
           tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>`
@@ -473,11 +927,11 @@ function createTable(data, ConfigurationColums, queryData) {
     })
     $tableData.html(html)
     return
-  }
-  else {
+  } else {
     data.forEach((item, element) => {
       let audioHtml = ''
       let agentName = item.fullName && `${item.fullName} (${item.userName})` || ''
+      let uuidv4 = window.location.uuidv4()
 
       if (item.recordingFileName && item.recordingFileName !== '') {
         audioHtml = `
@@ -499,16 +953,24 @@ function createTable(data, ConfigurationColums, queryData) {
             tdTable += ` <th class="text-center tableFixColumn first-col"> <div>${item[key] || item['xmlCdrId']}</div> </th>`
           } else if (key == 'action') {
             tdTable += ` <th class="text-center ${key} tableFixColumn second-col">
-                            <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm"></i>
-                            <i class="fas fa-check mr-2" title="Chấm điểm"></i>
-                            <i class="fas fa-ellipsis-v" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" id="menuDropDownAdvanced">
-                                  <a class="dropdown-item" href="#">Sửa chấm điểm</a>
-                                  <a class="dropdown-item" href="#">Ghi chú chấm điểm</a>
-                                  <a class="dropdown-item" href="#">Xem lịch sửa chấm điểm</a>
+                            <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${item.recordingFileName}" data-callid="${item.callId}"></i>
+
+                            <div class="btn-group">
+                              <i class="fas fa-check mr-2" title="Chấm điểm" id="dropdownMenuAdvanced-${uuidv4}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown-menu menuDropDownAdvancedCss1" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
+                                    ${genDropDownList(item.callId, item.recordingFileName, item.ScoreTarget_ScoreScript, item.isMark)}
                                 </div>
-                            </i>
-                         </th>`
+                            </div>
+                            
+                            <div class="btn-group">
+                              <i class="fas fa-ellipsis-v" id="dropdownMenuAdvanced-${uuidv4}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></i>
+                                <div class="dropdown-menu menuDropDownAdvancedCss2" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
+                                  <a class="dropdown-item showCallScore" data-isMark = ${item.isMark ? item.isMark : false} data-id = ${item.idScoreScript} url-record="${item.recordingFileName}" data-callid="${item.callId}">Sửa chấm điểm</a>
+                                  <a class="dropdown-item commentCallScore" url-record="${item.recordingFileName}" data-callid="${item.callId}">Ghi chú chấm điểm</a>
+                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sửa chấm điểm</a>
+                                </div>
+                            </div>
+                       </th>`
           } else {
             tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>`
           }
@@ -524,6 +986,27 @@ function createTable(data, ConfigurationColums, queryData) {
     $tableData.html(html)
     return
   }
+}
+
+function genDropDownList(callId, recordingFileName, ScoreTarget_ScoreScript, isMark) {
+  let dropdown = ''
+  if (isMark == true) {
+    dropdown += `<a class="dropdown-item" >Cuộc gọi đã được chấm điểm !</a>`
+  } else {
+    ScoreTarget_ScoreScript.map((el) => {
+      if (el.scoreScriptInfo) {
+        dropdown += `<a class="dropdown-item showCallScore" data-callId="${callId}" 
+                    url-record="${recordingFileName}" data-id="${el.scoreScriptId}">${el.scoreScriptInfo && el.scoreScriptInfo.name ? el.scoreScriptInfo.name : ''}
+                </a>`
+      } else {
+        dropdown += `<a class="dropdown-item showCallScore" data-callId="${callId}" 
+                    url-record="${recordingFileName}" data-id="${el.id}">${el.name ? el.name : ''}
+                </a>`
+      }
+    })
+  }
+
+  return dropdown
 }
 
 function downloadFromUrl(url) {
@@ -603,10 +1086,16 @@ $(window).on('beforeunload', function () {
   $resetColumnCustom.off('click')
   $(document).off('click', '.sorting')
   $(document).off('click', '.zpaging')
-
-
   $(document).off('click', '.fa-play-circle')
   $(document).off('click', '.controls .btn')
   $(document).off('click', '#downloadFile')
+  $(document).off('change', '.sl-limit-page')
+  $(document).off('change', '#idCriteriaGroupComment')
+  $(document).off('click', '.commentCallScore')
+  $(document).off('click', '#btn-add-comment')
+  $(document).off('click', '.showCallScore')
+  $(document).off('click', '#btn-save-modal')
+  $(document).off('click', '.historyCallScore')
+  $(document).off('change', '#idCriteriaGroup')
 
 })
