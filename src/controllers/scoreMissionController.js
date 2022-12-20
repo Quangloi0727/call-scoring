@@ -21,6 +21,8 @@ const { cheSo } = require("../helpers/functions")
 
 const model = require('../models')
 
+const { checkRoleCommentCall } = require('../libs/menu-decentralization')
+
 exports.index = async (req, res, next) => {
     try {
         const scoreTarget = await model.ScoreTarget.findAll({
@@ -186,7 +188,7 @@ exports.getCallRatingNotes = async (req, res, next) => {
         return res.json({ code: 200, result: result })
     } catch (error) {
         _logger.error("get list notes errors", error)
-        return res.json({ code: 500, message: error })
+        return res.json({ code: 500, message: error.message })
     }
 }
 
@@ -232,7 +234,7 @@ exports.getCallRatingHistory = async (req, res, next) => {
         return res.json({ code: 200, resultEdit: resultEdit, resultAdd: resultAdd })
     } catch (error) {
         _logger.error("get list call rating history", error)
-        return res.json({ code: 500, message: error })
+        return res.json({ code: 500, message: error.message })
     }
 }
 
@@ -256,18 +258,20 @@ exports.getCriteriaGroupByCallRatingId = async (req, res, next) => {
         return res.json({ code: 200, result: result })
     } catch (error) {
         _logger.error("get all criteria group errors", error)
-        return res.json({ code: 500, message: error })
+        return res.json({ code: 500, message: error.message })
     }
 }
 
 exports.checkScored = async (req, res, next) => {
     try {
+        const checkRole = await checkRoleCommentCall(req)
+        if (!checkRole) return res.json({ code: 401, message: 'Không đủ quyền truy cập !' })
         const result = await model.CallRating.findOne({ where: { callId: req.params.id } })
         if (result) throw new Error(callHasBeenScored)
         return res.json({ code: 200, result: result })
     } catch (error) {
         _logger.error("get check scored errors", error)
-        return res.json({ code: 500, message: error })
+        return res.json({ code: 500, message: error.message })
     }
 }
 
@@ -279,7 +283,7 @@ exports.getCriteriaByCriteriaGroup = async (req, res, next) => {
         return res.json({ code: 200, result: result })
     } catch (error) {
         _logger.error("get Criteria By CriteriaGroup errors", error)
-        return res.json({ code: 500, message: error })
+        return res.json({ code: 500, message: error.message })
     }
 }
 
@@ -448,6 +452,7 @@ exports.saveCallRating = async (req, res) => {
         switch (type) {
             case 'add':
                 await model.CallRatingHistory.create({ type: CreatedByForm.ADD, created: req.user.id, callId: callId }, { transaction: transaction })
+                await model.CallDetailRecords.update({ share: true }, { where: { id: callId } }, { transaction: transaction })
                 break
             case 'edit':
                 await createCallRatingHistory(dataEditOrigin, resultCriteria, req.user.id, CreatedByForm.EDIT, transaction)

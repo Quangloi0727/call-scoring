@@ -70,8 +70,8 @@ function addRulesKeyword(uuidv4_child) {
     required: true,
     maxlength: 1000,
     messages: {
-      required: "Không được bỏ trống",
-      maxlength: "Giá trị tối đa là 1000 kí tự",
+      required: "Không được bỏ trống !",
+      maxlength: "Giá trị tối đa là 1000 kí tự !",
     }
   })
 }
@@ -96,8 +96,8 @@ function addRulesNameTargetAuto(uuidv4) {
     required: true,
     maxlength: 500,
     messages: {
-      required: "Không được bỏ trống",
-      maxlength: "Giá trị tối đa là 500 kí tự",
+      required: "Không được bỏ trống !",
+      maxlength: "Giá trị tối đa là 500 kí tự !",
     }
   })
 }
@@ -121,8 +121,8 @@ function addRulesPoint(uuidv4) {
     required: true,
     maxlength: 5,
     messages: {
-      required: "Không được bỏ trống",
-      maxlength: "Giá trị tối đa là 99999",
+      required: "Không được bỏ trống !",
+      maxlength: "Giá trị tối đa là 99999 !",
     }
   })
 }

@@ -45,18 +45,18 @@ const USER_ROLE = {
 const { admin, ...USER_ROLE_NOT_ADMIN } = USER_ROLE
 
 const MESSAGE_ERROR = {
-  "QA-001": "Không được bỏ trống",
+  "QA-001": "Không được bỏ trống !",
   "QA-002": "Thông tin đã tồn tại !",
-  "QA-003": "Tên đăng nhập hoặc mật khẩu không chính xác",
-  "QA-004": "Lỗi hệ thống!",
-  "QA-005": "Thời gian bắt đầu phải khác thời gian kết thúc",
-  "QA-006": "Lưu thành công!",
-  "QA-007": "Thông tin cấu hình lỗi!",
-  "QA-008": "Giá trị từ phải nhỏ hơn giá trị đến",
-  "QA-009": "Khoảng đạt chỉ tiêu cần lớn hơn và nằm ngoài khoảng cần cải thiện",
-  "QA-010": "Khoảng vượt chỉ tiêu cần lớn hơn và nằm ngoài khoảng đạt chỉ tiêu",
-  "QA-011": "Điểm lựa chọn phải nhỏ hơn hoặc bằng điểm tối đa",
-  "QA-012": "Đã tồn tại ghi chú tại thời điểm này",
+  "QA-003": "Tên đăng nhập hoặc mật khẩu không chính xác !",
+  "QA-004": "Lỗi hệ thống !",
+  "QA-005": "Thời gian bắt đầu phải khác thời gian kết thúc !",
+  "QA-006": "Lưu thành công !",
+  "QA-007": "Thông tin cấu hình lỗi !",
+  "QA-008": "Giá trị từ phải nhỏ hơn giá trị đến !",
+  "QA-009": "Khoảng đạt chỉ tiêu cần lớn hơn và nằm ngoài khoảng cần cải thiện !",
+  "QA-010": "Khoảng vượt chỉ tiêu cần lớn hơn và nằm ngoài khoảng đạt chỉ tiêu !",
+  "QA-011": "Điểm lựa chọn phải nhỏ hơn hoặc bằng điểm tối đa !",
+  "QA-012": "Đã tồn tại ghi chú tại thời điểm này !",
 }
 
 const TYPE_ROLETYPE = {

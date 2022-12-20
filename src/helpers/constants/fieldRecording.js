@@ -19,6 +19,7 @@ const headerDefaultRecording = {
 }
 
 const keysTitleExcelRecording = [
+    "callId",
     "direction",
     "agentName",
     "teamName",
@@ -27,6 +28,10 @@ const keysTitleExcelRecording = [
     "called",
     "origTime",
     "duration",
+    "scoreScriptHandle",
+    "scoreScriptAuto",
+    "scoreScriptCreatedBy",
+    "scoreScriptResult",
     "var1",
     "var2",
     "var3",

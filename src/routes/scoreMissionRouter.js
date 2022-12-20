@@ -1,7 +1,7 @@
 const express = require('express')
 const scoreMissionController = require('../controllers/scoreMissionController')
 const router = express.Router()
-const { isLoggedIn, isAdmin } = require('../libs/passport')
+const { isLoggedIn } = require('../libs/passport')
 const { checkRoleScoreMission } = require('../libs/menu-decentralization')
 
 router.route('/')
@@ -29,9 +29,9 @@ router.route('/:criteriaGroupId/getCriteriaByCriteriaGroup')
     .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getCriteriaByCriteriaGroup)
 
 router.route('/:callId/getCriteriaGroupByCallRatingId')
-    .get(isLoggedIn, isAdmin, scoreMissionController.getCriteriaGroupByCallRatingId)
+    .get(isLoggedIn, scoreMissionController.getCriteriaGroupByCallRatingId)
 
 router.route('/:id/checkScored')
-    .get(isLoggedIn, isAdmin, scoreMissionController.checkScored)
+    .get(isLoggedIn, scoreMissionController.checkScored)
 
 module.exports = router

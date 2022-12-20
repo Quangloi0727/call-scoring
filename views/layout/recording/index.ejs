@@ -1,5 +1,7 @@
 <script>
   var headerDefault = JSON.parse('<%- JSON.stringify(headerDefault)%>');
+  var CreatedByForm = JSON.parse('<%- JSON.stringify(CreatedByForm)%>')
+  var constTypeResultCallRating = JSON.parse('<%- JSON.stringify(constTypeResultCallRating)%>');
 </script>
 <div class="row">
   <div class="col-12">
@@ -188,12 +190,41 @@
                     <option value="<%= team.memberId %>">
                       <%= team.memberUserName %>
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
 
             </div>
           </div>
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group">
+                <label>Nhóm</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="groups" id="val_groups" data-live-search="true" title="Chọn..." multiple>
+                  <% groups.forEach((gr)=> { %>
+                    <option value="<%= gr.id %>">
+                      <%= gr.name %>
+                    </option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="form-group">
+                <label>Người đánh giá</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="evaluators" id="val_evaluators"
+                  data-live-search="true" title="Chọn..." multiple>
+                  <% getUserEvaluator.forEach((evaluator)=> { %>
+                    <option value="<%= evaluator.id %>">
+                      <%= evaluator.userName %>
+                    </option>
+                  <% }); %>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div class="row">
             <div class="col-6">
               <div class="form-group">
@@ -230,13 +261,25 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Nguồn ghi âm</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="sourceName"
-                  id="val_sourceName" data-live-search="true" title="Chọn..." multiple>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="sourceName" id="val_sourceName" data-live-search="true" title="Chọn..." multiple>
                   <% Object.keys(SOURCE_NAME).forEach((item)=> { %>
                     <option value="<%= SOURCE_NAME[item].code %>">
                       <%= SOURCE_NAME[item].text %>
                     </option>
                   <% }); %>
+                </select>
+              </div>
+            </div>
+
+            <div class="col-6">
+              <div class="form-group">
+                <label>Kết quả đánh giá</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="resultCallRating" id="val_resultCallRating" data-live-search="true" title="Chọn..." multiple>
+                  <% Object.keys(constTypeResultCallRating).forEach((item)=> { %>
+                    <option value="<%= constTypeResultCallRating[item].code %>">
+                      <%= constTypeResultCallRating[item].txt %>
+                    </option>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -250,7 +293,7 @@
                   <input type="text" class="form-control input" id="val_<%- el.code %>" name="<%- el.code %>" />
                 </div>
               </div>
-              <% }) %>
+            <% }) %>
 
           </div>
 
@@ -325,3 +368,6 @@
 </div>
 
 <%- include('../scoreMission/popupDetailRecord.ejs') %>
+<%- include('../scoreMission/popupCallScore.ejs') %>
+<%- include('../scoreMission/popupComment.ejs') %>
+<%- include('../scoreMission/popupHistory.ejs') %>

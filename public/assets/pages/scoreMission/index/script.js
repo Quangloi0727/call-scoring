@@ -128,6 +128,10 @@ function bindClick() {
         $("#downloadFile-popupComment").attr("url-record", urlRecord)
         $(".callId").text(callId)
         _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
+            if (resp.code == 401) {
+                $("#btn-add-comment").attr("disabled", true)
+                return $("#elmRecordCommentParent").html(resp.message)
+            }
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
                 $("#idCriteriaComment").attr("disabled", true)
@@ -137,7 +141,7 @@ function bindClick() {
                 $("#idCriteriaComment").attr("disabled", false)
                 $('.selectpicker').selectpicker('refresh')
                 _AjaxGetData('/scoreMission/' + callId + '/getCriteriaGroupByCallRatingId', 'GET', function (resp) {
-                    renderCriteriaGroup(resp.result.CriteriaGroup)
+                    renderCriteriaGroup(resp.result && resp.result.CriteriaGroup ? resp.result.CriteriaGroup : [])
                     $('.selectpicker').selectpicker('refresh')
                 })
             }
@@ -172,7 +176,7 @@ function bindClick() {
     })
 
     $(document).on('click', '.showCallScore', function () {
-        if ($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm")
+        if ($(this).attr('check-disable') == 'false') return toastr.error("Cuộc gọi chưa được chấm điểm !")
         let callId = $(this).attr('data-callId')
         $(".callId").text(callId)
         let idScoreScript = $(this).attr('data-id')
@@ -311,7 +315,7 @@ function bindClick() {
         if (data.note.description && (!data.note.timeNoteMinutes && !data.note.timeNoteSecond)) {
             $('.error-input-timeNote').removeClass('d-none')
             $('.error-input-timeNote').text(window.location.MESSAGE_ERROR["QA-001"])
-            return toastr.error('Thời gian ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
+            return toastr.error('Thời gian ghi chú không được bỏ trống !')
         }
 
         if (data.note.timeNoteMinutes || data.note.timeNoteSecond) {
@@ -320,14 +324,14 @@ function bindClick() {
             let totalSeconds = _convertTime(timeNoteMinutes, timeNoteSecond)
             if (totalSeconds > wavesurfer.getDuration()) {
                 $('.error-input-timeNote').removeClass('d-none')
-                $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ")
-                return toastr.error("Thời gian ghi chú không hợp lệ")
+                $('.error-input-timeNote').text("Thời gian ghi chú không hợp lệ !")
+                return toastr.error("Thời gian ghi chú không hợp lệ !")
             }
         }
 
         if (!data.note.description && (data.note.timeNoteMinutes || data.note.timeNoteSecond)) {
             $('.error-textarea-description').removeClass('d-none')
-            $('.error-textarea-description').text('Nội dung ghi chú' + window.location.MESSAGE_ERROR["QA-001"])
+            $('.error-textarea-description').text('Nội dung ghi chú không được bỏ trống !')
             return toastr.error(window.location.MESSAGE_ERROR["QA-001"])
         }
 
@@ -407,11 +411,11 @@ function bindClick() {
     })
 
     $("#showDetailRecord").on("hidden.bs.modal", function () {
-        wavesurfer.destroy()
+        wavesurfer ? wavesurfer.destroy() : ''
     })
 
     $("#popupCallScore").on("hidden.bs.modal", function () {
-        wavesurfer.destroy()
+        wavesurfer ? wavesurfer.destroy() : ''
         $('#recordCallScore').html('')
         $(".countValueLength").text("0/500")
     })
@@ -422,8 +426,8 @@ function bindClick() {
     })
 
     $("#popupComment").on("hidden.bs.modal", function () {
-        wavesurfer.destroy()
-        $('#formCallComment')[0].reset()
+        wavesurfer ? wavesurfer.destroy() : ''
+        $('#formCallComment')[0] ? $('#formCallComment')[0].reset() : ''
         $("#idCriteriaComment").html('')
         $(".countValueLength").text("0/500")
     })
@@ -639,6 +643,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
                 htmlString += ` <td class="text-center manualReviewScore ${dataConfig['manualReviewScore'] == true ? '' : 'd-none'}">${pointResultCallRating}</td>`
 
             } else if (key == 'resultReviewScore') {
+
                 htmlString += ` <td class="text-center resultReviewScore ${dataConfig['resultReviewScore'] == true ? '' : 'd-none'}">${resultReviewScore}</td>`
 
             } else if (key == 'agentName') {
@@ -711,6 +716,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
         }
     })
 }
+
 //
 function renderCriteriaGroup(data) {
     let html = `<option value="0" selected>Toàn bộ kịch bản</option>`
@@ -871,6 +877,7 @@ function showDisableElement(check) {
     $('#description').prop('disabled', check)
     return
 }
+
 function renderCriteria(idCriteriaGroup, idAddCriteria) {
     let html = ``
     _AjaxGetData('/scoreMission/' + idCriteriaGroup + '/getCriteriaByCriteriaGroup', 'GET', function (resp) {
