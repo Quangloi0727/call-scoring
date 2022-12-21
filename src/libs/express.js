@@ -50,6 +50,7 @@ function initServer() {
 
   require(path.join(_rootPath, 'src', 'jobs', 'job-share-data-for-mission'))
   require(path.join(_rootPath, 'src', 'jobs', 'job-change-status-score-target'))
+  require(path.join(_rootPath, 'src', 'jobs', 'job-clear-data-policy'))
 
   // Config socket.io version 3.0.4
   const server = http.createServer(app)

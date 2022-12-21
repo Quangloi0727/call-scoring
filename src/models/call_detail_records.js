@@ -89,6 +89,10 @@ class CallDetailRecords extends Model {
           {
             unique: false,
             fields: ['agentId']
+          },
+          {
+            unique: false,
+            fields: ['teamId']
           }
         ]
       }

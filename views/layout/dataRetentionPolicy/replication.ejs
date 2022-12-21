@@ -45,17 +45,15 @@
                 <div class="col-sm-3 form-group">
                   <input type="text" class="form-control inputData" placeholder="Nhập..." autocomplete="off"
                     name="valueSaveForCallGotPoint" id="valueSaveForCallGotPoint"
-                    value="<%= dataRetentionPolicy.valueSaveForCallGotPoint  %>" <%-
-                    UnlimitedSaveForCall.UnlimitedSave.value==dataRetentionPolicy.unlimitedSaveForCallGotPoint
-                    ? 'disabled' :'' %>
+                    value="<%= dataRetentionPolicy.valueSaveForCallGotPoint  %>" 
+                    <%- UnlimitedSaveForCall.UnlimitedSave.value==dataRetentionPolicy.unlimitedSaveForCallGotPoint ? 'disabled' :'' %>
                   >
                 </div>
                 <div class="col-sm-3">
                   <select class="form-control selectpicker inputData" name="typeDateSaveForCallGotPoint"
                     id="typeDateSaveForCallGotPoint" data-live-search="true" title="Chọn...">
                     <% Object.keys(TypeDateSaveForCall).forEach((item)=> { %>
-                      <option value="<%= item %>" <%- item==dataRetentionPolicy.typeDateSaveForCallGotPoint ? 'selected'
-                        :'' %>>
+                      <option value="<%= item %>" <%- item == dataRetentionPolicy.typeDateSaveForCallGotPoint ? 'selected' :'' %>>
                         <%= TypeDateSaveForCall[item].text %>
                       </option>
                       <% }); %>
@@ -93,8 +91,7 @@
                   <select class="form-control selectpicker inputData" data-live-search="true"
                     id="typeDateSaveForCallNoPoint" name="typeDateSaveForCallNoPoint" title="Chọn...">
                     <% Object.keys(TypeDateSaveForCall).forEach((item)=> { %>
-                      <option value="<%= item %>" <%- item==dataRetentionPolicy.typeDateSaveForCallNoPoint ? 'selected'
-                        :'' %>>
+                      <option value="<%= item %>" <%- item == dataRetentionPolicy.typeDateSaveForCallNoPoint ? 'selected' :'' %>>
                         <%= TypeDateSaveForCall[item].text %>
                       </option>
                     <% }); %>
