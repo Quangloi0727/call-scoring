@@ -19,6 +19,22 @@ exports.checkRoleCommentCall = async (req) => {
     return false
 }
 
+exports.checkRoleMark = async (req) => {
+    let { user } = req
+    if (user && user.roles.find(i => i.role == USER_ROLE.admin.n)) return true
+    const findRuleMark = await model.Rule.findOne({ where: { code: { [Op.eq]: SYSTEM_RULE.CHAM_DIEM_CUOC_GOI.code } } })
+    if (!findRuleMark) return false
+    const findRuleDetailMark = await model.RuleDetail.findAll({ where: { ruleId: { [Op.eq]: findRuleMark.id } }, raw: true })
+    const roles = user.roles
+    let filterRole = []
+    for (let i = 0; i < roles.length; i++) {
+        const findRole = findRuleDetailMark.filter(el => el.role == roles[i].role && el.unLimited == true)
+        if (findRole.length) filterRole.push(findRole)
+    }
+    if (filterRole.length) return true
+    return false
+}
+
 exports.checkRoleScoreMission = async (req, res, next) => {
     let { user } = req
     if (user && user.roles.find(i => i.role == USER_ROLE.admin.n)) return next()
