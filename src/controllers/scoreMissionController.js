@@ -21,7 +21,7 @@ const { cheSo } = require("../helpers/functions")
 
 const model = require('../models')
 
-const { checkRoleCommentCall } = require('../libs/menu-decentralization')
+const { checkRoleCommentCall, checkRoleMark } = require('../libs/menu-decentralization')
 
 exports.index = async (req, res, next) => {
     try {
@@ -289,11 +289,12 @@ exports.getCriteriaByCriteriaGroup = async (req, res, next) => {
 
 exports.getDetailScoreScript = async (req, res, next) => {
     try {
+        const checkRole = await checkRoleMark(req)
+        if (!checkRole) return res.json({ code: 401, message: 'Không đủ quyền truy cập !' })
         const { idScoreScript, callId } = req.query
-
-        if (!idScoreScript || idScoreScript == '') {
-            throw new Error('Chưa có id kịch bản!')
-        }
+        const findCall = await model.CallDetailRecords.findOne({ where: { id: callId, agentId: req.user.id } })
+        if (findCall) return res.json({ code: 401, message: 'Bạn không thể chấm cuộc  gọi của chính mình !' })
+        if (!idScoreScript || idScoreScript == '') throw new Error('Chưa có id kịch bản!')
         let p = []
         p.push(model.ScoreScript.findOne({
             where: { id: { [Op.eq]: Number(idScoreScript) } },

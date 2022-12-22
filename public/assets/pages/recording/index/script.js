@@ -251,17 +251,14 @@ function bindClick() {
   })
 
   $(document).on('click', '.commentCallScore', function () {
-    $('#popupComment').modal('show')
     const urlRecord = $(this).attr('url-record')
     const callId = $(this).attr('data-callId')
     $('#btn-add-comment').attr('data-callId', callId)
     $("#downloadFile-popupComment").attr("url-record", urlRecord)
     $(".callId").text(callId)
     _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
-      if (resp.code == 401) {
-        $("#btn-add-comment").attr("disabled", true)
-        return $("#elmRecordCommentParent").html(resp.message)
-      }
+      if (resp.code == 401) return toastr.error(resp.message)
+      $('#popupComment').modal('show')
       if (resp.code == 200) {
         $("#idCriteriaGroupComment").attr("disabled", true)
         $("#idCriteriaComment").attr("disabled", true)

@@ -10,7 +10,7 @@ router.route('/getData')
     .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getScoreMission)
 
 router.route('/getScoreScript')
-    .get(isLoggedIn, checkRoleScoreMission, scoreMissionController.getDetailScoreScript)
+    .get(isLoggedIn, scoreMissionController.getDetailScoreScript)
 
 router.route('/configurationColums')
     .post(isLoggedIn, checkRoleScoreMission, scoreMissionController.SaveConfigurationColums)
