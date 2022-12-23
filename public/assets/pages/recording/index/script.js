@@ -232,6 +232,13 @@ function bindClick() {
     }
   })
 
+  $('.dropdown-item').on('click', function () {
+    var val = $(this).attr("data-val")
+    console.log("value play speed", val)
+    wavesurfer.setPlaybackRate(val)
+    $(".defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
+  })
+
   $(document).on('click', '.fa-play-circle', function () {
     const urlRecord = $(this).attr('url-record')
     const callId = $(this).attr('data-callId')
@@ -1027,6 +1034,8 @@ $(function () {
     icons: { time: 'far fa-clock' }
   })
 
+  $(".defaultPlaySpeed").text("Chuẩn")
+
   bindClick()
 
   if (localStorage.getItem('modalData')) {
@@ -1094,5 +1103,6 @@ $(window).on('beforeunload', function () {
   $(document).off('click', '#btn-save-modal')
   $(document).off('click', '.historyCallScore')
   $(document).off('change', '#idCriteriaGroup')
+  $(document).off('click', '.dropdown-item')
 
 })
