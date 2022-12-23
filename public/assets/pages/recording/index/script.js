@@ -908,7 +908,7 @@ function createTable(data, ConfigurationColums, queryData) {
                                 <div class="dropdown-menu menuDropDownAdvancedCss2" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
                                   <a class="dropdown-item showCallScore" data-isMark = ${item.isMark ? item.isMark : false} data-id = ${item.idScoreScript} url-record="${item.recordingFileName}" data-callid="${item.callId}">Sửa chấm điểm</a>
                                   <a class="dropdown-item commentCallScore" url-record="${item.recordingFileName}" data-callid="${item.callId}">Ghi chú chấm điểm</a>
-                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sửa chấm điểm</a>
+                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sử chấm điểm</a>
                                 </div>
                             </div>
                        </th>`
@@ -964,7 +964,7 @@ function createTable(data, ConfigurationColums, queryData) {
                                 <div class="dropdown-menu menuDropDownAdvancedCss2" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
                                   <a class="dropdown-item showCallScore" data-isMark = ${item.isMark ? item.isMark : false} data-id = ${item.idScoreScript} url-record="${item.recordingFileName}" data-callid="${item.callId}">Sửa chấm điểm</a>
                                   <a class="dropdown-item commentCallScore" url-record="${item.recordingFileName}" data-callid="${item.callId}">Ghi chú chấm điểm</a>
-                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sửa chấm điểm</a>
+                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sử chấm điểm</a>
                                 </div>
                             </div>
                        </th>`
