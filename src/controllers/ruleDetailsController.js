@@ -1,5 +1,5 @@
 const model = require("../models")
-const { SUCCESS_200, ERR_500 } = require("../helpers/constants")
+const { SUCCESS_200, ERR_500, OP_TIME_DEFINE } = require("../helpers/constants")
 
 exports.create = async (req, res) => {
   let transaction
@@ -58,7 +58,7 @@ exports.update = async (req, res) => {
     //Khi mà bỏ tick xem không giới hạn với các quyền này thì mặc định để trong vòng 6 tháng
     const ruleViewData = [1, 2, 3, 4] //tương ứng với xem dữ liệu điện thoại viên,quản lý đội ngũ,người đánh giá và quản lý nhóm
     if (ruleViewData.includes(Number(id)) && unLimited == 'false') {
-      dataUpdate.expiresType = 1
+      dataUpdate.expiresType = OP_TIME_DEFINE.thang.n
       dataUpdate.expires = 6
     }
 
