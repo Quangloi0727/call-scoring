@@ -25,8 +25,26 @@ const { checkRoleCommentCall, checkRoleMark } = require('../libs/menu-decentrali
 
 exports.index = async (req, res, next) => {
     try {
+        let query = {}
+        const { roles, id } = req.user
+        const arrUserId = await checkRoleUser(roles, id)
+
+        if (arrUserId.length) {
+            const getScoreTargetIds = await model.CallShare.findAll({
+                where: { assignFor: arrUserId },
+                attributes: ['scoreTargetId'],
+                group: ['scoreTargetId'],
+                nest: true,
+                raw: true
+            })
+            if (getScoreTargetIds.length) {
+                const ids = _.pluck(getScoreTargetIds, 'scoreTargetId')
+                query = { id: { [Op.in]: ids } }
+            }
+        }
+
         const scoreTarget = await model.ScoreTarget.findAll({
-            where: { status: CONST_STATUS.ACTIVE.value },
+            where: query,
             attributes: ['name', 'id'],
             raw: true,
             nest: true
