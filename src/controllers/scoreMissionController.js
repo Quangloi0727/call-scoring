@@ -430,6 +430,10 @@ exports.saveCallRating = async (req, res) => {
         const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
 
+        //chấm điểm từ màn recording tạo mới 1 data trong bảng callShare
+        const findCallShare = await model.CallShare.findOne({ where: { callId: callId } })
+        if (!findCallShare) await model.CallShare.create({ callId: callId, idScoreScript: idScoreScript })
+
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
             const findCallRating = await model.CallRating.findAll({ where: { callId: callId } })

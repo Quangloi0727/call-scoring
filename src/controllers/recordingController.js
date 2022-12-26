@@ -691,15 +691,9 @@ async function mapScoreScript(data) {
       if (findScoreScriptMarked && findScoreScriptMarked.idScoreScript) el.idScoreScript = findScoreScriptMarked.idScoreScript
     } else {
       // chưa phân công và lấy toàn bộ kịch bản đang active
-      const findMarked = await model.CallRating.findOne({ where: { callId: { [Op.eq]: el.callId || el.xmlCdrId } }, raw: true })
-      if(findMarked){
-        el.isMark = true
-        el.idScoreScript = findMarked.idScoreScript
-      }else{
-        const findListScoreScriptActive = await model.ScoreScript.findAll({ where: { status: STATUS_SCORE_SCRIPT.hoatDong.n }, raw: true })
-        el.isMark = false
-        el.ScoreTarget_ScoreScript = findListScoreScriptActive
-      }
+      const findListScoreScriptActive = await model.ScoreScript.findAll({ where: { status: STATUS_SCORE_SCRIPT.hoatDong.n }, raw: true })
+      el.isMark = false
+      el.ScoreTarget_ScoreScript = findListScoreScriptActive
     }
     return el
   }))
