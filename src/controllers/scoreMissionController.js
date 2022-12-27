@@ -146,7 +146,7 @@ exports.getScoreMission = async (req, res, next) => {
                     }
                 }
             ],
-            order: [['updatedAt', 'DESC']],
+            order: [['createdAt', 'DESC']],
             offset: offset,
             limit: limit
         })

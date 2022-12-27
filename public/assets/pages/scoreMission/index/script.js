@@ -347,10 +347,13 @@ function bindClick() {
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
             if (resp.code != 200) return toastr.error(resp.message)
-            
+
             toastr.success('Lưu thành công !')
             return setTimeout(() => {
-                window.location.href = "/scoreMission"
+                const findPage = $(".active .page-link").text()
+                const findScoreTargetId = $("#scoreTargetId").val()
+                $('#popupCallScore').modal('hide')
+                findData(Number(findPage), findScoreTargetId)
             }, 2500)
         })
     })
@@ -543,7 +546,7 @@ function createTable(data, ConfigurationColums, configDefault) {
         const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
         const { recordingFileName } = item.callInfo
         let check = false
-        // //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
+        //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
         if (item.callRatingInfo && item.callRatingInfo.length > 0) {
             check = true
