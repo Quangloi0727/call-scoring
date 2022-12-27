@@ -46,6 +46,7 @@ exports.index = async (req, res, next) => {
         const scoreTarget = await model.ScoreTarget.findAll({
             where: query,
             attributes: ['name', 'id'],
+            order: [['createdAt', 'DESC']],
             raw: true,
             nest: true
         })
@@ -89,13 +90,9 @@ exports.getScoreMission = async (req, res, next) => {
 
         const arrUserId = await checkRoleUser(roles, id)
 
-        let queryAssignFor = {}
+        let queryAssignFor = { scoreTargetId: { [Op.ne]: null } }
 
-        if (!arrUserId.length) {
-            queryAssignFor = {}
-        } else {
-            queryAssignFor = { assignFor: arrUserId }
-        }
+        if (arrUserId.length) queryAssignFor = { ...queryAssignFor, assignFor: arrUserId }
 
         if (scoreTargetId) {
             queryAssignFor = { ...queryAssignFor, scoreTargetId: { [Op.in]: scoreTargetId } }
@@ -429,6 +426,10 @@ exports.saveCallRating = async (req, res) => {
         const { timeNoteMinutes, timeNoteSecond } = note || {}
         const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
+
+        //chấm điểm từ màn recording tạo mới 1 data trong bảng callShare
+        const findCallShare = await model.CallShare.findOne({ where: { callId: callId } })
+        if (!findCallShare) await model.CallShare.create({ callId: callId, idScoreScript: idScoreScript })
 
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu
