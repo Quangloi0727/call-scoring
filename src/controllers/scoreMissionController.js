@@ -46,6 +46,7 @@ exports.index = async (req, res, next) => {
         const scoreTarget = await model.ScoreTarget.findAll({
             where: query,
             attributes: ['name', 'id'],
+            order: [['createdAt', 'DESC']],
             raw: true,
             nest: true
         })
@@ -89,13 +90,9 @@ exports.getScoreMission = async (req, res, next) => {
 
         const arrUserId = await checkRoleUser(roles, id)
 
-        let queryAssignFor = {}
+        let queryAssignFor = { scoreTargetId: { [Op.ne]: null } }
 
-        if (!arrUserId.length) {
-            queryAssignFor = {}
-        } else {
-            queryAssignFor = { assignFor: arrUserId }
-        }
+        if (arrUserId.length) queryAssignFor = { ...queryAssignFor, assignFor: arrUserId }
 
         if (scoreTargetId) {
             queryAssignFor = { ...queryAssignFor, scoreTargetId: { [Op.in]: scoreTargetId } }

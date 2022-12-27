@@ -71,15 +71,11 @@ var upload = multer({
         var filetypes = /jpeg|jpg|png/
         var mimetype = filetypes.test(file.mimetype)
 
-        var extname = filetypes.test(path.extname(
-            file.originalname).toLowerCase())
+        var extname = filetypes.test(path.extname(file.originalname).toLowerCase())
 
-        if (mimetype && extname) {
-            return cb(null, true)
-        }
+        if (mimetype && extname) return cb(null, true)
 
-        cb("Error: File upload only supports the "
-            + "following filetypes - " + filetypes)
+        cb("Error: File upload only supports the following filetypes - " + filetypes)
     }
 
     // mypic is the name of file attribute
