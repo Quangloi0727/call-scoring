@@ -2,16 +2,6 @@ $(function () {
   const $formNormal = $("#form_login")
   // validate form normal
   const validatorFormDelete = $formNormal.validate({
-    rules: {
-      // password: {
-      //   required: true,
-      // },
-    },
-    messages: {
-      // password: {
-      //   required: "Mật khẩu không được để trống!",
-      // },
-    },
     ignore: ":hidden",
     errorElement: "span",
     errorPlacement: function (error, element) {
@@ -25,23 +15,19 @@ $(function () {
       $(element).removeClass("is-invalid")
     },
     submitHandler: function (form) {
-      var dataString = $(form).serialize()
       let msgAlert = $(form).find(".alert-server")
       $.ajax({
         type: "POST",
         url: '/login',
-        data:  `userName=${$("#userName").val()}&password=${window.btoa($("#password").val())}`,
+        data: `userName=${$("#userName").val()}&password=${window.btoa($("#password").val())}`,
         success: (result) => {
           msgAlert
             .removeClass("d-none alert-danger")
             .addClass("alert-success")
             .find(".alert-content")
             .html("Thành công")
+          localStorage.removeItem('modalData', '')
           window.location.reload()
-          //   setTimeout(() => {
-          //     msgAlert.addClass("d-none");
-          //     // trỏ sang trang thông báo tạo tài khoản thành công, cần vào mail để active
-          //   }, 1500);
         },
         error: (err) => {
           console.log(err)
@@ -59,11 +45,8 @@ $(function () {
             .addClass("alert-danger")
             .find(".alert-content")
             .html(`${msgFound}`)
-        },
-        // done: (result) => {
-        //   console.log({ result });
-        // },
+        }
       })
-    },
+    }
   })
 })

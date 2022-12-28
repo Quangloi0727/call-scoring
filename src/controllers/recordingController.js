@@ -1,7 +1,6 @@
 const titlePage = 'Danh sách cuộc gọi'
 const pagination = require('pagination')
 const { Op, QueryTypes } = require('sequelize')
-const lodash = require('lodash')
 const { createExcelPromise } = require('../common/createExcel')
 const { SUCCESS_200, ERR_500, ERR_400, ERR_403 } = require("../helpers/constants/statusCodeHTTP")
 const { USER_ROLE, SYSTEM_RULE, constTypeResultCallRating, headerDefaultRecording, keysTitleExcelRecording, SOURCE_NAME, CreatedByForm, STATUS_SCORE_SCRIPT } = require("../helpers/constants/index")
@@ -12,34 +11,18 @@ const { TeamStatus } = require('../helpers/constants/fileTeam')
 
 exports.index = async (req, res, next) => {
   try {
-    let isAdmin = false
     let { user } = req
 
-    if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
-      isAdmin = true
-    }
-
-    let { teamIds } = await checkLeader(req.user.id)
-
-    if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
-      let userGroupTeam = await getTeamOfGroup(req.user.id)
-      let teamIdMap = userGroupTeam.map(i => i.Group.TeamGroup.map(j => j.teamId)).filter(i => i.length > 0)
-
-      let teamFound = []
-      teamIdMap.forEach(i => {
-        i.forEach(j => {
-          if (!teamFound.includes(j)) teamFound.push(j)
-        })
-      })
-      teamIds = _.uniq([...teamIds, ...teamFound])
-    }
     const additionalField = fs.readFileSync(_pathFileAdditionField)
 
-    let { teams: teamsDetail } = await getAgentTeamMemberDetail(isAdmin, teamIds, req.user.id)
+    const listUser = await getListAgent(req.user.roles, req.user.id)
+
+    const listTeam = await getListTeam(req.user.roles, req.user.id)
 
     const groups = await model.Group.findAll()
 
     const getRoleEvaluator = await model.UserRole.findAll({ where: { role: USER_ROLE.evaluator.n } })
+
     const idsRoleEvaluator = _.pluck(getRoleEvaluator, 'userId')
 
     const getUserEvaluator = await model.User.findAll({ where: { id: { [Op.in]: idsRoleEvaluator } }, nest: true, raw: true })
@@ -54,8 +37,8 @@ exports.index = async (req, res, next) => {
       SYSTEM_RULE,
       constTypeResultCallRating,
       CreatedByForm,
-      teamsDetail: lodash.uniqBy(teamsDetail, 'memberId'), // master data
-      teams: lodash.uniqBy(teamsDetail, 'teamId') || [],
+      listUser,
+      listTeam,
       groups,
       getUserEvaluator
     })
@@ -77,8 +60,7 @@ exports.getRecording = async (req, res) => {
       called,
       extension,
       exportExcel,
-      fullName,
-      userName,
+      agentId,
       teamName,
       callDirection,
       teams,
@@ -104,11 +86,7 @@ exports.getRecording = async (req, res) => {
 
     if (!limit) limit = process.env.LIMIT_DOCUMENT_PAGE
 
-    if (sort && !['ASC', 'DESC'].includes(sort.sort_type)) {
-      return res.status(ERR_400.code).json({
-        message: ERR_400.message_detail.sortTypeInValid
-      })
-    }
+    if (sort && !['ASC', 'DESC'].includes(sort.sort_type)) return res.status(ERR_400.code).json({ message: ERR_400.message_detail.sortTypeInValid })
 
     limit = Number(limit)
 
@@ -135,17 +113,9 @@ exports.getRecording = async (req, res) => {
     let startTimeMilisecond = Number(_moment(startTime, 'DD/MM/YYYY').startOf('day').format('X'))
     let endTimeMilisecond = Number(_moment(endTime, 'DD/MM/YYYY').endOf('day').format('X'))
 
-    if (startTimeMilisecond > endTimeMilisecond) {
-      return res.status(ERR_400.code).json({
-        message: ERR_400.message_detail.timeQueryInValid
-      })
-    }
+    if (startTimeMilisecond > endTimeMilisecond) return res.status(ERR_400.code).json({ message: ERR_400.message_detail.timeQueryInValid })
 
-    if (endTimeMilisecond - startTimeMilisecond > Number(_config.limitSearchDayRecording) * 86400) {
-      return res.status(ERR_400.code).json({
-        message: ERR_400.message_detail.searchDayRecordingInValid(_config.limitSearchDayRecording)
-      })
-    }
+    if (endTimeMilisecond - startTimeMilisecond > Number(_config.limitSearchDayRecording) * 86400) return res.status(ERR_400.code).json({ message: ERR_400.message_detail.searchDayRecordingInValid(_config.limitSearchDayRecording) })
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.admin.n)) {
       isAdmin = true
@@ -168,6 +138,10 @@ exports.getRecording = async (req, res) => {
       })
       const userOfTeamOff = _.pluck(getAgentOfTeam, 'userId')
       if (userOfTeamOff.length > 0) query += `AND records.agentId not in (${userOfTeamOff.join(',')}) `
+    }
+
+    if (agentId) {
+      query += `AND records.agentId IN (${agentId.toString()}) `
     }
 
     if (req.user.roles.find((item) => item.role == USER_ROLE.groupmanager.n)) {
@@ -218,17 +192,9 @@ exports.getRecording = async (req, res) => {
       query += `AND records.teamId in (${idsTeam.toString()}) `
     }
 
-    if (fullName) {
-      userIdFilter = _.concat(userIdFilter, fullName)
-    }
-    if (userName) {
-      userIdFilter = _.concat(userIdFilter, userName)
-    }
     if (userIdFilter.length > 0) {
       userIdFilter = _.uniq(userIdFilter).map(i => Number(i))
-
       query += `AND agent.id IN (${userIdFilter.join()}) `
-
     }
 
     if (teamName) query += `AND team.name LIKE '%${teamName.toString()}%' `
@@ -448,48 +414,57 @@ function checkLeader(userId) {
   })
 }
 
-function getAgentTeamMemberDetail(isAdmin, teamIds = [], userId) {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let conditionQuery = ''
-      if (isAdmin == true) {
-        conditionQuery = `team.name <> 'Default'`
-      } else {
-        // sup
-        if (teamIds.length > 0) {
-          conditionQuery = `team.id IN (${teamIds.join(',')}) AND AgentTeamMembers.role =  ${USER_ROLE.agent.n}`
-        } else {
-          // agent
-          conditionQuery = `AgentTeamMembers.userId = ${Number(userId)}`
-        }
+async function getListAgent(roles, userId) {
+  const findRoleAdmin = roles.filter(el => el.role == USER_ROLE.admin.n)
+  const findRoleGroupManager = roles.filter(el => el.role == USER_ROLE.groupmanager.n)
+  const findRoleSupperVisor = roles.filter(el => el.role == USER_ROLE.supervisor.n)
+  if (findRoleAdmin.length) {
+    const findUserRoleAgent = await model.UserRole.findAll({
+      where: { role: USER_ROLE.agent.n },
+      attributes: ['userId'],
+      group: ['userId'],
+      nest: true,
+      raw: true
+    })
+    const idsAgent = _.pluck(findUserRoleAgent, 'userId')
+    return model.User.findAll({ where: { id: { [Op.in]: idsAgent } }, nest: true, raw: true })
+  }
+  if (findRoleGroupManager.length) {
+    const findGroupOfUser = await model.UserGroupMember.findAll({ where: { userId: userId, role: USER_ROLE.groupmanager.n }, nest: true, raw: true })
+    const idsGroup = _.pluck(findGroupOfUser, 'groupId')
+    const findTeamGroup = await model.TeamGroup.findAll({ where: { groupId: { [Op.in]: idsGroup } }, nest: true, raw: true })
+    const idsTeam = _.pluck(findTeamGroup, 'teamId')
+    const findUserOfTeam = await model.AgentTeamMember.findAll({ where: { teamId: { [Op.in]: idsTeam }, role: USER_ROLE.agent.n }, nest: true, raw: true })
+    const idsAgent = _.pluck(findUserOfTeam, 'userId')
+    return model.User.findAll({ where: { id: { [Op.in]: idsAgent } }, nest: true, raw: true })
+  }
+  if (findRoleSupperVisor.length) {
+    const findSuperVisorOfTeam = await model.AgentTeamMember.findAll({ where: { userId: userId, role: USER_ROLE.supervisor.n }, nest: true, raw: true })
+    const idsTeam = _.pluck(findSuperVisorOfTeam, 'teamId')
+    const findUserOfTeam = await model.AgentTeamMember.findAll({ where: { teamId: { [Op.in]: idsTeam }, role: USER_ROLE.agent.n }, nest: true, raw: true })
+    const idsAgent = _.pluck(findUserOfTeam, 'userId')
+    return model.User.findAll({ where: { id: { [Op.in]: idsAgent } }, nest: true, raw: true })
+  }
+  return []
+}
 
-      }
+async function getListTeam(roles, userId) {
+  const findRoleAdmin = roles.filter(el => el.role == USER_ROLE.admin.n)
+  const findRoleGroupManager = roles.filter(el => el.role == USER_ROLE.groupmanager.n)
 
-      conditionQuery += `AND team.status = ${TeamStatus.ON}` //get team active
+  if (findRoleAdmin.length) {
+    return model.Team.findAll({ nest: true, raw: true })
+  }
 
-      const result = await model.sequelize.query(
-        `
-            SELECT
-              team.id AS teamId,
-              team.name AS teamName,
-              memberOfTeam.id AS memberId,
-              memberOfTeam.fullName AS memberFullName,
-              memberOfTeam.userName AS memberUserName
-            FROM dbo.Teams team
-            LEFT JOIN dbo.AgentTeamMembers agentTeamMembers ON team.id = AgentTeamMembers.teamId
-            LEFT JOIN dbo.Users memberOfTeam ON agentTeamMembers.userId = memberOfTeam.id
-            
-            WHERE ${conditionQuery}
+  if (findRoleGroupManager.length) {
+    const findGroupOfUser = await model.UserGroupMember.findAll({ where: { userId: userId, role: USER_ROLE.groupmanager.n }, nest: true, raw: true })
+    const idsGroup = _.pluck(findGroupOfUser, 'groupId')
+    const findTeamGroup = await model.TeamGroup.findAll({ where: { groupId: { [Op.in]: idsGroup } }, nest: true, raw: true })
+    const idsTeam = _.pluck(findTeamGroup, 'teamId')
+    return model.Team.findAll({ where: { id: { [Op.in]: idsTeam } }, nest: true, raw: true })
+  }
 
-            GROUP BY team.id, team.name, memberOfTeam.id, memberOfTeam.fullName, memberOfTeam.userName
-        `,
-        { type: QueryTypes.SELECT }
-      )
-      return resolve({ teams: result })
-    } catch (error) {
-      return reject(error)
-    }
-  })
+  return []
 }
 
 async function handleData(data, privatePhoneNumber = false) {
@@ -590,24 +565,22 @@ async function exportExcelHandle(req, res, startTime, endTime, query, order, Con
 function createExcelFile(startDate, endDate, data, ConfigurationColums) {
   return new Promise(async (resolve, reject) => {
     try {
+      const additionalField = fs.readFileSync(_pathFileAdditionField)
+      const headerDefault = _.mapHeaderDefault(headerDefaultRecording, JSON.parse(additionalField))
 
       let startTime = _moment.unix(Number(startDate)).startOf('day').format('HH:mm DD/MM/YYYY')
       let endTime = _moment.unix(Number(endDate)).endOf('day').format('HH:mm DD/MM/YYYY')
 
       let titleExcel = {}
       let dataHeader = {}
-
+      
       if (ConfigurationColums) {
         Object.keys(ConfigurationColums).forEach(i => {
-
           if (i == 'audioHtml' || i == 'action' || ConfigurationColums[i] == 'false') return // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
-
-          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefaultRecording[i]
+          titleExcel[`TXT_${i.toUpperCase()}`] = headerDefault[i]
           dataHeader[`TXT_${i.toUpperCase()}`] = i
         })
       } else {
-        const additionalField = fs.readFileSync(_pathFileAdditionField)
-        const headerDefault = _.mapHeaderDefault(headerDefaultRecording, JSON.parse(additionalField))
         Object.keys(keysTitleExcelRecording).forEach(i => {
           let nameField = keysTitleExcelRecording[i]
           titleExcel[`TXT_${nameField.toUpperCase()}`] = headerDefault[nameField]

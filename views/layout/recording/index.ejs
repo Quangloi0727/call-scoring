@@ -169,31 +169,28 @@
           <div class="row">
             <div class="col-6">
               <div class="form-group">
-                <label>Họ tên</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="fullName" id="val_fullName"
-                  data-live-search="true" title="Chọn..." multiple>
-                  <% teamsDetail.forEach((team)=> { %>
-                    <option value="<%= team.memberId %>">
-                      <%= team.memberFullName %>
-                    </option>
-                    <% }); %>
-                </select>
-              </div>
-
-            </div>
-            <div class="col-6">
-              <div class="form-group">
-                <label>Tên đăng nhập</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="userName" id="val_userName"
-                  data-live-search="true" title="Chọn..." multiple>
-                  <% teamsDetail.forEach((team)=> { %>
-                    <option value="<%= team.memberId %>">
-                      <%= team.memberUserName %>
+                <label>Điện thoại viên</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="agentId" data-live-search="true" title="Chọn..." multiple>
+                  <% listUser.forEach((u)=> { %>
+                    <option value="<%= u.id %>">
+                      <%= u.fullName %> (<%= u.userName %>)
                     </option>
                   <% }); %>
                 </select>
               </div>
-
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label>Kết quả đánh giá</label>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="resultCallRating"
+                  id="val_resultCallRating" data-live-search="true" title="Chọn..." multiple>
+                  <% Object.keys(constTypeResultCallRating).forEach((item)=> { %>
+                    <option value="<%= constTypeResultCallRating[item].code %>">
+                      <%= constTypeResultCallRating[item].txt %>
+                    </option>
+                  <% }); %>
+                </select>
+              </div>
             </div>
           </div>
           <div class="row">
@@ -229,13 +226,12 @@
             <div class="col-6">
               <div class="form-group">
                 <label>Đội ngũ</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="teams" id="val_teams"
-                  data-live-search="true" title="Chọn..." multiple>
-                  <% teams.forEach((team)=> { %>
-                    <option value="<%= team.teamId %>">
-                      <%= team.teamName %>
+                <select class="form-control selectpicker input selectpickerAdvanced" name="teams" id="val_teams" data-live-search="true" title="Chọn..." multiple>
+                  <% listTeam.forEach((team)=> { %>
+                    <option value="<%= team.id %>">
+                      <%= team.name %>
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -267,19 +263,6 @@
                       <%= SOURCE_NAME[item].text %>
                     </option>
                   <% }); %>
-                </select>
-              </div>
-            </div>
-
-            <div class="col-6">
-              <div class="form-group">
-                <label>Kết quả đánh giá</label>
-                <select class="form-control selectpicker input selectpickerAdvanced" name="resultCallRating" id="val_resultCallRating" data-live-search="true" title="Chọn..." multiple>
-                  <% Object.keys(constTypeResultCallRating).forEach((item)=> { %>
-                    <option value="<%= constTypeResultCallRating[item].code %>">
-                      <%= constTypeResultCallRating[item].txt %>
-                    </option>
-                    <% }); %>
                 </select>
               </div>
             </div>

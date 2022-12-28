@@ -4,7 +4,7 @@ const { STATUS, TypeDateSaveForCall } = require('../helpers/constants/index')
 const { Op } = require('sequelize')
 
 // job share call
-cron.schedule("0 0 * * *", async () => {
+cron.schedule("*/5 * * * *", async () => {
     try {
         _logger.info('start job clear data policy at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
         const findDataPolicy = await model.DataRetentionPolicy.findAll({ where: { status: STATUS.ACTIVE.value } })
