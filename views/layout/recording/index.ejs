@@ -212,7 +212,7 @@
                 <label>Người đánh giá</label>
                 <select class="form-control selectpicker input selectpickerAdvanced" name="evaluators" id="val_evaluators"
                   data-live-search="true" title="Chọn..." multiple>
-                  <% getUserEvaluator.forEach((evaluator)=> { %>
+                  <% listEvaluator.forEach((evaluator)=> { %>
                     <option value="<%= evaluator.id %>">
                       <%= evaluator.userName %>
                     </option>

@@ -19,13 +19,9 @@ exports.index = async (req, res, next) => {
 
     const listTeam = await getListTeam(req.user.roles, req.user.id)
 
+    const listEvaluator = await getListEvaluator()
+
     const groups = await model.Group.findAll()
-
-    const getRoleEvaluator = await model.UserRole.findAll({ where: { role: USER_ROLE.evaluator.n } })
-
-    const idsRoleEvaluator = _.pluck(getRoleEvaluator, 'userId')
-
-    const getUserEvaluator = await model.User.findAll({ where: { id: { [Op.in]: idsRoleEvaluator } }, nest: true, raw: true })
 
     return _render(req, res, 'recording/index', {
       title: titlePage,
@@ -40,7 +36,7 @@ exports.index = async (req, res, next) => {
       listUser,
       listTeam,
       groups,
-      getUserEvaluator
+      listEvaluator
     })
   } catch (error) {
     console.log(`------- error ------- `)
@@ -181,11 +177,13 @@ exports.getRecording = async (req, res) => {
     if (resultCallRating) {
       let str = ``
       for (let i = 0; i < resultCallRating.length; i++) {
-        str += `'${resultCallRating[i]}'`
+        str += `'${resultCallRating[i]}',`
       }
-      query += `AND callShare.typeResultCallRating IN (${str}) `
+      query += `AND callShare.typeResultCallRating IN (${str.substring(0, str.length - 1)}) `
     }
+
     if (evaluators) query += `AND callShare.idUserReview IN (${evaluators.toString()}) `
+
     if (groups) {
       const findTeamGroup = await model.TeamGroup.findAll({ where: { groupId: { [Op.in]: groups } }, nest: true, raw: true })
       const idsTeam = _.pluck(findTeamGroup, 'teamId')
@@ -465,6 +463,25 @@ async function getListTeam(roles, userId) {
   }
 
   return []
+}
+
+async function getListEvaluator() {
+  const findRuleScoreScript = await model.Rule.findOne({ where: { code: { [Op.eq]: SYSTEM_RULE.CHAM_DIEM_CUOC_GOI.code } } })
+  if (!findRuleScoreScript) return []
+
+  const findRuleDetailScoreScript = await model.RuleDetail.findAll({ where: { [Op.and]: [{ ruleId: { [Op.eq]: findRuleScoreScript.id } }, { unLimited: { [Op.eq]: true } }] }, raw: true })
+  if (!findRuleDetailScoreScript.length) return []
+
+  const roleScoreScriptIds = _.pluck(findRuleDetailScoreScript, 'role')
+  const userRole = await model.UserRole.findAll({ where: { role: { [Op.in]: roleScoreScriptIds } }, raw: true })
+  if (!userRole.length) return []
+  const idsUserReview = _.pluck(userRole, 'userId')
+  _logger.info('List idUser assign', _.removeElementDuplicate(idsUserReview))
+  
+  return model.User.findAll({
+    where: { id: { [Op.in]: _.removeElementDuplicate(idsUserReview) } },
+    attributes: ['id', 'fullName', 'userName']
+  })
 }
 
 async function handleData(data, privatePhoneNumber = false) {
