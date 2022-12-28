@@ -482,11 +482,12 @@ async function handleData(data, privatePhoneNumber = false) {
     // map group
     if (el.teamId) {
       const findTeamGroup = await model.TeamGroup.findAll({ where: { teamId: el.teamId }, nest: true })
-      if (!findTeamGroup.length) return el
-      const idsGroup = _.pluck(findTeamGroup, "groupId")
-      const findGroup = await model.Group.findAll({ where: { id: { [Op.in]: idsGroup } }, nest: true })
-      const nameGroups = _.pluck(findGroup, "name")
-      el.groupName = nameGroups.join(",")
+      if (findTeamGroup.length) {
+        const idsGroup = _.pluck(findTeamGroup, "groupId")
+        const findGroup = await model.Group.findAll({ where: { id: { [Op.in]: idsGroup } }, nest: true })
+        const nameGroups = _.pluck(findGroup, "name")
+        el.groupName = nameGroups.join(",")
+      }
     }
 
     if (el.scoreScriptResult) {
@@ -573,7 +574,7 @@ function createExcelFile(startDate, endDate, data, ConfigurationColums) {
 
       let titleExcel = {}
       let dataHeader = {}
-      
+
       if (ConfigurationColums) {
         Object.keys(ConfigurationColums).forEach(i => {
           if (i == 'audioHtml' || i == 'action' || ConfigurationColums[i] == 'false') return // nếu là file ghi âm thì tạm thời bỏ qua do không có trang hiển thị chi tiết 1 file ghi âm
