@@ -27,23 +27,47 @@ function findData(page, formQuery) {
 function createTable(data) {
   let html = ''
   data.forEach((item) => {
+    console.log(111, item)
     html += `
       <tr>
         <td class="text-center">
           <a href=/scoreTarget/detail/${item.id}>${item.name}</a>
         </td>
-        <td class="text-center"></td>
+        <td class="text-center">${genUserAssign(item.ScoreTargetAssignmentInfo || [])}</td>
         <td class="text-center">${renStatus(item.status)}</td>
         <td class="text-center">${item.description || ''}</td>
         <td class="text-center">${moment(item.createdAt).format('HH:mm:ss DD/MM/YYYY') || ''}</td>
         <td class="text-center">${item.userCreate.userName || ''}</td>
         <td class="text-center">${moment(item.updatedAt).format('HH:mm:ss DD/MM/YYYY') || ''}</td>
-        <td class="text-center">${item.userUpdate.userName || ''}</td>
+        <td class="text-center">${item?.userUpdate?.userName || ''}</td>
       </tr>
     `
   })
 
   return $('#tableBody').html(html)
+}
+
+function genUserAssign(ScoreTargetAssignmentInfo) {
+  if (!ScoreTargetAssignmentInfo || !ScoreTargetAssignmentInfo.length) return ''
+  if (ScoreTargetAssignmentInfo.length == 1) return ScoreTargetAssignmentInfo[0].users.fullName
+  return `
+            <div class="dropdown">
+                <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    ${ScoreTargetAssignmentInfo.length} người đánh giá
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdown">
+                    ${genEachAssign(ScoreTargetAssignmentInfo)}
+                </div>
+            </div>
+    `
+}
+
+function genEachAssign(ScoreTargetAssignmentInfo) {
+  let html = ''
+  ScoreTargetAssignmentInfo.forEach(el => {
+    html += `<a class="dropdown-item" type="button">${el.users.fullName}</a>`
+  })
+  return html
 }
 
 function renStatus(status) {

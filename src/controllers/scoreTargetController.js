@@ -173,11 +173,18 @@ exports.gets = async (req, res, next) => {
       include: [
         { model: model.User, as: 'userCreate' },
         { model: model.User, as: 'userUpdate' },
+        {
+          model: model.ScoreTargetAssignment,
+          as: 'ScoreTargetAssignmentInfo',
+          include: {
+            model: model.User,
+            as: 'users'
+          }
+        },
       ],
       required: false,
       offset: offset,
       limit: limit,
-      raw: true,
       nest: true
     })
 
@@ -306,6 +313,7 @@ exports.update = async (req, res, next) => {
   let transaction
   try {
     let data = req.body
+    data.updated = req.user.id
     const { callTime, name, effectiveTime, effectiveTimeType, arrCond, arrTargetAuto, scoreScriptId, numberOfCall, status } = req.body
     transaction = await model.sequelize.transaction()
 
@@ -335,8 +343,6 @@ exports.update = async (req, res, next) => {
     if (numberOfCall) {
       data.numberOfCall = Math.abs(numberOfCall)
     }
-    data.updated = req.user.id
-
     // update tiêu chí
     await model.ScoreTarget.update(data, { where: { id: Number(data['edit-id']) } }, { transaction: transaction })
 

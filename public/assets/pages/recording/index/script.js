@@ -32,21 +32,37 @@ var wavesurfer = null
 
 function bindClick() {
   $buttonSearch.on('click', function (e) {
-    let page = 1
     let formData = getFormData('form_search')
+    let formDataAdvanced = getFormData('form_advanced_search')
 
     console.log('formData: ', formData)
-    if (formData.startTime) {
-      $('[name="startTime"]').val(formData.startTime)
+    console.log('formDataAdvanced: ', formDataAdvanced)
+
+    if (_.isEmpty(formDataAdvanced)) {
+      if (formData.startTime) {
+        $('[name="startTime"]').val(formData.startTime)
+      }
+
+      if (formData.endTime) {
+        $('[name="endTime"]').val(formData.endTime)
+      }
+      searchType = DEFAULT_SEARCH
+
+      console.log("data search", formData)
+      return findData(1, null, formData)
+
+    } else {
+      formDataAdvanced.caller = formData.caller
+      formDataAdvanced.called = formData.called
+      formData = formDataAdvanced
+      searchType = DEFAULT_SEARCH
+
+      console.log("data search", formData)
+      return findData(1, null, formData)
     }
 
-    if (formData.endTime) {
-      $('[name="endTime"]').val(formData.endTime)
-    }
-    searchType = DEFAULT_SEARCH
-
-    return findData(page, null, formData)
   })
+
   // enter
   $('#form_search input[name="caller"],#form_search input[name="called"]').keypress('enter', function (e) {
     if (e.which == 13) {
@@ -113,11 +129,10 @@ function bindClick() {
 
   $buttonClearFilter.on('click', () => {
     localStorage.removeItem('modalData', '')
-
     $formAdvancedSearch.trigger("reset")
     $('.selectpickerAdvanced').selectpicker('refresh')
-
-    return
+    const formData = getFormData('form_search')
+    return findData(1, null, formData)
   })
 
   $resetColumnCustom.on('click', async () => {
@@ -557,18 +572,6 @@ function SaveConfigurationColums(data) {
   })
 }
 
-function getFormData(formId) {
-  let filter = {}
-
-  filter = _.chain($(`#${formId} .input`)).reduce(function (memo, el) {
-    let value = $(el).val()
-    if (value != '' && value != null) memo[el.name] = value
-    return memo
-  }, {}).value()
-
-  return filter
-}
-
 function renderCriteriaGroup(data) {
   let html = `<option value="0" selected>Toàn bộ kịch bản</option>`
   data.forEach(el => {
@@ -919,6 +922,8 @@ function createTable(data, ConfigurationColums, queryData) {
                                 </div>
                             </div>
                        </th>`
+        } else if (key == 'groupName') {
+          tdTable += ` <td class="text-center"> <div>${genGroupOfAgent(item['groupName'])}</div> </td>`
         } else {
           tdTable += ` <td class="text-center ${key} ${value == 'true' ? '' : 'd-none'}">${item[key] || ''}</td>`
         }
@@ -975,6 +980,8 @@ function createTable(data, ConfigurationColums, queryData) {
                                 </div>
                             </div>
                        </th>`
+          } else if (key == 'groupName') {
+            tdTable += ` <td class="text-center"> <div>${genGroupOfAgent(item['groupName'])}</div> </td>`
           } else {
             tdTable += ` <td class="text-center ${key}">${item[key] || ''}</td>`
           }
@@ -1020,6 +1027,31 @@ function downloadFromUrl(url) {
   link.href = url
 
   return link.click()
+}
+
+function genGroupOfAgent(groupName) {
+  groupName ? groupName = groupName.split(',') : []
+
+  if (!groupName || !groupName.length) return ''
+  if (groupName.length == 1) return groupName[0]
+  return `
+            <div class="dropdown">
+                <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    ${groupName.length} nhóm
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdown">
+                    ${genEachGroup(groupName)}
+                </div>
+            </div>
+    `
+}
+
+function genEachGroup(groupName) {
+  let html = ''
+  groupName.forEach(el => {
+    html += `<a class="dropdown-item" type="button">${el}</a>`
+  })
+  return html
 }
 
 $(function () {

@@ -75,6 +75,10 @@ async function shareCallAllSystem(scoreTarget, findScoreTargetAssign, queryCount
 
     const KPIReality = calculateKPI(findScoreTargetAssign, Number(countCallReality))
 
+    const findCallShared = await model.CallShare.count({ where: { scoreTargetId: id } })
+
+    if (findCallShared >= numberOfCall) return _logger.info(`ScoreTarget ${name} complete share call !`)
+
     for (let i = 0; i < KPIOrigin.length; i++) {
         try {
             const checkKPI = await model.CallShare.count({

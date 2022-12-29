@@ -353,7 +353,7 @@ exports.deleteConfigurationColums = async (req, res) => {
     const data = {}
     data.userId = req.user.id
     transaction = await model.sequelize.transaction()
-    const result = await model.ConfigurationColums.destroy(
+    await model.ConfigurationColums.destroy(
       { where: { userId: Number(req.user.id), nameTable: titlePage } },
       { transaction: transaction }
     )
@@ -477,7 +477,7 @@ async function getListEvaluator() {
   if (!userRole.length) return []
   const idsUserReview = _.pluck(userRole, 'userId')
   _logger.info('List idUser assign', _.removeElementDuplicate(idsUserReview))
-  
+
   return model.User.findAll({
     where: { id: { [Op.in]: _.removeElementDuplicate(idsUserReview) } },
     attributes: ['id', 'fullName', 'userName']
@@ -673,7 +673,7 @@ async function mapScoreScript(data) {
         ]
       })
       el.isMark = false
-      el.ScoreTarget_ScoreScript = findScoreScript.ScoreTarget_ScoreScript || []
+      el.ScoreTarget_ScoreScript = findScoreScript && findScoreScript.ScoreTarget_ScoreScript ? findScoreScript.ScoreTarget_ScoreScript : []
     } else if (findInCallShare && findInCallShare.isMark == true) {
       //case đã phân công nhưng chấm rồi (màn edit)
       el.isMark = true

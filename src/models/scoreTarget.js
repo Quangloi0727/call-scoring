@@ -100,6 +100,11 @@ class ScoreTarget extends Model {
       as: 'ScoreTarget_ScoreScript'
     })
 
+    models.ScoreTarget.hasMany(models.ScoreTargetAssignment, {
+      foreignKey: "scoreTargetId",
+      as: 'ScoreTargetAssignmentInfo'
+    })
+
   }
 }
 

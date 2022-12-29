@@ -543,7 +543,7 @@ function createTable(data, ConfigurationColums, configDefault) {
     let rightTable = ''
     let leftTable = ``
     data.forEach(item => {
-        const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
+        const ScoreTarget_ScoreScript = item.scoreTargetInfo && item.scoreTargetInfo.ScoreTarget_ScoreScript ? item.scoreTargetInfo.ScoreTarget_ScoreScript : []
         const { recordingFileName } = item.callInfo
         let check = false
         //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
