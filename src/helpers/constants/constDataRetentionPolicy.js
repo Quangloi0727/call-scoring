@@ -1,14 +1,14 @@
 const TypeDateSaveForCall = {
   YEAR: {
-    value: 365,
+    value: 'YEAR',
     text: "Năm",
   },
   MONTH: {
-    value: 30,
+    value: 'MONTH',
     text: "Tháng",
   },
   DAY: {
-    value: 1,
+    value: 'DAY',
     text: "Ngày",
   }
 }
@@ -36,8 +36,8 @@ const UnlimitedSaveForCall = {
 }
 const dataRetentionPolicyNotFound = 'Không tìm thấy chính sách dữ liệu vui lòng thử lại sau !'
 const statusUpdateFail = 'Trạng thái update không hợp lệ !'
-const statusUpdateSuccess = 'Thay đổi trạng thái Chính sách thành công !'
-const deleteSuccess = 'Xóa Chính sách thành công !'
+const statusUpdateSuccess = 'Thay đổi trạng thái chính sách thành công !'
+const deleteSuccess = 'Xóa chính sách thành công !'
 
 module.exports = {
   TypeDateSaveForCall,

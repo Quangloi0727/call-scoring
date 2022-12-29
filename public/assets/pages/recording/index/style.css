@@ -152,6 +152,12 @@ table thead .sorting_desc {
   left: 53px !important;
 }
 
+.menuDropDownAdvancedCss1 {
+  max-height: 150px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
 /* .first-col {
   width: 100px;
   min-width: 100px;

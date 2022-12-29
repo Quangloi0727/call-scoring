@@ -121,17 +121,14 @@ function bindClick() {
     })
 
     $(document).on('click', '.fa-comment-alt', function () {
-        $('#popupComment').modal('show')
         const urlRecord = $(this).attr('url-record')
         const callId = $(this).attr('data-callId')
         $('#btn-add-comment').attr('data-callId', callId)
         $("#downloadFile-popupComment").attr("url-record", urlRecord)
         $(".callId").text(callId)
         _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
-            if (resp.code == 401) {
-                $("#btn-add-comment").attr("disabled", true)
-                return $("#elmRecordCommentParent").html(resp.message)
-            }
+            if (resp.code == 401) return toastr.error(resp.message)
+            $('#popupComment').modal('show')
             if (resp.code == 200) {
                 $("#idCriteriaGroupComment").attr("disabled", true)
                 $("#idCriteriaComment").attr("disabled", true)
@@ -349,12 +346,14 @@ function bindClick() {
         data.dataEditOrigin = dataEditOrigin
 
         _AjaxData('/scoreMission/saveCallRating', 'POST', JSON.stringify(data), { contentType: "application/json" }, function (resp) {
-            if (resp.code != 200) {
-                return toastr.error(resp.message)
-            }
+            if (resp.code != 200) return toastr.error(resp.message)
+
             toastr.success('Lưu thành công !')
             return setTimeout(() => {
-                window.location.href = "/scoreMission"
+                const findPage = $(".active .page-link").text()
+                const findScoreTargetId = $("#scoreTargetId").val()
+                $('#popupCallScore').modal('hide')
+                findData(Number(findPage), findScoreTargetId)
             }, 2500)
         })
     })
@@ -547,7 +546,7 @@ function createTable(data, ConfigurationColums, configDefault) {
         const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
         const { recordingFileName } = item.callInfo
         let check = false
-        // //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
+        //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
         let idScoreScript
         if (item.callRatingInfo && item.callRatingInfo.length > 0) {
             check = true
@@ -571,7 +570,7 @@ function createTable(data, ConfigurationColums, configDefault) {
             <td class="text-center">    
                 <i class="fas fa-check mr-2" id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
-                    ${dropdown}
+                    ${check == false ? dropdown : '<a class="dropdown-item">Cuộc gọi đã được chấm điểm !</a>'}
                 </div>
                 <i class="fas fa-pen-square mr-2 showCallScore" url-record="${recordingFileName}" data-callId="${item.callId}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${recordingFileName}" data-callId=${item.callId}></i>
@@ -696,9 +695,8 @@ function getDetailScoreScript(idScoreScript, callId, url) {
     queryData.callId = callId
     _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
         console.log("data kịch bản chấm điểm", resp)
-        if (resp.code != 200) {
-            return toastr.error(resp.message)
-        }
+        if (resp.code != 200) return toastr.error(resp.message)
+
         if (resp.data.CriteriaGroup.length > 0) {
             $('.nameScoreScript').text(resp.data.name)
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
@@ -748,31 +746,26 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
                         htmlSelectionCriteria += `<option data-point="${el.score}" value="${el.id}">${el.name + ': ' + (el.score)}</option>`
                     })
                 }
-                criteriaHtml += `
-                <div class="form-group">
-                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
-                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
-                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
-                        ${htmlSelectionCriteria}
-                    </select>
-                </div>`
+                criteriaHtml += `<div class="form-group">
+                                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
+                                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
+                                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
+                                        ${htmlSelectionCriteria}
+                                    </select>
+                                </div>`
                 pointCriteria += parseInt(criteria.scoreMax)
                 totalPoint += parseInt(criteria.scoreMax)
             })
             // giao diện từng tiêu chí của mỗi Nhóm tiêu chí
-            navTabContent = `
-            <div class="tab-pane fade mb-4 ${index == 0 ? "show active" : ""}" id="tab-criteria-group-${uuidv4}" role="tabpanel"
-                aria-labelledby="custom-tabs-three-home-tab">
-                ${criteriaHtml}
-            </div>
-            `
+            navTabContent = `<div class="tab-pane fade mb-4 ${index == 0 ? "show active" : ""}" id="tab-criteria-group-${uuidv4}" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
+                                ${criteriaHtml}
+                            </div>`
         }
         // tạo thanh nav cho Nhóm tiêu chí
-        navHTML += `
-        <li class="nav-item border-bottom">
-            <a class="nav-link nav-criteria-group group-${criteriaGroup.id} ${index == 0 ? "active" : ""}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
-            aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
-        </li>`
+        navHTML += `<li class="nav-item border-bottom">
+                        <a class="nav-link nav-criteria-group group-${criteriaGroup.id} ${index == 0 ? "active" : ""}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+                        aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
+                    </li>`
         optionIdCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
         $('.tab-content').append(navTabContent)
 

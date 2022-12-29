@@ -98,6 +98,10 @@ class CallShare extends Model {
                     {
                         unique: false,
                         fields: ['scoreTargetId']
+                    },
+                    {
+                        unique: false,
+                        fields: ['isMark']
                     }
                 ]
             }

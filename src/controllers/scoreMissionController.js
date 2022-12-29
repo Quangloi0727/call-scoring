@@ -21,13 +21,32 @@ const { cheSo } = require("../helpers/functions")
 
 const model = require('../models')
 
-const { checkRoleCommentCall } = require('../libs/menu-decentralization')
+const { checkRoleCommentCall, checkRoleMark } = require('../libs/menu-decentralization')
 
 exports.index = async (req, res, next) => {
     try {
+        let query = {}
+        const { roles, id } = req.user
+        const arrUserId = await checkRoleUser(roles, id)
+
+        if (arrUserId.length) {
+            const getScoreTargetIds = await model.CallShare.findAll({
+                where: { assignFor: arrUserId },
+                attributes: ['scoreTargetId'],
+                group: ['scoreTargetId'],
+                nest: true,
+                raw: true
+            })
+            if (getScoreTargetIds.length) {
+                const ids = _.pluck(getScoreTargetIds, 'scoreTargetId')
+                query = { id: { [Op.in]: ids } }
+            }
+        }
+
         const scoreTarget = await model.ScoreTarget.findAll({
-            where: { status: CONST_STATUS.ACTIVE.value },
+            where: query,
             attributes: ['name', 'id'],
+            order: [['createdAt', 'DESC']],
             raw: true,
             nest: true
         })
@@ -71,13 +90,9 @@ exports.getScoreMission = async (req, res, next) => {
 
         const arrUserId = await checkRoleUser(roles, id)
 
-        let queryAssignFor = {}
+        let queryAssignFor = { scoreTargetId: { [Op.ne]: null } }
 
-        if (!arrUserId.length) {
-            queryAssignFor = {}
-        } else {
-            queryAssignFor = { assignFor: arrUserId }
-        }
+        if (arrUserId.length) queryAssignFor = { ...queryAssignFor, assignFor: arrUserId }
 
         if (scoreTargetId) {
             queryAssignFor = { ...queryAssignFor, scoreTargetId: { [Op.in]: scoreTargetId } }
@@ -131,7 +146,7 @@ exports.getScoreMission = async (req, res, next) => {
                     }
                 }
             ],
-            order: [['updatedAt', 'DESC']],
+            order: [['createdAt', 'DESC']],
             offset: offset,
             limit: limit
         })
@@ -289,11 +304,12 @@ exports.getCriteriaByCriteriaGroup = async (req, res, next) => {
 
 exports.getDetailScoreScript = async (req, res, next) => {
     try {
+        const checkRole = await checkRoleMark(req)
+        if (!checkRole) return res.json({ code: 401, message: 'Không đủ quyền truy cập !' })
         const { idScoreScript, callId } = req.query
-
-        if (!idScoreScript || idScoreScript == '') {
-            throw new Error('Chưa có id kịch bản!')
-        }
+        const findCall = await model.CallDetailRecords.findOne({ where: { id: callId, agentId: req.user.id } })
+        if (findCall) return res.json({ code: 401, message: 'Bạn không thể chấm cuộc  gọi của chính mình !' })
+        if (!idScoreScript || idScoreScript == '') throw new Error('Chưa có id kịch bản!')
         let p = []
         p.push(model.ScoreScript.findOne({
             where: { id: { [Op.eq]: Number(idScoreScript) } },
@@ -410,6 +426,10 @@ exports.saveCallRating = async (req, res) => {
         const { timeNoteMinutes, timeNoteSecond } = note || {}
         const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
         transaction = await model.sequelize.transaction()
+
+        //chấm điểm từ màn recording tạo mới 1 data trong bảng callShare
+        const findCallShare = await model.CallShare.findOne({ where: { callId: callId } })
+        if (!findCallShare) await model.CallShare.create({ callId: callId, idScoreScript: idScoreScript })
 
         if (resultCriteria && resultCriteria.length > 0) {
             //xóa các các kết quả trước đó của mục tiêu

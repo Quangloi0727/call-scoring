@@ -1,5 +1,5 @@
 const model = require("../models")
-const { SUCCESS_200, ERR_500 } = require("../helpers/constants")
+const { SUCCESS_200, ERR_500, OP_TIME_DEFINE } = require("../helpers/constants")
 
 exports.create = async (req, res) => {
   let transaction
@@ -43,13 +43,7 @@ exports.update = async (req, res) => {
   try {
     const { id } = req.params
     const { expires, expiresType, unLimited, isActive } = req.body
-
     transaction = await model.sequelize.transaction()
-
-    if (!id) {
-      throw new Error("id Không hợp lệ!")
-    }
-
     let dataUpdate = {}
 
     if (expires) dataUpdate.expires = Number(expires)
@@ -61,17 +55,18 @@ exports.update = async (req, res) => {
       dataUpdate.expiresType = null
     }
 
-    await model.RuleDetail.update(
-      dataUpdate,
-      { where: { id: Number(id) } },
-      { transaction: transaction }
-    )
+    //Khi mà bỏ tick xem không giới hạn với các quyền này thì mặc định để trong vòng 6 tháng
+    const ruleViewData = [1, 2, 3, 4] //tương ứng với xem dữ liệu điện thoại viên,quản lý đội ngũ,người đánh giá và quản lý nhóm
+    if (ruleViewData.includes(Number(id)) && unLimited == 'false') {
+      dataUpdate.expiresType = OP_TIME_DEFINE.thang.n
+      dataUpdate.expires = 6
+    }
+
+    await model.RuleDetail.update(dataUpdate, { where: { id: Number(id) } }, { transaction: transaction })
 
     await transaction.commit()
 
-    return res.status(SUCCESS_200.code).json({
-      message: "Success!",
-    })
+    return res.status(SUCCESS_200.code).json({ message: "Success!" })
   } catch (error) {
     console.log(`------- error ------- `)
     console.log(error)

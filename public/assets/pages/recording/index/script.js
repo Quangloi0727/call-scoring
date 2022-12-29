@@ -232,6 +232,13 @@ function bindClick() {
     }
   })
 
+  $('.dropdown-item').on('click', function () {
+    var val = $(this).attr("data-val")
+    console.log("value play speed", val)
+    wavesurfer.setPlaybackRate(val)
+    $(".defaultPlaySpeed").text(val == 1 ? "Chuẩn" : val)
+  })
+
   $(document).on('click', '.fa-play-circle', function () {
     const urlRecord = $(this).attr('url-record')
     const callId = $(this).attr('data-callId')
@@ -251,17 +258,14 @@ function bindClick() {
   })
 
   $(document).on('click', '.commentCallScore', function () {
-    $('#popupComment').modal('show')
     const urlRecord = $(this).attr('url-record')
     const callId = $(this).attr('data-callId')
     $('#btn-add-comment').attr('data-callId', callId)
     $("#downloadFile-popupComment").attr("url-record", urlRecord)
     $(".callId").text(callId)
     _AjaxGetData('/scoreMission/' + callId + '/checkScored', 'GET', function (resp) {
-      if (resp.code == 401) {
-        $("#btn-add-comment").attr("disabled", true)
-        return $("#elmRecordCommentParent").html(resp.message)
-      }
+      if (resp.code == 401) return toastr.error(resp.message)
+      $('#popupComment').modal('show')
       if (resp.code == 200) {
         $("#idCriteriaGroupComment").attr("disabled", true)
         $("#idCriteriaComment").attr("disabled", true)
@@ -911,7 +915,7 @@ function createTable(data, ConfigurationColums, queryData) {
                                 <div class="dropdown-menu menuDropDownAdvancedCss2" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
                                   <a class="dropdown-item showCallScore" data-isMark = ${item.isMark ? item.isMark : false} data-id = ${item.idScoreScript} url-record="${item.recordingFileName}" data-callid="${item.callId}">Sửa chấm điểm</a>
                                   <a class="dropdown-item commentCallScore" url-record="${item.recordingFileName}" data-callid="${item.callId}">Ghi chú chấm điểm</a>
-                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sửa chấm điểm</a>
+                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sử chấm điểm</a>
                                 </div>
                             </div>
                        </th>`
@@ -967,7 +971,7 @@ function createTable(data, ConfigurationColums, queryData) {
                                 <div class="dropdown-menu menuDropDownAdvancedCss2" aria-labelledby="dropdownMenuAdvanced-${uuidv4}">
                                   <a class="dropdown-item showCallScore" data-isMark = ${item.isMark ? item.isMark : false} data-id = ${item.idScoreScript} url-record="${item.recordingFileName}" data-callid="${item.callId}">Sửa chấm điểm</a>
                                   <a class="dropdown-item commentCallScore" url-record="${item.recordingFileName}" data-callid="${item.callId}">Ghi chú chấm điểm</a>
-                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sửa chấm điểm</a>
+                                  <a class="dropdown-item historyCallScore" data-callid="${item.callId}">Xem lịch sử chấm điểm</a>
                                 </div>
                             </div>
                        </th>`
@@ -1029,6 +1033,8 @@ $(function () {
     format: 'DD/MM/YYYY',
     icons: { time: 'far fa-clock' }
   })
+
+  $(".defaultPlaySpeed").text("Chuẩn")
 
   bindClick()
 
@@ -1097,5 +1103,6 @@ $(window).on('beforeunload', function () {
   $(document).off('click', '#btn-save-modal')
   $(document).off('click', '.historyCallScore')
   $(document).off('change', '#idCriteriaGroup')
+  $(document).off('click', '.dropdown-item')
 
 })
