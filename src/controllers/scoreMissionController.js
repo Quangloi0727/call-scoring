@@ -12,7 +12,8 @@ const {
     USER_ROLE,
     TeamStatus,
     constTypeResultCallRating,
-    generalSetting
+    generalSetting,
+    OP_UNIT_DISPLAY
 } = require('../helpers/constants/index')
 
 const { headerDefault, idCallNotFound, callHasBeenScored, timeNoteExists, CreatedByForm } = require('../helpers/constants/fieldScoreMission')
@@ -61,7 +62,8 @@ exports.index = async (req, res, next) => {
             CreatedByForm,
             constTypeResultCallRating,
             generalSetting,
-            findConfigGeneralSetting
+            findConfigGeneralSetting,
+            OP_UNIT_DISPLAY
         })
     } catch (error) {
         _logger.error(`------- error ------- `)
@@ -144,6 +146,10 @@ exports.getScoreMission = async (req, res, next) => {
                         model: model.SelectionCriteria,
                         as: 'selectionCriteriaInfo'
                     }
+                },
+                {
+                    model: model.ScoreScript,
+                    as: 'scoreScriptInfo'
                 }
             ],
             order: [['createdAt', 'DESC']],
@@ -333,7 +339,11 @@ exports.getDetailScoreScript = async (req, res, next) => {
 
         if (callId) {
             p.push(model.CallRating.findAll({
-                where: { callId: callId }
+                where: { callId: callId },
+                include: [{
+                    model: model.SelectionCriteria,
+                    as: 'selectionCriteriaInfo'
+                }]
             }))
             p.push(model.CallRatingNote.findAll({
                 where: { callId: callId },
@@ -361,7 +371,7 @@ exports.getDetailScoreScript = async (req, res, next) => {
 
         return res.json({
             code: SUCCESS_200.code,
-            data: scoreScriptInfo || [],
+            scoreScriptInfo: scoreScriptInfo || [],
             resultCallRating: resultCallRating,
             resultCallRatingNote: resultCallRatingNote
         })
@@ -485,7 +495,9 @@ exports.saveCallRating = async (req, res) => {
         return res.json({ code: SUCCESS_200.code, message: 'Success!' })
     } catch (error) {
         _logger.info("idCallRatingNoteIfFail: ", idCallRatingNoteIfFail)
-        await model.CallRatingNote.destroy({ where: { id: idCallRatingNoteIfFail } })
+        if (idCallRatingNoteIfFail) {
+            await model.CallRatingNote.destroy({ where: { id: idCallRatingNoteIfFail } })
+        }
         _logger.error("Tạo mới chấm điểm: ", error)
         return res.json({ code: ERR_500.code, message: error.message })
     }
@@ -667,12 +679,13 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     })
 
     if (unScoreScript.length) point = 0
-
+    const idCriterias = req.body.resultCriteria.map(criteria => criteria.idSelectionCriteria != null ? criteria.idCriteria : null)
     const updateCallShare = {
-        pointResultCallRating: point,
-        typeResultCallRating: renderTypeResultCallRating(scoreScript, point),
+        pointResultCallRating: point ? point : 0,
+        typeResultCallRating: await renderTypeResultCallRating(scoreScript, point, idScoreScript, idCriterias),
         idScoreScript: idScoreScript,
         idUserReview: req.user.id,
+        scoreMax: await getSumScoreMax(idScoreScript, idCriterias)
     }
 
     // update thời gian đánh giá review
@@ -692,19 +705,52 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
 }
 
 
-function renderTypeResultCallRating(scoreScript, point) {
+async function renderTypeResultCallRating(scoreScript, point, idScoreScript, idCriterias) {
+    let scoreMax = 0
+    if (scoreScript.criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+        scoreMax = await getSumScoreMax(idScoreScript, idCriterias)
+        point = ((point / scoreMax) * 100)
+    }
+
     let typeResultCallRating = ''
     switch (true) {
         case scoreScript.needImproveMin <= point && scoreScript.needImproveMax >= point:
-            typeResultCallRating = constTypeResultCallRating.pointNeedImprove.code
+            typeResultCallRating = constTypeResultCallRating['pointNeedImprove'].code
             break
         case scoreScript.standardMin <= point && scoreScript.standardMax >= point:
-            typeResultCallRating = constTypeResultCallRating.pointStandard.code
+            typeResultCallRating = constTypeResultCallRating['pointStandard'].code
             break
         case scoreScript.passStandardMin <= point:
-            typeResultCallRating = constTypeResultCallRating.pointPassStandard.code
+            typeResultCallRating = constTypeResultCallRating['pointPassStandard'].code
             break
     }
     return typeResultCallRating
+}
+
+/**
+ * Tổng điểm tối đa theo kịch bản
+ * @param {String} idScoreScript id của kịch bản chấm điểm
+ * @param {Array} idCriterias ds id cua tieu chi
+ */
+async function getSumScoreMax(idScoreScript, idCriterias) {
+    try {
+        const criterias = await model.ScoreScript.findAll({
+            where: { id: idScoreScript },
+            include: [{
+                model: model.CriteriaGroup,
+                as: 'CriteriaGroup',
+                include: [{
+                    model: model.Criteria,
+                    as: 'Criteria',
+                    where: idCriterias ? { id: { [Op.in]: idCriterias } } : {}
+                }]
+            }],
+            raw: true
+        })
+        return _.reduce(_.pluck(criterias, 'CriteriaGroup.Criteria.scoreMax'), function (memo, num) { return memo + num }, 0)
+    } catch (error) {
+        _logger.error(titlePage + " - Lấy tổng điểm theo kịch bản", error)
+        return 0
+    }
 }
 

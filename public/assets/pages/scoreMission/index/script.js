@@ -293,7 +293,7 @@ function bindClick() {
                 $(this).closest('.form-group').append(`<span class="error-non-select mr-1">${window.location.MESSAGE_ERROR["QA-001"]}</span>`)
             }
             arr.push({
-                idSelectionCriteria: $(this).val(),
+                idSelectionCriteria: $(this).val() == 'not_enough_infor' ? null : $(this).val(),
                 idCriteria: $(this).attr('data-criteriaId'),
                 callId: callId,
                 idScoreScript: idScoreScript
@@ -545,18 +545,10 @@ function createTable(data, ConfigurationColums, configDefault) {
     data.forEach(item => {
         const { ScoreTarget_ScoreScript } = item.scoreTargetInfo
         const { recordingFileName } = item.callInfo
-        let check = false
-        //check xem cuộc gọi đã chấm điểm chưa , nếu đã chấm thì show edit và disable nút chấm mới và ngược lại
-        let idScoreScript
-        if (item.callRatingInfo && item.callRatingInfo.length > 0) {
-            check = true
-            idScoreScript = item.callRatingInfo[0].idScoreScript
-        }
-
         let dropdown = ''
         if (ScoreTarget_ScoreScript.length > 0) {
             ScoreTarget_ScoreScript.map((el) => {
-                dropdown += `<a class="dropdown-item showCallScore ${check ? 'disabled' : ''}" data-callId="${item.callId}" 
+                dropdown += `<a class="dropdown-item showCallScore ${item.isMark ? 'disabled' : ''}" data-callId="${item.callId}" 
                                 url-record="${recordingFileName}" data-id="${el.scoreScriptId}">${el.scoreScriptInfo && el.scoreScriptInfo.name ? el.scoreScriptInfo.name : ''}
                             </a>`
             })
@@ -570,9 +562,9 @@ function createTable(data, ConfigurationColums, configDefault) {
             <td class="text-center">    
                 <i class="fas fa-check mr-2" id="dropdown-${uuidv4}" data-toggle="dropdown" title="Chấm điểm"></i>
                 <div class="dropdown-menu" aria-labelledby="dropdown-${uuidv4}">
-                    ${check == false ? dropdown : '<a class="dropdown-item">Cuộc gọi đã được chấm điểm !</a>'}
+                    ${item.isMark == false ? dropdown : '<a class="dropdown-item">Cuộc gọi đã được chấm điểm !</a>'}
                 </div>
-                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${recordingFileName}" data-callId="${item.callId}" data-id="${idScoreScript}" title="Sửa chấm điểm" check-disable="${check}"></i>
+                <i class="fas fa-pen-square mr-2 showCallScore" url-record="${recordingFileName}" data-callId="${item.callId}" data-id="${item.idScoreScript}" title="Sửa chấm điểm" check-disable="${item.isMark}"></i>
                 <i class="fas fa-comment-alt mr-2" title="Ghi chú" url-record="${recordingFileName}" data-callId=${item.callId}></i>
                 <i class="fas fa-history mr-2" title="Lịch sử chấm điểm" data-callId=${item.callId}></i>
                 <i class="fas fa-play-circle mr-2" title="Xem chi tiết ghi âm" url-record="${recordingFileName}" data-callId=${item.callId}></i>
@@ -603,10 +595,12 @@ function checkConfigDefaultHeader(dataConfig, configDefault) {
 function checkConfigDefaultBody(dataConfig, configDefault, item) {
     const { callInfo } = item
     let resultReviewScore = ''
-    let pointResultCallRating = 0
-    if (item.typeResultCallRating) {
+    let pointResultCallRating = '-'
+    if (item.isMark) {
         resultReviewScore = constTypeResultCallRating[`point${item.typeResultCallRating}`].txt
-        pointResultCallRating = item.pointResultCallRating || 0
+        if (item.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+            pointResultCallRating = ((item.pointResultCallRating / item.scoreMax) * 100).toFixed(0) + `%`
+        } else pointResultCallRating = `${item.pointResultCallRating}/${item.scoreMax}` || 0
     }
     let htmlString = ``
     if (configDefault) {
@@ -696,11 +690,10 @@ function getDetailScoreScript(idScoreScript, callId, url) {
     _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
         console.log("data kịch bản chấm điểm", resp)
         if (resp.code != 200) return toastr.error(resp.message)
-
-        if (resp.data.CriteriaGroup.length > 0) {
-            $('.nameScoreScript').text(resp.data.name)
+        if (resp.scoreScriptInfo.CriteriaGroup.length > 0) {
+            $('.nameScoreScript').text(resp.scoreScriptInfo.name)
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
-            _criteriaGroups = resp.data.CriteriaGroup
+            _criteriaGroups = resp.scoreScriptInfo.CriteriaGroup
 
             $("#downloadFile-popupCallScore").attr("url-record", url)
             wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
@@ -709,7 +702,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
             $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
             //render dữ liệu ra popup
             dataEditOrigin = resp.resultCallRating
-            popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
+            popupScore(resp.scoreScriptInfo.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
             return $('#popupCallScore').modal('show')
         }
     })
@@ -746,13 +739,15 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
                         htmlSelectionCriteria += `<option data-point="${el.score}" value="${el.id}">${el.name + ': ' + (el.score)}</option>`
                     })
                 }
-                criteriaHtml += `<div class="form-group">
-                                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
-                                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
-                                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
-                                        ${htmlSelectionCriteria}
-                                    </select>
-                                </div>`
+                htmlSelectionCriteria += `<option data-point="0" value="not_enough_infor">Không đủ thông tin để chấm</option>`
+                criteriaHtml += `
+                <div class="form-group">
+                    <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
+                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}"
+                        required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}">
+                        ${htmlSelectionCriteria}
+                    </select>
+                </div>`
                 pointCriteria += parseInt(criteria.scoreMax)
                 totalPoint += parseInt(criteria.scoreMax)
             })
@@ -812,27 +807,43 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.selectpicker').selectpicker('refresh')
     $('.nav-scoreScript').html(navHTML)
     $('#progress-scoreScript').html('')
+    // Tổng điểm kịch bản
     let resultPointCriteria = 0
     if (resultCallRating) {
         resultCallRating.map((el) => {
-            // tìm các mục tiêu có id tương ứng và cộng điểm
-            resultPointCriteria += parseInt($(`.selectpicker.criteria option[value="${el.idSelectionCriteria}"]`).attr('data-point'))
-            //gán giá trị cho ô select
-            $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria)
+            $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria ? el.idSelectionCriteria : 'not_enough_infor')
         })
 
         criteriaGroups.map((criteriaGroup) => {
             let resultPointCriteriaGroup = 0
+            let totalPointByIdCriteriaGroup = $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('data-point')
             resultCallRating.map((el) => {
                 let point = $(`.selectpicker.criteriaGroup-${criteriaGroup.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
                 resultPointCriteriaGroup += point ? parseInt(point) : 0
-            })
-            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
-        })
+                //check tiêu chí này có chọn vào lựa chọn "Không đủ thông tin để chấm " hay ko
+                //TH "Không đủ thông tin để chấm " thì idSelectionCriteria == null
+                //TH này xảy ra thì ko tính điểm của tiêu chí này vào điểm của kịch bản
+                if (!el.idSelectionCriteria && criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria)) {
+                    totalPoint -= criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria).scoreMax
+                    totalPointByIdCriteriaGroup -= criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria).scoreMax
+                }
 
+                if (el.idSelectionCriteria && el.selectionCriteriaInfo.unScoreCriteriaGroup) {
+                    if (criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria)) resultPointCriteriaGroup = 0
+                }
+            })
+            // điểm kịch bản = tổng điểm của các nhóm tiêu chí
+            resultPointCriteria += resultPointCriteriaGroup
+            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
+            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('data-point', totalPointByIdCriteriaGroup)
+        })
 
         // phần trăm điểm
         var perc = ((resultPointCriteria / totalPoint) * 100).toFixed(0)
+        // check điểm liệt kịch bản
+        resultCallRating.map(el => {
+            if (el.idSelectionCriteria && el.selectionCriteriaInfo.unScoreScript) return resultPointCriteria = 0
+        })
         // gán phần trăm điểm
         let html = `
         <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
