@@ -46,6 +46,9 @@ class CallShare extends Model {
                 typeResultCallRating: {
                     type: DataTypes.STRING,
                 },
+                scoreMax: {
+                    type: DataTypes.INTEGER,
+                },
                 idScoreScript: {
                     type: DataTypes.INTEGER,
                     references: {

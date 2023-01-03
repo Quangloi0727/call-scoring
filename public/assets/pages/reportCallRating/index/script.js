@@ -14,6 +14,10 @@ const nameItemStorage_tapScoreScript = 'Advanced_Search_Report_Call_Rating_tapSc
 $(function () {
   eventDateRangePicker('origDate')
   eventDateRangePicker('gradingDate')
+  eventDateRangePicker('origDate_tapScoreScript')
+  eventDateRangePicker('gradingDate_tapScoreScript')
+
+
   bindClick()
   const itemStorage = JSON.parse(localStorage.getItem(nameItemStorage))
   if (itemStorage) {
@@ -29,6 +33,7 @@ function bindClick() {
   $(document).on('click', '#btn_advanced_search', function (event) {
     let formData = getFormData('form_advanced_search')
     localStorage.setItem(nameItemStorage, JSON.stringify(formData))
+    $('#modal_search').modal('hide')
     return queryData()
   })
 
@@ -53,12 +58,15 @@ function bindClick() {
     $('.selectpicker').selectpicker('refresh')
     localStorage.removeItem(nameItemStorage)
     $('#modal_search').modal('hide')
+    eventDateRangePicker('origDate')
+    eventDateRangePicker('gradingDate')
     return queryData()
   })
 
   $(document).on('click', '#btn_advanced_search_tapScoreScript', function (event) {
     let formData = getFormData('form_advanced_search_tapScoreScript')
     localStorage.setItem(nameItemStorage_tapScoreScript, JSON.stringify(formData))
+    $('#modal_search_tapScoreScript').modal('hide')
     return queryDataByScoreScript()
   })
 
@@ -80,17 +88,20 @@ function bindClick() {
   })
 
   $(document).on('click', '#btn_clear_local_storage_tapScoreScript', function (event) {
-    $('#form_advanced_search').trigger('reset')
+    $('#form_advanced_search_tapScoreScript').trigger('reset')
     $('.selectpicker').selectpicker('refresh')
     localStorage.removeItem(nameItemStorage_tapScoreScript)
-    return $('#modal_search').modal('hide')
+    eventDateRangePicker('origDate_tapScoreScript')
+    eventDateRangePicker('gradingDate_tapScoreScript')
+    $('#modal_search_tapScoreScript').modal('hide')
+    return queryDataByScoreScript()
   })
 
-  $(document).on('change', '.sl-limit-page', function () {
+  $(document).on('change', '#paging_table .sl-limit-page', function () {
     return queryData(1)
   })
 
-  $(document).on('click', '.zpaging', function () {
+  $(document).on('click', '#paging_table .zpaging', function () {
     let page = $(this).attr('data-link')
     return queryData(page)
   })
@@ -100,10 +111,12 @@ function bindClick() {
   })
 
   $(document).on('change', '#idScoreScript_tapScoreScript', function () {
-    if ($(this).val().length == 0) {
-      return toastr.error('Chưa chọn kịch bản')
-    }
     queryDataByScoreScript()
+    _hightChart(
+      'pieChartSelectionCriteria',
+      CALL_SELECTION_CRITERIA_TXT,
+      []
+    )
     getCriteriaGroup($(this).val())
   })
 
@@ -155,7 +168,12 @@ function bindClick() {
       if ($('#idScoreScript_tapScoreScript').val().length > 0) {
         getCriteriaGroup($('#idScoreScript_tapScoreScript').val())
       }
-      queryDataByScoreScript()
+      _hightChart(
+        'pieChartSelectionCriteria',
+        CALL_SELECTION_CRITERIA_TXT,
+        []
+      )
+      return queryDataByScoreScript()
     }
   })
 
@@ -181,28 +199,57 @@ function bindClick() {
     })
   })
 
+  $(document).on('change', '#paging_table_tapScoreScript .sl-limit-page', function () {
+    return queryDataByScoreScript(1)
+  })
+
+  $(document).on('click', '#paging_table_tapScoreScript .zpaging', function () {
+    let page = $(this).attr('data-link')
+    return queryDataByScoreScript(page)
+  })
+
+  $(document).on('click', '#btn_refresh_tapScoreScript', function () {
+    let queryData = {}
+    if ($('#criteriaGroupId').val()) {
+      queryData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
+      queryData.idCriteria = $('#idCriteria').val()
+      queryData.criteriaGroupId = $('#criteriaGroupId').val()
+      _AjaxGetData(`/reportCallRating/getPercentSelectionCriteria?` + $.param(queryData), 'GET', function (resp) {
+        if (resp.code != 200) {
+          return toastr.error(resp.error)
+        }
+        console.log(resp.percentSelectionCriteria)
+        return _hightChart(
+          'pieChartSelectionCriteria',
+          CALL_SELECTION_CRITERIA_TXT,
+          resp.percentSelectionCriteria
+        )
+      })
+    }
+    return queryDataByScoreScript()
+  })
 
 }
 
 /**
  * * Hàm xử lí event daterangepicker theo tên ô input
- * @param {*} nameInput tên ô input
+ * @param {*} idInput  id  ô input
  * @returns
  */
-function eventDateRangePicker(nameInput) {
+function eventDateRangePicker(idInput) {
   // set giá trị mặc định cho các input date
-  $(`input[name="${nameInput}"]`).daterangepicker({
+  $(`input[id="${idInput}"]`).daterangepicker({
     autoUpdateInput: false,
     locale: {
       cancelLabel: 'Clear'
     }
   })
   // xử lí sự kiện khi chọn khoảng "Ngày chấm điểm"
-  $(`input:text[name="${nameInput}"]`).on('apply.daterangepicker', function (ev, picker) {
+  $(`input:text[id="${idInput}"]`).on('apply.daterangepicker', function (ev, picker) {
     $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'))
   })
 
-  $(`input:text[name="${nameInput}"]`).on('cancel.daterangepicker', function (ev, picker) {
+  $(`input:text[id="${idInput}"]`).on('cancel.daterangepicker', function (ev, picker) {
     $(this).val('')
   })
 }
@@ -240,10 +287,9 @@ function getFormData(formId) {
 }
 
 function queryData(page) {
-  $('#modal_search').modal('hide')
   let formData = getFormData('form_advanced_search')
   formData.page = page || 1
-  formData.limit = $('.sl-limit-page').val() || 10
+  formData.limit = $('#paging_table .sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReport?' + $.param(formData), 'GET', function (resp) {
     if (resp.code != 200) {
       return toastr.error(resp.error)
@@ -265,15 +311,17 @@ function downloadFromUrl(url) {
 }
 
 
-function queryDataByScoreScript() {
+function queryDataByScoreScript(page) {
   const formData = getFormData('form_advanced_search_tapScoreScript')
   formData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
+  formData.page = page || 1
+  formData.limit = $('#paging_table_tapScoreScript .sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReportByScoreScript?' + $.param(formData), 'GET', function (resp) {
     if (resp.code != 200) {
       return toastr.error(resp.error)
     }
-    console.log(resp)
-    return renderDataTapScoreScript(resp)
+    renderDataTapScoreScript(resp)
+    return $('#paging_table_tapScoreScript').html(window.location.CreatePaging(resp.paginator))
   })
 }
 
@@ -341,20 +389,28 @@ function renderData(resp) {
 
 function renderTable(data, constTypeResultCallRating) {
   let html = ''
+
   data.map((el) => {
+    const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
+    let pointResultCallRating = '-'
+    if (el.scoreScriptInfo && el.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+      pointResultCallRating = el.scoreMax ? ((el.pointResultCallRating / el.scoreMax) * 100).toFixed(0) + `%` : '0%'
+    } else pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
+
+    const reviewedAt = el.updateReviewedAt ? moment(el.updateReviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
     html += `<tr>
         <td class = "text-center">${el.callInfo.id}</td>
         <td class = "text-center">${el.callInfo.direction}</td>
-        <td class = "text-center">${el.callInfo.agent ? el.callInfo.agent.name : ''}</td>
+        <td class = "text-center">${nameAgent}</td>
         <td class = "text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
         <td class = "text-center"></td>
         <td class = "text-center">${el.scoreTargetInfo ? el.scoreTargetInfo.name : ''}</td>
         <td class = "text-center"></td>
         <td class = "text-center">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</td>
-        <td class = "text-center">${el.pointResultCallRating ? el.pointResultCallRating : ''}</td>
+        <td class = "text-center">${pointResultCallRating ? pointResultCallRating : ''}</td>
         <td class = "text-center">${el.typeResultCallRating ? constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
         <td class = "text-center">${el.userReview ? el.userReview.fullName + ' ' + `(${el.userReview.userName})` : ''}</td>
-        <td class = "text-center">${(el.updatedAt != el.createdAt) && el.pointResultCallRating ? moment(el.updatedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+        <td class = "text-center">${reviewedAt}</td>
     </tr>`
   })
 
@@ -362,39 +418,56 @@ function renderTable(data, constTypeResultCallRating) {
 }
 
 function renderDataTapScoreScript(resp) {
+  if (resp.countCallReviewed > 0) {
+    $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
+    $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
+  }
   $('#txtCountCallReviewedTapScoreScript').text(resp.countCallReviewed)
-  $('#txtAvgScoreScript').text(resp.avgPointByCall[0].avgPoint + '/' + resp.sumScoreMax)
-  $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
-  $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
+  $('#txtAvgScoreScript').text(resp.avgPointByCall + '/' + resp.sumScoreMax)
 
   renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRatingTapScoreScript')
+  renderTableTapScoreScript(resp.detailScoreScript.CriteriaGroup, resp.callShareDetail, resp.constTypeResultCallRating)
+}
 
+function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeResultCallRating) {
   // hiển thị các tiêu chí, nhóm tiêu chí trên table theo kịch bản
-  renderHeaderTableTapScoreScript(resp.detailScoreScript.CriteriaGroup)
+  renderHeaderTableTapScoreScript(criteriaGroups)
 
   let html = ''
-  resp.callShareDetail.map((el) => {
+  console.log(callShareDetail)
+  callShareDetail.map((el) => {
 
     let rowCriteriaGroup = ''
-    if (resp.detailScoreScript.CriteriaGroup) {
-      resp.detailScoreScript.CriteriaGroup.map((CriteriaGroup) => {
+    if (criteriaGroups) {
+      criteriaGroups.map((criteriaGroup) => {
         let resultScoreCriteriaGroup = 0
         let scoreMax = 0
         let rowCriteria = ''
         let checkIsUnScoreCriteriaGroup = false
-        CriteriaGroup.Criteria.map((Criteria) => {
+        criteriaGroup.Criteria.map((Criteria) => {
           scoreMax += Criteria.scoreMax
           const found = el.callRatingInfo.find(element => element.idCriteria == Criteria.id)
-          if (found) {
+          if (found && found.selectionCriteriaInfo) {
             if (found.selectionCriteriaInfo.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
             resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
-          }
-          rowCriteria += `
-          <td class = "text-center">
-            <span class="d-inline-block text-truncate">
-              ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
-            </span>
-          </td>`
+            rowCriteria += `
+            <td class = "text-center">
+              <span class="d-inline-block text-truncate">
+                ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
+              </span>
+            </td>
+            <td class = "text-center">
+              <span class="d-inline-block text-truncate" title="${found.selectionCriteriaInfo.name}">
+                ${found.selectionCriteriaInfo.name}
+              </span>
+            </td>`
+          } else rowCriteria += `
+            <td class = "text-center"><span class="d-inline-block text-truncate"></span></td>
+            <td class = "text-center">
+              <span class="d-inline-block text-truncate" title="Không đủ thông tin để chấm">
+                Không đủ thông tin để chấm
+              </span>
+            </td>`
         })
 
         if (checkIsUnScoreCriteriaGroup) {
@@ -412,16 +485,21 @@ function renderDataTapScoreScript(resp) {
       })
     }
 
-    let reviewedAt = el.reviewedAt ? moment(el.reviewedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''
-    let scoreTargetInfoName = el.scoreTargetInfo ? el.scoreTargetInfo.name : ''
-    let pointResultCallRating = el.pointResultCallRating ? el.pointResultCallRating : 0
+    const reviewedAt = el.updateReviewedAt ? moment(el.updateReviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
+    const scoreTargetInfoName = el.scoreTargetInfo ? el.scoreTargetInfo.name : ''
+    let pointResultCallRating = '-'
 
+    if (el.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+      pointResultCallRating = ((el.pointResultCallRating / el.scoreMax) * 100).toFixed(0) + `%`
+    } else pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
+
+    const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
     html += `<tr>
         <td class="text-center">
           <span class="d-inline-block text-truncate" title="${el.callInfo.id}">${el.callInfo.id}</span>
         </td>
         <td class="text-center">${el.callInfo.direction}</td>
-        <td class="text-center">${el.callInfo.agent ? el.callInfo.agent.name : ''}</td>
+        <td class="text-center">${nameAgent}</td>
         <td class="text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
         <td class="text-center"></td>
         <td class="text-center">
@@ -434,7 +512,7 @@ function renderDataTapScoreScript(resp) {
           <span class="d-inline-block text-truncate" title="${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</span>
         </td>
         <td class="text-center"> ${pointResultCallRating} </td>
-        <td class="text-center">${el.typeResultCallRating ? resp.constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
+        <td class="text-center">${el.typeResultCallRating ? constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
 
         ${rowCriteriaGroup}
 
@@ -445,7 +523,7 @@ function renderDataTapScoreScript(resp) {
     </tr>`
   })
 
-  $('#tableBodyTapScoreScript').html(html)
+  return $('#tableBodyTapScoreScript').html(html)
 }
 
 function renderHightChartTypeResultCallRating(constTypeResultCallRating, percentTypeCallRating, idChart) {
@@ -470,15 +548,27 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
 }
 
 
-function renderHeaderTableTapScoreScript(CriteriaGroup) {
-  let tableHeadTapScoreScript = $('#tableHeadTapScoreScript').prop('innerHTML')
+function renderHeaderTableTapScoreScript(criteriaGroups) {
+  let tableHeadTapScoreScript = `
+  <th class="text-center">Mã cuộc gọi</th>
+  <th class="text-center">Hướng gọi</th>
+  <th class="text-center">Điện thoại viên</th>
+  <th class="text-center">Đội ngũ</th>
+  <th class="text-center">Nhóm</th>
+  <th class="text-center">Mục tiêu chấm điểm</th>
+  <th class="text-center">Điểm đánh giá tự động</th>
+  <th class="text-center">Kịch bản chấm điểm</th>
+  <th class="text-center">Điểm đánh giá thủ công</th>
+  <th class="text-center">Kết quả đánh giá</th>`
 
-  if (CriteriaGroup) {
-    CriteriaGroup.map((criteriaGroup) => {
+  if (criteriaGroups) {
+    criteriaGroups.map((criteriaGroup) => {
       tableHeadTapScoreScript += `<th class ="text-center">${criteriaGroup.name}</th>`
       if (criteriaGroup.Criteria) {
         criteriaGroup.Criteria.map((criteria) => {
-          tableHeadTapScoreScript += `<th class ="text-center">${criteria.name}</th>`
+          tableHeadTapScoreScript += `
+          <th class="text-center">${criteria.name}</th>
+          <th class="text-center" >Lựa chọn của tiêu chí</th>`
         })
       }
     })

@@ -23,8 +23,8 @@ function dataTable(data, excelHeader, sheet, { dataCustomize = '' }, callback) {
             bottom: { style: "thin" },
             right: { style: "thin" }
           }
-          sheet.lastRow.getCell(charNameColumn).font = { family: 4, name: fonts.primary, size: 10 };
-          sheet.lastRow.getCell(charNameColumn).alignment = { vertical: 'middle', horizontal: 'center' };
+          sheet.lastRow.getCell(charNameColumn).font = { family: 4, name: fonts.primary, size: 10, };
+          sheet.lastRow.getCell(charNameColumn).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
         }
       });
 
