@@ -397,7 +397,7 @@ function bindClick() {
         $(this).closest('.form-group').append(`<span class="error-non-select mr-1">${window.location.MESSAGE_ERROR["QA-001"]}</span>`)
       }
       arr.push({
-        idSelectionCriteria: $(this).val(),
+        idSelectionCriteria: $(this).val() == 'not_enough_infor' ? null : $(this).val(),
         idCriteria: $(this).attr('data-criteriaId'),
         callId: callId,
         idScoreScript: idScoreScript
@@ -603,22 +603,19 @@ function getDetailScoreScript(idScoreScript, callId, url) {
   queryData.callId = callId
   _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
     console.log("data kịch bản chấm điểm", resp)
-    if (resp.code != 200) return toastr.error(resp.message)
-    if (resp.data.CriteriaGroup.length > 0) {
-      $('.nameScoreScript').text(resp.data.name)
-      // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
-      _criteriaGroups = resp.data.CriteriaGroup
+    $('.nameScoreScript').text(resp.scoreScriptInfo.name)
+    // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
+    _criteriaGroups = resp.scoreScriptInfo.CriteriaGroup
 
-      $("#downloadFile-popupCallScore").attr("url-record", url)
-      wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
+    $("#downloadFile-popupCallScore").attr("url-record", url)
+    wavesurfer = _configWaveSurfer(resp.resultCallRatingNote ? resp.resultCallRatingNote : [], url, '#recordCallScore')
 
-      $('#btn-save-modal').attr('data-callId', callId)
-      $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
-      //render dữ liệu ra popup
-      dataEditOrigin = resp.resultCallRating
-      popupScore(resp.data.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
-      return $('#popupCallScore').modal('show')
-    }
+    $('#btn-save-modal').attr('data-callId', callId)
+    $('#btn-save-modal').attr('data-idScoreScript', idScoreScript)
+    //render dữ liệu ra popup
+    dataEditOrigin = resp.resultCallRating
+    popupScore(resp.scoreScriptInfo.CriteriaGroup, resp.resultCallRatingNote, resp.resultCallRating)
+    return $('#popupCallScore').modal('show')
   })
 }
 
@@ -643,6 +640,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
             htmlSelectionCriteria += `<option data-point="${el.score}" value="${el.id}">${el.name + ': ' + (el.score)}</option>`
           })
         }
+        htmlSelectionCriteria += `<option data-point="0" value="not_enough_infor">Không đủ thông tin để chấm</option>`
         criteriaHtml += `
                 <div class="form-group">
                     <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
@@ -655,19 +653,15 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         totalPoint += parseInt(criteria.scoreMax)
       })
       // giao diện từng tiêu chí của mỗi Nhóm tiêu chí
-      navTabContent = `
-            <div class="tab-pane fade mb-4 ${index == 0 ? "show active" : ""}" id="tab-criteria-group-${uuidv4}" role="tabpanel"
-                aria-labelledby="custom-tabs-three-home-tab">
-                ${criteriaHtml}
-            </div>
-            `
+      navTabContent = `<div class="tab-pane fade mb-4 ${index == 0 ? "show active" : ""}" id="tab-criteria-group-${uuidv4}" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
+                                ${criteriaHtml}
+                            </div>`
     }
     // tạo thanh nav cho Nhóm tiêu chí
-    navHTML += `
-        <li class="nav-item border-bottom">
-            <a class="nav-link nav-criteria-group group-${criteriaGroup.id} ${index == 0 ? "active" : ""}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
-            aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
-        </li>`
+    navHTML += `<li class="nav-item border-bottom">
+                        <a class="nav-link nav-criteria-group group-${criteriaGroup.id} ${index == 0 ? "active" : ""}" data-toggle="pill" href="#tab-criteria-group-${uuidv4}" role="tab" 
+                        aria-controls="tab-score-script-script" data-point="${pointCriteria}" aria-selected="false">${criteriaGroup.name}</a>
+                    </li>`
     optionIdCriteriaGroup += `<option value="${criteriaGroup.id}">${criteriaGroup.name}</option>`
     $('.tab-content').append(navTabContent)
 
@@ -676,6 +670,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
   $('#idCriteriaGroup').html(optionIdCriteriaGroup)
   console.log('resultCallRating', resultCallRating)
   console.log('resultCallRatingNote', resultCallRatingNote)
+  
   // xử lí dữ liệu cho phần ghi chú chấm điểm
   if (resultCallRating && resultCallRating.length > 0) {
     //ưu tiên hiển thị ở màn tạo mới 

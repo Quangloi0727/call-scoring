@@ -690,7 +690,7 @@ function getDetailScoreScript(idScoreScript, callId, url) {
     _AjaxGetData('scoreMission/getScoreScript?' + $.param(queryData), 'GET', function (resp) {
         console.log("data kịch bản chấm điểm", resp)
         if (resp.code != 200) return toastr.error(resp.message)
-        if (resp.scoreScriptInfo.CriteriaGroup.length > 0) {
+        if (resp?.scoreScriptInfo?.CriteriaGroup?.length > 0) {
             $('.nameScoreScript').text(resp.scoreScriptInfo.name)
             // data tiêu chí vào biến chugng để xử lí cho các element khác -- các tiêu chí có trong có trong kịch bản ko có giá trị để tính điểm
             _criteriaGroups = resp.scoreScriptInfo.CriteriaGroup
