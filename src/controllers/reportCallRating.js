@@ -7,13 +7,13 @@ const {
   CONST_STATUS,
   constTypeResultCallRating,
   headerReportCallRating,
+  OP_UNIT_DISPLAY
 } = require('../helpers/constants/index')
-const { Op } = require('sequelize')
+const { Op, QueryTypes } = require('sequelize')
 const model = require('../models')
 const pagination = require('pagination')
 const { SUCCESS_200, ERR_400 } = require("../helpers/constants/statusCodeHTTP")
 const { createExcelPromise } = require('../common/createExcel')
-const CallRating = require('../models/callRating')
 
 exports.index = async (req, res, next) => {
   try {
@@ -50,6 +50,7 @@ exports.index = async (req, res, next) => {
       SOURCE_NAME,
       scoreTargets: scoreTargets || [],
       scoreScripts: scoreScripts || [],
+      OP_UNIT_DISPLAY
     })
 
   } catch (error) {
@@ -147,7 +148,7 @@ exports.queryReportByScoreScript = async (req, res) => {
     const avgPointByCall = await model.sequelize.query(`
     SELECT ROUND(AVG(CAST([pointResultCallRating] AS FLOAT)), 1) AS [avgPoint] 
     FROM [callShares] AS [callShares] 
-    WHERE [callShares].[isMark] = 1 AND [callShares].[idScoreScript] = N'${idScoreScript}'`
+    WHERE [callShares].[isMark] = 1 AND [callShares].[idScoreScript] = N'${idScoreScript}'`, { type: QueryTypes.SELECT }
     )
     const sumScoreMax = await getSumScoreMax(idScoreScript)
 
@@ -188,7 +189,7 @@ exports.queryReportByScoreScript = async (req, res) => {
     return res.json({
       code: SUCCESS_200.code,
       countCallReviewed: countCallReviewed,
-      avgPointByCall: avgPointByCall[0],
+      avgPointByCall: avgPointByCall[0].avgPoint ? avgPointByCall[0].avgPoint : 0,
       sumScoreMax: sumScoreMax,
       unScoreCriteriaGroup: unScoreCriteriaGroup.length || 0,
       unScoreScript: unScoreScript.length || 0,
@@ -238,47 +239,17 @@ exports.getPercentSelectionCriteria = async (req, res) => {
     const criteriaGroupId = req.query.criteriaGroupId
     const idCriteria = req.query.idCriteria
 
-    const selectionCriteria = await model.ScoreScript.findAll({
-      where: { id: idScoreScript },
-      include: [{
-        model: model.CriteriaGroup,
-        as: 'CriteriaGroup',
-        where: { id: criteriaGroupId },
-        include: [{
-          model: model.Criteria,
-          as: 'Criteria',
-          where: { id: idCriteria },
-          include: [{
-            model: model.SelectionCriteria,
-            as: 'SelectionCriteria',
-          }],
-        }]
-      }],
-      raw: true
-    })
-
-    let percentSelectionCriteria = await model.CallRating.findAll({
-      where: { idSelectionCriteria: { [Op.in]: _.pluck(selectionCriteria, 'CriteriaGroup.Criteria.SelectionCriteria.id') } },
-      include: [{
-        model: model.SelectionCriteria,
-        as: 'selectionCriteriaInfo',
-        attributes: ['name']
-      }],
-      attributes: [
-        ['idSelectionCriteria', 'idSelectionCriteria'],
-        [model.Sequelize.literal(`COUNT(1)`), 'y']
-      ],
-      group: ['selectionCriteriaInfo.name', 'idSelectionCriteria'],
-      raw: true
-    })
-
-    if (percentSelectionCriteria) {
-      percentSelectionCriteria.map((el) => {
-        el.name = el['selectionCriteriaInfo.name']
-        delete el.idSelectionCriteria
-        delete el['selectionCriteriaInfo.name']
-      })
-    }
+    const percentSelectionCriteria = await model.sequelize.query(`
+      SELECT 
+        CallRating.idSelectionCriteria,
+        SelectionCriterias.name as name,
+        COUNT(1) as y
+      FROM SelectionCriterias SelectionCriterias
+      FULL OUTER JOIN CallRatings  CallRating
+      ON SelectionCriterias.id = CallRating.idSelectionCriteria
+      WHERE SelectionCriterias.criteriaId = ${idCriteria}
+      GROUP BY CallRating.idSelectionCriteria,SelectionCriterias.name`, { type: QueryTypes.SELECT }
+    )
     return res.json({
       code: SUCCESS_200.code,
       percentSelectionCriteria: percentSelectionCriteria
@@ -459,14 +430,14 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
 
     // tổng cuộc gọi đã được chấm điểm
     model.CallShare.count({
-      where: Object.assign({ pointResultCallRating: { [Op.ne]: null } }, whereCallShare),
+      where: Object.assign({ isMark: { [Op.eq]: 1 } }, whereCallShare),
       raw: true
     }),
 
     //tổng cuộc đã chấm lại 
     model.CallShare.count({
       where: Object.assign(
-        { pointResultCallRating: { [Op.ne]: null } },
+        { isMark: { [Op.eq]: 1 } },
         { updateReviewedAt: { [Op.gt]: model.sequelize.col('reviewedAt') } },
         whereCallShare
       ),
@@ -475,7 +446,7 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
 
     //dữ liệu chấm điểm theo loại đánh giá
     model.CallShare.findAll({
-      where: Object.assign({ pointResultCallRating: { [Op.ne]: null } }, whereCallShare),
+      where: Object.assign({ isMark: { [Op.eq]: 1 } }, whereCallShare),
       attributes: [
         ['typeResultCallRating', 'name'],
         [model.Sequelize.literal(`COUNT(1)`), 'y']
@@ -685,7 +656,7 @@ async function queryCallShareDetail(query, limit, offset) {
         as: 'userReview'
       }
     ],
-    order: [['id']]
+    order: [['updateReviewedAt', 'DESC']]
   }
   if (limit || offset) {
     objectQuery.limit = limit

@@ -111,10 +111,12 @@ function bindClick() {
   })
 
   $(document).on('change', '#idScoreScript_tapScoreScript', function () {
-    if ($(this).val().length == 0) {
-      return toastr.error('Chưa chọn kịch bản')
-    }
     queryDataByScoreScript()
+    _hightChart(
+      'pieChartSelectionCriteria',
+      CALL_SELECTION_CRITERIA_TXT,
+      []
+    )
     getCriteriaGroup($(this).val())
   })
 
@@ -166,6 +168,11 @@ function bindClick() {
       if ($('#idScoreScript_tapScoreScript').val().length > 0) {
         getCriteriaGroup($('#idScoreScript_tapScoreScript').val())
       }
+      _hightChart(
+        'pieChartSelectionCriteria',
+        CALL_SELECTION_CRITERIA_TXT,
+        []
+      )
       return queryDataByScoreScript()
     }
   })
@@ -202,8 +209,22 @@ function bindClick() {
   })
 
   $(document).on('click', '#btn_refresh_tapScoreScript', function () {
-    if ($('#idScoreScript_tapScoreScript').val()) {
-      getCriteriaGroup($('#idScoreScript_tapScoreScript').val())
+    let queryData = {}
+    if ($('#criteriaGroupId').val()) {
+      queryData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
+      queryData.idCriteria = $('#idCriteria').val()
+      queryData.criteriaGroupId = $('#criteriaGroupId').val()
+      _AjaxGetData(`/reportCallRating/getPercentSelectionCriteria?` + $.param(queryData), 'GET', function (resp) {
+        if (resp.code != 200) {
+          return toastr.error(resp.error)
+        }
+        console.log(resp.percentSelectionCriteria)
+        return _hightChart(
+          'pieChartSelectionCriteria',
+          CALL_SELECTION_CRITERIA_TXT,
+          resp.percentSelectionCriteria
+        )
+      })
     }
     return queryDataByScoreScript()
   })
@@ -268,7 +289,7 @@ function getFormData(formId) {
 function queryData(page) {
   let formData = getFormData('form_advanced_search')
   formData.page = page || 1
-  formData.limit = $('.sl-limit-page').val() || 10
+  formData.limit = $('#paging_table .sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReport?' + $.param(formData), 'GET', function (resp) {
     if (resp.code != 200) {
       return toastr.error(resp.error)
@@ -294,7 +315,7 @@ function queryDataByScoreScript(page) {
   const formData = getFormData('form_advanced_search_tapScoreScript')
   formData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
   formData.page = page || 1
-  formData.limit = $('.sl-limit-page').val() || 10
+  formData.limit = $('#paging_table_tapScoreScript .sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReportByScoreScript?' + $.param(formData), 'GET', function (resp) {
     if (resp.code != 200) {
       return toastr.error(resp.error)
@@ -368,8 +389,15 @@ function renderData(resp) {
 
 function renderTable(data, constTypeResultCallRating) {
   let html = ''
+
   data.map((el) => {
     const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
+    let pointResultCallRating = '-'
+    if (el.scoreScriptInfo && el.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+      pointResultCallRating = el.scoreMax ? ((el.pointResultCallRating / el.scoreMax) * 100).toFixed(0) + `%` : '0%'
+    } else pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
+
+    const reviewedAt = el.updateReviewedAt ? moment(el.updateReviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
     html += `<tr>
         <td class = "text-center">${el.callInfo.id}</td>
         <td class = "text-center">${el.callInfo.direction}</td>
@@ -379,10 +407,10 @@ function renderTable(data, constTypeResultCallRating) {
         <td class = "text-center">${el.scoreTargetInfo ? el.scoreTargetInfo.name : ''}</td>
         <td class = "text-center"></td>
         <td class = "text-center">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</td>
-        <td class = "text-center">${el.pointResultCallRating ? el.pointResultCallRating : ''}</td>
+        <td class = "text-center">${pointResultCallRating ? pointResultCallRating : ''}</td>
         <td class = "text-center">${el.typeResultCallRating ? constTypeResultCallRating[`point${el.typeResultCallRating}`].txt : ''}</td>
         <td class = "text-center">${el.userReview ? el.userReview.fullName + ' ' + `(${el.userReview.userName})` : ''}</td>
-        <td class = "text-center">${(el.updatedAt != el.createdAt) && el.pointResultCallRating ? moment(el.updatedAt, "HH:mm:ss DD/MM/YYYY").format('DD/MM/YYYY HH:mm:ss') : ''}</td>
+        <td class = "text-center">${reviewedAt}</td>
     </tr>`
   })
 
@@ -390,10 +418,12 @@ function renderTable(data, constTypeResultCallRating) {
 }
 
 function renderDataTapScoreScript(resp) {
+  if (resp.countCallReviewed > 0) {
+    $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
+    $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
+  }
   $('#txtCountCallReviewedTapScoreScript').text(resp.countCallReviewed)
-  $('#txtAvgScoreScript').text(resp.avgPointByCall[0].avgPoint + '/' + resp.sumScoreMax)
-  $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
-  $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
+  $('#txtAvgScoreScript').text(resp.avgPointByCall + '/' + resp.sumScoreMax)
 
   renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRatingTapScoreScript')
   renderTableTapScoreScript(resp.detailScoreScript.CriteriaGroup, resp.callShareDetail, resp.constTypeResultCallRating)
@@ -404,6 +434,7 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
   renderHeaderTableTapScoreScript(criteriaGroups)
 
   let html = ''
+  console.log(callShareDetail)
   callShareDetail.map((el) => {
 
     let rowCriteriaGroup = ''
@@ -416,21 +447,27 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
         criteriaGroup.Criteria.map((Criteria) => {
           scoreMax += Criteria.scoreMax
           const found = el.callRatingInfo.find(element => element.idCriteria == Criteria.id)
-          if (found) {
+          if (found && found.selectionCriteriaInfo) {
             if (found.selectionCriteriaInfo.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
             resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
-          }
-          rowCriteria += `
-          <td class = "text-center">
-            <span class="d-inline-block text-truncate">
-              ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
-            </span>
-          </td>
-          <td class = "text-center">
-            <span class="d-inline-block text-truncate">
-              ${found.selectionCriteriaInfo.name}
-            </span>
-          </td>`
+            rowCriteria += `
+            <td class = "text-center">
+              <span class="d-inline-block text-truncate">
+                ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
+              </span>
+            </td>
+            <td class = "text-center">
+              <span class="d-inline-block text-truncate" title="${found.selectionCriteriaInfo.name}">
+                ${found.selectionCriteriaInfo.name}
+              </span>
+            </td>`
+          } else rowCriteria += `
+            <td class = "text-center"><span class="d-inline-block text-truncate"></span></td>
+            <td class = "text-center">
+              <span class="d-inline-block text-truncate" title="Không đủ thông tin để chấm">
+                Không đủ thông tin để chấm
+              </span>
+            </td>`
         })
 
         if (checkIsUnScoreCriteriaGroup) {
@@ -448,9 +485,14 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
       })
     }
 
-    const reviewedAt = el.reviewedAt ? moment(el.reviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
+    const reviewedAt = el.updateReviewedAt ? moment(el.updateReviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
     const scoreTargetInfoName = el.scoreTargetInfo ? el.scoreTargetInfo.name : ''
-    const pointResultCallRating = el.pointResultCallRating ? el.pointResultCallRating : 0
+    let pointResultCallRating = '-'
+
+    if (el.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+      pointResultCallRating = ((el.pointResultCallRating / el.scoreMax) * 100).toFixed(0) + `%`
+    } else pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
+
     const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
     html += `<tr>
         <td class="text-center">
