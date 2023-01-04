@@ -151,7 +151,7 @@ exports.getScoreMission = async (req, res, next) => {
                     as: 'scoreScriptInfo'
                 }
             ],
-            order: [['createdAt', 'DESC']],
+            order: [['createdAt', 'DESC'], ['id', 'DESC']],
             offset: offset,
             limit: limit
         })

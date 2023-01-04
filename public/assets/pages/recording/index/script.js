@@ -670,7 +670,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
   $('#idCriteriaGroup').html(optionIdCriteriaGroup)
   console.log('resultCallRating', resultCallRating)
   console.log('resultCallRatingNote', resultCallRatingNote)
-  
+
   // xử lí dữ liệu cho phần ghi chú chấm điểm
   if (resultCallRating && resultCallRating.length > 0) {
     //ưu tiên hiển thị ở màn tạo mới 
@@ -727,7 +727,6 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
       $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
     })
 
-
     // phần trăm điểm
     var perc = ((resultPointCriteria / totalPoint) * 100).toFixed(0)
     // gán phần trăm điểm
@@ -745,9 +744,7 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
 
     let total = $firstElm.attr('data-point')
     var perc = ((point / total) * 100).toFixed(0)
-    let html = `
-        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0"
-        aria-valuemax="100">Hoàn thành ${perc}%</div>`
+    let html = `<div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
     $('#progress-scoreCriteria').html(html)
     $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
 

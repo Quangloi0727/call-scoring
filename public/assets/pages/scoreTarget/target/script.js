@@ -68,10 +68,10 @@ function bindClick() {
     }
 
     if ($('#btn_save_scoreTarget').attr('data-id')) {
-      const arr = $('#scoreScriptId option[disabled]').val()
+      const arr = $('#scoreScriptId option:disabled').map(function () { return this.value }).get()
       formData['edit-id'] = $('#btn_save_scoreTarget').attr('data-id')
       if (formData['scoreScriptId']) {
-        formData['scoreScriptId'] = arr ? formData['scoreScriptId'].concat(arr.split(',')) : formData['scoreScriptId']
+        formData['scoreScriptId'] = arr ? formData['scoreScriptId'].concat(arr) : formData['scoreScriptId']
       }
       return saveData(formData, 'PUT')
     }
