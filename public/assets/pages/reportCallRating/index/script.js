@@ -530,9 +530,7 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
   let keyObj = []
   percentTypeCallRating.map((el) => {
     keyObj.push(`point${el.name}`)
-    if (el.name && el.name != '') {
-      el.name = constTypeResultCallRating[`point${el.name}`].txt
-    }
+    el.name = constTypeResultCallRating[`point${el.name}`].txt
   })
 
   if (keyObj.length > 0) {

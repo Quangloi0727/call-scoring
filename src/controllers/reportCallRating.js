@@ -77,8 +77,7 @@ exports.queryReport = async (req, res) => {
     const offset = (pageNumber * limit) - limit
 
     // lấy dữ liệu tổng hợp 
-    const [countCallShare, countCallReviewed, CallRatingReScore, percentTypeCallRating, totalCall] =
-      await getSummaryData(whereCallInfo(req.query), whereCallShare(req.query))
+    const [countCallShare, countCallReviewed, CallRatingReScore, percentTypeCallRating, totalCall] = await getSummaryData(whereCallInfo(req.query), whereCallShare(req.query))
 
     const CallShareDetail = await queryCallShareDetail(req.query, limit, offset)
 
@@ -93,7 +92,7 @@ exports.queryReport = async (req, res) => {
       countCallShare: countCallShare,
       callRatingReScore: CallRatingReScore,
       countCallReviewed: countCallReviewed,
-      percentTypeCallRating: percentTypeCallRating,
+      percentTypeCallRating: _.removeValueEmptyOfKey(percentTypeCallRating, 'name'),
       totalCall: totalCall,
       callShareDetail: CallShareDetail,
       constTypeResultCallRating: constTypeResultCallRating,
@@ -193,7 +192,7 @@ exports.queryReportByScoreScript = async (req, res) => {
       sumScoreMax: sumScoreMax,
       unScoreCriteriaGroup: unScoreCriteriaGroup.length || 0,
       unScoreScript: unScoreScript.length || 0,
-      percentTypeCallRating: percentTypeCallRating,
+      percentTypeCallRating: _.removeValueEmptyOfKey(percentTypeCallRating, 'name'),
       constTypeResultCallRating: constTypeResultCallRating,
       callShareDetail: CallShareDetail,
       detailScoreScript: detailScoreScript,

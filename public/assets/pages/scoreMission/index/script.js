@@ -869,10 +869,20 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
         criteriaGroups.map((cr) => {
             let totalPointCriteriaGroup = 0
             resultCallRating.map((el) => {
+                let totalPointOfGroup = 0
                 let point = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
                 let dataUnscorescript = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorescript')
+                let dataUnscorecriteriagroup = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorecriteriagroup')
                 if (dataUnscorescript == "true") checkUnscorescript = false
+                if (dataUnscorecriteriagroup == "true") {
+                    $(`.criteriaGroup-${cr.id} option:selected`).each(function () {
+                        const pointOfSelection = $(this).attr("data-point")
+                        totalPointOfGroup += parseInt(pointOfSelection) || 0
+                    })
+                }
                 totalPointCriteriaGroup += point ? parseInt(point) : 0
+                // trừ đi tất cả các giá chị của nhóm nếu có liệt nhóm
+                totalPointCriteriaGroup = totalPointCriteriaGroup - totalPointOfGroup
             })
             // điểm kịch bản = tổng điểm của các nhóm tiêu chí
             if (checkUnscorescript == false) {

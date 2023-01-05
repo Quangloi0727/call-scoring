@@ -42,5 +42,9 @@ module.exports = {
         let s = new Set(arr)
         let it = s.values()
         return Array.from(it)
+    },
+    removeValueEmptyOfKey: function (arr, key) {
+        const result = arr.filter(el => el[key] != '' || el[key] == null || el[key] == undefined)
+        return result
     }
 }
