@@ -530,7 +530,9 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
   let keyObj = []
   percentTypeCallRating.map((el) => {
     keyObj.push(`point${el.name}`)
-    el.name = constTypeResultCallRating[`point${el.name}`].txt
+    if (el.name && el.name != '') {
+      el.name = constTypeResultCallRating[`point${el.name}`].txt
+    }
   })
 
   if (keyObj.length > 0) {
@@ -550,16 +552,17 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
 
 function renderHeaderTableTapScoreScript(criteriaGroups) {
   let tableHeadTapScoreScript = `
-  <th class="text-center">Mã cuộc gọi</th>
-  <th class="text-center">Hướng gọi</th>
-  <th class="text-center">Điện thoại viên</th>
-  <th class="text-center">Đội ngũ</th>
-  <th class="text-center">Nhóm</th>
-  <th class="text-center">Mục tiêu chấm điểm</th>
-  <th class="text-center">Điểm đánh giá tự động</th>
-  <th class="text-center">Kịch bản chấm điểm</th>
-  <th class="text-center">Điểm đánh giá thủ công</th>
-  <th class="text-center">Kết quả đánh giá</th>`
+                                  <th class="text-center">Mã cuộc gọi</th>
+                                  <th class="text-center">Hướng gọi</th>
+                                  <th class="text-center">Điện thoại viên</th>
+                                  <th class="text-center">Đội ngũ</th>
+                                  <th class="text-center">Nhóm</th>
+                                  <th class="text-center">Mục tiêu chấm điểm</th>
+                                  <th class="text-center">Điểm đánh giá tự động</th>
+                                  <th class="text-center">Kịch bản chấm điểm</th>
+                                  <th class="text-center">Điểm đánh giá thủ công</th>
+                                  <th class="text-center">Kết quả đánh giá</th>
+                                `
 
   if (criteriaGroups) {
     criteriaGroups.map((criteriaGroup) => {

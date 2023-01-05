@@ -855,66 +855,59 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.selectpicker').selectpicker('refresh')
     $('.nav-scoreScript').html(navHTML)
     $('#progress-scoreScript').html('')
+
     // Tổng điểm kịch bản
-    let resultPointCriteria = 0
     if (resultCallRating) {
+        // add các lựa chọn đã chọn
         resultCallRating.map((el) => {
             $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria ? el.idSelectionCriteria : 'not_enough_infor')
         })
 
-        criteriaGroups.map((criteriaGroup) => {
-            let resultPointCriteriaGroup = 0
-            let totalPointByIdCriteriaGroup = $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('data-point')
+        // tổng điểm kịch bản
+        let totalScoreScript = 0
+        let checkUnscorescript = true
+        criteriaGroups.map((cr) => {
+            let totalPointCriteriaGroup = 0
             resultCallRating.map((el) => {
-                let point = $(`.selectpicker.criteriaGroup-${criteriaGroup.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
-                resultPointCriteriaGroup += point ? parseInt(point) : 0
-                //check tiêu chí này có chọn vào lựa chọn "Không đủ thông tin để chấm " hay ko
-                //TH "Không đủ thông tin để chấm " thì idSelectionCriteria == null
-                //TH này xảy ra thì ko tính điểm của tiêu chí này vào điểm của kịch bản
-                if (!el.idSelectionCriteria && criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria)) {
-                    totalPoint -= criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria).scoreMax
-                    totalPointByIdCriteriaGroup -= criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria).scoreMax
-                }
-
-                if (el.idSelectionCriteria && el.selectionCriteriaInfo.unScoreCriteriaGroup) {
-                    if (criteriaGroup.Criteria.find(criteria => criteria.id == el.idCriteria)) resultPointCriteriaGroup = 0
-                }
+                let point = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
+                let dataUnscorescript = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorescript')
+                if (dataUnscorescript == "true") checkUnscorescript = false
+                totalPointCriteriaGroup += point ? parseInt(point) : 0
             })
             // điểm kịch bản = tổng điểm của các nhóm tiêu chí
-            resultPointCriteria += resultPointCriteriaGroup
-            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('resultPointCriteriaGroup', resultPointCriteriaGroup)
-            $(`.nav-link.nav-criteria-group.group-${criteriaGroup.id}`).attr('data-point', totalPointByIdCriteriaGroup)
+            if (checkUnscorescript == false) {
+                totalScoreScript = 0
+            } else {
+                totalScoreScript += totalPointCriteriaGroup
+            }
+            $(`.nav-link.nav-criteria-group.group-${cr.id}`).attr('resultPointCriteriaGroup', totalPointCriteriaGroup)
         })
 
         // phần trăm điểm
-        var perc = ((resultPointCriteria / totalPoint) * 100).toFixed(0)
-        // check điểm liệt kịch bản
-        resultCallRating.map(el => {
-            if (el.idSelectionCriteria && el.selectionCriteriaInfo.unScoreScript) return resultPointCriteria = 0
-        })
+        var perc = ((totalScoreScript / totalPoint) * 100).toFixed(0)
         // gán phần trăm điểm
         let html = `<div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
         $('#progress-scoreScript').html(html)
-        $('.scoreScript').text(`Tổng điểm: ${resultPointCriteria}/${totalPoint} - ${perc}%`)
+        $('.scoreScript').text(`Tổng điểm: ${totalScoreScript}/${totalPoint} - ${perc}%`)
+
+        //tổng điểm các nhóm
+        let pointCriteriaGroup = 0
+        $(".tab-pane.fade.mb-4.show.active option:selected").each(function () {
+            const dataUnScoreCriteriaGroup = $(this).attr("data-unScoreCriteriaGroup")
+            if (dataUnScoreCriteriaGroup == "true") {
+                pointCriteriaGroup = 0
+                return false
+            } else {
+                pointCriteriaGroup += $(this).attr("data-point") ? parseInt($(this).attr("data-point")) : 0
+            }
+        })
+        let $firstElm = $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}`)
+        const total = $firstElm.attr('data-point')
+        const percCriteriaGroup = ((pointCriteriaGroup / total) * 100).toFixed(0)
+        let htmlScoreCriteria = `<div class="progress-bar" role="progressbar" style="width: ${percCriteriaGroup}%;" aria-valuenow="${percCriteriaGroup}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${percCriteriaGroup}%</div>`
+        $('#progress-scoreCriteria').html(htmlScoreCriteria)
+        $('.scoreCriteria').text(`Tổng điểm: ${pointCriteriaGroup}/${total} - ${percCriteriaGroup}%`)
     }
-    // hiển thị điểm của mục tiêu đầu tiên
-    let $firstElm = $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}`)
-    $('.nameCriteriaGroup').text($firstElm.text())
-    if ($firstElm.attr('resultPointCriteriaGroup') || $firstElm.attr('resultPointCriteriaGroup') == 0) {
-        let point = $firstElm.attr('resultPointCriteriaGroup')
-
-        let total = $firstElm.attr('data-point')
-        var perc = ((point / total) * 100).toFixed(0)
-        let html = `
-        <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
-        $('#progress-scoreCriteria').html(html)
-        $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
-
-    } else {
-        $('#progress-scoreCriteria').html('')
-        $('.scoreCriteria').text(`Tổng điểm: 0/${$firstElm.attr('data-point')} - 0%`)
-    }
-
     $('.selectpicker').selectpicker('refresh')
 }
 
