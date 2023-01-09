@@ -109,16 +109,6 @@
         })
         return wavesurfer
     }, window._hightChart = function (idContainer, title, data) {
-        let series = []
-        // if(data.length > 0){
-        //     data.map((el) =>{
-        //         series.push({
-        //             name: el,
-        //             colorByPoint: true,
-        //             data: data
-        //         })
-        //     })
-        // }
         // Create the chart
         Highcharts.chart(`${idContainer}`, {
             chart: {
@@ -152,6 +142,9 @@
                 colorByPoint: true,
                 data: data
             }]
-        });
+        })
+    }, window._convertPercentNumber = function (number1, number2) {
+        if (number1 == 0 && number2 == 0) return 0
+        return ((number1 / number2) * 100).toFixed(0)
     }
 }(jQuery)

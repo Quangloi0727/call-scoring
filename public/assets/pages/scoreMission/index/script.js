@@ -412,16 +412,22 @@ function bindClick() {
 
     $(document).on('click', '.nav-link.nav-criteria-group', function () {
         $('.nameCriteriaGroup').text($(this).text())
-        if ($(this).attr('resultPointCriteriaGroup') || $(this).attr('resultPointCriteriaGroup') == 0) {
-            let point = $(this).attr('resultPointCriteriaGroup')
-
-            let total = $(this).attr('data-point')
-            var perc = ((point / total) * 100).toFixed(0)
-            let html = `
-            <div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
-            $('#progress-scoreCriteria').html(html)
-            $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
-
+        if ($(this).attr('resultPointCriteriaGroup')) {
+            return setTimeout(() => {
+                let totalTemp = 0
+                $(".tab-pane.fade.mb-4.show.active option:selected").each(function () {
+                    if ($(this).val() != "not_enough_infor") {
+                        totalTemp += parseInt($(this).parent().attr('data-point-max'))
+                    }
+                })
+                $(`.nav-link.nav-criteria-group.active`).attr("data-point", totalTemp)
+                let point = $(this).attr('resultPointCriteriaGroup')
+                let total = $(this).attr('data-point')
+                var perc = _convertPercentNumber(point, total)
+                let html = `<div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
+                $('#progress-scoreCriteria').html(html)
+                $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
+            }, 345)
         } else {
             $('#progress-scoreCriteria').html('')
             $('.scoreCriteria').text(`Tổng điểm: 0/${$(this).attr('data-point')} - 0%`)
@@ -443,16 +449,23 @@ function bindClick() {
                 point += $(this).attr("data-point") ? parseInt($(this).attr("data-point")) : 0
             }
         })
+
+        let totalTemp = 0
         $(".tab-pane.fade.mb-4.show.active option:selected").each(function () {
             if ($(this).attr("data-unScoreScript") == "true") dataUnScoreScript = true
+
+            if ($(this).val() != "not_enough_infor") {
+                totalTemp += parseInt($(this).parent().attr('data-point-max'))
+            }
         })
+        $(`.nav-link.nav-criteria-group.group-${groupId}.active`).attr("data-point", totalTemp)
+
         const total = $firstElm.attr('data-point')
-        const perc = ((point / total) * 100).toFixed(0)
+        const perc = _convertPercentNumber(point, total)
         let htmlScoreCriteria = `<div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
         $('#progress-scoreCriteria').html(htmlScoreCriteria)
         $('.scoreCriteria').text(`Tổng điểm: ${point}/${total} - ${perc}%`)
         $(`.nav-link.nav-criteria-group.group-${groupId}.active`).attr("resultpointcriteriagroup", point)
-        $(`.nav-link.nav-criteria-group.group-${groupId}.active`).attr("data-point", total)
         $(`.nav-link.nav-criteria-group.group-${groupId}.active`).attr("data-unScoreScript", dataUnScoreScript)
         //tổng điểm kịch bản
         let totalScoreScript = 0
@@ -464,7 +477,7 @@ function bindClick() {
             pointScoreScript += $(this).attr("data-point") ? parseInt($(this).attr("data-point")) : 0
         })
         checkDataUnScoreScript == true ? totalScoreScript = 0 : totalScoreScript
-        const percScoreScript = ((totalScoreScript / pointScoreScript) * 100).toFixed(0)
+        const percScoreScript = _convertPercentNumber(totalScoreScript, pointScoreScript)
         let htmlScoreScript = `<div class="progress-bar" role="progressbar" style="width: ${percScoreScript}%;" aria-valuenow="${percScoreScript}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${percScoreScript}%</div>`
         $('#progress-scoreScript').html(htmlScoreScript)
         $('.scoreScript').text(`Tổng điểm: ${totalScoreScript}/${pointScoreScript} - ${percScoreScript}%`)
@@ -637,7 +650,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
     let resultReviewScore = ''
     let pointResultCallRating = '-'
     if (item.isMark) {
-        resultReviewScore = constTypeResultCallRating[`point${item.typeResultCallRating}`].txt
+        resultReviewScore = item.typeResultCallRating != '' ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : ''
         if (item.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
             pointResultCallRating = ((item.pointResultCallRating / item.scoreMax) * 100).toFixed(0) + `%`
         } else {
@@ -788,11 +801,11 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
                                                     </option>`
                     })
                 }
-                htmlSelectionCriteria += `<option data-point="0" value="not_enough_infor">Không đủ thông tin để chấm</option>`
+                htmlSelectionCriteria += `<option data-point="0" value="not_enough_infor" data-point-max="${criteria.scoreMax}">Không đủ thông tin để chấm</option>`
                 criteriaHtml += `
                 <div class="form-group">
                     <label class="col-sm-10 form-check-label mt-4">${criteria.name}<span class="text-danger">(*)</span></label>
-                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" id="criteriaChange" required name="criteriaGroup-${_uuidv4}" title="Chọn" data-criteriaId="${criteria.id}" data-criterialGroupId="${criteriaGroup.id}">
+                    <select class="form-control selectpicker pl-2 criteria criteriaGroup-${criteriaGroup.id}" id="criteriaChange" required name="criteriaGroup-${_uuidv4}" title="--- Chọn ---" data-criteriaId="${criteria.id}" data-criterialGroupId="${criteriaGroup.id}" data-point-max="${criteria.scoreMax}">
                         ${htmlSelectionCriteria}
                     </select>
                 </div>`
@@ -856,68 +869,78 @@ function popupScore(criteriaGroups, resultCallRatingNote, resultCallRating) {
     $('.nav-scoreScript').html(navHTML)
     $('#progress-scoreScript').html('')
 
-    // Tổng điểm kịch bản
-    if (resultCallRating) {
-        // add các lựa chọn đã chọn
+    // add các lựa chọn đã chọn
+    resultCallRating.map((el) => {
+        $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria ? el.idSelectionCriteria : 'not_enough_infor')
+        if (!el.idSelectionCriteria) {
+            totalPoint -= parseInt($(`select[data-criteriaId='${el.idCriteria}']`).attr('data-point-max'))
+        }
+    })
+
+    // tổng điểm kịch bản
+    let totalScoreScript = 0
+    let checkUnscorescript = true
+    criteriaGroups.map((cr) => {
+        let totalPointCriteriaGroup = 0
         resultCallRating.map((el) => {
-            $(`select[data-criteriaId='${el.idCriteria}']`).val(el.idSelectionCriteria ? el.idSelectionCriteria : 'not_enough_infor')
-        })
-
-        // tổng điểm kịch bản
-        let totalScoreScript = 0
-        let checkUnscorescript = true
-        criteriaGroups.map((cr) => {
-            let totalPointCriteriaGroup = 0
-            resultCallRating.map((el) => {
-                let totalPointOfGroup = 0
-                let point = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
-                let dataUnscorescript = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorescript')
-                let dataUnscorecriteriagroup = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorecriteriagroup')
-                if (dataUnscorescript == "true") checkUnscorescript = false
-                if (dataUnscorecriteriagroup == "true") {
-                    $(`.criteriaGroup-${cr.id} option:selected`).each(function () {
-                        const pointOfSelection = $(this).attr("data-point")
-                        totalPointOfGroup += parseInt(pointOfSelection) || 0
-                    })
-                }
-                totalPointCriteriaGroup += point ? parseInt(point) : 0
-                // trừ đi tất cả các giá chị của nhóm nếu có liệt nhóm
-                totalPointCriteriaGroup = totalPointCriteriaGroup - totalPointOfGroup
-            })
-            // điểm kịch bản = tổng điểm của các nhóm tiêu chí
-            if (checkUnscorescript == false) {
-                totalScoreScript = 0
-            } else {
-                totalScoreScript += totalPointCriteriaGroup
+            let totalPointOfGroup = 0
+            let point = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-point')
+            let dataUnscorescript = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorescript')
+            let dataUnscorecriteriagroup = $(`.selectpicker.criteriaGroup-${cr.id} option[value="${el.idSelectionCriteria}"]`).attr('data-unscorecriteriagroup')
+            if (dataUnscorescript == "true") checkUnscorescript = false
+            if (dataUnscorecriteriagroup == "true") {
+                $(`.criteriaGroup-${cr.id} option:selected`).each(function () {
+                    const pointOfSelection = $(this).attr("data-point")
+                    totalPointOfGroup += parseInt(pointOfSelection) || 0
+                })
             }
-            $(`.nav-link.nav-criteria-group.group-${cr.id}`).attr('resultPointCriteriaGroup', totalPointCriteriaGroup)
+            totalPointCriteriaGroup += point ? parseInt(point) : 0
+            // trừ đi tất cả các giá chị của nhóm nếu có liệt nhóm
+            totalPointCriteriaGroup = totalPointCriteriaGroup - totalPointOfGroup
         })
+        // điểm kịch bản = tổng điểm của các nhóm tiêu chí
+        if (checkUnscorescript == false) {
+            totalScoreScript = 0
+        } else {
+            totalScoreScript += totalPointCriteriaGroup
+        }
+        $(`.nav-link.nav-criteria-group.group-${cr.id}`).attr('resultPointCriteriaGroup', totalPointCriteriaGroup)
+    })
 
-        // phần trăm điểm
-        var perc = ((totalScoreScript / totalPoint) * 100).toFixed(0)
-        // gán phần trăm điểm
-        let html = `<div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
-        $('#progress-scoreScript').html(html)
-        $('.scoreScript').text(`Tổng điểm: ${totalScoreScript}/${totalPoint} - ${perc}%`)
+    // phần trăm điểm
+    var perc = _convertPercentNumber(totalScoreScript, totalPoint)
+    // gán phần trăm điểm
+    let html = `<div class="progress-bar" role="progressbar" style="width: ${perc}%;" aria-valuenow="${perc}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${perc}%</div>`
+    $('#progress-scoreScript').html(html)
+    $('.scoreScript').text(`Tổng điểm: ${totalScoreScript}/${totalPoint} - ${perc}%`)
 
-        //tổng điểm các nhóm
-        let pointCriteriaGroup = 0
-        $(".tab-pane.fade.mb-4.show.active option:selected").each(function () {
-            const dataUnScoreCriteriaGroup = $(this).attr("data-unScoreCriteriaGroup")
-            if (dataUnScoreCriteriaGroup == "true") {
-                pointCriteriaGroup = 0
-                return false
-            } else {
-                pointCriteriaGroup += $(this).attr("data-point") ? parseInt($(this).attr("data-point")) : 0
-            }
-        })
-        let $firstElm = $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}`)
-        const total = $firstElm.attr('data-point')
-        const percCriteriaGroup = ((pointCriteriaGroup / total) * 100).toFixed(0)
-        let htmlScoreCriteria = `<div class="progress-bar" role="progressbar" style="width: ${percCriteriaGroup}%;" aria-valuenow="${percCriteriaGroup}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${percCriteriaGroup}%</div>`
-        $('#progress-scoreCriteria').html(htmlScoreCriteria)
-        $('.scoreCriteria').text(`Tổng điểm: ${pointCriteriaGroup}/${total} - ${percCriteriaGroup}%`)
-    }
+    //tổng điểm các nhóm
+    let pointCriteriaGroup = 0
+    $(".tab-pane.fade.mb-4.show.active option:selected").each(function () {
+        const dataUnScoreCriteriaGroup = $(this).attr("data-unScoreCriteriaGroup")
+        if (dataUnScoreCriteriaGroup == "true") {
+            pointCriteriaGroup = 0
+            return false
+        } else {
+            pointCriteriaGroup += $(this).attr("data-point") ? parseInt($(this).attr("data-point")) : 0
+        }
+    })
+    let totalTemp = 0
+    $(".tab-pane.fade.mb-4.show.active option:selected").each(function () {
+        if ($(this).val() != "not_enough_infor") {
+            totalTemp += parseInt($(this).parent().attr('data-point-max'))
+        }
+    })
+    $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}.active`).attr("data-point", totalTemp)
+
+    let $firstElm = $(`.nav-link.nav-criteria-group.group-${criteriaGroups[0].id}`)
+    $('.nameCriteriaGroup').text($firstElm.text())
+    const total = $firstElm.attr('data-point')
+    const percCriteriaGroup = _convertPercentNumber(pointCriteriaGroup, total)
+    let htmlScoreCriteria = `<div class="progress-bar" role="progressbar" style="width: ${percCriteriaGroup}%;" aria-valuenow="${percCriteriaGroup}" aria-valuemin="0" aria-valuemax="100">Hoàn thành ${percCriteriaGroup}%</div>`
+    $('#progress-scoreCriteria').html(htmlScoreCriteria)
+    $('.scoreCriteria').text(`Tổng điểm: ${pointCriteriaGroup}/${total} - ${percCriteriaGroup}%`)
+
     $('.selectpicker').selectpicker('refresh')
 }
 
