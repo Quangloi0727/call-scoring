@@ -652,7 +652,7 @@ function checkConfigDefaultBody(dataConfig, configDefault, item) {
     if (item.isMark) {
         resultReviewScore = item.typeResultCallRating != '' ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : ''
         if (item.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
-            pointResultCallRating = ((item.pointResultCallRating / item.scoreMax) * 100).toFixed(0) + `%`
+            pointResultCallRating = _convertPercentNumber(item.pointResultCallRating, item.scoreMax) + `%`
         } else {
             pointResultCallRating = `${item.pointResultCallRating}/${item.scoreMax}` || 0
         }

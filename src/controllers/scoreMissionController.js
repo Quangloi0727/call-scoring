@@ -678,6 +678,7 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     })
 
     if (unScoreScript.length) point = 0
+
     const idCriterias = req.body.resultCriteria.map(criteria => criteria.idSelectionCriteria != null ? criteria.idCriteria : null)
     const updateCallShare = {
         pointResultCallRating: point ? point : 0,
@@ -708,7 +709,7 @@ async function renderTypeResultCallRating(scoreScript, point, idScoreScript, idC
     let scoreMax = 0
     if (scoreScript.criteriaDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
         scoreMax = await getSumScoreMax(idScoreScript, idCriterias)
-        point = ((point / scoreMax) * 100)
+        point = (scoreMax == 0) ? 0 : ((point / scoreMax) * 100)
     }
 
     let typeResultCallRating = ''
