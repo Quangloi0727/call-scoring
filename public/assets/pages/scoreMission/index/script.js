@@ -546,9 +546,9 @@ function findData(page, arrScoreTargetId) {
  */
 function renderPopupCustomColumn(ConfigurationColums, init = false) {
     let popupHtml = ''
-    popupHtml += `<div class="mb-3 border-bottom">
-                    <ul class='p-0'>Mã cuộc gọi</ul>
-                    <ul class='p-0'>Thao tác</ul>
+    popupHtml += `<div>
+                    <ul class='p-0 border-bottom mb-3'>Mã cuộc gọi</ul>
+                    <ul class='p-0 border-bottom mb-3'>Thao tác</ul>
                 </div>`
     if (CACHE_CONFIG_COLUMN) {
         for (const [key, value] of Object.entries(ConfigurationColums)) {

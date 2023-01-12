@@ -165,7 +165,7 @@ exports.gets = async (req, res, next) => {
       query.status = status
     }
 
-    const { count, rows } = await model.ScoreTarget.findAndCountAll({
+    let findList = model.ScoreTarget.findAll({
       where: query ? query : {},
       order: [
         ['id', 'DESC'],
@@ -188,13 +188,17 @@ exports.gets = async (req, res, next) => {
       nest: true
     })
 
+    let count = model.ScoreTarget.count({ where: query ? query : {} })
+
+    const [listData, totalRecord] = await Promise.all([findList, count])
+
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
-      totalResult: count,
+      totalResult: totalRecord,
     })
     return res.json({
-      code: SUCCESS_200.code, data: rows || [],
+      code: SUCCESS_200.code, data: listData || [],
       paginator: {
         ...paginator.getPaginationData(),
         rowsPerPage: limit

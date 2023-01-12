@@ -3,7 +3,7 @@ const pagination = require('pagination')
 const { Op, QueryTypes } = require('sequelize')
 const { createExcelPromise } = require('../common/createExcel')
 const { SUCCESS_200, ERR_500, ERR_400, ERR_403 } = require("../helpers/constants/statusCodeHTTP")
-const { USER_ROLE, SYSTEM_RULE, constTypeResultCallRating, headerDefaultRecording, keysTitleExcelRecording, SOURCE_NAME, CreatedByForm, STATUS_SCORE_SCRIPT } = require("../helpers/constants/index")
+const { USER_ROLE, SYSTEM_RULE, constTypeResultCallRating, headerDefaultRecording, keysTitleExcelRecording, SOURCE_NAME, CreatedByForm, STATUS_SCORE_SCRIPT, OP_UNIT_DISPLAY } = require("../helpers/constants/index")
 const { cheSo } = require("../helpers/functions")
 const model = require('../models')
 const ConfigurationColumsModel = require('../models/configurationcolums')
@@ -513,6 +513,32 @@ async function handleData(data, privatePhoneNumber = false) {
       if (el.scoreScriptResult == constTypeResultCallRating.pointPassStandard.code) el.scoreScriptResult = constTypeResultCallRating.pointPassStandard.txt
     }
 
+    // display điểm đánh giá thủ công
+    const findCallInCallShare = await model.CallShare.findOne({
+      where: { callId: el.callId },
+      include: [
+        {
+          model: model.ScoreScript,
+          as: 'scoreScriptInfo'
+        }
+      ],
+      nest: true,
+      raw: true
+    })
+
+    let pointResultCallRating = '-'
+    if (findCallInCallShare) {
+      if (findCallInCallShare.isMark == true) {
+        if (findCallInCallShare.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+          pointResultCallRating = _.convertPercentNumber(findCallInCallShare.pointResultCallRating, findCallInCallShare.scoreMax) + `%`
+        } else {
+          pointResultCallRating = `${findCallInCallShare.pointResultCallRating}/${findCallInCallShare.scoreMax}` || 0
+        }
+      }
+    }
+
+    el.scoreScriptHandle = pointResultCallRating
+    
     return el
 
   }))

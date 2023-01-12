@@ -46,5 +46,9 @@ module.exports = {
     removeValueEmptyOfKey: function (arr, key) {
         const result = arr.filter(el => el[key] != '' || el[key] == null || el[key] == undefined)
         return result
+    },
+    convertPercentNumber(number1, number2) {
+        if (number1 == 0 && number2 == 0) return 0
+        return ((number1 / number2) * 100).toFixed(0)
     }
 }
