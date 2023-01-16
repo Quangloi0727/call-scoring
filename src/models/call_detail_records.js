@@ -39,6 +39,10 @@ class CallDetailRecords extends Model {
           type: DataTypes.BOOLEAN,
           defaultValue: false
         },
+        isMark: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false
+        },
         teamId: {
           type: DataTypes.INTEGER,
           references: {

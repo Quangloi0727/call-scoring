@@ -16,7 +16,7 @@ const TypeDateSaveForCall = {
 const STATUS = {
   ACTIVE: {
     value: 1,
-    text: "Đang Hoạt động"
+    text: "Đang hoạt động"
   },
   UN_ACTIVE: {
     value: 2,

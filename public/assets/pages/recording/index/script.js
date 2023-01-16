@@ -328,7 +328,8 @@ function bindClick() {
       }
       toastr.success('Lưu thành công !')
       return setTimeout(() => {
-        window.location.href = "/recording"
+        $('#popupComment').modal('hide')
+        return loadTableAfterSaveData()
       }, 2500)
     })
   })
@@ -463,7 +464,8 @@ function bindClick() {
       }
       toastr.success('Lưu thành công !')
       return setTimeout(() => {
-        window.location.href = "/recording"
+        $('#popupCallScore').modal('hide')
+        return loadTableAfterSaveData()
       }, 2500)
     })
   })
@@ -605,6 +607,19 @@ function bindClick() {
     $('.scoreScript').text(`Tổng điểm: ${totalScoreScript}/${pointScoreScript} - ${percScoreScript}%`)
   })
 
+}
+
+function loadTableAfterSaveData() {
+  let page = $(".active .page-link").text()
+  let formData = {}
+
+  if (searchType === DEFAULT_SEARCH) {
+    formData = getFormData('form_search')
+  } else if (searchType === ADVANCED_SEARCH) {
+    formData = getFormData('form_advanced_search')
+  }
+
+  return findData(Number(page), null, formData)
 }
 
 function deleteSaveColumn() {

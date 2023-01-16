@@ -4,7 +4,7 @@ const { STATUS, TypeDateSaveForCall } = require('../helpers/constants/index')
 const { Op } = require('sequelize')
 
 // job share call
-cron.schedule("*/5 * * * *", async () => {
+cron.schedule("0 0 * * *", async () => {
     try {
         _logger.info('start job clear data policy at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
         const findDataPolicy = await model.DataRetentionPolicy.findAll({ where: { status: STATUS.ACTIVE.value } })
@@ -51,19 +51,30 @@ cron.schedule("*/5 * * * *", async () => {
 
 
 async function actionClearData(dateQuery, keyQuery, idsUser) {
+    dateQuery = _moment(dateQuery).valueOf() / 1000
     let _query = {}
     if (keyQuery == true) {
-        _query = { isMark: true, reviewedAt: { [Op.lte]: dateQuery } }
+        _query = { isMark: true, connectTime: { [Op.lte]: dateQuery } }
     } else {
-        _query = { isMark: false, createdAt: { [Op.lte]: dateQuery } }
+        _query = { isMark: false, connectTime: { [Op.lte]: dateQuery } }
     }
     if (idsUser.length) {
         idsUser = _.removeElementDuplicate(idsUser)
         _query = { ..._query, assignFor: { [Op.in]: idsUser } }
     }
     console.log('query remove', _query)
-    const dataRemove = await model.CallShare.destroy({ where: _query })
-    _logger.info(`Removed ${dataRemove} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
+    const findIdCall = await model.CallDetailRecords.findAll({ where: _query, attributes: ['id'], raw: true, nest: true })
+    const callIdRemove = _.pluck(findIdCall, 'id')
+    _logger.info("idCallRemove", callIdRemove)
+    if (callIdRemove.length) {
+        const dataRemove1 = await model.CallShare.destroy({ where: { callId: { [Op.in]: callIdRemove } } })
+        const dataRemove2 = await model.CallDetailRecords.destroy({ where: { id: { [Op.in]: callIdRemove } } })
+        _logger.info(`Removed1 ${dataRemove1} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
+        _logger.info(`Removed2 ${dataRemove2} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
+    } else {
+        _logger.info(`Not find id call remove ! `)
+    }
+
 }
 
 function buildQueryTime(valueSaveForCallGotPoint, typeDateSaveForCallGotPoint) {

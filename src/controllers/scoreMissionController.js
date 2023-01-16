@@ -433,8 +433,10 @@ exports.saveCallRating = async (req, res) => {
     try {
         const { resultCriteria, note, type, dataEditOrigin } = req.body
         const { timeNoteMinutes, timeNoteSecond } = note || {}
-        const { idScoreScript, callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
+        const { idScoreScript } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : {}
+        const { callId } = resultCriteria && resultCriteria[0] ? resultCriteria[0] : note
         transaction = await model.sequelize.transaction()
+
 
         //chấm điểm từ màn recording tạo mới 1 data trong bảng callShare
         const findCallShare = await model.CallShare.findOne({ where: { callId: callId } })
@@ -481,7 +483,7 @@ exports.saveCallRating = async (req, res) => {
         switch (type) {
             case 'add':
                 await model.CallRatingHistory.create({ type: CreatedByForm.ADD, created: req.user.id, callId: callId }, { transaction: transaction })
-                await model.CallDetailRecords.update({ share: true }, { where: { id: callId } }, { transaction: transaction })
+                await model.CallDetailRecords.update({ share: true, isMark: true }, { where: { id: callId } }, { transaction: transaction })
                 break
             case 'edit':
                 await createCallRatingHistory(dataEditOrigin, resultCriteria, req.user.id, CreatedByForm.EDIT, transaction)
