@@ -1,4 +1,5 @@
 const titlePage = 'Báo cáo chấm điểm cuộc gọi'
+const titleSheet = 'Bảng thống kê'
 const {
   STATUS,
   USER_ROLE,
@@ -282,7 +283,7 @@ exports.exportExcelData = async (req, res) => {
         scoreTarget: item.scoreTargetInfo ? item.scoreTargetInfo.name : '',
         scoreScriptAuto: '',
         scoreScript: item.scoreScriptInfo ? item.scoreScriptInfo.name : '',
-        scoreScriptHandle: item.pointResultCallRating ? item.pointResultCallRating : '',
+        scoreScriptHandle: renderPointResultCallRating(item),
         scoreScriptResult: item.typeResultCallRating ? constTypeResultCallRating[`point${item.typeResultCallRating}`].txt : '',
         userReview: item.userReview ? item.userReview.fullName + ' ' + `(${item.userReview.userName})` : '',
         reviewedAt: item.reviewedAt ? _moment(item.reviewedAt).format('DD/MM/YYYY HH:mm:ss') : '',
@@ -328,9 +329,6 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
     }
 
     let newData = callShareDetail.map((callShare) => {
-      // callShare.callRatingInfo.map((callRating) => {
-      //   console.log(callRating)
-      // })
       detailScoreScript.CriteriaGroup.map((CriteriaGroup) => {
         let resultScoreCriteriaGroup = 0
         let scoreMax = 0
@@ -369,7 +367,6 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
         Object.assign(callShare, criteriaGroup)
 
       })
-
       return {
         ...callShare,
         callId: callShare.callInfo.id || '',
@@ -380,7 +377,7 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
         scoreTarget: callShare.scoreTargetInfo ? callShare.scoreTargetInfo.name : '',
         scoreScriptAuto: '',
         scoreScript: callShare.scoreScriptInfo ? callShare.scoreScriptInfo.name : '',
-        scoreScriptHandle: callShare.pointResultCallRating ? callShare.pointResultCallRating : '',
+        scoreScriptHandle: renderPointResultCallRating(callShare),
         scoreScriptResult: callShare.typeResultCallRating ? constTypeResultCallRating[`point${callShare.typeResultCallRating}`].txt : '',
         userReview: callShare.userReview ? callShare.userReview.fullName + ' ' + `(${callShare.userReview.userName})` : '',
         reviewedAt: callShare.reviewedAt ? _moment(callShare.reviewedAt).format('DD/MM/YYYY HH:mm:ss') : '',
@@ -398,10 +395,19 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
   }
 }
 
+function renderPointResultCallRating(callShare) {
+  let pointResultCallRating = '-'
+  if (callShare.scoreScriptInfo && callShare.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
+    pointResultCallRating = _convertPercentNumber(callShare.pointResultCallRating, callShare.scoreMax) + `%`
+  } else {
+    pointResultCallRating = `${callShare.pointResultCallRating} / ${callShare.scoreMax}` || 0
+  }
+  return pointResultCallRating
+}
 
 function getUserByRole(idRole) {
   return model.User.findAll({
-    where: { isActive: 1 },
+    where: { isActive: true },
     attributes: ['id', 'fullName', 'userName'],
     include: [{
       model: model.UserRole,
@@ -429,14 +435,14 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
 
     // tổng cuộc gọi đã được chấm điểm
     model.CallShare.count({
-      where: Object.assign({ isMark: { [Op.eq]: 1 } }, whereCallShare),
+      where: Object.assign({ isMark: { [Op.eq]: true } }, whereCallShare),
       raw: true
     }),
 
     //tổng cuộc đã chấm lại 
     model.CallShare.count({
       where: Object.assign(
-        { isMark: { [Op.eq]: 1 } },
+        { isMark: { [Op.eq]: true } },
         { updateReviewedAt: { [Op.gt]: model.sequelize.col('reviewedAt') } },
         whereCallShare
       ),
@@ -445,7 +451,7 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
 
     //dữ liệu chấm điểm theo loại đánh giá
     model.CallShare.findAll({
-      where: Object.assign({ isMark: { [Op.eq]: 1 } }, whereCallShare),
+      where: Object.assign({ isMark: { [Op.eq]: true } }, whereCallShare),
       attributes: [
         ['typeResultCallRating', 'name'],
         [model.Sequelize.literal(`COUNT(1)`), 'y']
@@ -617,7 +623,7 @@ async function getSumScoreMax(idScoreScript) {
 async function queryCallShareDetail(query, limit, offset) {
 
   let objectQuery = {
-    where: whereCallShare(query),
+    where: { [Op.and]: [whereCallShare(query), { isMark: true }] },
     include: [
       {
         model: model.CallDetailRecords,
@@ -676,7 +682,8 @@ function createExcelFile(data, titleExcel, dataHeader) {
         data: data,
         opts: {
           valueWidthColumn: [20, 30, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20],
-        }
+        },
+        titleSheet
       })
       return resolve(linkFileExcel)
     } catch (error) {

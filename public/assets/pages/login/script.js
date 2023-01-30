@@ -25,7 +25,7 @@ $(function () {
             .removeClass("d-none alert-danger")
             .addClass("alert-success")
             .find(".alert-content")
-            .html("Thành công")
+            .html("Thành công !")
           localStorage.removeItem('modalData', '')
           window.location.reload()
         },

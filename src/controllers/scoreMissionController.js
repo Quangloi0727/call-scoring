@@ -693,9 +693,10 @@ async function updateCallShare(req, idSelectionCriterias, idScoreScript, callId,
     // update thời gian đánh giá review
     switch (req.body.type) {
         case 'add':
-            updateCallShare.reviewedAt = _moment(new Date())
+            const currentDate = _moment(new Date())
+            updateCallShare.reviewedAt = currentDate
             updateCallShare.isMark = true
-            updateCallShare.updateReviewedAt = _moment(new Date())
+            updateCallShare.updateReviewedAt = currentDate
             break
         case 'edit':
             updateCallShare.updateReviewedAt = _moment(new Date())

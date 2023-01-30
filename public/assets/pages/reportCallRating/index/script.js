@@ -10,13 +10,13 @@ const CALL_SELECTION_CRITERIA_TXT = 'Nội dung chấm điểm'
 
 const nameItemStorage = 'Advanced_Search_Report_Call_Rating'
 const nameItemStorage_tapScoreScript = 'Advanced_Search_Report_Call_Rating_tapScoreScript'
+const colorHighChartRandom = ['#00FF80', '#FFFF00', '#99FFFF', '#6666FF', '#FFFFCC', '#FF33FF', '#CCCCFF']
 
 $(function () {
   eventDateRangePicker('origDate')
   eventDateRangePicker('gradingDate')
   eventDateRangePicker('origDate_tapScoreScript')
   eventDateRangePicker('gradingDate_tapScoreScript')
-
 
   bindClick()
   const itemStorage = JSON.parse(localStorage.getItem(nameItemStorage))
@@ -27,6 +27,12 @@ $(function () {
     $('.selectpicker').selectpicker('refresh')
   }
   queryData()
+
+  // move div
+  $(".card-body").sortable({
+    items: ".cardBodyItem"
+  })
+
 })
 
 function bindClick() {
@@ -156,7 +162,8 @@ function bindClick() {
       return _hightChart(
         'pieChartSelectionCriteria',
         CALL_SELECTION_CRITERIA_TXT,
-        resp.percentSelectionCriteria
+        resp.percentSelectionCriteria,
+        colorHighChartRandom
       )
     })
   })
@@ -222,7 +229,8 @@ function bindClick() {
         return _hightChart(
           'pieChartSelectionCriteria',
           CALL_SELECTION_CRITERIA_TXT,
-          resp.percentSelectionCriteria
+          resp.percentSelectionCriteria,
+          colorHighChartRandom
         )
       })
     }
@@ -349,7 +357,8 @@ function renderData(resp) {
         name: CALL_UN_ASSIGNED_TXT,
         y: resp.totalCall - resp.countCallShare
       }
-    ]
+    ],
+    ['#96C1FF', '#FF9696']
   )
 
   //Tỷ lệ hoàn thành chấm điểm
@@ -366,14 +375,15 @@ function renderData(resp) {
         y: resp.totalCall - resp.countCallReviewed
 
       }
-    ]
+    ],
+    ['#96C1FF', '#FF9696']
   )
 
   //Tỷ lệ hoàn thành chấm điểm được phân công
   _hightChart(
     'pieChartGradingAssign',
-    GRADING_ASSIGNED_PERCENT_TXT, [
-    {
+    GRADING_ASSIGNED_PERCENT_TXT,
+    [{
       name: CALL_REVIEWED_TXT,
       y: resp.countCallReviewed
     },
@@ -381,8 +391,9 @@ function renderData(resp) {
       name: CALL_UN_REVIEWED_TXT,
       y: resp.countCallShare - resp.countCallReviewed
 
-    }
-  ])
+    }],
+    ['#96C1FF', '#FF9696']
+  )
 
   return
 }
@@ -392,11 +403,14 @@ function renderTable(data, constTypeResultCallRating) {
 
   data.map((el) => {
     const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
+
     let pointResultCallRating = '-'
     if (el.scoreScriptInfo && el.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
-      pointResultCallRating = el.scoreMax ? ((el.pointResultCallRating / el.scoreMax) * 100).toFixed(0) + `%` : '0%'
-    } else pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
-
+      pointResultCallRating = _convertPercentNumber(el.pointResultCallRating, el.scoreMax) + `%`
+    } else {
+      pointResultCallRating = `${el.pointResultCallRating} / ${el.scoreMax}` || 0
+    }
+    
     const reviewedAt = el.updateReviewedAt ? moment(el.updateReviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
     html += `<tr>
         <td class = "text-center">${el.callInfo.id}</td>
@@ -544,7 +558,7 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
       })
     }
   }
-  _hightChart(idChart, RATING_PERCENT_REPORT_TXT, percentTypeCallRating)
+  _hightChart(idChart, RATING_PERCENT_REPORT_TXT, percentTypeCallRating, ['#FF9696', '#BCFFC2', '#96C1FF'])
 }
 
 

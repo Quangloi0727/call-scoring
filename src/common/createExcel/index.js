@@ -1,4 +1,4 @@
-const createExcelFile = require('./createExcelFile');
+const createExcelFile = require('./createExcelFile')
 
 function createExcelPromise({
   startTime,
@@ -9,6 +9,7 @@ function createExcelPromise({
   data,
   sumRows,
   opts,
+  titleSheet
 }) {
   return new Promise((resolve, reject) => {
     createExcelFile({
@@ -20,16 +21,17 @@ function createExcelPromise({
       data,
       sumRows,
       opts,
+      titleSheet
     }, function (error, result) {
       if (error) {
-        return reject(error);
+        return reject(error)
       }
-      return resolve(result);
-    });
-  });
+      return resolve(result)
+    })
+  })
 }
 
 module.exports = {
   createExcelFile,
   createExcelPromise
-};
+}

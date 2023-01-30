@@ -108,7 +108,7 @@
             region.element.title = region.attributes.title
         })
         return wavesurfer
-    }, window._hightChart = function (idContainer, title, data) {
+    }, window._hightChart = function (idContainer, title, data, colors) {
         // Create the chart
         Highcharts.chart(`${idContainer}`, {
             chart: {
@@ -135,7 +135,8 @@
                     dataLabels: {
                         enabled: false
                     },
-                    showInLegend: true
+                    showInLegend: true,
+                    colors: colors
                 }
             },
             series: [{
