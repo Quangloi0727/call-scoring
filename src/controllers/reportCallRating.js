@@ -11,6 +11,7 @@ const {
   OP_UNIT_DISPLAY
 } = require('../helpers/constants/index')
 const { Op, QueryTypes } = require('sequelize')
+const sequelize = require('sequelize')
 const model = require('../models')
 const pagination = require('pagination')
 const { SUCCESS_200, ERR_400 } = require("../helpers/constants/statusCodeHTTP")
@@ -121,15 +122,30 @@ exports.queryReportByScoreScript = async (req, res) => {
     const pageNumber = page ? Number(page) : 1
     const offset = (pageNumber * limit) - limit
 
-    const countCallShare = await model.CallShare.count({
-      where: whereCallShare(req.query),
-      include: [{
-        model: model.CallDetailRecords,
-        as: 'callInfo',
-        where: whereCallInfo(req.query)
-      }],
+    const _queryScoreScript = buildQueryScoreScript(req.query)
+    _logger.info("buildQueryScoreScript", _queryScoreScript)
+    console.log("buildQueryScoreScript", _queryScoreScript)
+
+    // cuộc gọi đã đánh giá
+    const countCallShare = await model.CallShare.count({ where: _queryScoreScript, raw: true })
+
+    // điểm trung bình
+    const avgPointByCall = await model.CallShare.findAll({
+      where: _queryScoreScript,
+      attributes: [
+        [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.cast(sequelize.col('pointResultCallRating'), 'float')), 2), 'avgPoint']
+      ],
       raw: true
     })
+    const sumScoreMax = await getSumScoreMax(idScoreScript)
+
+    // tỉ lệ điểm liệt kịch bản
+    const unScoreScript = await getUnScore('unScoreScript', idScoreScript)
+    const countCallReviewed = countCallShare
+
+    // tỉ lệ điểm liệt nhóm tiêu chí
+    const unScoreCriteriaGroup = await getUnScore('unScoreCriteriaGroup', idScoreScript)
+
     const CallShareDetail = await queryCallShareDetail(req.query, limit, offset)
 
     let paginator = new pagination.SearchPaginator({
@@ -137,24 +153,6 @@ exports.queryReportByScoreScript = async (req, res) => {
       rowsPerPage: limit,
       totalResult: countCallShare
     })
-
-    const countCallReviewed = await model.CallShare.count({
-      where: Object.assign({
-        isMark: true,
-        idScoreScript: idScoreScript
-      }, whereCallShare(req.query))
-    })
-
-    const avgPointByCall = await model.sequelize.query(`
-    SELECT ROUND(AVG(CAST([pointResultCallRating] AS FLOAT)), 1) AS [avgPoint] 
-    FROM [callShares] AS [callShares] 
-    WHERE [callShares].[isMark] = 1 AND [callShares].[idScoreScript] = N'${idScoreScript}'`, { type: QueryTypes.SELECT }
-    )
-    const sumScoreMax = await getSumScoreMax(idScoreScript)
-
-    const unScoreCriteriaGroup = await getUnScore('unScoreCriteriaGroup', idScoreScript)
-
-    const unScoreScript = await getUnScore('unScoreScript', idScoreScript)
 
     //dữ liệu chấm điểm theo loại đánh giá
     const percentTypeCallRating = await model.CallShare.findAll({
@@ -233,12 +231,7 @@ exports.getCriteria = async (req, res) => {
 
 exports.getPercentSelectionCriteria = async (req, res) => {
   try {
-
-    // const { criteriaGroupId, idCriteria, idScoreScript } = req.query
-    const idScoreScript = req.query.idScoreScript
-    const criteriaGroupId = req.query.criteriaGroupId
     const idCriteria = req.query.idCriteria
-
     const percentSelectionCriteria = await model.sequelize.query(`
       SELECT 
         CallRating.idSelectionCriteria,
@@ -469,6 +462,50 @@ async function getSummaryData(whereCallInfo, whereCallShare) {
   ])
 }
 
+function buildQueryScoreScript(query) {
+  let _query = {}
+  const { idScoreScript, gradingDate, idAgent, idEvaluator, idScoreTarget_tapScoreScript, idTeam, origDate, sourceType_tapScoreScript } = query
+  if (gradingDate) {
+    const stringGradingDate = gradingDate.split(' - ')
+    _query[Op.and] = [
+      { reviewedAt: { [Op.gte]: _moment(stringGradingDate[0], "DD/MM/YYYY").startOf('day').format('YYYY-MM-DD HH:mm:ss') } },
+      { reviewedAt: { [Op.lte]: _moment(stringGradingDate[1], "DD/MM/YYYY").endOf('day').format('YYYY-MM-DD HH:mm:ss') } }
+    ]
+  }
+
+  if (idEvaluator) {
+    _query = { ..._query, idUserReview: { [Op.in]: idEvaluator } }
+  }
+
+  if (idScoreScript) {
+    _query = { ..._query, idScoreScript: idScoreScript }
+  }
+
+  if (idAgent) {
+    _query = { ..._query, agentIdOfCall: { [Op.in]: idAgent } }
+  }
+
+  if (idTeam) {
+    _query = { ..._query, teamIdOfCall: { [Op.in]: idTeam } }
+  }
+
+  if (sourceType_tapScoreScript) {
+    _query = { ..._query, sourceNameOfCall: { [Op.in]: sourceType_tapScoreScript } }
+  }
+
+  if (origDate) {
+    const stringOrigDate = origDate.split(' - ')
+    const callStartTimeQuery = _moment(stringOrigDate[0], "DD/MM/YYYY").startOf("d").valueOf()
+    const callEndTimeQuery = _moment(stringOrigDate[1], "DD/MM/YYYY").endOf("d").valueOf()
+    _query = { ..._query, origTime: { [Op.and]: [{ [Op.gte]: (callStartTimeQuery / 1000) }, { [Op.lte]: (callEndTimeQuery / 1000) }] } }
+  }
+
+  if (idScoreTarget_tapScoreScript) {
+    _query = { ..._query, scoreTargetId: { [Op.in]: idScoreTarget_tapScoreScript } }
+  }
+  return { ..._query, isMark: true }
+}
+
 // func tạo bộ lọc cho model callShare
 function whereCallShare(query) {
   let whereCallShare = {}
@@ -554,9 +591,7 @@ async function getUnScore(typeUnScore, idScoreScript) {
     // check cuộc gọi điều kiện liệt theo kịch bản
     if (typeUnScore == 'unScoreScript') {
       where = { unScoreScript: true }
-    }
-    // check cuộc gọi điều kiện liệt theo trong nhóm tiêu chí 
-    else if (typeUnScore == 'unScoreCriteriaGroup') {
+    } else if (typeUnScore == 'unScoreCriteriaGroup') {
       where = { unScoreCriteriaGroup: true }
     }
 
@@ -579,6 +614,7 @@ async function getUnScore(typeUnScore, idScoreScript) {
     })
 
     const idSelectionUnScore = _.pluck(selectionUnScore, 'CriteriaGroup.Criteria.SelectionCriteria.id')
+
     return await model.CallRating.findAll({
       where: {
         idSelectionCriteria: { [Op.in]: idSelectionUnScore }

@@ -27,6 +27,8 @@ $(function () {
             .find(".alert-content")
             .html("Thành công !")
           localStorage.removeItem('modalData', '')
+          localStorage.removeItem('Advanced_Search_Report_Call_Rating', '')
+          localStorage.removeItem('Advanced_Search_Report_Call_Rating_tapScoreScript', '')
           window.location.reload()
         },
         error: (err) => {

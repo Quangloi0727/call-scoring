@@ -40,6 +40,12 @@ class CallShare extends Model {
                         key: "id",
                     }
                 },
+                sourceNameOfCall: {
+                    type: DataTypes.STRING(50)
+                },
+                origTimeOfCall: {
+                    type: DataTypes.BIGINT
+                },
                 pointResultCallRating: {
                     type: DataTypes.INTEGER,
                 },

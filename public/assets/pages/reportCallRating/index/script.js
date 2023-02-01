@@ -27,7 +27,6 @@ $(function () {
     $('.selectpicker').selectpicker('refresh')
   }
   queryData()
-
   // move div
   $(".card-body").sortable({
     items: ".cardBodyItem"
@@ -155,9 +154,7 @@ function bindClick() {
     queryData.idCriteria = $('#idCriteria').val()
     queryData.criteriaGroupId = $('#criteriaGroupId').val()
     _AjaxGetData(`/reportCallRating/getPercentSelectionCriteria?` + $.param(queryData), 'GET', function (resp) {
-      if (resp.code != 200) {
-        return toastr.error(resp.error)
-      }
+      if (resp.code != 200) return toastr.error(resp.error)
       console.log(resp.percentSelectionCriteria)
       return _hightChart(
         'pieChartSelectionCriteria',
@@ -172,9 +169,7 @@ function bindClick() {
     e.target // newly activated tab
     e.relatedTarget // previous active tab
     if (e.currentTarget.hash == '#tapScoreScript') {
-      if ($('#idScoreScript_tapScoreScript').val().length > 0) {
-        getCriteriaGroup($('#idScoreScript_tapScoreScript').val())
-      }
+      if ($('#idScoreScript_tapScoreScript').val().length > 0) getCriteriaGroup($('#idScoreScript_tapScoreScript').val())
       _hightChart(
         'pieChartSelectionCriteria',
         CALL_SELECTION_CRITERIA_TXT,
@@ -259,6 +254,8 @@ function eventDateRangePicker(idInput) {
 
   $(`input:text[id="${idInput}"]`).on('cancel.daterangepicker', function (ev, picker) {
     $(this).val('')
+    picker.setStartDate({})
+    picker.setEndDate({})
   })
 }
 
@@ -284,13 +281,11 @@ function getCriteriaGroup(idScoreScript) {
 
 function getFormData(formId) {
   let filter = {}
-
   filter = _.chain($(`#${formId} .input`)).reduce(function (memo, el) {
     let value = $(el).val()
     if (value != '' && value != null) memo[el.name] = value
     return memo
   }, {}).value()
-
   return filter
 }
 
@@ -299,11 +294,8 @@ function queryData(page) {
   formData.page = page || 1
   formData.limit = $('#paging_table .sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReport?' + $.param(formData), 'GET', function (resp) {
-    if (resp.code != 200) {
-      return toastr.error(resp.error)
-    }
+    if (resp.code != 200) return toastr.error(resp.error)
     renderData(resp)
-
     renderTable(resp.callShareDetail, resp.constTypeResultCallRating)
     return $('#paging_table').html(window.location.CreatePaging(resp.paginator))
   })
@@ -325,9 +317,8 @@ function queryDataByScoreScript(page) {
   formData.page = page || 1
   formData.limit = $('#paging_table_tapScoreScript .sl-limit-page').val() || 10
   _AjaxGetData('/reportCallRating/queryReportByScoreScript?' + $.param(formData), 'GET', function (resp) {
-    if (resp.code != 200) {
-      return toastr.error(resp.error)
-    }
+    console.log("data kịch bản chấm điểm", resp)
+    if (resp.code != 200) return toastr.error(resp.error)
     renderDataTapScoreScript(resp)
     return $('#paging_table_tapScoreScript').html(window.location.CreatePaging(resp.paginator))
   })
@@ -400,7 +391,6 @@ function renderData(resp) {
 
 function renderTable(data, constTypeResultCallRating) {
   let html = ''
-
   data.map((el) => {
     const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
 
@@ -410,7 +400,7 @@ function renderTable(data, constTypeResultCallRating) {
     } else {
       pointResultCallRating = `${el.pointResultCallRating} / ${el.scoreMax}` || 0
     }
-    
+
     const reviewedAt = el.updateReviewedAt ? moment(el.updateReviewedAt).format('DD/MM/YYYY HH:mm:ss') : ''
     html += `<tr>
         <td class = "text-center">${el.callInfo.id}</td>
@@ -436,9 +426,9 @@ function renderDataTapScoreScript(resp) {
     $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
     $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
   }
-  $('#txtCountCallReviewedTapScoreScript').text(resp.countCallReviewed)
+  // điểm trung bình
   $('#txtAvgScoreScript').text(resp.avgPointByCall + '/' + resp.sumScoreMax)
-
+  $('#txtCountCallReviewedTapScoreScript').text(resp.countCallReviewed)
   renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRatingTapScoreScript')
   renderTableTapScoreScript(resp.detailScoreScript.CriteriaGroup, resp.callShareDetail, resp.constTypeResultCallRating)
 }
@@ -464,37 +454,33 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
           if (found && found.selectionCriteriaInfo) {
             if (found.selectionCriteriaInfo.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
             resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
-            rowCriteria += `
-            <td class = "text-center">
-              <span class="d-inline-block text-truncate">
-                ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
-              </span>
-            </td>
-            <td class = "text-center">
-              <span class="d-inline-block text-truncate" title="${found.selectionCriteriaInfo.name}">
-                ${found.selectionCriteriaInfo.name}
-              </span>
-            </td>`
-          } else rowCriteria += `
-            <td class = "text-center"><span class="d-inline-block text-truncate"></span></td>
-            <td class = "text-center">
-              <span class="d-inline-block text-truncate" title="Không đủ thông tin để chấm">
-                Không đủ thông tin để chấm
-              </span>
-            </td>`
+            rowCriteria += `<td class = "text-center">
+                              <span class="d-inline-block text-truncate">
+                                ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
+                              </span>
+                            </td>
+                            <td class = "text-center">
+                              <span class="d-inline-block text-truncate" title="${found.selectionCriteriaInfo.name}">
+                                ${found.selectionCriteriaInfo.name}
+                              </span>
+                            </td>`
+          } else {
+            rowCriteria += `<td class = "text-center"><span class="d-inline-block text-truncate"></span></td>
+                            <td class = "text-center">
+                              <span class="d-inline-block text-truncate" title="Không đủ thông tin để chấm">
+                                Không đủ thông tin để chấm
+                              </span>
+                            </td>`
+          }
         })
 
-        if (checkIsUnScoreCriteriaGroup) {
-          resultScoreCriteriaGroup = 0
-        }
+        if (checkIsUnScoreCriteriaGroup) resultScoreCriteriaGroup = 0
 
-        rowCriteriaGroup += `
-        <td class = "text-center">
-          <span class="d-inline-block text-truncate">
-            ${resultScoreCriteriaGroup} - ${((resultScoreCriteriaGroup / scoreMax) * 100).toFixed(0) + '%'}
-          </span>
-        </td>`
-
+        rowCriteriaGroup += `<td class = "text-center">
+                              <span class="d-inline-block text-truncate">
+                                ${resultScoreCriteriaGroup} - ${((resultScoreCriteriaGroup / scoreMax) * 100).toFixed(0) + '%'}
+                              </span>
+                            </td>`
         rowCriteriaGroup += rowCriteria
       })
     }
@@ -581,14 +567,13 @@ function renderHeaderTableTapScoreScript(criteriaGroups) {
       tableHeadTapScoreScript += `<th class ="text-center">${criteriaGroup.name}</th>`
       if (criteriaGroup.Criteria) {
         criteriaGroup.Criteria.map((criteria) => {
-          tableHeadTapScoreScript += `
-          <th class="text-center">${criteria.name}</th>
-          <th class="text-center" >Lựa chọn của tiêu chí</th>`
+          tableHeadTapScoreScript += `<th class="text-center">${criteria.name}</th>
+                                      <th class="text-center" >Lựa chọn của tiêu chí</th>`
         })
       }
     })
   }
   tableHeadTapScoreScript += `<th class="text-center">Người chấm</th>
-  <th class="text-center">Ngày chấm</th>`
+                              <th class="text-center">Ngày chấm</th>`
   $('#tableHeadTapScoreScript').html(tableHeadTapScoreScript)
 }
