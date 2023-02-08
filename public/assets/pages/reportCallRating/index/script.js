@@ -149,7 +149,7 @@ function bindClick() {
   })
 
   $(document).on('change', '#idCriteria', function () {
-    let queryData = {}
+    let queryData = getFormData('form_advanced_search_tapScoreScript')
     queryData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
     queryData.idCriteria = $('#idCriteria').val()
     queryData.criteriaGroupId = $('#criteriaGroupId').val()
@@ -407,7 +407,7 @@ function renderTable(data, constTypeResultCallRating) {
         <td class = "text-center">${el.callInfo.direction}</td>
         <td class = "text-center">${nameAgent}</td>
         <td class = "text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
-        <td class = "text-center"></td>
+        <td class="text-center">${genGroupOfAgent(el.callInfo['groupName'])}</td>
         <td class = "text-center">${el.scoreTargetInfo ? el.scoreTargetInfo.name : ''}</td>
         <td class = "text-center"></td>
         <td class = "text-center">${el.scoreScriptInfo ? el.scoreScriptInfo.name : ''}</td>
@@ -436,11 +436,8 @@ function renderDataTapScoreScript(resp) {
 function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeResultCallRating) {
   // hiển thị các tiêu chí, nhóm tiêu chí trên table theo kịch bản
   renderHeaderTableTapScoreScript(criteriaGroups)
-
   let html = ''
-  console.log(callShareDetail)
   callShareDetail.map((el) => {
-
     let rowCriteriaGroup = ''
     if (criteriaGroups) {
       criteriaGroups.map((criteriaGroup) => {
@@ -452,26 +449,19 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
           scoreMax += Criteria.scoreMax
           const found = el.callRatingInfo.find(element => element.idCriteria == Criteria.id)
           if (found && found.selectionCriteriaInfo) {
-            if (found.selectionCriteriaInfo.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
-            resultScoreCriteriaGroup += found.selectionCriteriaInfo.score
-            rowCriteria += `<td class = "text-center">
+            if (found?.selectionCriteriaInfo?.unScoreCriteriaGroup) checkIsUnScoreCriteriaGroup = true
+            resultScoreCriteriaGroup += found?.selectionCriteriaInfo?.score || 0
+          }
+          rowCriteria += `<td class = "text-center">
                               <span class="d-inline-block text-truncate">
-                                ${found.selectionCriteriaInfo.score} - ${((found.selectionCriteriaInfo.score / Criteria.scoreMax) * 100).toFixed(0) + '%'}
+                                ${found?.selectionCriteriaInfo?.score || 0} - ${(((found?.selectionCriteriaInfo?.score || 0) / Criteria.scoreMax) * 100).toFixed(0) + '%'}
                               </span>
                             </td>
                             <td class = "text-center">
-                              <span class="d-inline-block text-truncate" title="${found.selectionCriteriaInfo.name}">
-                                ${found.selectionCriteriaInfo.name}
+                              <span class="d-inline-block text-truncate" title="${found?.selectionCriteriaInfo?.name || ''}">
+                                ${found?.selectionCriteriaInfo?.name || 'Không đủ thông tin để chấm'}
                               </span>
                             </td>`
-          } else {
-            rowCriteria += `<td class = "text-center"><span class="d-inline-block text-truncate"></span></td>
-                            <td class = "text-center">
-                              <span class="d-inline-block text-truncate" title="Không đủ thông tin để chấm">
-                                Không đủ thông tin để chấm
-                              </span>
-                            </td>`
-          }
         })
 
         if (checkIsUnScoreCriteriaGroup) resultScoreCriteriaGroup = 0
@@ -491,7 +481,9 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
 
     if (el.scoreScriptInfo.scoreDisplayType == OP_UNIT_DISPLAY.phanTram.n) {
       pointResultCallRating = ((el.pointResultCallRating / el.scoreMax) * 100).toFixed(0) + `%`
-    } else pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
+    } else {
+      pointResultCallRating = `${el.pointResultCallRating}/${el.scoreMax}` || 0
+    }
 
     const nameAgent = el.callInfo.agent ? el.callInfo.agent.fullName + `(${el.callInfo.agent.userName})` : ''
     html += `<tr>
@@ -501,7 +493,7 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
         <td class="text-center">${el.callInfo.direction}</td>
         <td class="text-center">${nameAgent}</td>
         <td class="text-center">${el.callInfo.team ? el.callInfo.team.name : ''}</td>
-        <td class="text-center"></td>
+        <td class="text-center">${genGroupOfAgent(el.callInfo['groupName'])}</td>
         <td class="text-center">
           <span class="d-inline-block text-truncate" title="${scoreTargetInfoName}">${scoreTargetInfoName}</span>
         </td>
@@ -526,6 +518,29 @@ function renderTableTapScoreScript(criteriaGroups, callShareDetail, constTypeRes
   return $('#tableBodyTapScoreScript').html(html)
 }
 
+function genGroupOfAgent(groupName) {
+  if (!groupName || !groupName.length) return ''
+  if (groupName.length == 1) return groupName[0]
+  return `
+            <div class="dropdown">
+                <a class="dropdown-custom dropdown-toggle" role="button" id="dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    ${groupName.length} nhóm
+                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdown">
+                    ${genEachGroup(groupName)}
+                </div>
+            </div>
+    `
+}
+
+function genEachGroup(groupName) {
+  let html = ''
+  groupName.forEach(el => {
+    html += `<a class="dropdown-item" type="button">${el}</a>`
+  })
+  return html
+}
+
 function renderHightChartTypeResultCallRating(constTypeResultCallRating, percentTypeCallRating, idChart) {
   let keyObj = []
   percentTypeCallRating.map((el) => {
@@ -544,7 +559,7 @@ function renderHightChartTypeResultCallRating(constTypeResultCallRating, percent
       })
     }
   }
-  _hightChart(idChart, RATING_PERCENT_REPORT_TXT, percentTypeCallRating, ['#FF9696', '#BCFFC2', '#96C1FF'])
+  _hightChart(idChart, RATING_PERCENT_REPORT_TXT, percentTypeCallRating, ['#FF9696', '#96C1FF', '#BCFFC2'])
 }
 
 
