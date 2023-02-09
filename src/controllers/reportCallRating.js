@@ -1,5 +1,7 @@
 const titlePage = 'Báo cáo chấm điểm cuộc gọi'
 const titleSheet = 'Bảng thống kê'
+const titleTabScore = 'Báo cáo chấm điểm'
+const titleTabScoreScript = 'Báo cáo kịch bản chấm điểm'
 const {
   STATUS,
   USER_ROLE,
@@ -90,7 +92,7 @@ exports.queryReport = async (req, res) => {
     let paginator = new pagination.SearchPaginator({
       current: pageNumber,
       rowsPerPage: limit,
-      totalResult: countCallShare
+      totalResult: countCallReviewed
     })
 
     return res.json({
@@ -316,7 +318,7 @@ exports.exportExcelData = async (req, res) => {
       }
     }))
 
-    const linkFile = await createExcelFile(newData, titleExcel, dataHeader)
+    const linkFile = await createExcelFile(newData, titleExcel, dataHeader, titleTabScore)
     return res.json({
       code: SUCCESS_200.code,
       linkFile: linkFile
@@ -426,7 +428,7 @@ exports.exportExcelDataByScoreScript = async (req, res) => {
       }
     }))
 
-    const linkFile = await createExcelFile(newData, titleExcel, dataHeader)
+    const linkFile = await createExcelFile(newData, titleExcel, dataHeader, titleTabScoreScript)
     return res.json({
       code: SUCCESS_200.code,
       linkFile: linkFile
@@ -675,13 +677,13 @@ async function queryCallShareDetail(_queryScore, limit, offset) {
   })
 }
 
-function createExcelFile(data, titleExcel, dataHeader) {
+function createExcelFile(data, titleExcel, dataHeader, title) {
   return new Promise(async (resolve, reject) => {
     try {
       const linkFileExcel = await createExcelPromise({
         startTime: null,
         endTime: null,
-        titleTable: titlePage,
+        titleTable: title,
         excelHeader: dataHeader,
         titlesHeader: titleExcel,
         data: data,
