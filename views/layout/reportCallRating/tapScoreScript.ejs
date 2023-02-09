@@ -1,8 +1,5 @@
 <div class="tab-pane fade show mt-3" id="tapScoreScript" role="tabpanel" aria-labelledby="custom-tabs-three-home-tab">
-
   <div class="card">
-
-
     <div class="card-header row">
       <div class="col-11 d-flex">
         <div class="mr-2">
@@ -34,12 +31,12 @@
               <option value="<%= scoreScript.id %>" <%- el==0 ? 'selected' :'' %> >
                 <%= scoreScript.name %>
               </option>
-              <% }); %>
+            <% }); %>
           </select>
         </div>
       </div>
 
-      <div class="row mb-3">
+      <div class="cardBodyItem row mb-3 mt-3">
         <div class="col-lg-3 col-6">
 
           <div class="small-box">
@@ -78,56 +75,59 @@
         </div>
       </div>
 
-      <div class="row mb-3">
-        <div class="col-lg-6 col-6 row">
-          <select class="form-control selectpicker col-lg-6 col-6 p-1" data-actions-box="true" data-live-search="true"
-            title="Chọn nhóm tiêu chí" id="criteriaGroupId"></select>
-          <select class="form-control selectpicker col-lg-6 col-6 p-1" data-actions-box="true" data-live-search="true"
-            title="Chọn tiêu chí" id="idCriteria" disabled></select>
+      <div class="cardBodyItem mt-3">
+        <div class="row mb-3">
+          <div class="col-lg-6 col-6 row">
+            <select class="form-control selectpicker col-lg-6 col-6 p-1" data-actions-box="true" data-live-search="true"
+              title="Chọn nhóm tiêu chí" id="criteriaGroupId">
+            </select>
+            <select class="form-control selectpicker col-lg-6 col-6 p-1" data-actions-box="true" data-live-search="true"
+              title="Chọn tiêu chí" id="idCriteria" disabled>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div class="row mb-3">
-        <div class="col-lg-6 col-6">
-          <div id="pieChartSelectionCriteria"></div>
-        </div>
-        <div class="col-lg-6 col-6">
-          <div id="pieChartTypeResultCallRatingTapScoreScript"></div>
-        </div>
-      </div>
-
-      <div class="card-body mb-3 wrapper-table">
-        <div class="wrapper-table">
-          <table class="table table-bordered table-hover">
-            <thead>
-              <tr id="tableHeadTapScoreScript">
-                <th class="text-center">Mã cuộc gọi</th>
-                <th class="text-center">Hướng gọi</th>
-                <th class="text-center">Điện thoại viên</th>
-                <th class="text-center">Đội ngũ</th>
-                <th class="text-center">Nhóm</th>
-                <th class="text-center">Mục tiêu chấm điểm</th>
-                <th class="text-center">Điểm đánh giá tự động</th>
-                <th class="text-center">Kịch bản chấm điểm</th>
-                <th class="text-center">Điểm đánh giá thủ công</th>
-                <th class="text-center">Kết quả đánh giá</th>
-              </tr>
-            </thead>
-            <tbody id="tableBodyTapScoreScript"></tbody>
-          </table>
+        <div class="row mb-3">
+          <div class="col-lg-6 col-6">
+            <div id="pieChartSelectionCriteria"></div>
+          </div>
+          <div class="col-lg-6 col-6">
+            <div id="pieChartTypeResultCallRatingTapScoreScript"></div>
+          </div>
         </div>
       </div>
-      <div class="card-footer text-center">
-        <div class="col-12 d-flex justify-content-center" id="paging_table_tapScoreScript">
+      
+      <div class="cardBodyItem mt-3">
+        <div class="card-body mb-3 wrapper-table">
+          <div class="wrapper-table">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr id="tableHeadTapScoreScript">
+                  <th class="text-center">Mã cuộc gọi</th>
+                  <th class="text-center">Hướng gọi</th>
+                  <th class="text-center">Điện thoại viên</th>
+                  <th class="text-center">Đội ngũ</th>
+                  <th class="text-center">Nhóm</th>
+                  <th class="text-center">Mục tiêu chấm điểm</th>
+                  <th class="text-center">Điểm đánh giá tự động</th>
+                  <th class="text-center">Kịch bản chấm điểm</th>
+                  <th class="text-center">Điểm đánh giá thủ công</th>
+                  <th class="text-center">Kết quả đánh giá</th>
+                </tr>
+              </thead>
+              <tbody id="tableBodyTapScoreScript"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer text-center">
+          <div class="col-12 d-flex justify-content-center" id="paging_table_tapScoreScript">
+          </div>
         </div>
       </div>
 
     </div>
-
   </div>
-
 </div>
-
 
 <div class="modal fade" id="modal_search_tapScoreScript">
   <div class="modal-dialog modal-lg">
@@ -163,7 +163,7 @@
                     <option value="<%= evaluator.id %>">
                       <%= evaluator.fullName %> (<%= evaluator.userName %>)
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -177,7 +177,7 @@
                     <option value="<%= agent.id %>">
                       <%= agent.fullName %> (<%= agent.userName %>)
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -191,7 +191,7 @@
                     <option value="<%= team.id %>">
                       <%= team.name %>
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -205,7 +205,7 @@
                     <option value="<%= SOURCE_NAME[item].code %>">
                       <%= SOURCE_NAME[item].text %>
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -230,7 +230,7 @@
                     <option value="<%= scoreTarget.id %>">
                       <%= scoreTarget.name %>
                     </option>
-                    <% }); %>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -238,8 +238,7 @@
 
           <div class="modal-footer justify-content-between">
             <div>
-              <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
-                id="btn_clear_local_storage_tapScoreScript">
+              <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal" id="btn_clear_local_storage_tapScoreScript">
                 <i class="far fa-trash-alt"></i>
                 <span>Xóa bộ lọc</span>
               </button>

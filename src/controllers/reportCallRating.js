@@ -487,7 +487,7 @@ async function getSummaryData(_queryScore) {
   }
   return await Promise.all([
     // lấy tổng số cuộc gọi đã phân công
-    model.CallShare.count({ where: _queryTotalCallShare, raw: true }),
+    model.CallShare.count({ where: { [Op.and]: [_queryTotalCallShare, { scoreTargetId: { [Op.ne]: null } }] }, raw: true }),
 
     // tổng cuộc gọi đã được chấm điểm
     model.CallShare.count({ where: _queryScore, raw: true }),
@@ -559,7 +559,7 @@ function buildQuery(query) {
 /**
  * Tổng cuộc gọi bị liệt kịch bản hoặc liệt nhóm tiêu chí
  * @param {String} typeUnScore loại điểm liệt: Liệt kịch bản - Liệt tiêu chí
- *  @param {String} idScoreScript id của kịch bản chấm điểm
+ * @param {String} idScoreScript id của kịch bản chấm điểm
  */
 async function getUnScore(typeUnScoreCheck, _queryScoreScript) {
   try {
