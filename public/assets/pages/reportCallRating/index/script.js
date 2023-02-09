@@ -327,11 +327,8 @@ function queryDataByScoreScript(page) {
 function renderData(resp) {
   $('#txtCountCallReviewed').text(resp.countCallReviewed)
   $('#txtCountCallShare').text(resp.countCallShare)
-
-  if (resp.callRatingReScore > 0) {
-    $('#txtCountCallRatingHistory').text(resp.callRatingReScore)
-    $('#txtPercentCallRatingHistory').text(((resp.callRatingReScore / resp.countCallReviewed) * 100).toFixed(0) + '%')
-  }
+  $('#txtCountCallRatingHistory').text(resp.callRatingReScore)
+  $('#txtPercentCallRatingHistory').text(_convertPercentNumber(resp.callRatingReScore, resp.countCallReviewed) + '%')
 
   renderHightChartTypeResultCallRating(resp.constTypeResultCallRating, resp.percentTypeCallRating, 'pieChartTypeResultCallRating')
 
@@ -376,11 +373,11 @@ function renderData(resp) {
     GRADING_ASSIGNED_PERCENT_TXT,
     [{
       name: CALL_REVIEWED_TXT,
-      y: resp.countCallReviewed
+      y: resp.countCallReviewedAssign
     },
     {
       name: CALL_UN_REVIEWED_TXT,
-      y: resp.countCallShare - resp.countCallReviewed
+      y: resp.countCallShare - resp.countCallReviewedAssign
 
     }],
     ['#96C1FF', '#FF9696']
@@ -422,10 +419,8 @@ function renderTable(data, constTypeResultCallRating) {
 }
 
 function renderDataTapScoreScript(resp) {
-  if (resp.countCallReviewed > 0) {
-    $('#txtPercentUnScoreScript').text(((resp.unScoreScript / resp.countCallReviewed) * 100).toFixed(0) + '%')
-    $('#txtPercentUnScoreCriteriaGroup').text(((resp.unScoreCriteriaGroup / resp.countCallReviewed) * 100).toFixed(0) + '%')
-  }
+  $('#txtPercentUnScoreScript').text(_convertPercentNumber(resp.unScoreScript, resp.countCallReviewed) + '%')
+  $('#txtPercentUnScoreCriteriaGroup').text(_convertPercentNumber(resp.unScoreCriteriaGroup, resp.countCallReviewed) + '%')
   // điểm trung bình
   $('#txtAvgScoreScript').text(resp.avgPointByCall + '/' + resp.sumScoreMax)
   $('#txtCountCallReviewedTapScoreScript').text(resp.countCallReviewed)
@@ -542,26 +537,16 @@ function genEachGroup(groupName) {
 }
 
 function renderHightChartTypeResultCallRating(constTypeResultCallRating, percentTypeCallRating, idChart) {
-  let keyObj = []
-  percentTypeCallRating.map((el) => {
-    keyObj.push(`point${el.name}`)
+  let newPercentTypeCallRating = percentTypeCallRating.map(el => {
+    if (el.name == "NeedImprove") el.sort = 1
+    if (el.name == "Standard") el.sort = 2
+    if (el.name == "PassStandard") el.sort = 3
     el.name = constTypeResultCallRating[`point${el.name}`].txt
+    return el
   })
-
-  if (keyObj.length > 0) {
-    const keyNullValue = _.difference(Object.keys(constTypeResultCallRating), keyObj)
-    if (keyNullValue.length > 0) {
-      keyNullValue.map((el) => {
-        percentTypeCallRating.push({
-          name: constTypeResultCallRating[el].txt,
-          y: 0
-        })
-      })
-    }
-  }
-  _hightChart(idChart, RATING_PERCENT_REPORT_TXT, percentTypeCallRating, ['#FF9696', '#96C1FF', '#BCFFC2'])
+  newPercentTypeCallRating = _.sortBy(newPercentTypeCallRating, "sort");
+  _hightChart(idChart, RATING_PERCENT_REPORT_TXT, newPercentTypeCallRating.sort(), ['#FF9696', '#BCFFC2', '#96C1FF'])
 }
-
 
 function renderHeaderTableTapScoreScript(criteriaGroups) {
   let tableHeadTapScoreScript = `

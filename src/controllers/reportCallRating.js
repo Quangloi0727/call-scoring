@@ -10,7 +10,7 @@ const {
   headerReportCallRating,
   OP_UNIT_DISPLAY
 } = require('../helpers/constants/index')
-const { Op, QueryTypes } = require('sequelize')
+const { Op } = require('sequelize')
 const sequelize = require('sequelize')
 const model = require('../models')
 const pagination = require('pagination')
@@ -83,7 +83,7 @@ exports.queryReport = async (req, res) => {
     console.log("buildQueryScore", _queryScore)
 
     // lấy dữ liệu tổng hợp 
-    const [countCallShare, countCallReviewed, CallRatingReScore, percentTypeCallRating, totalCall] = await getSummaryData(_queryScore)
+    const [countCallShare, countCallReviewed, countCallReviewedAssign, callRatingReScore, percentTypeCallRating, totalCall] = await getSummaryData(_queryScore)
 
     const CallShareDetail = await queryCallShareDetail(_queryScore, limit, offset)
 
@@ -96,7 +96,9 @@ exports.queryReport = async (req, res) => {
     return res.json({
       code: SUCCESS_200.code,
       countCallShare: countCallShare,
-      callRatingReScore: CallRatingReScore,
+      callRatingReScore: callRatingReScore,
+      countCallReviewedAssign: countCallReviewedAssign,
+      countCallReviewed: countCallReviewed,
       countCallReviewed: countCallReviewed,
       percentTypeCallRating: _.removeValueEmptyOfKey(percentTypeCallRating, 'name'),
       totalCall: totalCall,
@@ -491,6 +493,9 @@ async function getSummaryData(_queryScore) {
 
     // tổng cuộc gọi đã được chấm điểm
     model.CallShare.count({ where: _queryScore, raw: true }),
+
+    // tổng cuộc gọi đã được chấm điểm do phân công
+    model.CallShare.count({ where: { [Op.and]: [_queryScore, { scoreTargetId: { [Op.ne]: null } }] }, raw: true }),
 
     //tổng cuộc đã chấm lại 
     model.CallShare.count({ where: { [Op.and]: [{ updateReviewedAt: { [Op.gt]: model.sequelize.col('reviewedAt') } }, _queryScore] }, raw: true }),
