@@ -182,9 +182,7 @@ function bindClick() {
   $(document).on('click', '#export_excel', function () {
     let formData = getFormData('form_advanced_search')
     _AjaxGetData('/reportCallRating/exportExcelData?' + $.param(formData), 'GET', function (resp) {
-      if (resp.code != 200) {
-        return toastr.error(resp.error)
-      }
+      if (resp.code != 200) return toastr.error(resp.message)
       return downloadFromUrl(resp.linkFile)
     })
   })
@@ -194,9 +192,7 @@ function bindClick() {
     formData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
 
     _AjaxGetData('/reportCallRating/exportExcelDataByScoreScript?' + $.param(formData), 'GET', function (resp) {
-      if (resp.code != 200) {
-        return toastr.error(resp.error)
-      }
+      if (resp.code != 200) return toastr.error(resp.message)
       return downloadFromUrl(resp.linkFile)
     })
   })

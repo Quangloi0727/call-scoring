@@ -282,7 +282,7 @@ async function actionShareCall(scoreTargetId, userIdAssign, countKPI, _queryCall
         order: [
             ['lastUpdateTime', 'ASC']
         ],
-        attributes: ['id', 'teamId', 'agentId'],
+        attributes: ['id', 'teamId', 'agentId', 'sourceName', 'origTime'],
         raw: true,
         limit: countKPI
     })
@@ -294,9 +294,13 @@ async function actionShareCall(scoreTargetId, userIdAssign, countKPI, _queryCall
         el.scoreTargetId = scoreTargetId
         el.agentIdOfCall = el.agentId
         el.teamIdOfCall = el.teamId
+        el.sourceNameCall = el.sourceName
+        el.origTimeCall = el.origTime
         delete el.id
         delete el.agentId
         delete el.teamId
+        delete el.sourceName
+        delete el.origTime
         return el
     })
     await model.CallShare.bulkCreate(dataInsertCallShare)

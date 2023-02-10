@@ -40,7 +40,7 @@ function createExcelFile(
 ) {
   try {
     if (data === null || data.length <= 0) {
-      var error = new Error('Không có dữ liệu để xuất ra file Excel!')
+      var error = new Error('Không có dữ liệu để xuất ra file Excel !')
       return callback(error)
     }
 

@@ -141,7 +141,7 @@ exports.queryReportByScoreScript = async (req, res) => {
     const avgPointByCall = await model.CallShare.findAll({
       where: _queryScoreScript,
       attributes: [
-        [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.cast(sequelize.col('pointResultCallRating'), 'float')), 2), 'avgPoint']
+        [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.cast(sequelize.col('pointResultCallRating'), 'float')), 1), 'avgPoint']
       ],
       raw: true
     })
@@ -521,7 +521,7 @@ async function getSummaryData(_queryScore) {
 
 function buildQuery(query) {
   let _query = {}
-  const { idScoreScript, gradingDate, idAgent, idEvaluator, idScoreTarget_tapScoreScript, idTeam, origDate, sourceType_tapScoreScript } = query
+  const { idScoreScript, gradingDate, idAgent, idEvaluator, idScoreTarget_tapScoreScript, idTeam, origDate, sourceType_tapScoreScript, sourceType, idScoreTarget } = query
   if (gradingDate) {
     const stringGradingDate = gradingDate.split(' - ')
     _query[Op.and] = [
@@ -550,6 +550,10 @@ function buildQuery(query) {
     _query = { ..._query, sourceNameOfCall: { [Op.in]: sourceType_tapScoreScript } }
   }
 
+  if (sourceType) {
+    _query = { ..._query, sourceNameOfCall: { [Op.in]: sourceType } }
+  }
+
   if (origDate) {
     const stringOrigDate = origDate.split(' - ')
     const callStartTimeQuery = _moment(stringOrigDate[0], "DD/MM/YYYY").startOf("d").valueOf()
@@ -559,6 +563,10 @@ function buildQuery(query) {
 
   if (idScoreTarget_tapScoreScript) {
     _query = { ..._query, scoreTargetId: { [Op.in]: idScoreTarget_tapScoreScript } }
+  }
+
+  if (idScoreTarget) {
+    _query = { ..._query, scoreTargetId: { [Op.in]: idScoreTarget } }
   }
   return { ..._query, isMark: true }
 }
@@ -677,7 +685,7 @@ async function queryCallShareDetail(_queryScore, limit, offset) {
   })
 }
 
-function createExcelFile(data, titleExcel, dataHeader, title) {
+async function createExcelFile(data, titleExcel, dataHeader, title) {
   return new Promise(async (resolve, reject) => {
     try {
       const linkFileExcel = await createExcelPromise({
