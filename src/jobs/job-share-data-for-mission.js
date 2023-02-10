@@ -294,8 +294,8 @@ async function actionShareCall(scoreTargetId, userIdAssign, countKPI, _queryCall
         el.scoreTargetId = scoreTargetId
         el.agentIdOfCall = el.agentId
         el.teamIdOfCall = el.teamId
-        el.sourceNameCall = el.sourceName
-        el.origTimeCall = el.origTime
+        el.sourceNameOfCall = el.sourceName
+        el.origTimeOfCall = el.origTime
         delete el.id
         delete el.agentId
         delete el.teamId
