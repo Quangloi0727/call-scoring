@@ -43,7 +43,7 @@ exports.uploadLogo = async (req, res, next) => {
                 // res.send(err)
                 return res.status(ERR_400.code).json({ message: err })
             }
-            return res.status(SUCCESS_200.code).json({ message: "Upload ảnh thàng công" })
+            return res.status(SUCCESS_200.code).json({ message: "Upload ảnh thàng công !" })
         })
     } catch (error) {
         return res.status(ERR_500.code).json({ message: error })
@@ -78,5 +78,5 @@ var upload = multer({
         cb("Error: File upload only supports the following filetypes - " + filetypes)
     }
 
-    // mypic is the name of file attribute
-}).single("mypic") 
+    // fileAvatar is the name of file attribute
+}).single("fileAvatar") 

@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="col-sm-1 d-flex  justify-content-end">
-        <button type="button" class="form-control btn btn-primary" id="export_excel">
+        <button type="button" class="btn btn-primary" id="export_excel">
           Xuất Excel
         </button>
       </div>
@@ -27,7 +27,7 @@
     <div class="card-body">
       <div class="cardBodyItem mt-3">
         <div class="row mb-3">
-        
+
           <div class="col-lg-3 col-6">
             <div class="small-box">
               <div class="inner">
@@ -36,7 +36,7 @@
               </div>
             </div>
           </div>
-        
+
           <div class="col-lg-3 col-6">
             <div class="small-box">
               <div class="inner">
@@ -45,7 +45,7 @@
               </div>
             </div>
           </div>
-        
+
           <div class="col-lg-3 col-6">
             <div class="small-box">
               <div class="inner">
@@ -54,7 +54,7 @@
               </div>
             </div>
           </div>
-        
+
           <div class="col-lg-3 col-6">
             <div class="small-box">
               <div class="inner">
@@ -75,7 +75,7 @@
             <div id="pieChartCallShare"></div>
           </div>
         </div>
-        
+
         <div class="row mb-3">
           <div class="col-lg-6 col-6">
             <div id="pieChartCallReviewed"></div>
@@ -112,7 +112,7 @@
         </div>
         <div class="card-footer text-center">
           <div class="col-12 d-flex justify-content-center" id="paging_table">
-        
+
           </div>
         </div>
       </div>
@@ -158,7 +158,7 @@
                     <option value="<%= evaluator.id %>">
                       <%= evaluator.fullName %> (<%= evaluator.userName %>)
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -173,7 +173,7 @@
                     <option value="<%= agent.id %>">
                       <%= agent.fullName %> (<%= agent.userName %>)
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -188,7 +188,7 @@
                     <option value="<%= team.id %>">
                       <%= team.name %>
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -203,7 +203,7 @@
                     <option value="<%= SOURCE_NAME[item].code %>">
                       <%= SOURCE_NAME[item].text %>
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -230,7 +230,7 @@
                     <option value="<%= scoreTarget.id %>">
                       <%= scoreTarget.name %>
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -245,7 +245,7 @@
                     <option value="<%= scoreScript.id %>">
                       <%= scoreScript.name %>
                     </option>
-                  <% }); %>
+                    <% }); %>
                 </select>
               </div>
             </div>
@@ -253,7 +253,8 @@
 
           <div class="modal-footer justify-content-between">
             <div>
-              <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal" id="btn_clear_local_storage">
+              <button type="button" class="btn btn-outline-primary float-left" data-dismiss="modal"
+                id="btn_clear_local_storage">
                 <i class="far fa-trash-alt"></i>
                 <span>Xóa bộ lọc</span>
               </button>

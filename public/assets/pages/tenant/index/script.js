@@ -44,7 +44,7 @@ $(function () {
         var data = new FormData()
         console.log(check_Input_Change_Value)
         if (check_Input_Change_Value == false) {
-            toastr.success("Upload ảnh thàng công")
+            toastr.success("Upload ảnh thàng công !")
             toastr.options = {
                 closeButton: true,
                 onCloseClick: () => {
@@ -55,7 +55,7 @@ $(function () {
                 location.reload()
             }, 2500)
         }
-        data.append('mypic', $('.custom-file-input')[0].files[0])
+        data.append('fileAvatar', $('.custom-file-input')[0].files[0])
         $.ajax({
             type: 'POST',
             enctype: 'multipart/form-data',

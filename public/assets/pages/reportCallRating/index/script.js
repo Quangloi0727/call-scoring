@@ -537,14 +537,23 @@ function genEachGroup(groupName) {
 }
 
 function renderHightChartTypeResultCallRating(constTypeResultCallRating, percentTypeCallRating, idChart) {
-  let newPercentTypeCallRating = percentTypeCallRating.map(el => {
-    if (el.name == "NeedImprove") el.sort = 1
-    if (el.name == "Standard") el.sort = 2
-    if (el.name == "PassStandard") el.sort = 3
-    el.name = constTypeResultCallRating[`point${el.name}`].txt
+  let newPercentTypeCallRating = []
+  for (const pro in constTypeResultCallRating) {
+    newPercentTypeCallRating.push({ name: constTypeResultCallRating[pro]['txt'], code: constTypeResultCallRating[pro]['code'] })
+  }
+  newPercentTypeCallRating.map(el => {
+    if (el.code == "NeedImprove") el.sort = 1
+    if (el.code == "Standard") el.sort = 2
+    if (el.code == "PassStandard") el.sort = 3
+    const findCount = percentTypeCallRating.find(o => o.name == el.code)
+    if (findCount) {
+      el.y = findCount.y
+    } else {
+      el.y = 0
+    }
     return el
   })
-  newPercentTypeCallRating = _.sortBy(newPercentTypeCallRating, "sort");
+  newPercentTypeCallRating = _.sortBy(newPercentTypeCallRating, "sort")
   _hightChart(idChart, RATING_PERCENT_REPORT_TXT, newPercentTypeCallRating.sort(), ['#FF9696', '#BCFFC2', '#96C1FF'])
 }
 
