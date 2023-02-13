@@ -21,7 +21,7 @@ const { createExcelPromise } = require('../common/createExcel')
 
 exports.index = async (req, res, next) => {
   try {
-    const evaluators = await getUserByRole(USER_ROLE.evaluator.n)
+    const evaluators = await _.getListEvaluator()
     const agents = await getUserByRole(USER_ROLE.agent.n)
     const groups = await model.Group.findAll({})
     const teams = await model.Team.findAll({

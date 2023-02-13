@@ -19,7 +19,7 @@ exports.index = async (req, res, next) => {
 
     const listTeam = await getListTeam(req.user.roles, req.user.id)
 
-    const listEvaluator = await getListEvaluator()
+    const listEvaluator = await _.getListEvaluator()
 
     const groups = await model.Group.findAll()
 
@@ -463,25 +463,6 @@ async function getListTeam(roles, userId) {
   }
 
   return []
-}
-
-async function getListEvaluator() {
-  const findRuleScoreScript = await model.Rule.findOne({ where: { code: { [Op.eq]: SYSTEM_RULE.CHAM_DIEM_CUOC_GOI.code } } })
-  if (!findRuleScoreScript) return []
-
-  const findRuleDetailScoreScript = await model.RuleDetail.findAll({ where: { [Op.and]: [{ ruleId: { [Op.eq]: findRuleScoreScript.id } }, { unLimited: { [Op.eq]: true } }] }, raw: true })
-  if (!findRuleDetailScoreScript.length) return []
-
-  const roleScoreScriptIds = _.pluck(findRuleDetailScoreScript, 'role')
-  const userRole = await model.UserRole.findAll({ where: { role: { [Op.in]: roleScoreScriptIds } }, raw: true })
-  if (!userRole.length) return []
-  const idsUserReview = _.pluck(userRole, 'userId')
-  _logger.info('List idUser assign', _.removeElementDuplicate(idsUserReview))
-
-  return model.User.findAll({
-    where: { id: { [Op.in]: _.removeElementDuplicate(idsUserReview) } },
-    attributes: ['id', 'fullName', 'userName']
-  })
 }
 
 async function handleData(data, privatePhoneNumber = false) {
