@@ -85,7 +85,7 @@ exports.queryReport = async (req, res) => {
     console.log("buildQueryScore", _queryScore)
 
     // lấy dữ liệu tổng hợp 
-    const [countCallShare, countCallReviewed, countCallReviewedAssign, callRatingReScore, percentTypeCallRating, totalCall] = await getSummaryData(_queryScore)
+    const [countCallReviewed, countCallShare, countCallReviewedAssign, callRatingReScore, percentTypeCallRating, totalCallShared, totalCallNotShared, totalCallReviewed, totalCallNotReviewed] = await getSummaryData(_queryScore)
 
     const CallShareDetail = await queryCallShareDetail(_queryScore, limit, offset)
 
@@ -103,7 +103,10 @@ exports.queryReport = async (req, res) => {
       countCallReviewed: countCallReviewed,
       countCallReviewed: countCallReviewed,
       percentTypeCallRating: _.removeValueEmptyOfKey(percentTypeCallRating, 'name'),
-      totalCall: totalCall,
+      totalCallShared: totalCallShared,
+      totalCallNotShared: totalCallNotShared,
+      totalCallReviewed: totalCallReviewed,
+      totalCallNotReviewed: totalCallNotReviewed,
       callShareDetail: await mapGroupName(CallShareDetail),
       constTypeResultCallRating: constTypeResultCallRating,
       paginator: { ...paginator.getPaginationData(), rowsPerPage: limit },
@@ -482,19 +485,12 @@ async function mapGroupName(data) {
 
 async function getSummaryData(_queryScore) {
   const { isMark: _, ..._queryTotalCallShare } = _queryScore
-  const _queryTotalCallDetailRecord = {}
-  for (const key in _queryScore) {
-    if (key == 'agentIdOfCall') _queryTotalCallDetailRecord.agentId = _queryScore.agentIdOfCall
-    if (key == 'teamIdOfCall') _queryTotalCallDetailRecord.teamId = _queryScore.teamIdOfCall
-    if (key == 'sourceNameOfCall') _queryTotalCallDetailRecord.sourceName = _queryScore.sourceNameOfCall
-    if (key == 'origTime') _queryTotalCallDetailRecord.origTime = _queryScore.origTime
-  }
   return await Promise.all([
+    // tổng cuộc gọi đã được chấm điểm (đánh giá)
+    model.CallShare.count({ where: _queryScore, raw: true }),
+
     // lấy tổng số cuộc gọi đã phân công
     model.CallShare.count({ where: { [Op.and]: [_queryTotalCallShare, { scoreTargetId: { [Op.ne]: null } }] }, raw: true }),
-
-    // tổng cuộc gọi đã được chấm điểm
-    model.CallShare.count({ where: _queryScore, raw: true }),
 
     // tổng cuộc gọi đã được chấm điểm do phân công
     model.CallShare.count({ where: { [Op.and]: [_queryScore, { scoreTargetId: { [Op.ne]: null } }] }, raw: true }),
@@ -513,8 +509,14 @@ async function getSummaryData(_queryScore) {
       raw: true
     }),
 
-    // tổng cuộc gọi có trong hệ thống
-    model.CallDetailRecords.count({ where: _queryTotalCallDetailRecord, raw: true })
+    // tổng cuộc gọi đã phân công trong hệ thống
+    model.CallDetailRecords.count({ where: { share: true }, raw: true }),
+    // tổng cuộc gọi chưa phân công trong hệ thống
+    model.CallDetailRecords.count({ where: { share: false }, raw: true }),
+    // tổng cuộc gọi đã chấm điểm trong hệ thống
+    model.CallDetailRecords.count({ where: { isMark: true }, raw: true }),
+    // tổng cuộc gọi chưa chấm điểm trong hệ thống
+    model.CallDetailRecords.count({ where: { isMark: false }, raw: true })
 
   ])
 }
@@ -531,7 +533,7 @@ function buildQuery(query) {
   }
 
   if (idEvaluator) {
-    _query = { ..._query, idUserReview: { [Op.in]: idEvaluator } }
+    _query = { ..._query, assignFor: { [Op.in]: idEvaluator } }
   }
 
   if (idScoreScript) {

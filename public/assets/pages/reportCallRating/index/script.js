@@ -335,11 +335,11 @@ function renderData(resp) {
     [
       {
         name: CALL_ASSIGNED_TXT,
-        y: resp.countCallShare
+        y: resp.totalCallShared
       },
       {
         name: CALL_UN_ASSIGNED_TXT,
-        y: resp.totalCall - resp.countCallShare
+        y: resp.totalCallNotShared
       }
     ],
     ['#96C1FF', '#FF9696']
@@ -352,11 +352,11 @@ function renderData(resp) {
     [
       {
         name: CALL_REVIEWED_TXT,
-        y: resp.countCallReviewed
+        y: resp.totalCallReviewed
       },
       {
         name: CALL_UN_REVIEWED_TXT,
-        y: resp.totalCall - resp.countCallReviewed
+        y: resp.totalCallNotReviewed
 
       }
     ],
