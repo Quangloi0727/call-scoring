@@ -4,7 +4,6 @@ const {
   UnlimitedSaveForCall,
   STATUS,
   dataRetentionPolicyNotFound,
-  statusUpdateFail,
   statusUpdateSuccess,
   deleteSuccess,
   MESSAGE_ERROR,
@@ -307,12 +306,12 @@ exports.updateStatus = async (req, res) => {
             where: {
               teamId: { [Op.in]: teamIds },
             },
-            required: false
-          },
+            required: true
+          }
         ],
+        raw: true
       })
-
-      if (check && check.length > 0) throw new Error(statusUpdateFail)
+      if (check && check.length > 0) throw new Error("Đội ngũ đã tồn tại ở chính sách đang hoạt động khác !")
     }
 
     transaction = await model.sequelize.transaction()
