@@ -149,20 +149,7 @@ function bindClick() {
   })
 
   $(document).on('change', '#idCriteria', function () {
-    let queryData = getFormData('form_advanced_search_tapScoreScript')
-    queryData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
-    queryData.idCriteria = $('#idCriteria').val()
-    queryData.criteriaGroupId = $('#criteriaGroupId').val()
-    _AjaxGetData(`/reportCallRating/getPercentSelectionCriteria?` + $.param(queryData), 'GET', function (resp) {
-      if (resp.code != 200) return toastr.error(resp.error)
-      console.log(resp.percentSelectionCriteria)
-      return _hightChart(
-        'pieChartSelectionCriteria',
-        CALL_SELECTION_CRITERIA_TXT,
-        resp.percentSelectionCriteria,
-        colorHighChartRandom
-      )
-    })
+    getPercentSelectionCriteria()
   })
 
   $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
@@ -235,6 +222,24 @@ function bindClick() {
  * @param {*} idInput  id  ô input
  * @returns
  */
+
+function getPercentSelectionCriteria() {
+  let queryData = getFormData('form_advanced_search_tapScoreScript')
+  queryData.idScoreScript = $('#idScoreScript_tapScoreScript').val()
+  queryData.idCriteria = $('#idCriteria').val()
+  queryData.criteriaGroupId = $('#criteriaGroupId').val()
+  _AjaxGetData(`/reportCallRating/getPercentSelectionCriteria?` + $.param(queryData), 'GET', function (resp) {
+    if (resp.code != 200) return toastr.error(resp.error)
+    console.log("getPercentSelectionCriteria", resp.percentSelectionCriteria)
+    return _hightChart(
+      'pieChartSelectionCriteria',
+      CALL_SELECTION_CRITERIA_TXT,
+      resp.percentSelectionCriteria,
+      colorHighChartRandom
+    )
+  })
+}
+
 function eventDateRangePicker(idInput) {
   // set giá trị mặc định cho các input date
   $(`input[id="${idInput}"]`).daterangepicker({
@@ -316,6 +321,7 @@ function queryDataByScoreScript(page) {
     console.log("data kịch bản chấm điểm", resp)
     if (resp.code != 200) return toastr.error(resp.error)
     renderDataTapScoreScript(resp)
+    getPercentSelectionCriteria()
     return $('#paging_table_tapScoreScript').html(window.location.CreatePaging(resp.paginator))
   })
 }
