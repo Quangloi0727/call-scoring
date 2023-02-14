@@ -4,7 +4,7 @@ const { STATUS, TypeDateSaveForCall } = require('../helpers/constants/index')
 const { Op } = require('sequelize')
 
 // job share call
-cron.schedule("*/2 * * * *", async () => {
+cron.schedule("*/1 * * * *", async () => {
     try {
         _logger.info('start job clear data policy at ' + _moment(new Date()).format("DD/MM/YYYY HH:mm:ss"))
         const findDataPolicy = await model.DataRetentionPolicy.findAll({ where: { status: STATUS.ACTIVE.value } })
@@ -24,15 +24,14 @@ cron.schedule("*/2 * * * *", async () => {
 
             const findTeamApply = await model.DataRetentionPolicyTeam.findAll({ where: { dataRetentionPolicyId: id }, nest: true, raw: true })
             const idsTeam = _.pluck(findTeamApply, 'teamId')
-            const findAgentByTeam = await model.AgentTeamMember.findAll({ where: { teamId: { [Op.in]: idsTeam } }, nest: true, raw: true })
-            const idsUser = _.pluck(findAgentByTeam, 'userId')
+            _logger.info(`List team apply remove ${idsTeam}`)
 
             if (unlimitedSaveForCallGotPoint == true) {
                 _logger.info(`Data policy ${nameDataRetentionPolicy} save scored call unlimited !`)
             } else {
                 _logger.info(`Data policy ${nameDataRetentionPolicy} remove for ${valueSaveForCallGotPoint} ${typeDateSaveForCallGotPoint} !`)
                 const dateQuery = buildQueryTime(valueSaveForCallGotPoint, typeDateSaveForCallGotPoint)
-                await actionClearData(dateQuery, true, idsUser)
+                await actionClearData(dateQuery, true, idsTeam)
             }
 
             if (unlimitedSaveForCallNoPoint == true) {
@@ -40,7 +39,7 @@ cron.schedule("*/2 * * * *", async () => {
             } else {
                 _logger.info(`Data policy ${nameDataRetentionPolicy} remove for ${valueSaveForCallNoPoint} ${typeDateSaveForCallNoPoint} !`)
                 const dateQuery = buildQueryTime(valueSaveForCallNoPoint, typeDateSaveForCallNoPoint)
-                await actionClearData(dateQuery, false, idsUser)
+                await actionClearData(dateQuery, false, idsTeam)
             }
         }
 
@@ -50,31 +49,42 @@ cron.schedule("*/2 * * * *", async () => {
 })
 
 
-async function actionClearData(dateQuery, keyQuery, idsUser) {
+async function actionClearData(dateQuery, keyQuery, idsTeam) {
     dateQuery = _moment(dateQuery).valueOf() / 1000
-    let _query = {}
+    let _queryCallDetailRecord = {}
+    let _queryCallShare = {}
     if (keyQuery == true) {
-        _query = { isMark: true, connectTime: { [Op.lte]: dateQuery } }
+        _queryCallDetailRecord = { isMark: true, origTime: { [Op.lte]: dateQuery } }
+        _queryCallShare = { isMark: true, origTimeOfCall: { [Op.lte]: dateQuery } }
     } else {
-        _query = { isMark: false, connectTime: { [Op.lte]: dateQuery } }
+        _queryCallDetailRecord = { isMark: false, origTime: { [Op.lte]: dateQuery } }
+        _queryCallShare = { isMark: false, origTimeOfCall: { [Op.lte]: dateQuery } }
     }
-    if (idsUser.length) {
-        idsUser = _.removeElementDuplicate(idsUser)
-        _query = { ..._query, assignFor: { [Op.in]: idsUser } }
+    if (idsTeam.length) {
+        idsTeam = _.removeElementDuplicate(idsTeam)
+        _queryCallDetailRecord = { ..._queryCallDetailRecord, teamId: { [Op.in]: idsTeam } }
+        _queryCallShare = { ..._queryCallShare, teamIdOfCall: { [Op.in]: idsTeam } }
     }
-    console.log('query remove', _query)
-    const findIdCall = await model.CallDetailRecords.findAll({ where: _query, attributes: ['id'], raw: true, nest: true })
+    console.log('query remove CallDetailRecord', _queryCallDetailRecord)
+    _logger.info('query remove CallDetailRecord', _queryCallDetailRecord)
+    console.log('query remove CallShare', _queryCallShare)
+    _logger.info('query remove CallShare', _queryCallShare)
+
+    const dataRemoveCallShare = await model.CallShare.destroy({ where: _queryCallShare })
+
+    const findIdCall = await model.CallDetailRecords.findAll({ where: _queryCallDetailRecord, attributes: ['id'], raw: true, nest: true })
     const callIdRemove = _.pluck(findIdCall, 'id')
     _logger.info("idCallRemove", callIdRemove)
     if (callIdRemove.length) {
-        const dataRemove1 = await model.CallShare.destroy({ where: { callId: { [Op.in]: callIdRemove } } })
-        const dataRemove2 = await model.CallDetailRecords.destroy({ where: { id: { [Op.in]: callIdRemove } } })
-        _logger.info(`Removed1 ${dataRemove1} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
-        _logger.info(`Removed2 ${dataRemove2} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
+        await model.CallRating.destroy({ where: { callId: { [Op.in]: callIdRemove } } })
+        await model.CallRatingHistory.destroy({ where: { callId: { [Op.in]: callIdRemove } } })
+        const dataRemoveCallDetailRecord = await model.CallDetailRecords.destroy({ where: _queryCallDetailRecord })
+        _logger.info(`dataRemoveCallDetailRecord ${dataRemoveCallDetailRecord} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
     } else {
         _logger.info(`Not find id call remove ! `)
     }
 
+    _logger.info(`dataRemoveCallShare ${dataRemoveCallShare} data ${keyQuery == true ? 'scored !' : 'not scored !'} `)
 }
 
 function buildQueryTime(valueSaveForCallGotPoint, typeDateSaveForCallGotPoint) {
