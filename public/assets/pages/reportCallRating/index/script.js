@@ -26,10 +26,23 @@ $(function () {
     }
     $('.selectpicker').selectpicker('refresh')
   }
+  
   queryData()
   // move div
   $(".card-body").sortable({
     items: ".cardBodyItem"
+  })
+
+  $(".cardBodyItemParentOne").sortable({
+    items: ".cardBodyItemChildOne"
+  })
+
+  $(".cardBodyItemParentTwo").sortable({
+    items: ".cardBodyItemChildTwo"
+  })
+
+  $(".cardBodyItem").sortable({
+    items: ".cardBodyItemThree"
   })
 
 })
